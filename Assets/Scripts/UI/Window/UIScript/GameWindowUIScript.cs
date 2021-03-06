@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class GameWindowUIScript : WindowBase
 {
     private const float BOARD_MARGIN = 0.0f;
-    private const float DROP_SPACE = 4f; // ドロップ間の距離
+    private const float DROP_SPACE = 24f; // ドロップ間の距離
     private const int MAX_ROW_NUM = 6;
     private const int COLUMN_NUM = 7;
     private const int MAX_SELECTABLE_DROP_NUM = 10;
