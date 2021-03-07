@@ -20,8 +20,8 @@ public class GameWindowUIScript : WindowBase
 
     private bool canTap = true;
     private List<DropItem> selectedDropList = new List<DropItem>();
-    private List<CommandData> commandList = new List<CommandData>();
-    private List<CommandData> activateCommandList = new List<CommandData>();
+    private List<CommandMB> commandList = new List<CommandMB>();
+    private List<CommandMB> activateCommandList = new List<CommandMB>();
 
     public override void Init(WindowInfo info)
     {
@@ -114,6 +114,7 @@ public class GameWindowUIScript : WindowBase
             .Do(_ => canTap = true)
             .Subscribe();
 
+        // 初期化
         selectedDropList.Clear();
         _skillActiveObjectList.ForEach(b => b.SetActive(false));
     }

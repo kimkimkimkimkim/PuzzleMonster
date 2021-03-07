@@ -1,8 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
-public class CommandData
+/// <summary>
+/// コマンドデータ
+/// </summary>
+public class CommandMB
 {
     /// <summary>
     /// ID

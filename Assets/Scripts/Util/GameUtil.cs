@@ -28,7 +28,7 @@ public static class GameUtil
     /// <summary>
     /// 選択した座標から発動可能なコマンドのIDを返します
     /// </summary>
-    public static List<long> GetActivateCommandIdList(List<DropIndex> selectedIndexList,List<CommandData> commandList)
+    public static List<long> GetActivateCommandIdList(List<DropIndex> selectedIndexList,List<CommandMB> commandList)
     {
         var activateCommandIdList = new List<long>();
         commandList.ForEach(command =>
@@ -42,7 +42,7 @@ public static class GameUtil
     /// <summary>
     /// コマンド発動条件を満たしているかどうかを返します
     /// </summary>
-    public static bool IsCommandMatch(List<DropIndex> selectedDropIndexList,CommandData command)
+    public static bool IsCommandMatch(List<DropIndex> selectedDropIndexList,CommandMB command)
     {
         if (selectedDropIndexList.Count <= command.directionList.Count) return false;
 
@@ -116,9 +116,9 @@ public static class GameUtil
     /// <summary>
     /// 開発用のコマンドリストを作成する
     /// </summary>
-    public static List<CommandData> CreateCommandList()
+    public static List<CommandMB> CreateCommandList()
     {
-        var command1 = new CommandData()
+        var command1 = new CommandMB()
         {
             id = 1,
             directionList = new List<Direction>(){
@@ -127,7 +127,7 @@ public static class GameUtil
             },
         };
 
-        var command2 = new CommandData()
+        var command2 = new CommandMB()
         {
             id = 2,
             directionList = new List<Direction>(){
@@ -136,7 +136,7 @@ public static class GameUtil
             },
         };
 
-        var command3 = new CommandData()
+        var command3 = new CommandMB()
         {
             id = 3,
             directionList = new List<Direction>(){
@@ -145,7 +145,7 @@ public static class GameUtil
             },
         };
 
-        var command4 = new CommandData()
+        var command4 = new CommandMB()
         {
             id = 4,
             directionList = new List<Direction>(){
@@ -154,7 +154,7 @@ public static class GameUtil
             },
         };
 
-        var command5 = new CommandData()
+        var command5 = new CommandMB()
         {
             id = 5,
             directionList = new List<Direction>(){
@@ -163,7 +163,7 @@ public static class GameUtil
             },
         };
 
-        var command6 = new CommandData()
+        var command6 = new CommandMB()
         {
             id = 6,
             directionList = new List<Direction>(){
@@ -175,7 +175,7 @@ public static class GameUtil
             },
         };
 
-        var commandList = new List<CommandData>()
+        var commandList = new List<CommandMB>()
         {
             command1,
             command2,
