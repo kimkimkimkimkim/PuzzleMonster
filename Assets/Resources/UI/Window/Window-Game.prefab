@@ -181,6 +181,8 @@ MonoBehaviour:
   - {fileID: 2116948468292368008}
   - {fileID: 2628734710446982835}
   - {fileID: 438671416986710501}
+  _enemyMonsterItemList:
+  - {fileID: 6159720531499986998}
 --- !u!1 &238852464182789502
 GameObject:
   m_ObjectHideFlags: 0
@@ -643,7 +645,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 0.368
+  m_FillAmount: 0.712
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -1412,6 +1414,7 @@ GameObject:
   - component: {fileID: 4548685353903538612}
   - component: {fileID: 7592477351002483919}
   - component: {fileID: 3549973392818475651}
+  - component: {fileID: 6159720531499986998}
   m_Layer: 5
   m_Name: EnemyImage
   m_TagString: Untagged
@@ -1476,6 +1479,19 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6159720531499986998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1988652433448795348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 524365089b00343788ead18ff38f14b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _hpGaugeImage: {fileID: 5874884626615010157}
 --- !u!1 &2051794039913509232
 GameObject:
   m_ObjectHideFlags: 0

@@ -114,6 +114,18 @@ public static class GameUtil
     }
 
     /// <summary>
+    /// UserMonsterInfoからBattleMonsterInfoを生成して返します
+    /// </summary>
+    public static BattleMonsterInfo GetBattleMonster(UserMonsterInfo userMonster)
+    {
+        return new BattleMonsterInfo()
+        {
+            currentHp = userMonster.hp,
+            baseAttack = userMonster.attack,
+        };
+    }
+
+    /// <summary>
     /// 開発用のコマンドリストを作成する
     /// </summary>
     public static List<CommandMB> CreateCommandList()

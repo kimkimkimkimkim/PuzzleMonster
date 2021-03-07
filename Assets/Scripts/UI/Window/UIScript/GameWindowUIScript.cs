@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GameBase;
 using UniRx;
@@ -17,17 +18,64 @@ public class GameWindowUIScript : WindowBase
     [SerializeField] protected BoardItem _board;
     [SerializeField] protected Text _limiNumText;
     [SerializeField] protected List<GameObject> _skillActiveObjectList;
+    [SerializeField] protected List<EnemyMonsterItem> _enemyMonsterItemList;
 
     private bool canTap = true;
     private List<DropItem> selectedDropList = new List<DropItem>();
     private List<CommandMB> commandList = new List<CommandMB>();
-    private List<CommandMB> activateCommandList = new List<CommandMB>();
+    private List<int> activateCommandIndexList = new List<int>();
+    private GameManager gameManager;
 
     public override void Init(WindowInfo info)
     {
         canTap = false;
         commandList = GameUtil.CreateCommandList();
         _board.Initialize(BOARD_MARGIN,DROP_SPACE,MAX_ROW_NUM,COLUMN_NUM).Do(_ => canTap = true).Subscribe();
+
+        // モンスターの初期設定
+        var enemyUserMonsterList = new List<UserMonsterInfo>()
+        {
+            new UserMonsterInfo()
+            {
+                hp = 1000,
+            },
+        };
+        var playerUserMonsterList = new List<UserMonsterInfo>()
+        {
+            new UserMonsterInfo()
+            {
+                hp = 100,
+                attack = 100,
+            },
+            new UserMonsterInfo()
+            {
+                hp = 100,
+                attack = 100,
+            },
+            new UserMonsterInfo()
+            {
+                hp = 100,
+                attack = 100,
+            },
+            new UserMonsterInfo()
+            {
+                hp = 100,
+                attack = 100,
+            },
+            new UserMonsterInfo()
+            {
+                hp = 100,
+                attack = 100,
+            },
+            new UserMonsterInfo()
+            {
+                hp = 100,
+                attack = 100,
+            },
+        };
+        _enemyMonsterItemList.ForEach(e => e.Init(1000));
+
+        gameManager = new GameManager(this, enemyUserMonsterList, playerUserMonsterList);
     }
 
     private void Update()
@@ -79,10 +127,12 @@ public class GameWindowUIScript : WindowBase
         {
             // コマンド判定
             var activateCommandIdList = GameUtil.GetActivateCommandIdList(selectedDropList.Select(d => d.GetIndex()).ToList(), commandList);
+            activateCommandIndexList.Clear();
             commandList.ForEach((command,index) =>
             {
                 var isActivate = activateCommandIdList.Any(id => id == command.id);
                 _skillActiveObjectList[index].SetActive(isActivate);
+                if(isActivate) activateCommandIndexList.Add(index);
             });
 
             // 残り個数テキストの制御
@@ -110,13 +160,21 @@ public class GameWindowUIScript : WindowBase
         _limiNumText.gameObject.SetActive(false);
 
         _board.DeleteDropObservable(selectedDropList)
+            .SelectMany(_ => gameManager.OnEndDropOperationObservable(activateCommandIndexList))
+            .Do(_ => _skillActiveObjectList.ForEach(b => b.SetActive(false)))
             .SelectMany(_ => _board.FillDropObservable())
             .Do(_ => canTap = true)
             .Subscribe();
 
         // 初期化
         selectedDropList.Clear();
-        _skillActiveObjectList.ForEach(b => b.SetActive(false));
+    }
+
+    public IObservable<Unit> PlayAttackToEnemyAnimationObservable(int enemyMonsterIndex,int enemyMonsterHp,int playerMonsterIndex)
+    {
+        if (enemyMonsterIndex < 0 || enemyMonsterIndex >= _enemyMonsterItemList.Count) return Observable.ReturnUnit();
+
+        return _enemyMonsterItemList[enemyMonsterIndex].PlayHpGaugeAnimationObservable(enemyMonsterHp);
     }
 
     public override void Open(WindowInfo info)

@@ -1,6 +1,7 @@
 ﻿using UniRx;
 using System;
 using DG.Tweening;
+using UnityEngine;
 
 namespace GameBase
 {
@@ -28,8 +29,13 @@ namespace GameBase
                     o.OnNext(sequence);
                     o.OnCompleted();
                 });
+                sequence.OnKill(() =>
+                {
+                    o.OnNext(sequence);
+                    o.OnCompleted();
+                });
                 sequence.Play();
-                return Disposable.Create(() => sequence.Kill());
+                return Disposable.Empty;
             });
         }
     }
