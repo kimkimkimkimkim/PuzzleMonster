@@ -16,7 +16,7 @@ public class GameWindowUIScript : WindowBase
 
     [SerializeField] protected BoardItem _board;
     [SerializeField] protected Text _limiNumText;
-    [SerializeField] protected List<GameObject> _balloonList;
+    [SerializeField] protected List<GameObject> _skillActiveObjectList;
 
     private bool canTap = true;
     private List<DropItem> selectedDropList = new List<DropItem>();
@@ -82,7 +82,7 @@ public class GameWindowUIScript : WindowBase
             commandList.ForEach((command,index) =>
             {
                 var isActivate = activateCommandIdList.Any(id => id == command.id);
-                _balloonList[index].SetActive(isActivate);
+                _skillActiveObjectList[index].SetActive(isActivate);
             });
 
             // 残り個数テキストの制御
@@ -115,7 +115,7 @@ public class GameWindowUIScript : WindowBase
             .Subscribe();
 
         selectedDropList.Clear();
-        _balloonList.ForEach(b => b.SetActive(false));
+        _skillActiveObjectList.ForEach(b => b.SetActive(false));
     }
 
     public override void Open(WindowInfo info)

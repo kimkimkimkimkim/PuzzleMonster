@@ -30,98 +30,87 @@ public static class GameUtil
     /// </summary>
     public static List<long> GetActivateCommandIdList(List<DropIndex> selectedIndexList,List<CommandData> commandList)
     {
-        var selectedDirectionList = GetDirectionList(selectedIndexList);
-
         var activateCommandIdList = new List<long>();
         commandList.ForEach(command =>
         {
-            if (IsCommandMatch(selectedDirectionList, command)) activateCommandIdList.Add(command.id);
+            if (IsCommandMatch(selectedIndexList, command)) activateCommandIdList.Add(command.id);
         });
 
         return activateCommandIdList;
     }
 
     /// <summary>
-    /// 指定した方向リストからコマンドがマッチしたかを返します
+    /// コマンド発動条件を満たしているかどうかを返します
     /// </summary>
-    public static bool IsCommandMatch(List<Direction> selectedDirectionList,CommandData command)
+    public static bool IsCommandMatch(List<DropIndex> selectedDropIndexList,CommandData command)
     {
-        var commandDirectionNum = command.directionList.First().Count;
-        if (selectedDirectionList.Count < commandDirectionNum) return false;
+        if (selectedDropIndexList.Count <= command.directionList.Count) return false;
 
-        for(var i=0; i <= selectedDirectionList.Count - commandDirectionNum; i++)
+        for(var i = 0; i < selectedDropIndexList.Count; i++)
         {
-            for(var j=0; j < command.directionList.Count; j++)
+            var index = selectedDropIndexList[i];
+            for(var j = 0; j < command.directionList.Count; j++)
             {
-                var isMatch = selectedDirectionList.GetRange(i, commandDirectionNum).SequenceEqual(command.directionList[j]);
-                if (isMatch) return true;
+                var direction = command.directionList[j];
+                var targetIndex = GetDropIndex(index, direction);
+                var existsTargetIndex = selectedDropIndexList.Any(idx => idx == targetIndex);
+
+                // もし対象のインデックスが存在しなければ即リターン
+                if (!existsTargetIndex) break;
+
+                // もしコマンドに必要な全てのインデックスがあった場合はtrueを返す
+                if (j == command.directionList.Count - 1 && existsTargetIndex) return true;
+
+                // 基準のインデックスを更新
+                index = targetIndex;
             }
         }
 
+        // 一度も条件を満たさずここまで来たらfalseを返す
         return false;
     }
 
+
     /// <summary>
-    /// 選択したドロップインデックスから方向リストを返します
+    /// 指定したインデックスから指定した方向にあるドロップのインデックスを返します
     /// </summary>
-    private static List<Direction> GetDirectionList(List<DropIndex> selectedIndexList)
+    private static DropIndex GetDropIndex(DropIndex index,Direction direction)
     {
-        var directionList = new List<Direction>();
-        selectedIndexList.ForEach((dropIndex,i) =>
+        switch (direction)
         {
-            if(i >= 1)
-            {
-                var previousIndex = selectedIndexList[i - 1];
-                var direction = GetDirection(previousIndex, dropIndex);
-                directionList.Add(direction);
-            }
-        });
-        return directionList;
+            case Direction.Up:
+                return new DropIndex(index.column, index.row + 1);
+            case Direction.Down:
+                return new DropIndex(index.column, index.row - 1);
+            case Direction.UpperLeft:
+                return new DropIndex(index.column - 1, GetUpperRowIndex(index));
+            case Direction.UpperRight:
+                return new DropIndex(index.column + 1, GetUpperRowIndex(index));
+            case Direction.LowerLeft:
+                return new DropIndex(index.column - 1, GetLowerRowIndex(index));
+            case Direction.LowerRight:
+                return new DropIndex(index.column + 1, GetLowerRowIndex(index));
+            default:
+                return index;
+        }
     }
 
     /// <summary>
-    /// 2つのインデックスから方向を返します
+    /// 指定したインデックスの右下、左下のインデックスの行インデックスを返します
+    /// 負の値になることもある
     /// </summary>
-    private static Direction GetDirection(DropIndex beforeIndex, DropIndex afterIndex)
+    private static int GetLowerRowIndex(DropIndex index)
     {
-        if(afterIndex.column < beforeIndex.column)
-        {
-            // 左
-            var lowerRowIndex = beforeIndex.column % 2 == 0 ? beforeIndex.row - 1 : beforeIndex.row;
-            if(afterIndex.row <= lowerRowIndex)
-            {
-                return Direction.LowerLeft;
-            }
-            else
-            {
-                return Direction.UpperLeft;
-            }
-        }
-        else if(afterIndex.column > beforeIndex.column)
-        {
-            // 右
-            var lowerRowIndex = beforeIndex.column % 2 == 0 ? beforeIndex.row - 1 : beforeIndex.row;
-            if (afterIndex.row <= lowerRowIndex)
-            {
-                return Direction.LowerRight;
-            }
-            else
-            {
-                return Direction.UpperRight;
-            }
-        }
-        else
-        {
-            //　同じ
-            if(afterIndex.row > beforeIndex.row)
-            {
-                return Direction.Up;
-            }
-            else 
-            {
-                return Direction.Down;
-            }
-        }
+        return index.column % 2 == 0 ? index.row - 1 : index.row;
+    }
+
+    /// <summary>
+    /// 指定したインデックスの右上、左上のインデックスの行インデックスを返します
+    /// 盤面の範囲外の値になることもある
+    /// </summary>
+    private static int GetUpperRowIndex(DropIndex index) 
+    {
+        return index.column % 2 == 0 ? index.row : index.row + 1;
     }
 
     /// <summary>
@@ -132,177 +121,58 @@ public static class GameUtil
         var command1 = new CommandData()
         {
             id = 1,
-            directionList = new List<List<Direction>>()
-            {
-                new List<Direction>()
-                {
-                    Direction.Up,
-                    Direction.Up,
-                },
-                new List<Direction>()
-                {
-                    Direction.Down,
-                    Direction.Down,
-                },
-            }
+            directionList = new List<Direction>(){
+                Direction.Up,
+                Direction.Up,
+            },
         };
 
         var command2 = new CommandData()
         {
             id = 2,
-            directionList = new List<List<Direction>>()
-            {
-                new List<Direction>()
-                {
-                    Direction.UpperRight,
-                    Direction.UpperRight,
-                },
-                new List<Direction>()
-                {
-                    Direction.LowerLeft,
-                    Direction.LowerLeft,
-                },
-            }
+            directionList = new List<Direction>(){
+                Direction.UpperRight,
+                Direction.LowerRight,
+            },
         };
 
         var command3 = new CommandData()
         {
             id = 3,
-            directionList = new List<List<Direction>>()
-            {
-                new List<Direction>()
-                {
-                    Direction.UpperRight,
-                    Direction.LowerRight,
-                },
-                new List<Direction>()
-                {
-                    Direction.UpperLeft,
-                    Direction.LowerLeft,
-                },
-            }
+            directionList = new List<Direction>(){
+                Direction.LowerRight,
+                Direction.UpperRight,
+            },
         };
 
         var command4 = new CommandData()
         {
             id = 4,
-            directionList = new List<List<Direction>>()
-            {
-                new List<Direction>()
-                {
-                    Direction.LowerRight,
-                    Direction.UpperRight,
-                },
-                new List<Direction>()
-                {
-                    Direction.LowerLeft,
-                    Direction.UpperLeft,
-                },
-            }
+            directionList = new List<Direction>(){
+                Direction.UpperRight,
+                Direction.UpperRight,
+            },
         };
 
         var command5 = new CommandData()
         {
             id = 5,
-            directionList = new List<List<Direction>>()
-            {
-                new List<Direction>()
-                {
-                    Direction.LowerRight,
-                    Direction.Down,
-                    Direction.LowerLeft,
-                    Direction.UpperLeft,
-                    Direction.Up,
-                },
-                new List<Direction>()
-                {
-                    Direction.Down,
-                    Direction.LowerLeft,
-                    Direction.UpperLeft,
-                    Direction.Up,
-                    Direction.UpperRight,
-                },
-                new List<Direction>()
-                {
-                    Direction.LowerLeft,
-                    Direction.UpperLeft,
-                    Direction.Up,
-                    Direction.UpperRight,
-                    Direction.LowerRight,
-                },
-                new List<Direction>()
-                {
-                    Direction.UpperLeft,
-                    Direction.Up,
-                    Direction.UpperRight,
-                    Direction.LowerRight,
-                    Direction.Down,
-                },
-                new List<Direction>()
-                {
-                    Direction.Up,
-                    Direction.UpperRight,
-                    Direction.LowerRight,
-                    Direction.Down,
-                    Direction.LowerLeft,
-                },
-                new List<Direction>()
-                {
-                    Direction.UpperRight,
-                    Direction.LowerRight,
-                    Direction.Down,
-                    Direction.LowerLeft,
-                    Direction.UpperLeft,
-                },
-                new List<Direction>()
-                {
-                    Direction.LowerLeft,
-                    Direction.Down,
-                    Direction.LowerRight,
-                    Direction.UpperRight,
-                    Direction.Up,
-                },
-                new List<Direction>()
-                {
-                    Direction.Down,
-                    Direction.LowerRight,
-                    Direction.UpperRight,
-                    Direction.Up,
-                    Direction.UpperLeft,
-                },
-                new List<Direction>()
-                {
-                    Direction.LowerRight,
-                    Direction.UpperRight,
-                    Direction.Up,
-                    Direction.UpperLeft,
-                    Direction.LowerLeft,
-                },
-                new List<Direction>()
-                {
-                    Direction.UpperRight,
-                    Direction.Up,
-                    Direction.UpperLeft,
-                    Direction.LowerLeft,
-                    Direction.Down,
-                },
-                new List<Direction>()
-                {
-                    Direction.Up,
-                    Direction.UpperLeft,
-                    Direction.LowerLeft,
-                    Direction.Down,
-                    Direction.LowerRight,
-                },
-                new List<Direction>()
-                {
-                    Direction.UpperLeft,
-                    Direction.LowerLeft,
-                    Direction.Down,
-                    Direction.LowerRight,
-                    Direction.UpperRight,
-                },
-            }
+            directionList = new List<Direction>(){
+                Direction.UpperLeft,
+                Direction.UpperLeft,
+            },
+        };
+
+        var command6 = new CommandData()
+        {
+            id = 6,
+            directionList = new List<Direction>(){
+                Direction.LowerRight,
+                Direction.Down,
+                Direction.LowerLeft,
+                Direction.UpperLeft,
+                Direction.Up,
+            },
         };
 
         var commandList = new List<CommandData>()
@@ -312,6 +182,7 @@ public static class GameUtil
             command3,
             command4,
             command5,
+            command6,
         };
         return commandList;
     }

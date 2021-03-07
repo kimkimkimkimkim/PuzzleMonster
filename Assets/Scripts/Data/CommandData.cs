@@ -12,6 +12,6 @@ public class CommandData
     /// <summary>
     /// コマンド成功と判定される方向リスト
     /// </summary>
-    public List<List<Direction>> directionList { get; set; }
+    public List<Direction> directionList { get; set; }
 
 }
