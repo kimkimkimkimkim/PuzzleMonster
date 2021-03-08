@@ -19,6 +19,7 @@ public class GameWindowUIScript : WindowBase
     [SerializeField] protected Text _limiNumText;
     [SerializeField] protected List<GameObject> _skillActiveObjectList;
     [SerializeField] protected List<EnemyMonsterItem> _enemyMonsterItemList;
+    [SerializeField] protected PlayerHpGaugeItem _playerHpGaugeItem;
 
     private bool canTap = true;
     private List<DropItem> selectedDropList = new List<DropItem>();
@@ -38,6 +39,7 @@ public class GameWindowUIScript : WindowBase
             new UserMonsterInfo()
             {
                 hp = 1000,
+                attack = 100,
             },
         };
         var playerUserMonsterList = new List<UserMonsterInfo>()
@@ -76,6 +78,7 @@ public class GameWindowUIScript : WindowBase
         _enemyMonsterItemList.ForEach(e => e.Init(1000));
 
         gameManager = new GameManager(this, enemyUserMonsterList, playerUserMonsterList);
+        _playerHpGaugeItem.Init(gameManager.GetPlayerCurrentHp());
     }
 
     private void Update()
@@ -170,12 +173,27 @@ public class GameWindowUIScript : WindowBase
         selectedDropList.Clear();
     }
 
+    /// <summary>
+    /// 敵への攻撃アニメーション
+    /// </summary>
     public IObservable<Unit> PlayAttackToEnemyAnimationObservable(int enemyMonsterIndex,int enemyMonsterHp,int playerMonsterIndex)
     {
         if (enemyMonsterIndex < 0 || enemyMonsterIndex >= _enemyMonsterItemList.Count) return Observable.ReturnUnit();
 
         return _enemyMonsterItemList[enemyMonsterIndex].PlayHpGaugeAnimationObservable(enemyMonsterHp);
     }
+
+    /// <summary>
+    /// 敵からの攻撃アニメーション
+    /// </summary>
+    public IObservable<Unit> PlayAttackToPlayerAnimationObservable(int enemyMonsterIndex,int playerHp)
+    {
+        if (enemyMonsterIndex < 0 || enemyMonsterIndex >= _enemyMonsterItemList.Count) return Observable.ReturnUnit();
+
+        return _playerHpGaugeItem.PlayHpGaugeAnimation(enemyMonsterIndex, playerHp);
+    }
+
+
 
     public override void Open(WindowInfo info)
     {

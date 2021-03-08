@@ -19,27 +19,32 @@ public class GameManager
         playerCurrentHp = playerUserMonsterList.Sum(u => u.hp);
     }
 
+    public int GetPlayerCurrentHp()
+    {
+        return playerCurrentHp;
+    }
+
     /// <summary>
     /// ユーザーのドロップ操作終了時に実行する処理
     /// コマンド発動したモンスターのインデックスを引数に渡す
     /// </summary>
     public IObservable<Unit> OnEndDropOperationObservable(List<int> attackMonsterIndexList)
     {
-        return AttackObservable(attackMonsterIndexList);
+        return AttackToEnemyObservable(attackMonsterIndexList).SelectMany(_ => AttackToPlayerObservable());
     }
 
     /// <summary>
     /// 敵への攻撃
     /// コマンド発動したモンスターのインデックスを引数に渡す
     /// </summary>
-    private IObservable<Unit> AttackObservable(List<int> attackMonsterIndexList)
+    private IObservable<Unit> AttackToEnemyObservable(List<int> attackMonsterIndexList)
     {
         const float ATTACK_EFFECT_DELAY = 0.1f;
 
         // 攻撃エフェクト
         var attackAnimationObservableList = attackMonsterIndexList.Select((playerMonsterIndex,index) =>
         {
-            var enemyIndex = Attack(playerMonsterIndex);
+            var enemyIndex = AttackToEnemy(playerMonsterIndex);
             var enemyHp = enemyBattleMonsterList[enemyIndex].currentHp;
             return Observable.Timer(TimeSpan.FromSeconds(ATTACK_EFFECT_DELAY * index))
                 .SelectMany(_ => gameWindowUIScript.PlayAttackToEnemyAnimationObservable(enemyIndex, enemyHp, playerMonsterIndex));
@@ -53,7 +58,7 @@ public class GameManager
     /// 攻撃するモンスターのインデックスを引数に渡す
     /// 攻撃対象の敵モンスターインデックスを返します(エラー値は-1)
     /// </summary>
-    private int Attack(int playerMonsterIndex)
+    private int AttackToEnemy(int playerMonsterIndex)
     {
         // 敵が全滅していたら最後の敵を対象とする
         var enemyBattleMonsterIndex = enemyBattleMonsterList.FindIndex(b => b.currentHp != 0);
@@ -70,5 +75,29 @@ public class GameManager
         return enemyBattleMonsterIndex;
     }
 
+    /// <summary>
+    /// プレイヤーへの攻撃
+    /// </summary>
+    private IObservable<Unit> AttackToPlayerObservable()
+    {
+        const float ATTACK_EFFECT_DELAY = 0.1f;
+
+        // 攻撃エフェクト
+        var attackAnimationObservableList = enemyBattleMonsterList.Select((enemyBattleMonster, index) =>
+        {
+            AttackToPlayer(index);
+            return Observable.Timer(TimeSpan.FromSeconds(ATTACK_EFFECT_DELAY * index))
+                .SelectMany(_ => gameWindowUIScript.PlayAttackToPlayerAnimationObservable(index, playerCurrentHp));
+        }).ToList();
+
+        return Observable.WhenAll(attackAnimationObservableList);
+    }
+
+    private void AttackToPlayer(int enemyMonsterIndex)
+    {
+        // ダメージ計算
+        var enemyBattleMonster = enemyBattleMonsterList[enemyMonsterIndex];
+        playerCurrentHp = Math.Max(0,playerCurrentHp - enemyBattleMonster.baseAttack);
+    }
 
 }

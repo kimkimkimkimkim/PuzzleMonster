@@ -183,6 +183,7 @@ MonoBehaviour:
   - {fileID: 438671416986710501}
   _enemyMonsterItemList:
   - {fileID: 6159720531499986998}
+  _playerHpGaugeItem: {fileID: 7505699905366287192}
 --- !u!1 &238852464182789502
 GameObject:
   m_ObjectHideFlags: 0
@@ -284,6 +285,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8581633805311234912}
+  - component: {fileID: 7505699905366287192}
   m_Layer: 5
   m_Name: HPGaurge
   m_TagString: Untagged
@@ -314,6 +316,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 16.5}
   m_SizeDelta: {x: 1100, y: 74.87891}
   m_Pivot: {x: 0.5, y: 0}
+--- !u!114 &7505699905366287192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 398100699241608176}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d791448e1a0c24e8abfe4eeee658a894, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _hpGaugeImage: {fileID: 1442312806901715552}
+  _hpGaugeText: {fileID: 5508176374654601938}
 --- !u!1 &432663548323602601
 GameObject:
   m_ObjectHideFlags: 0
@@ -4089,7 +4105,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7822557778778075962}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
