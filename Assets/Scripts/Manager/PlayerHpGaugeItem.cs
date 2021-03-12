@@ -34,14 +34,14 @@ public class PlayerHpGaugeItem : MonoBehaviour
         }
         hpGaugeAnimationSequence = DOTween.Sequence()
             .Append(_hpGaugeImage.DOFillAmount(endGaugeValue, ANIMATION_TIME))
-            .Join(DOVirtual.Float(GetCurrentHp(),playerHp,ANIMATION_TIME,(value) => _hpGaugeText.text = ((int)value).ToString()));
+            .Join(DOVirtual.Float(GetCurrentHp(),playerHp,ANIMATION_TIME,(value) => SetHpText((int)value)));
 
         return hpGaugeAnimationSequence.PlayAsObservable().AsUnitObservable();
     }
 
     private void SetHpText(int hp)
     {
-        _hpGaugeText.text = $"{hp}/{hp}";
+        _hpGaugeText.text = $"{hp}/{maxHp}";
     }
 
     private int GetCurrentHp()

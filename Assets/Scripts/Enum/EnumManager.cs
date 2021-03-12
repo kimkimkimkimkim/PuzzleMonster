@@ -26,3 +26,13 @@ public enum Direction
     UpperLeft,
     LowerLeft,
 }
+
+/// <summary>
+/// 勝敗判定
+/// </summary>
+public enum WinOrLose
+{
+    None,
+    Win,
+    Lose,
+}

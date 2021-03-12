@@ -20,6 +20,9 @@ public class GameWindowUIScript : WindowBase
     [SerializeField] protected List<GameObject> _skillActiveObjectList;
     [SerializeField] protected List<EnemyMonsterItem> _enemyMonsterItemList;
     [SerializeField] protected PlayerHpGaugeItem _playerHpGaugeItem;
+    [SerializeField] protected BattleAnimationManager _battleAnimationManager;
+    [SerializeField] protected Button _retryButton;
+    [SerializeField] protected GameObject _retryButtonBase;
 
     private bool canTap = true;
     private List<DropItem> selectedDropList = new List<DropItem>();
@@ -29,9 +32,25 @@ public class GameWindowUIScript : WindowBase
 
     public override void Init(WindowInfo info)
     {
+        _retryButton.OnClickIntentAsObservable()
+            .Do(_ =>
+            {
+                _battleAnimationManager.Initialize();
+                Refresh();
+            })
+            .Subscribe();
+
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        // 初期化
         canTap = false;
         commandList = GameUtil.CreateCommandList();
-        _board.Initialize(BOARD_MARGIN,DROP_SPACE,MAX_ROW_NUM,COLUMN_NUM).Do(_ => canTap = true).Subscribe();
+        _retryButtonBase.SetActive(false);
+        _skillActiveObjectList.ForEach(b => b.SetActive(false));
+        _board.Initialize(BOARD_MARGIN, DROP_SPACE, MAX_ROW_NUM, COLUMN_NUM).Do(_ => canTap = true).Subscribe();
 
         // モンスターの初期設定
         var enemyUserMonsterList = new List<UserMonsterInfo>()
@@ -166,8 +185,19 @@ public class GameWindowUIScript : WindowBase
             .SelectMany(_ => gameManager.OnEndDropOperationObservable(activateCommandIndexList))
             .SelectMany(winOrLose =>
             {
-                return Observable.ReturnUnit();
+                switch (winOrLose)
+                {
+                    case WinOrLose.Win:
+                    case WinOrLose.Lose:
+                        return _battleAnimationManager.PlayWinOrLoseAnimation(winOrLose)
+                            .Do(_ => _retryButtonBase.SetActive(true))
+                            .Select(_ => false);
+                    case WinOrLose.None:
+                    default:
+                        return Observable.Return<bool>(true);
+                }
             })
+            .Where(isOk => isOk)
             .Do(_ => _skillActiveObjectList.ForEach(b => b.SetActive(false)))
             .SelectMany(_ => _board.FillDropObservable())
             .Do(_ => canTap = true)

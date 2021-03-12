@@ -32,6 +32,13 @@ public class BoardItem : MonoBehaviour
 
     public IObservable<Unit> Initialize(float boardMargin,float dropSpace,int maxRowNum, int columnNum)
     {
+        // ドロップの削除
+        foreach(Transform child in _boardRT)
+        {
+            Destroy(child.gameObject);
+        }
+        dropList.Clear();
+
         // ボードパラメータの取得・設定
         boardHeight = _boardRT.rect.height;
         boardWidth = _boardRT.rect.width;

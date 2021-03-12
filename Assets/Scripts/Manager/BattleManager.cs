@@ -122,14 +122,7 @@ public class BattleManager
     private WinOrLose JudgeWinOrLose()
     {
         if (enemyBattleMonsterList.All(m => m.currentHp <= 0)) return WinOrLose.Win;
-        if (playerBattleMonsterList.All(m => m.currentHp <= 0)) return WinOrLose.Lose;
+        if (playerCurrentHp <= 0) return WinOrLose.Lose;
         return WinOrLose.None;
-    }
-
-    public enum WinOrLose
-    {
-        None,
-        Win,
-        Lose,
     }
 }
