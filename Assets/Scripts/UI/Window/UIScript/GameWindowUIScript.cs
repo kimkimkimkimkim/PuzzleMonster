@@ -25,7 +25,7 @@ public class GameWindowUIScript : WindowBase
     private List<DropItem> selectedDropList = new List<DropItem>();
     private List<CommandMB> commandList = new List<CommandMB>();
     private List<int> activateCommandIndexList = new List<int>();
-    private GameManager gameManager;
+    private BattleManager gameManager;
 
     public override void Init(WindowInfo info)
     {
@@ -77,7 +77,7 @@ public class GameWindowUIScript : WindowBase
         };
         _enemyMonsterItemList.ForEach(e => e.Init(1000));
 
-        gameManager = new GameManager(this, enemyUserMonsterList, playerUserMonsterList);
+        gameManager = new BattleManager(this, enemyUserMonsterList, playerUserMonsterList);
         _playerHpGaugeItem.Init(gameManager.GetPlayerCurrentHp());
     }
 
@@ -164,6 +164,10 @@ public class GameWindowUIScript : WindowBase
 
         _board.DeleteDropObservable(selectedDropList)
             .SelectMany(_ => gameManager.OnEndDropOperationObservable(activateCommandIndexList))
+            .SelectMany(winOrLose =>
+            {
+                return Observable.ReturnUnit();
+            })
             .Do(_ => _skillActiveObjectList.ForEach(b => b.SetActive(false)))
             .SelectMany(_ => _board.FillDropObservable())
             .Do(_ => canTap = true)

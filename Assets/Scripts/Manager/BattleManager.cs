@@ -4,14 +4,14 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 
-public class GameManager
+public class BattleManager
 {
     private GameWindowUIScript gameWindowUIScript;
     private List<BattleMonsterInfo> enemyBattleMonsterList;
     private List<BattleMonsterInfo> playerBattleMonsterList;
     private int playerCurrentHp;
 
-    public GameManager(GameWindowUIScript gameWindowUIScript,List<UserMonsterInfo> enemyUserMonsterList,List<UserMonsterInfo> playerUserMonsterList)
+    public BattleManager(GameWindowUIScript gameWindowUIScript,List<UserMonsterInfo> enemyUserMonsterList,List<UserMonsterInfo> playerUserMonsterList)
     {
         this.gameWindowUIScript = gameWindowUIScript;
         enemyBattleMonsterList = enemyUserMonsterList.Select(u => GameUtil.GetBattleMonster(u)).ToList();
@@ -28,9 +28,28 @@ public class GameManager
     /// ユーザーのドロップ操作終了時に実行する処理
     /// コマンド発動したモンスターのインデックスを引数に渡す
     /// </summary>
-    public IObservable<Unit> OnEndDropOperationObservable(List<int> attackMonsterIndexList)
+    public IObservable<WinOrLose> OnEndDropOperationObservable(List<int> attackMonsterIndexList)
     {
-        return AttackToEnemyObservable(attackMonsterIndexList).SelectMany(_ => AttackToPlayerObservable());
+        return Observable.ReturnUnit()
+            .SelectMany(_ => AttackToEnemyObservable(attackMonsterIndexList))
+            .SelectMany(_ =>
+            {
+                var winOrLose = JudgeWinOrLose();
+                switch (winOrLose)
+                {
+                    case WinOrLose.Win:
+                    case WinOrLose.Lose:
+                        return Observable.Return<WinOrLose>(winOrLose);
+                    case WinOrLose.None:
+                    default:
+                        return AttackToPlayerObservable()
+                            .SelectMany(res =>
+                            {
+                                winOrLose = JudgeWinOrLose();
+                                return Observable.Return<WinOrLose>(winOrLose);
+                            });
+                }
+            });
     }
 
     /// <summary>
@@ -100,4 +119,17 @@ public class GameManager
         playerCurrentHp = Math.Max(0,playerCurrentHp - enemyBattleMonster.baseAttack);
     }
 
+    private WinOrLose JudgeWinOrLose()
+    {
+        if (enemyBattleMonsterList.All(m => m.currentHp <= 0)) return WinOrLose.Win;
+        if (playerBattleMonsterList.All(m => m.currentHp <= 0)) return WinOrLose.Lose;
+        return WinOrLose.None;
+    }
+
+    public enum WinOrLose
+    {
+        None,
+        Win,
+        Lose,
+    }
 }
