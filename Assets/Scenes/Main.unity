@@ -348,6 +348,7 @@ GameObject:
   - component: {fileID: 1014122074}
   - component: {fileID: 1014122075}
   - component: {fileID: 1014122076}
+  - component: {fileID: 1014122077}
   m_Layer: 0
   m_Name: ManagerObject
   m_TagString: Untagged
@@ -401,7 +402,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1014122072}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45af9269b526f4c958cdd5548bd3f892, type: 3}
+  m_Script: {fileID: 11500000, guid: 344f36dd4d1f34716a6ea0566d44a038, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &1014122076
@@ -418,6 +419,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _canvas: {fileID: 2002124650}
   _canvasRT: {fileID: 2002124651}
+--- !u!114 &1014122077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1014122072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf605cacaa5ea4dda950104acfb0d8ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isUseAssetBundle: 1
 --- !u!1 &1263745546
 GameObject:
   m_ObjectHideFlags: 0
