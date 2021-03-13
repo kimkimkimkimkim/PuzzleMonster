@@ -227,8 +227,6 @@ public class GameWindowUIScript : WindowBase
         return _playerHpGaugeItem.PlayHpGaugeAnimation(enemyMonsterIndex, playerHp);
     }
 
-
-
     public override void Open(WindowInfo info)
     {
     }
