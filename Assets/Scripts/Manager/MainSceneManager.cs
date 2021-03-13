@@ -10,7 +10,6 @@ public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
 {
     private void Start()
     {
-        //PlayFabClientAPI.login
         TitleWindowFactory.Create(new TitleWindowRequest()).Subscribe();
     }
 }
