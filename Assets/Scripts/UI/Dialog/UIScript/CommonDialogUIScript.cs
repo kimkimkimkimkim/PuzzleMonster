@@ -6,19 +6,37 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using GameBase;
+using Enum.UI;
 
-[ResourcePath("UI/Dialog/Dialog-UserNameRegistration")]
-public class UserNameRegistrationDialogUIScript : DialogBase
+[ResourcePath("UI/Dialog/Dialog-Common")]
+public class CommonDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
-    [SerializeField] protected Button _registerButton;
-    [SerializeField] protected InputField _userNameInputField;
-    [SerializeField] protected GameObject _grayoutPanel;
+    [SerializeField] protected Button _okButton;
+    [SerializeField] protected Text _titleText;
+    [SerializeField] protected Text _contentText;
+    [SerializeField] protected GameObject _closeButtonBase;
 
     public override void Init(DialogInfo info)
     {
         var onClickClose = (Action)info.param["onClickClose"];
-        var onClickOk = (Action<string>)info.param["onClickOk"];
+        var onClickOk = (Action)info.param["onClickOk"];
+        var commonDialogType = (CommonDialogType)info.param["commonDialogType"];
+        var title = (string)info.param["title"];
+        var content = (string)info.param["content"];
+
+        // タイプ毎にUIを変更
+        switch (commonDialogType)
+        {
+            case CommonDialogType.NoAndYes:
+                break;
+            case CommonDialogType.YesOnly:
+                _closeButtonBase.SetActive(false);
+                break;
+        }
+
+        _titleText.text = title;
+        _contentText.text = content;
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
@@ -31,34 +49,16 @@ public class UserNameRegistrationDialogUIScript : DialogBase
             })
             .Subscribe();
 
-        _registerButton.OnClickIntentAsObservable()
+        _okButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
             .Do(_ => {
                 if (onClickOk != null)
                 {
-                    onClickOk(_userNameInputField.text);
+                    onClickOk();
                     onClickOk = null;
                 }
             })
             .Subscribe();
-
-        _userNameInputField.OnValueChangedAsObservable()
-            .Do(_ => UpdateGrayoutPanel())
-            .Subscribe();
-
-        UpdateGrayoutPanel();
-    }
-
-    private void UpdateGrayoutPanel()
-    {
-        var isValid = IsValid();
-        _grayoutPanel.SetActive(!isValid);
-    }
-
-    private bool IsValid()
-    {
-        var count = _userNameInputField.text.Length;
-        return count >= ConstManager.System.userNameMinWordCount && count <= ConstManager.System.userNameMaxWordCount;
     }
 
     public override void Back(DialogInfo info)

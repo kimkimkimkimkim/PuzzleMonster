@@ -1,6 +1,8 @@
 ﻿using System;
+using Enum.UI;
 using PlayFab;
 using PlayFab.ClientModels;
+using PlayFab.SharedModels;
 using UniRx;
 using UnityEngine;
 
@@ -60,8 +62,68 @@ public class ApiConnection
         });
     }
 
+    /// <summary>
+    /// ユーザー名の更新
+    /// </summary>
+    public static IObservable<UpdateUserTitleDisplayNameResult> UpdateUserTitleDisplayName(string userName)
+    {
+        return Observable.Create<UpdateUserTitleDisplayNameResult>(o =>
+        {
+            var callback = new Action<UpdateUserTitleDisplayNameResult>(res =>
+            {
+                o.OnNext(res);
+                o.OnCompleted();
+            });
+            var onErrorAction = new Action<PlayFabError>(error =>
+            {
+                OnErrorAction(error);
+                o.OnCompleted();
+            });
+
+            PlayFabClientAPI.UpdateUserTitleDisplayName(new UpdateUserTitleDisplayNameRequest()
+            {
+                DisplayName = userName
+            }, res => callback(res), error => onErrorAction(error));
+            return Disposable.Empty;
+        });
+    }
+
+    private static IObservable<TResp> SendRequest<TResp,TReq>(TReq request) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
+    {
+        return Observable.Create<TResp>(o =>
+        {
+            var callback = new Action<TResp>(res =>
+            {
+                o.OnNext(res);
+                o.OnCompleted();
+            });
+            var onErrorAction = new Action<PlayFabError>(error =>
+            {
+                OnErrorAction(error);
+                o.OnCompleted();
+            });
+
+            Api<TResp, TReq>(request,callback,onErrorAction);
+            return Disposable.Empty;
+        });
+    }
+
+    private static void Api<TResp, TReq>(TReq request,Action<TResp> callback, Action<PlayFabError> onErrorAction) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
+    {
+        PlayFabClientAPI.UpdateUserTitleDisplayName(request as UpdateUserTitleDisplayNameRequest, res => callback(res as TResp), error => onErrorAction(error));
+    }
+
+    /// <summary>
+    /// 共通エラーアクション
+    /// </summary>
     private static void OnErrorAction(PlayFabError error)
     {
-
+        Debug.LogError(error.ErrorMessage);
+        CommonDialogFactory.Create(new CommonDialogRequest()
+        {
+            commonDialogType = CommonDialogType.YesOnly,
+            title = "お知らせ",
+            content = "エラーが発生しました"
+        }).Subscribe();
     }
 }

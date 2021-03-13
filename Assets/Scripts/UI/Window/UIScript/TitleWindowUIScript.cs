@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Enum.UI;
 using GameBase;
 using UniRx;
 using UnityEngine;
@@ -21,14 +22,31 @@ public class TitleWindowUIScript : WindowBase
                 {
                     // 名前が未設定なので名前登録ダイアログを開く
                     return UserNameRegistrationDialogFactory.Create(new UserNameRegistrationDialogRequest())
-                        .AsUnitObservable();
+                        .SelectMany(resp =>
+                        {
+                            switch (resp.dialogResponseType)
+                            {
+                                case DialogResponseType.Yes:
+                                    return ApiConnection.UpdateUserTitleDisplayName(resp.userName).Select(_ => true);
+                                case DialogResponseType.No:
+                                default:
+                                    return Observable.Return<bool>(false);
+                            }
+                        });
                 }
                 else
                 {
                     // 通常ログイン
-                    return Observable.ReturnUnit();
+                    return Observable.Return<bool>(true);
                 }
             })
+            .SelectMany(isOk => CommonDialogFactory.Create(new CommonDialogRequest()
+            {
+                commonDialogType = CommonDialogType.YesOnly,
+                title = "お知らせ",
+                content = $"ログイン{(isOk ? "成功" : "失敗")}"
+            }))
+            //.Where(isOk => isOk)
             .Subscribe();
     }
 

@@ -53,5 +53,14 @@
             Yes,
             No,
         }
+
+        /// <summary>
+        /// コモンダイアログタイプ
+        /// </summary>
+        public enum CommonDialogType
+        {
+            NoAndYes,
+            YesOnly,
+        }
     }
 }
