@@ -4,7 +4,7 @@ using UnityEngine;
 using GameBase;
 using UniRx;
 
-public class GameSceneManager : SingletonMonoBehaviour<GameSceneManager>
+public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
 {
     private void Start()
     {
