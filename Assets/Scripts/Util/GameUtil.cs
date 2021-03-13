@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using GameBase;
 using System.Linq;
+using Enum.Battle;
 
 public static class GameUtil
 {

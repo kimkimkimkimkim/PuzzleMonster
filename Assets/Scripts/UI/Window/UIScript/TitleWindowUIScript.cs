@@ -14,18 +14,20 @@ public class TitleWindowUIScript : WindowBase
     {
         _tapToStartButton.OnClickIntentAsObservable()
             .SelectMany(_ => ApiConnection.LoginWithCustomID())
+            .SelectMany(_ => ApiConnection.GetPlayerProfile())
             .SelectMany(res =>
             {
-                if (res.NewlyCreated)
+                if(string.IsNullOrWhiteSpace(res.PlayerProfile.DisplayName))
                 {
-                    // 新規作成
+                    // 名前が未設定なので名前登録ダイアログを開く
+                    return UserNameRegistrationDialogFactory.Create(new UserNameRegistrationDialogRequest())
+                        .AsUnitObservable();
                 }
                 else
                 {
                     // 通常ログイン
                     return Observable.ReturnUnit();
                 }
-                return Observable.ReturnUnit();
             })
             .Subscribe();
     }

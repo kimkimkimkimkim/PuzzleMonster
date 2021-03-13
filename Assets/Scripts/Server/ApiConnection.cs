@@ -34,6 +34,32 @@ public class ApiConnection
         });
     }
 
+    /// <summary>
+    /// プレイヤープロフィールを取得
+    /// </summary>
+    public static IObservable<GetPlayerProfileResult> GetPlayerProfile()
+    {
+        return Observable.Create<GetPlayerProfileResult>(o =>
+        {
+            var callback = new Action<GetPlayerProfileResult>(res =>
+            {
+                o.OnNext(res);
+                o.OnCompleted();
+            });
+            var onErrorAction = new Action<PlayFabError>(error =>
+            {
+                OnErrorAction(error);
+                o.OnCompleted();
+            });
+
+            PlayFabClientAPI.GetPlayerProfile(new GetPlayerProfileRequest()
+            {
+                PlayFabId = PlayFabSettings.staticPlayer.PlayFabId,
+            }, res => callback(res), error => onErrorAction(error));
+            return Disposable.Empty;
+        });
+    }
+
     private static void OnErrorAction(PlayFabError error)
     {
 

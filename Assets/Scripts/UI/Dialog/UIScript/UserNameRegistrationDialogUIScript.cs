@@ -11,10 +11,14 @@ using GameBase;
 public class UserNameRegistrationDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
+    [SerializeField] protected Button _registerButton;
+    [SerializeField] protected InputField _userNameInputField;
+    [SerializeField] protected GameObject _grayoutPanel;
 
     public override void Init(DialogInfo info)
     {
         var onClickClose = (Action)info.param["onClickClose"];
+        var onClickOk = (Action<string>)info.param["onClickOk"];
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
@@ -26,6 +30,34 @@ public class UserNameRegistrationDialogUIScript : DialogBase
                 }
             })
             .Subscribe();
+
+        _registerButton.OnClickIntentAsObservable()
+            .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
+            .Do(_ => {
+                if (onClickOk != null)
+                {
+                    onClickOk(_userNameInputField.text);
+                    onClickOk = null;
+                }
+            })
+            .Subscribe();
+
+        _userNameInputField.OnValueChangedAsObservable()
+            .Do(_ => UpdateGrayoutPanel())
+            .Subscribe();
+
+        UpdateGrayoutPanel();
+    }
+
+    private void UpdateGrayoutPanel()
+    {
+        var isShow = string.IsNullOrWhiteSpace(_userNameInputField.text);
+        _grayoutPanel.SetActive(isShow);
+    }
+
+    private bool IsValid()
+    {
+        return true;
     }
 
     public override void Back(DialogInfo info)
