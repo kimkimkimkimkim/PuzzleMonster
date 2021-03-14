@@ -1,117 +1,58 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Enum.UI;
+using GameBase;
 using PlayFab;
 using PlayFab.ClientModels;
 using PlayFab.SharedModels;
 using UniRx;
 using UnityEngine;
 
-public class ApiConnection
+public partial class ApiConnection
 {
-    /// <summary>
-    /// カスタムIDでのログイン処理
-    /// </summary>
-    public static IObservable<LoginResult> LoginWithCustomID()
-    {
-        return Observable.Create<LoginResult>(o =>
-        {
-            var callback = new Action<LoginResult>(res =>
-            {
-                o.OnNext(res);
-                o.OnCompleted();
-            });
-            var onErrorAction = new Action<PlayFabError>(error => 
-            {
-                OnErrorAction(error);
-                o.OnCompleted();
-            });
-
-            PlayFabClientAPI.LoginWithCustomID(new LoginWithCustomIDRequest()
-            {
-                TitleId = PlayFabSettings.TitleId,
-                CustomId = SaveDataUtil.System.GetCustomId(),
-                CreateAccount = true,
-            },res => callback(res),error => onErrorAction(error));
-            return Disposable.Empty;
-        });
-    }
-
-    /// <summary>
-    /// プレイヤープロフィールを取得
-    /// </summary>
-    public static IObservable<GetPlayerProfileResult> GetPlayerProfile()
-    {
-        return Observable.Create<GetPlayerProfileResult>(o =>
-        {
-            var callback = new Action<GetPlayerProfileResult>(res =>
-            {
-                o.OnNext(res);
-                o.OnCompleted();
-            });
-            var onErrorAction = new Action<PlayFabError>(error =>
-            {
-                OnErrorAction(error);
-                o.OnCompleted();
-            });
-
-            PlayFabClientAPI.GetPlayerProfile(new GetPlayerProfileRequest()
-            {
-                PlayFabId = PlayFabSettings.staticPlayer.PlayFabId,
-            }, res => callback(res), error => onErrorAction(error));
-            return Disposable.Empty;
-        });
-    }
-
-    /// <summary>
-    /// ユーザー名の更新
-    /// </summary>
-    public static IObservable<UpdateUserTitleDisplayNameResult> UpdateUserTitleDisplayName(string userName)
-    {
-        return Observable.Create<UpdateUserTitleDisplayNameResult>(o =>
-        {
-            var callback = new Action<UpdateUserTitleDisplayNameResult>(res =>
-            {
-                o.OnNext(res);
-                o.OnCompleted();
-            });
-            var onErrorAction = new Action<PlayFabError>(error =>
-            {
-                OnErrorAction(error);
-                o.OnCompleted();
-            });
-
-            PlayFabClientAPI.UpdateUserTitleDisplayName(new UpdateUserTitleDisplayNameRequest()
-            {
-                DisplayName = userName
-            }, res => callback(res), error => onErrorAction(error));
-            return Disposable.Empty;
-        });
-    }
-
-    private static IObservable<TResp> SendRequest<TResp,TReq>(TReq request) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
+    private static IObservable<TResp> SendRequest<TResp, TReq>(ApiType apiType, TReq request) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
     {
         return Observable.Create<TResp>(o =>
         {
             var callback = new Action<TResp>(res =>
             {
+                UIManager.Instance.TryHideTapBlocker();
                 o.OnNext(res);
                 o.OnCompleted();
             });
             var onErrorAction = new Action<PlayFabError>(error =>
             {
+                UIManager.Instance.TryHideTapBlocker();
                 OnErrorAction(error);
                 o.OnCompleted();
             });
 
-            Api<TResp, TReq>(request,callback,onErrorAction);
+            UIManager.Instance.ShowTapBlocker();
+            ExecuteApi<TResp, TReq>(apiType, request, callback, onErrorAction);
             return Disposable.Empty;
         });
     }
 
-    private static void Api<TResp, TReq>(TReq request,Action<TResp> callback, Action<PlayFabError> onErrorAction) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
+    #region ExecuteApi
+    private static void ExecuteApi<TResp, TReq>(ApiType apiType, TReq request, Action<TResp> callback, Action<PlayFabError> onErrorAction) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
     {
-        PlayFabClientAPI.UpdateUserTitleDisplayName(request as UpdateUserTitleDisplayNameRequest, res => callback(res as TResp), error => onErrorAction(error));
+        switch (apiType)
+        {
+            case ApiType.LoginWithCustomID:
+                PlayFabClientAPI.LoginWithCustomID(request as LoginWithCustomIDRequest, res => callback(res as TResp), error => onErrorAction(error));
+                break;
+            case ApiType.GetPlayerProfile:
+                PlayFabClientAPI.GetPlayerProfile(request as GetPlayerProfileRequest, res => callback(res as TResp), error => onErrorAction(error));
+                break;
+            case ApiType.UpdateUserTitleDisplayName:
+                PlayFabClientAPI.UpdateUserTitleDisplayName(request as UpdateUserTitleDisplayNameRequest, res => callback(res as TResp), error => onErrorAction(error));
+                break;
+            default:
+                break;
+        }
     }
+    #endregion
 
     /// <summary>
     /// 共通エラーアクション
@@ -125,5 +66,13 @@ public class ApiConnection
             title = "お知らせ",
             content = "エラーが発生しました"
         }).Subscribe();
+    }
+
+    private enum ApiType
+    {
+        LoginWithCustomID,
+        GetPlayerProfile,
+        UpdateUserTitleDisplayName,
+
     }
 }
