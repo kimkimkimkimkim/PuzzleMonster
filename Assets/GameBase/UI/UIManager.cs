@@ -55,11 +55,13 @@ namespace GameBase
             //InputSource.isEnabled = true;
         }
 
-        #region TapBlocker
+        #region Blocker
 
         private int _tapBlockerCallStackCount = 0;
+        private int _fullScreenLoadingViewCallStackCount = 0;
 
         public GameObject _tapBlocker;
+        public GameObject _fullScreenLoadingView;
 
         /// <summary>
         /// TapBlockerのStackを増加させ、タップブロッカーを表す。
@@ -86,7 +88,32 @@ namespace GameBase
             }
         }
 
-        #endregion TapBlocker
+        /// <summary>
+        /// FullScreenLoadingViewのStackを増加させ、ローディングビューを表す。
+        /// </summary>
+        public void ShowFullScreenLoadingView()
+        {
+            _fullScreenLoadingViewCallStackCount += 1;
+            _fullScreenLoadingView.SetActive(true);
+            _fullScreenLoadingView.transform.SetAsLastSibling();
+        }
+
+        /// <summary>
+        /// FullScreenLoadingViewのStackを減少させ、０になったときはローディングビューを隠す。
+        /// </summary>
+        public void TryHideFullScreenLoadingView()
+        {
+            //MEMO：強制的に_fullScreenLoadingViewCallStackCountを0に変更したりするなど、
+            //Stackを無視してLoadingViewが隠すなどの処理を絶対に追加しないこと。
+            _fullScreenLoadingViewCallStackCount -= 1;
+            if (_fullScreenLoadingView != null && _fullScreenLoadingViewCallStackCount <= 0)
+            {
+                _fullScreenLoadingViewCallStackCount = 0;
+                _fullScreenLoadingView.SetActive(false);
+            }
+        }
+
+        #endregion Blocker
 
         #region Current UI Info
 

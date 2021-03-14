@@ -40,13 +40,27 @@ public class TitleWindowUIScript : WindowBase
                     return Observable.Return<bool>(true);
                 }
             })
-            .SelectMany(isOk => CommonDialogFactory.Create(new CommonDialogRequest()
+            .SelectMany(isOk =>
             {
-                commonDialogType = CommonDialogType.YesOnly,
-                title = "お知らせ",
-                content = $"ログイン{(isOk ? "成功" : "失敗")}"
-            }))
-            //.Where(isOk => isOk)
+                if (isOk)
+                {
+                    UIManager.Instance.ShowFullScreenLoadingView();
+                    return HomeWindowFactory.Create(new HomeWindowRequest()
+                    {
+
+                    }).AsUnitObservable();
+                }
+                else
+                {
+                    return CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
+                        commonDialogType = CommonDialogType.YesOnly,
+                        title = "お知らせ",
+                        content = $"ログイン{(isOk ? "成功" : "失敗")}"
+                    }).AsUnitObservable();
+                }
+
+            })
             .Subscribe();
     }
 
