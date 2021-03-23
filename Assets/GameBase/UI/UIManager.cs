@@ -10,26 +10,21 @@ namespace GameBase
     {
         public const int FIXED_RES_HEIGHT = 1920;
         public const int FIXED_RES_WIDTH = 1080;
+        public const float HEADER_HEIGHT = 200;
+        public const float FOOTER_HEIGHT = 200;
 
         public Transform canvas;
-
         public Transform dialogParant;
-
         public Transform windowParent;
-
         public Transform propertyParent;
-
         public Transform toastParent;
-
         public Transform tutorialParent;
-
         public Transform debugParent;
-
         public float screenScale;
-
         public bool isUnlockAllUI;
-
         public bool isSkipTutorial;
+
+        public string deviceToken { get; private set; }
 
         public float ScaledDpi
         {
@@ -40,7 +35,9 @@ namespace GameBase
                 return dpi / screenScale;
             }
         }
-        public string deviceToken { get; private set; }
+
+        private float topMargin;
+        private float bottomMargin;
 
         protected override void Awake()
         {
@@ -51,6 +48,11 @@ namespace GameBase
             DontDestroyOnLoad(windowParent.root.gameObject);
 
             screenScale = (float)Screen.height / (float)FIXED_RES_HEIGHT;
+
+            // セーフエリアのサイズを計算
+            var safeAreaRect = Screen.safeArea;
+            topMargin = Screen.height - (safeAreaRect.position.y + safeAreaRect.size.y);
+            bottomMargin = safeAreaRect.position.y;
 
             //InputSource.isEnabled = true;
         }
@@ -158,6 +160,17 @@ namespace GameBase
 
             GameObject obj = currentUIBase.gameObject;
             obj.transform.SetAsFirstSibling();
+
+            // サイズ修正
+            if (currentUIBase._windowFrame != null)
+            {
+                var windowFrameRT = currentUIBase._windowFrame.GetComponent<RectTransform>();
+                windowFrameRT.SetStretchedRectOffset(0, HEADER_HEIGHT, 0, FOOTER_HEIGHT);
+            }
+            if(currentUIBase._fullScreenBaseRT != null)
+            {
+                currentUIBase._fullScreenBaseRT.SetStretchedRectOffset(0, -topMargin, 0, -bottomMargin);
+            }
 
             WindowInfo createdStateInfo = new WindowInfo();
             createdStateInfo.component = currentUIBase;
@@ -374,6 +387,12 @@ namespace GameBase
             T currentUIBase = CreateContent<T>(dialogParant);
             GameObject obj = currentUIBase.gameObject;
             obj.transform.SetAsLastSibling();
+
+            // グレーアウトイメージのサイズ修正
+            if (currentUIBase._grayOutImage != null) {
+                var grayOutImageRT = currentUIBase._grayOutImage.GetComponent<RectTransform>();
+                grayOutImageRT.SetStretchedRectOffset(0, -topMargin, 0, -bottomMargin);
+            }
 
             DialogInfo createdStateInfo = new DialogInfo();
             createdStateInfo.component = currentUIBase;
@@ -685,7 +704,6 @@ namespace GameBase
             }
         }
     }
-
 
     #region UI Info Class
 

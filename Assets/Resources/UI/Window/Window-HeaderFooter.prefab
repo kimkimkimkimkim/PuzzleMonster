@@ -32,7 +32,7 @@ RectTransform:
   - {fileID: 947983222693389876}
   - {fileID: 586248985063095871}
   m_Father: {fileID: 7636474124423048452}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -184,7 +184,7 @@ RectTransform:
   - {fileID: 2740743959229820828}
   - {fileID: 3609080110605013826}
   m_Father: {fileID: 7636474124423048452}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -292,12 +292,11 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 3586336650851028837}
   - {fileID: 8097114815613226496}
   - {fileID: 2639296156379584874}
   - {fileID: 6478907414878008793}
   m_Father: {fileID: 2673015563819577872}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -990,17 +989,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5831537965231840182}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 7636474124423048452}
+  m_Father: {fileID: 2673015563819577872}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 400}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2670441676657799894
 CanvasRenderer:
@@ -1142,6 +1141,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 3586336650851028837}
   - {fileID: 7636474124423048452}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -1172,6 +1172,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _windowFrame: {fileID: 2068401510246658818}
+  _fullScreenBaseRT: {fileID: 3586336650851028837}
   BackButtonDisabled: 0
 --- !u!1 &6491654634408127465
 GameObject:
@@ -1207,7 +1208,7 @@ RectTransform:
   - {fileID: 7922977624974504671}
   - {fileID: 5499613703431337721}
   m_Father: {fileID: 7636474124423048452}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}

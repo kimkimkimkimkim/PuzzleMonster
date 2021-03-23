@@ -11,7 +11,8 @@ namespace GameBase
         private const float MOVING_TIME = 0.2f;
         private const float FRAME_OUT_POSITION = 10.0f;
 
-        [SerializeField] protected GameObject _windowFrame;
+        public GameObject _windowFrame;
+        public RectTransform _fullScreenBaseRT; // セーフエリアにかかわらず画面サイズで表示されるUI
 
         /// <summary>
         /// UIが生成された時に必ず一度だけ呼ばれます。

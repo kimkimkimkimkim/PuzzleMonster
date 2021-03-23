@@ -14,8 +14,9 @@ namespace GameBase
         private const float FRAME_INITIAL_POSOTION = 7.5f;
         private const float OPEN_LOCAL_SCALE = 0.95f;
         private const float CLOSE_LOCAL_SCALE = 0.7f;
-        [SerializeField] protected GameObject _dialogFrame;
-        [SerializeField] protected Image _grayOutImage;
+
+        public GameObject _dialogFrame;
+        public Image _grayOutImage;
 
         /// <summary>
         /// UIが生成された時に必ず一度だけ呼ばれます。
