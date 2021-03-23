@@ -1,4 +1,6 @@
-﻿namespace Enum
+﻿using System;
+
+namespace Enum
 {
     namespace Battle
     {
@@ -61,6 +63,18 @@
         {
             NoAndYes,
             YesOnly,
+        }
+
+        /// <summary>
+        /// フッタータイプ
+        /// </summary>
+        [Serializable]
+        public enum FooterType
+        {
+            Home = 0,
+            Monster = 1,
+            Gacha = 2,
+            Shop = 3,
         }
     }
 }

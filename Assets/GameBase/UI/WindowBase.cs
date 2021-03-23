@@ -14,11 +14,15 @@ namespace GameBase
         public GameObject _windowFrame;
         public RectTransform _fullScreenBaseRT; // セーフエリアにかかわらず画面サイズで表示されるUI
 
+        private Action onClose;
+
         /// <summary>
         /// UIが生成された時に必ず一度だけ呼ばれます。
         /// </summary>
         /// <param name="info"></param>
-        public abstract void Init(WindowInfo info);
+        public virtual void Init(WindowInfo info) {
+            onClose = (Action)info.param["onClose"];
+        }
 
         /// <summary>
         /// UIが画面にEnabledされた時、毎回呼ばれます。
@@ -36,7 +40,14 @@ namespace GameBase
         /// UIがDestroy時に一度呼ばれます。
         /// </summary>
         /// <param name="info"></param>
-        public abstract void Close(WindowInfo info);
+        public virtual void Close(WindowInfo info)
+        {
+            if (onClose != null)
+            {
+                onClose();
+                onClose = null;
+            }
+        }
 
         public virtual void BackButton()
         {

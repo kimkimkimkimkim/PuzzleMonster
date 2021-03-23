@@ -10,6 +10,11 @@ public class TitleWindowFactory
         return Observable.Create<TitleWindowResponse>(observer =>
         {
             var param = new Dictionary<string, object>();
+            param.Add("onClose", new Action(() => {
+                observer.OnNext(new TitleWindowResponse());
+                observer.OnCompleted();
+            }));
+
             UIManager.Instance.OpenWindow<TitleWindowUIScript>(param, animationType: WindowAnimationType.None);
             return Disposable.Empty;
         });

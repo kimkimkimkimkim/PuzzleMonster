@@ -1,15 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using GameBase;
+﻿using GameBase;
 using UniRx;
-using PlayFab;
-using PlayFab.ClientModels;
 
 public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
 {
     private void Start()
     {
-        TitleWindowFactory.Create(new TitleWindowRequest()).Subscribe();
+        TitleWindowFactory.Create(new TitleWindowRequest())
+            .SelectMany(_ => HeaderFooterWindowFactory.Create(new HeaderFooterWindowRequest()))
+            .Subscribe();
     }
 }

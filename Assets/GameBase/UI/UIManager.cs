@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
-using GameBase;
 
 namespace GameBase
 {
@@ -16,6 +15,7 @@ namespace GameBase
         public Transform canvas;
         public Transform dialogParant;
         public Transform windowParent;
+        public Transform headerFooterParent;
         public Transform propertyParent;
         public Transform toastParent;
         public Transform tutorialParent;

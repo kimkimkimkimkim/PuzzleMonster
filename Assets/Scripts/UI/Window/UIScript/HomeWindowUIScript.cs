@@ -12,7 +12,7 @@ public class HomeWindowUIScript : WindowBase
 {
     public override void Init(WindowInfo info)
     {
-        Observable.Timer(TimeSpan.FromSeconds(2)).Do(_ => UIManager.Instance.TryHideFullScreenLoadingView()).Subscribe();
+        base.Init(info);
     }
 
     public override void Open(WindowInfo info)
@@ -25,5 +25,6 @@ public class HomeWindowUIScript : WindowBase
 
     public override void Close(WindowInfo info)
     {
+        base.Close(info);
     }
 }

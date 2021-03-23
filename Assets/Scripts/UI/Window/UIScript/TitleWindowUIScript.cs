@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Enum.UI;
 using GameBase;
@@ -13,6 +14,8 @@ public class TitleWindowUIScript : WindowBase
 
     public override void Init(WindowInfo info)
     {
+        var onClose = (Action)info.param["onClose"];
+
         _tapToStartButton.OnClickIntentAsObservable()
             .SelectMany(_ => ApiConnection.LoginWithCustomID())
             .SelectMany(_ => ApiConnection.GetPlayerProfile())
@@ -45,10 +48,17 @@ public class TitleWindowUIScript : WindowBase
                 if (isOk)
                 {
                     UIManager.Instance.ShowFullScreenLoadingView();
-                    return HomeWindowFactory.Create(new HomeWindowRequest()
-                    {
-
-                    }).AsUnitObservable();
+                    return Observable.ReturnUnit()
+                        .Do(_ => UIManager.Instance.CloseWindow(forceCloseParent: true))
+                        .SelectMany(_ => Observable.NextFrame())
+                        .Do(_ =>
+                        {
+                            if (onClose != null)
+                            {
+                                onClose();
+                                onClose = null;
+                            }
+                        });
                 }
                 else
                 {
