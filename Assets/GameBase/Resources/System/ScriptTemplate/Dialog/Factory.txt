@@ -1,0 +1,21 @@
+using UniRx;
+using GameBase;
+using System;
+using System.Collections.Generic;
+using Enum.UI;
+
+public class #CLASS_NAME#DialogFactory
+{
+    public static IObservable<#CLASS_NAME#DialogResponse> Create(#CLASS_NAME#DialogRequest request)
+    {
+        return Observable.Create<#CLASS_NAME#DialogResponse>(observer => {
+            var param = new Dictionary<string, object>();
+            param.Add("onClickClose", new Action(() => {
+                observer.OnNext(new #CLASS_NAME#DialogResponse());
+                observer.OnCompleted();
+            }));
+            UIManager.Instance.OpenDialog<#CLASS_NAME#DialogUIScript>(param, true);
+            return Disposable.Empty;
+        });
+    }
+}

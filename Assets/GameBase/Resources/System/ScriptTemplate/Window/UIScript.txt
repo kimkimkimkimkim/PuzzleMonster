@@ -1,0 +1,23 @@
+using GameBase;
+
+[ResourcePath("UI/Window/Window-#CLASS_NAME#")]
+public class #CLASS_NAME#WindowUIScript : WindowBase
+{
+    public override void Init(WindowInfo info)
+    {
+        base.Init(info);
+    }
+
+    public override void Open(WindowInfo info)
+    {
+    }
+
+    public override void Back(WindowInfo info)
+    {
+    }
+
+    public override void Close(WindowInfo info)
+    {
+        base.Close(info);
+    }
+}

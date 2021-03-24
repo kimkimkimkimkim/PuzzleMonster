@@ -1,0 +1,24 @@
+using System;
+using System.Collections.Generic;
+using GameBase;
+using UniRx;
+
+public class #CLASS_NAME#WindowFactory
+{
+    public static IObservable<#CLASS_NAME#WindowResponse> Create(#CLASS_NAME#WindowRequest request)
+    {
+        return Observable.Create<#CLASS_NAME#WindowResponse>(observer =>
+        {
+            var param = new Dictionary<string, object>();
+            param.Add("onClose", new Action(() =>
+            {
+                observer.OnNext(new #CLASS_NAME#WindowResponse());
+                observer.OnCompleted();
+            }));
+
+            UIManager.Instance.OpenWindow<#CLASS_NAME#WindowUIScript>(param, animationType: WindowAnimationType.None);
+            return Disposable.Empty;
+        });
+    }
+}
+
