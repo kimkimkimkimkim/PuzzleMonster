@@ -32,7 +32,11 @@ public class HeaderFooterWindowUIScript : WindowBase
             .Where(isOn => isOn)
             .Do(_ =>
             {
-                UIManager.Instance.CloseAllWindow(true);
+                if (UIManager.Instance.currentWindowInfo == null || !(UIManager.Instance.currentWindowInfo.component is MonsterMenuWindowUIScript))
+                {
+                    UIManager.Instance.CloseAllWindow(true);
+                    MonsterMenuWindowFactory.Create(new MonsterMenuWindowRequest()).Take(1).Subscribe();
+                }
             })
             .Subscribe();
 
@@ -40,7 +44,11 @@ public class HeaderFooterWindowUIScript : WindowBase
             .Where(isOn => isOn)
             .Do(_ =>
             {
-                HomeWindowFactory.Create(new HomeWindowRequest()).Take(1).Subscribe();
+                if (UIManager.Instance.currentWindowInfo == null || !(UIManager.Instance.currentWindowInfo.component is GachaWindowUIScript))
+                {
+                    UIManager.Instance.CloseAllWindow(true);
+                    GachaWindowFactory.Create(new GachaWindowRequest()).Take(1).Subscribe();
+                }
             })
             .Subscribe();
 
@@ -48,7 +56,11 @@ public class HeaderFooterWindowUIScript : WindowBase
             .Where(isOn => isOn)
             .Do(_ =>
             {
-                //HomeWindowFactory.Create(new HomeWindowRequest()).Take(1).Subscribe();
+                if (UIManager.Instance.currentWindowInfo == null || !(UIManager.Instance.currentWindowInfo.component is ShopWindowUIScript))
+                {
+                    UIManager.Instance.CloseAllWindow(true);
+                    ShopWindowFactory.Create(new ShopWindowRequest()).Take(1).Subscribe();
+                }
             })
             .Subscribe();
 
