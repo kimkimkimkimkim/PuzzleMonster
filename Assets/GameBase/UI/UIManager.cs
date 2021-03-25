@@ -10,7 +10,7 @@ namespace GameBase
         public const int FIXED_RES_HEIGHT = 1920;
         public const int FIXED_RES_WIDTH = 1080;
         public const float HEADER_HEIGHT = 200;
-        public const float FOOTER_HEIGHT = 200;
+        public const float FOOTER_HEIGHT = 188;
 
         public Transform canvas;
         public Transform dialogParant;
