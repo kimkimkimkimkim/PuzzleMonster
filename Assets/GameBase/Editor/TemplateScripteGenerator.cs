@@ -30,7 +30,9 @@ public class TemplateScriptGenerator : EditorWindow
         EditorGUILayout.Space();
 
         // クラス名を入力
-        EditorGUILayout.LabelField("クラス名を入力してください（WindowやDialogを含めないように）");
+        EditorGUILayout.LabelField("クラス名を入力してください");
+        EditorGUILayout.LabelField("※Window,Dialogはクラス名にWindowやDialogを含めないように (例:Home, Common)");
+        EditorGUILayout.LabelField("※Partsはクラス名全てを入力 (例:MonsterListScrollItem)");
         className = EditorGUILayout.TextField(className);
 
         EditorGUILayout.Space();
@@ -57,6 +59,9 @@ public class TemplateScriptGenerator : EditorWindow
                 CreateUITemlateScript(uiType, ScriptType.UIScript);
                 CreateUITemlateScript(uiType, ScriptType.Factory);
                 break;
+            case UIType.Parts:
+                CreatePartsTemplateScripte();
+                break;
             default:
                 break;
         }
@@ -74,6 +79,24 @@ public class TemplateScriptGenerator : EditorWindow
 
         // ディレクトリやパスの作成
         var outputFilePath = $"{OUTPUT_DIRECTORY_PATH}/{uiTypeString}/{scriptTypeString}/{className}{uiTypeString}{scriptTypeString}.cs";
+        var outputDirectoryPath = Path.GetDirectoryName(outputFilePath);
+        CreateDirectory(outputDirectoryPath);
+        var assetPath = AssetDatabase.GenerateUniqueAssetPath(outputFilePath);
+
+        // スクリプトを作成
+        File.WriteAllText(assetPath, templateCode);
+        AssetDatabase.Refresh();
+    }
+
+    private void CreatePartsTemplateScripte()
+    {
+        // テンプレートコードの作成
+        string templateFilePath = $"System/ScriptTemplate/Parts/WithAttributes";
+        var textAsset = Resources.Load<TextAsset>(templateFilePath);
+        var templateCode = textAsset.text.Replace("#CLASS_NAME#", className);
+
+        // ディレクトリやパスの作成
+        var outputFilePath = $"{OUTPUT_DIRECTORY_PATH}/Parts/{className}.cs";
         var outputDirectoryPath = Path.GetDirectoryName(outputFilePath);
         CreateDirectory(outputDirectoryPath);
         var assetPath = AssetDatabase.GenerateUniqueAssetPath(outputFilePath);
@@ -106,6 +129,7 @@ public class TemplateScriptGenerator : EditorWindow
     {
         Window,
         Dialog,
+        Parts,
     }
 
     private enum ScriptType
