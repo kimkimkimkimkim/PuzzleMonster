@@ -15,6 +15,7 @@ public class HeaderFooterWindowFactory
             windowInfo.param = param;
 
             var headerFooterWindow = UIManager.Instance.CreateContent<HeaderFooterWindowUIScript>(UIManager.Instance.headerFooterParent);
+            HeaderManager.Instance.SetHeaderFooterWindowUIScript(headerFooterWindow);
             headerFooterWindow.Init(windowInfo);
             headerFooterWindow.Open(windowInfo);
 

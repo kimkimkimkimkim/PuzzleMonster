@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Enum.Item;
 using Enum.UI;
 using GameBase;
 using UniRx;
@@ -9,6 +10,8 @@ using UnityEngine.UI;
 [ResourcePath("UI/Window/Window-HeaderFooter")]
 public class HeaderFooterWindowUIScript : WindowBase
 {
+    [SerializeField] protected Text _coinText;
+    [SerializeField] protected Text _orbText;
     [SerializeField] protected Toggle _homeToggle;
     [SerializeField] protected Toggle _monsterToggle;
     [SerializeField] protected Toggle _gachaToggle;
@@ -66,6 +69,24 @@ public class HeaderFooterWindowUIScript : WindowBase
 
         Observable.Timer(TimeSpan.FromSeconds(2)).Do(_ => UIManager.Instance.TryHideFullScreenLoadingView()).Take(1).Subscribe();
         _homeToggle.isOn = true;
+        UpdateVirtualCurrencyText();
+    }
+
+    /// <summary>
+    /// 仮想通貨の所持数表示を更新
+    /// </summary>
+    public void UpdateVirtualCurrencyText()
+    {
+        ApiConnection.GetUserInventory()
+            .Do(res =>
+            {
+                foreach (var virtualCurrency in res.VirtualCurrency)
+                {
+                    if (virtualCurrency.Key == VirtualCurrencyType.OB.ToString()) _orbText.text = virtualCurrency.Value.ToString();
+                    if (virtualCurrency.Key == VirtualCurrencyType.CN.ToString()) _coinText.text = virtualCurrency.Value.ToString();
+                }
+            })
+            .Subscribe();
     }
 
     public override void Open(WindowInfo info)

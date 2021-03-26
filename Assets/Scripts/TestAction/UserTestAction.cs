@@ -25,15 +25,7 @@ public class UserTestAction : ITestAction
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
                     .SelectMany(_ => ApiConnection.AddUserVirtualCurrency(VirtualCurrencyType.OB,1000))
-                    .Do(res =>
-                    {
-                        Debug.Log($"仮想通貨の追加に成功");
-
-                        //仮想通貨の情報をログで表示
-                        Debug.Log($"変更した仮想通貨のコード : {res.VirtualCurrency}");
-                        Debug.Log($"変更後の残高 : {res.Balance}");
-                        Debug.Log($"加算額 : {res.BalanceChange}");
-                    })
+                    .Do(res => HeaderManager.Instance.UpdateVirutalCurrencyText())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,

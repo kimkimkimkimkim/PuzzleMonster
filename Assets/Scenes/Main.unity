@@ -425,6 +425,7 @@ GameObject:
   - component: {fileID: 1014122075}
   - component: {fileID: 1014122076}
   - component: {fileID: 1014122077}
+  - component: {fileID: 1014122078}
   m_Layer: 0
   m_Name: ManagerObject
   m_TagString: Untagged
@@ -510,6 +511,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isUseAssetBundle: 1
+--- !u!114 &1014122078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1014122072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08cc30f128a5b4bd08dd538662b65c73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1050840648
 GameObject:
   m_ObjectHideFlags: 0

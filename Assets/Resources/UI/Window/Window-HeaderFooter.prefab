@@ -631,7 +631,7 @@ GameObject:
   - component: {fileID: 8267574717543426399}
   - component: {fileID: 2743426642106624102}
   m_Layer: 5
-  m_Name: Status_Gem
+  m_Name: Status_Orb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2522,6 +2522,8 @@ MonoBehaviour:
   _windowFrame: {fileID: 2068401510246658818}
   _fullScreenBaseRT: {fileID: 0}
   BackButtonDisabled: 0
+  _coinText: {fileID: 822940753842226995}
+  _orbText: {fileID: 9047420421939248135}
   _homeToggle: {fileID: 3374319704575296286}
   _monsterToggle: {fileID: 6017863680161626027}
   _gachaToggle: {fileID: 3855038598706357845}
@@ -3594,7 +3596,7 @@ GameObject:
   - component: {fileID: 8536411903601633091}
   - component: {fileID: 4115451570794679130}
   m_Layer: 5
-  m_Name: Icon_Gem
+  m_Name: Icon_Orb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

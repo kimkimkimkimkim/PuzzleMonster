@@ -100,6 +100,11 @@ namespace Enum
             /// オーブ
             /// </summary>
             OB,
+
+            /// <summary>
+            /// コイン
+            /// </summary>
+            CN,
         }
     }
 }
