@@ -1,4 +1,5 @@
 ﻿using System;
+using Enum.Item;
 using Enum.UI;
 using PlayFab;
 using PlayFab.ClientModels;
@@ -44,10 +45,25 @@ public partial class ApiConnection
     }
 
     /// <summary>
-    /// ユーザー名の更新
+    /// インベントリの取得
     /// </summary>
-    public static IObservable<GetUserInventoryResult> GetUserInventory(string userName)
+    public static IObservable<GetUserInventoryResult> GetUserInventory()
     {
-        return SendRequest<GetUserInventoryRequest, GetUserInventoryResult>(ApiType.UpdateUserTitleDisplayName, new GetUserInventoryRequest());
+        return SendRequest<GetUserInventoryRequest, GetUserInventoryResult>(ApiType.GetUserInventory, new GetUserInventoryRequest());
+    }
+
+    /// <summary>
+    /// 仮想通貨の追加
+    /// </summary>
+    /// <returns>The user virtual currency.</returns>
+    /// <param name="type">仮想通貨タイプ</param>
+    /// <param name="num">追加する量</param>
+    public static IObservable<ModifyUserVirtualCurrencyResult> AddUserVirtualCurrency(VirtualCurrencyType type,int num)
+    {
+        return SendRequest<AddUserVirtualCurrencyRequest, ModifyUserVirtualCurrencyResult>(ApiType.AddUserVirtualCurrency, new AddUserVirtualCurrencyRequest()
+        {
+            Amount = num,
+            VirtualCurrency = type.ToString(),
+        });
     }
 }

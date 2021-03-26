@@ -77,4 +77,29 @@ namespace Enum
             Shop = 3,
         }
     }
+
+    namespace Item
+    {
+        /// <summary>
+        /// アイテムタイプ
+        /// </summary>
+        public enum ItemType
+        {
+            /// <summary>
+            /// 仮想通貨
+            /// </summary>
+            VirtualCurrency,
+        }
+
+        /// <summary>
+        /// 仮想通貨タイプ
+        /// </summary>
+        public enum VirtualCurrencyType
+        {
+            /// <summary>
+            /// オーブ
+            /// </summary>
+            OB,
+        }
+    }
 }

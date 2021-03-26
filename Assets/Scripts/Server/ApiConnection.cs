@@ -51,6 +51,9 @@ public partial class ApiConnection
             case ApiType.GetUserInventory:
                 PlayFabClientAPI.GetUserInventory(request as GetUserInventoryRequest, res => callback(res as TResp), error => onErrorAction(error));
                 break;
+            case ApiType.AddUserVirtualCurrency:
+                PlayFabClientAPI.AddUserVirtualCurrency(request as AddUserVirtualCurrencyRequest, res => callback(res as TResp), error => onErrorAction(error));
+                break;
             default:
                 break;
         }
@@ -77,5 +80,6 @@ public partial class ApiConnection
         GetPlayerProfile,
         UpdateUserTitleDisplayName,
         GetUserInventory,
+        AddUserVirtualCurrency
     }
 }
