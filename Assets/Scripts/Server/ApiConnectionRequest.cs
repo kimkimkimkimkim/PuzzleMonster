@@ -13,7 +13,7 @@ public partial class ApiConnection
     /// </summary>
     public static IObservable<LoginResult> LoginWithCustomID()
     {
-        return SendRequest<LoginResult, LoginWithCustomIDRequest>(ApiType.LoginWithCustomID, new LoginWithCustomIDRequest()
+        return SendRequest<LoginWithCustomIDRequest, LoginResult>(ApiType.LoginWithCustomID, new LoginWithCustomIDRequest()
         {
             TitleId = PlayFabSettings.TitleId,
             CustomId = SaveDataUtil.System.GetCustomId(),
@@ -26,7 +26,7 @@ public partial class ApiConnection
     /// </summary>
     public static IObservable<GetPlayerProfileResult> GetPlayerProfile()
     {
-        return SendRequest<GetPlayerProfileResult, GetPlayerProfileRequest>(ApiType.GetPlayerProfile, new GetPlayerProfileRequest()
+        return SendRequest<GetPlayerProfileRequest, GetPlayerProfileResult > (ApiType.GetPlayerProfile, new GetPlayerProfileRequest()
         {
             PlayFabId = PlayFabSettings.staticPlayer.PlayFabId,
         });
@@ -37,9 +37,17 @@ public partial class ApiConnection
     /// </summary>
     public static IObservable<UpdateUserTitleDisplayNameResult> UpdateUserTitleDisplayName(string userName)
     {
-        return SendRequest<UpdateUserTitleDisplayNameResult, UpdateUserTitleDisplayNameRequest>(ApiType.UpdateUserTitleDisplayName, new UpdateUserTitleDisplayNameRequest()
+        return SendRequest<UpdateUserTitleDisplayNameRequest, UpdateUserTitleDisplayNameResult>(ApiType.UpdateUserTitleDisplayName, new UpdateUserTitleDisplayNameRequest()
         {
             DisplayName = userName
         });
+    }
+
+    /// <summary>
+    /// ユーザー名の更新
+    /// </summary>
+    public static IObservable<GetUserInventoryResult> GetUserInventory(string userName)
+    {
+        return SendRequest<GetUserInventoryRequest, GetUserInventoryResult>(ApiType.UpdateUserTitleDisplayName, new GetUserInventoryRequest());
     }
 }

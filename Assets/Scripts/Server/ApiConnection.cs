@@ -11,7 +11,7 @@ using UnityEngine;
 
 public partial class ApiConnection
 {
-    private static IObservable<TResp> SendRequest<TResp, TReq>(ApiType apiType, TReq request) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
+    private static IObservable<TResp> SendRequest<TReq, TResp>(ApiType apiType, TReq request) where TReq : PlayFabRequestCommon where TResp : PlayFabResultCommon
     {
         return Observable.Create<TResp>(o =>
         {
@@ -29,13 +29,13 @@ public partial class ApiConnection
             });
 
             UIManager.Instance.ShowTapBlocker();
-            ExecuteApi<TResp, TReq>(apiType, request, callback, onErrorAction);
+            ExecuteApi<TReq, TResp>(apiType, request, callback, onErrorAction);
             return Disposable.Empty;
         });
     }
 
     #region ExecuteApi
-    private static void ExecuteApi<TResp, TReq>(ApiType apiType, TReq request, Action<TResp> callback, Action<PlayFabError> onErrorAction) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
+    private static void ExecuteApi<TReq, TResp>(ApiType apiType, TReq request, Action<TResp> callback, Action<PlayFabError> onErrorAction) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
     {
         switch (apiType)
         {
@@ -47,6 +47,9 @@ public partial class ApiConnection
                 break;
             case ApiType.UpdateUserTitleDisplayName:
                 PlayFabClientAPI.UpdateUserTitleDisplayName(request as UpdateUserTitleDisplayNameRequest, res => callback(res as TResp), error => onErrorAction(error));
+                break;
+            case ApiType.GetUserInventory:
+                PlayFabClientAPI.GetUserInventory(request as GetUserInventoryRequest, res => callback(res as TResp), error => onErrorAction(error));
                 break;
             default:
                 break;
@@ -73,6 +76,6 @@ public partial class ApiConnection
         LoginWithCustomID,
         GetPlayerProfile,
         UpdateUserTitleDisplayName,
-
+        GetUserInventory,
     }
 }
