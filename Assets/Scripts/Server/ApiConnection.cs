@@ -54,6 +54,9 @@ public partial class ApiConnection
             case ApiType.AddUserVirtualCurrency:
                 PlayFabClientAPI.AddUserVirtualCurrency(request as AddUserVirtualCurrencyRequest, res => callback(res as TResp), error => onErrorAction(error));
                 break;
+            case ApiType.GetTitleData:
+                PlayFabClientAPI.GetTitleData(request as GetTitleDataRequest, res => callback(res as TResp), error => onErrorAction(error));
+                break;
             default:
                 break;
         }
@@ -80,6 +83,7 @@ public partial class ApiConnection
         GetPlayerProfile,
         UpdateUserTitleDisplayName,
         GetUserInventory,
-        AddUserVirtualCurrency
+        AddUserVirtualCurrency,
+        GetTitleData,
     }
 }

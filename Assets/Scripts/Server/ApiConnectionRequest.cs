@@ -66,4 +66,12 @@ public partial class ApiConnection
             VirtualCurrency = type.ToString(),
         });
     }
+
+    /// <summary>
+    /// タイトルデータを取得する
+    /// </summary>
+    public static IObservable<GetTitleDataResult> GetTitleData()
+    {
+        return SendRequest<GetTitleDataRequest, GetTitleDataResult>(ApiType.GetTitleData, new GetTitleDataRequest());
+    }
 }

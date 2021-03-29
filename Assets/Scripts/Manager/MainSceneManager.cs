@@ -21,6 +21,7 @@ public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
 
         // アプリケーション起動時の処理
         ApplicationContext.EstablishSession()
+            .SelectMany(_ => ApiConnection.GetTitleData().Do(res => MasterRecord.SetCacheMasterDict(res.Data))) // マスタの取得と保存
             .SelectMany(_ =>
             {
                 if (string.IsNullOrWhiteSpace(ApplicationContext.userData.playerProfile.DisplayName))
