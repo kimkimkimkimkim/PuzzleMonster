@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using UniRx;
+using DG.Tweening;
 
 namespace GameBase
 {
@@ -117,7 +118,7 @@ namespace GameBase
                     var value = (direction == Direction.Vertical ? itemPrototype.sizeDelta.y : itemPrototype.sizeDelta.x) + linePadding;
                     if (value <= 0)
                     {
-                        Debug.Log("スクロールのlineSpaceは0以下になっています。");
+                        // KoiniwaLogger.Log("スクロールのlineSpaceは0以下になっています。");
                         value = 1f;
                     }
                     _lineSpace = value;
@@ -155,7 +156,7 @@ namespace GameBase
                     var value = (direction == Direction.Vertical ? itemPrototype.sizeDelta.x : itemPrototype.sizeDelta.y) + inlineItemPadding;
                     if (value <= 0)
                     {
-                        Debug.Log("スクロールのinlineItemSpaceは0以下になっています。");
+                        // KoiniwaLogger.Log("スクロールのinlineItemSpaceは0以下になっています。");
                         value = 1f;
                     }
                     _inlineItemSpace = value;
@@ -179,6 +180,7 @@ namespace GameBase
             _onUpdateItem = updator;
             const float anchorFixedAxisValue = 0.5f;
             const float anchorMovingAxisValue = 1.0f;
+
             Vector2 anchor = direction == Direction.Horizontal ?
                 new Vector2(0, anchorMovingAxisValue) :
                 new Vector2(anchorFixedAxisValue, anchorMovingAxisValue);
@@ -401,23 +403,23 @@ namespace GameBase
         /// <summary>
         /// スクロール表示位置を端へ更新
         /// </summary>
-        /// <param name="isFirstContentsPosition">true : verticalは「上」horizontalは「左」, false : verticalは「下」horizontalは「右」</param>
-        public void ChangeScrollPositionEdge(bool isFirstContentsPosition)
+        /// <param name="isFirstContentsPosition">true : verticalは「上」horizontalは「右」, false : verticalは「下」horizontalは「左」</param>
+        public void ChangeScrollPositionEdge(bool isFirstContentsPosition, bool enableAnimation = false)
         {
+            const float ANIMATION_TIME = 0.4f;
+
             //スクロール表示位置を一番下へ更新
-            var normalizedPosition = isFirstContentsPosition ? 1 : 0;
+            var normalizedValue = isFirstContentsPosition ? 1 : 0;
+            var animationTime = enableAnimation ? ANIMATION_TIME : 0;
 
             if (direction == Direction.Vertical)
             {
-                _scrollRect.verticalNormalizedPosition = normalizedPosition;
+                _scrollRect.DOVerticalNormalizedPos(normalizedValue, animationTime).SetEase(Ease.InOutSine);
             }
             else
             {
-                _scrollRect.horizontalNormalizedPosition = normalizedPosition;
+                _scrollRect.DOHorizontalNormalizedPos(normalizedValue, animationTime).SetEase(Ease.InOutSine);
             }
-
-            //表示すべき箇所を更新
-            UpdateCurrentDisplayItems();
         }
 
         /// <summary>
@@ -468,32 +470,47 @@ namespace GameBase
         }
 
         /// <summary>
-        /// 指定したインデックスのアイテムを先頭に表示 isReverseがtrueの時は Vertical:下,Horizon:右 からのアイテムを後尾に表示
+        /// 指定したインデックスのアイテムを先頭に表示
+        /// isReverseがtrueの時は Vertical:下,Horizontal:右 からのインデックス指定になる
+        /// viewportの指定が必須
         /// </summary>
-        public void FocusIndexItem(int listCount, int index, bool isVertical, bool isReverse = false)
+        public void FocusIndex(int index, float offset = 0, bool isReverse = false, bool enableAnimation = false)
         {
-            if (isVertical)
+            const float ANIMATION_TIME = 0.4f;
+            const float DELAY_TIME = 0.2f;
+
+            var animationTime = enableAnimation ? ANIMATION_TIME : 0;
+            var delayTime = enableAnimation ? DELAY_TIME : 0;
+            var normalizedPosition = Vector2.zero;
+
+            if (direction == Direction.Vertical)
             {
                 var itemHeight = itemPrototype.rect.height;
-                var onDisplayItemHeight = (_scrollRect.viewport.rect.height - firstItemMargin - lastItemMargin) / (itemHeight + linePadding);
-                var posY = 1f;
-                var scrollValue = listCount - onDisplayItemHeight;
-                if (scrollValue > 0) posY = 1f - ((1f / (scrollValue)) * index);
-                if (isReverse) posY = 1f - posY;
-                _scrollRect.verticalNormalizedPosition = Mathf.Clamp(posY, 0f, 1f);
+                var posY = (itemHeight + linePadding) * index + offset;
+                // 0 : 下端 , 1 : 上端
+                // 0 の時にはy座標が「全体のスクロールビューの高さ - 表示面の高さ」になるので規格化するときは以下のようになる
+                var verticalNormalizedPosition = 1 - (posY / (rectTransform.sizeDelta.y - _scrollRect.viewport.rect.height));
+                if (isReverse) verticalNormalizedPosition = 1 - verticalNormalizedPosition;
+                var clampedNormalizedPosition = Mathf.Clamp(verticalNormalizedPosition, 0f, 1f);
+                normalizedPosition = new Vector2(0, clampedNormalizedPosition);
             }
             else
             {
                 var itemWidth = itemPrototype.rect.width;
-                var onDisplayItemWidth = (_scrollRect.viewport.rect.width - firstItemMargin - lastItemMargin) / (itemWidth + linePadding);
-                var posX = 1f;
-                var scrollValue = listCount - onDisplayItemWidth;
-                if (scrollValue > 0) posX = ((1f / scrollValue) * index);
-                if (isReverse) posX = 1f - posX;
-                _scrollRect.horizontalNormalizedPosition = Mathf.Clamp(posX, 0f, 1f);
+                var posX = (itemWidth + linePadding) * index + offset;
+                // 0 : 左端 , 1 : 右端
+                var horizontalNormalizedPosition = posX / (rectTransform.sizeDelta.x - _scrollRect.viewport.rect.width);
+                if (isReverse) horizontalNormalizedPosition = 1 - horizontalNormalizedPosition;
+                var clampedNormalizedPosition = Mathf.Clamp(horizontalNormalizedPosition, 0f, 1f);
+                normalizedPosition = new Vector2(clampedNormalizedPosition, 0);
             }
 
-            UpdateCurrentDisplayItems();
+            DOTween.Sequence()
+                .Append(_scrollRect.DONormalizedPos(normalizedPosition, animationTime))
+                .SetEase(Ease.InOutSine)
+                .SetDelay(delayTime)
+                .PlayAsObservable()
+                .Subscribe().AddTo(this);
         }
     }
 }

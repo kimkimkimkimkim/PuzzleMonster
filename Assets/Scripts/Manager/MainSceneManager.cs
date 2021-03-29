@@ -1,6 +1,12 @@
-﻿using Enum.UI;
+﻿using System.Collections.Generic;
+using PM.Enum.UI;
 using GameBase;
+using PlayFab;
+using PlayFab.ClientModels;
+using PlayFab.CloudScriptModels;
+using PlayFab.Json;
 using UniRx;
+using UnityEngine;
 
 public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
 {
@@ -42,6 +48,9 @@ public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
             .Where(isOk => isOk)
             .Do(_ =>
             {
+                // CloudScriptの実行
+                CallCSharpExecuteFunction();
+
                 // スタートボタンを表示
                 titleUIScript.ShowTapToStartButton(true);
 
@@ -60,5 +69,34 @@ public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
         // タイトル画面を消してホーム画面へ遷移
         if (titleUIScript != null) Destroy(titleUIScript.gameObject);
         HeaderFooterWindowFactory.Create(new HeaderFooterWindowRequest()).Subscribe();
+    }
+
+    private void CallCSharpExecuteFunction()
+    {
+        PlayFabCloudScriptAPI.ExecuteFunction(new ExecuteFunctionRequest()
+        {
+            Entity = new PlayFab.CloudScriptModels.EntityKey()
+            {
+                Id = PlayFabSettings.staticPlayer.EntityId, //Get this from when you logged in,
+                Type = PlayFabSettings.staticPlayer.EntityType //Get this from when you logged in
+            },
+            FunctionName = "DropItem", //This should be the name of your Azure Function that you created.
+            FunctionParameter = new Dictionary<string, object>() { { "DropTableName", "NormalGachaSingle" } },
+            GeneratePlayStreamEvent = true
+        }, (ExecuteFunctionResult result) =>
+        {
+            var grantedItems = PlayFabSimpleJson.DeserializeObject<List<ItemInstance>>(result.FunctionResult.ToString());
+            Debug.Log($"Get Item");
+            grantedItems.ForEach(item =>
+            {
+                Debug.Log($"itemId : {item.ItemId} ,itemClass : {item.ItemClass}");
+            });
+
+
+        }, (PlayFabError error) =>
+        {
+            Debug.Log($"Opps Something went wrong: {error.GenerateErrorReport()}");
+        });
+
     }
 }

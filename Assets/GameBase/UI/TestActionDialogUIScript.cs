@@ -6,7 +6,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using GameBase;
-using Enum.UI;
+using PM.Enum.UI;
 using System.Reflection;
 
 namespace GameBase

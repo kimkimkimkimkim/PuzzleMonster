@@ -2,7 +2,7 @@
 using GameBase;
 using System;
 using System.Collections.Generic;
-using Enum.UI;
+using PM.Enum.UI;
 
 public class CommonDialogFactory
 {

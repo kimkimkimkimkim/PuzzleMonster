@@ -1,4 +1,4 @@
-﻿using Enum.UI;
+﻿using PM.Enum.UI;
 
 public class CommonDialogRequest
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Enum.UI;
+using PM.Enum.UI;
 using GameBase;
 using UniRx;
 using UnityEngine;

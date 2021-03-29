@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Enum.Battle;
+using PM.Enum.Battle;
 
 /// <summary>
 /// コマンドデータ

@@ -1,6 +1,6 @@
 ﻿using System;
-using Enum.Item;
-using Enum.UI;
+using PM.Enum.Item;
+using PM.Enum.UI;
 using PlayFab;
 using PlayFab.ClientModels;
 using PlayFab.SharedModels;
