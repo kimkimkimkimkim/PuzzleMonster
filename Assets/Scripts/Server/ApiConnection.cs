@@ -8,9 +8,12 @@ using PlayFab.ClientModels;
 using PlayFab.SharedModels;
 using UniRx;
 using UnityEngine;
+using PlayFab.CloudScriptModels;
+using PlayFab.Json;
 
 public partial class ApiConnection
 {
+    #region ClientApi
     private static IObservable<TResp> SendRequest<TReq, TResp>(ApiType apiType, TReq request) where TReq : PlayFabRequestCommon where TResp : PlayFabResultCommon
     {
         return Observable.Create<TResp>(o =>
@@ -34,7 +37,6 @@ public partial class ApiConnection
         });
     }
 
-    #region ExecuteApi
     private static void ExecuteApi<TReq, TResp>(ApiType apiType, TReq request, Action<TResp> callback, Action<PlayFabError> onErrorAction) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
     {
         switch (apiType)
@@ -61,6 +63,58 @@ public partial class ApiConnection
                 break;
         }
     }
+
+    private enum ApiType
+    {
+        LoginWithCustomID,
+        GetPlayerProfile,
+        UpdateUserTitleDisplayName,
+        GetUserInventory,
+        AddUserVirtualCurrency,
+        GetTitleData,
+    }
+    #endregion
+
+    #region CloudFunction
+    private static IObservable<TResp> SendRequest<TReq, TResp>(string functionName,TReq request)
+    {
+        return Observable.Create<TResp>(o =>
+        {
+            var callback = new Action<ExecuteFunctionResult>((ExecuteFunctionResult result) =>
+            {
+                UIManager.Instance.TryHideTapBlocker();
+                var response = PlayFabSimpleJson.DeserializeObject<TResp>(result.FunctionResult.ToString());
+                o.OnNext(response);
+                o.OnCompleted();
+            });
+            var onErrorAction = new Action<PlayFabError>(error =>
+            {
+                UIManager.Instance.TryHideTapBlocker();
+                OnErrorAction(error);
+                o.OnCompleted();
+            });
+
+            UIManager.Instance.ShowTapBlocker();
+            ExecuteCloudFunction<TReq>(functionName, request, callback, onErrorAction);
+            return Disposable.Empty;
+        });
+    }
+
+    private static void ExecuteCloudFunction<TReq>(string functionName,TReq request, Action<ExecuteFunctionResult> callback, Action<PlayFabError> onErrorAction)
+    {
+        PlayFabCloudScriptAPI.ExecuteFunction(new ExecuteFunctionRequest()
+        {
+            Entity = new PlayFab.CloudScriptModels.EntityKey()
+            {
+                Id = PlayFabSettings.staticPlayer.EntityId,
+                Type = PlayFabSettings.staticPlayer.EntityType
+            },
+            FunctionName = functionName,
+            FunctionParameter = DataProcessUtil.GetRequest<TReq>(request),
+            GeneratePlayStreamEvent = true
+        }, res => callback(res), error => onErrorAction(error));
+
+    }
     #endregion
 
     /// <summary>
@@ -75,15 +129,5 @@ public partial class ApiConnection
             title = "お知らせ",
             content = "エラーが発生しました"
         }).Subscribe();
-    }
-
-    private enum ApiType
-    {
-        LoginWithCustomID,
-        GetPlayerProfile,
-        UpdateUserTitleDisplayName,
-        GetUserInventory,
-        AddUserVirtualCurrency,
-        GetTitleData,
     }
 }
