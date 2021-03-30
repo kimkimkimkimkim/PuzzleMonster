@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GameBase;
 using PM.Enum.Gacha;
+using PM.Enum.UI;
 using UniRx;
 using UnityEngine;
 
@@ -10,13 +11,13 @@ public class GachaWindowUIScript : WindowBase
 {
     [SerializeField] protected InfiniteScroll _infiniteScroll;
 
-    private List<string> gachaBoxList;
+    private List<GachaBoxMB> gachaBoxList;
 
     public override void Init(WindowInfo info)
     {
         base.Init(info);
 
-        gachaBoxList = new List<string>() { "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" };
+        gachaBoxList = MasterRecord.GetMasterOf<GachaBoxMB>().GetAll().ToList();
 
         RefreshScroll();
     }
@@ -33,18 +34,24 @@ public class GachaWindowUIScript : WindowBase
         if ((gachaBoxList.Count <= index) || (index < 0)) return;
 
         var scrollItem = item.GetComponent<GachaBoxScrollItem>();
-        var animal = gachaBoxList[index];
+        var gachaBox = gachaBoxList[index];
 
         scrollItem.SetOnClickAction(() =>
         {
-            ApiConnection.DropItem(DropTableType.NormalGachaSingle)
-                .Do(res =>
+            CommonDialogFactory.Create(new CommonDialogRequest()
+            {
+                commonDialogType = CommonDialogType.NoAndYes,
+                title = "開発用ガチャ",
+                content = "オーブを0個使用してガチャを1回まわしますか？",
+            })
+                .Where(res => res.dialogResponseType == DialogResponseType.Yes)
+                .SelectMany(_ => ApiConnection.DropItem(DropTableType.NormalGachaSingle))
+                .SelectMany(res => CommonDialogFactory.Create(new CommonDialogRequest()
                 {
-                    res.ForEach(i =>
-                    {
-                        Debug.Log($"itemId : {i.ItemId} ,itemClass : {i.ItemClass}");
-                    });
-                })
+                    commonDialogType = CommonDialogType.YesOnly,
+                    title = "ガチャ結果",
+                    content = $"itemId : {res[0].ItemId}\nitemClass : {res[0].ItemClass}\nを取得しました",
+                }))
                 .Subscribe();
         });
     }
