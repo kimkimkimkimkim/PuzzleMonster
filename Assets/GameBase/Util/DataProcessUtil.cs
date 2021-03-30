@@ -20,7 +20,7 @@ namespace GameBase
             var request = new Dictionary<string, object>();
             foreach (MemberInfo m in members)
             {
-                if (m.MemberType != MemberTypes.Constructor)
+                if (m.MemberType == MemberTypes.Field)
                 {
                     var field = typeof(T).GetField(m.Name);
                     var value = field.GetValue(data);

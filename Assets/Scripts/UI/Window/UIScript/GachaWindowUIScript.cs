@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using GameBase;
+using PM.Enum.Gacha;
+using UniRx;
 using UnityEngine;
 
 [ResourcePath("UI/Window/Window-Gacha")]
@@ -35,7 +37,15 @@ public class GachaWindowUIScript : WindowBase
 
         scrollItem.SetOnClickAction(() =>
         {
-
+            ApiConnection.DropItem(DropTableType.NormalGachaSingle)
+                .Do(res =>
+                {
+                    res.ForEach(i =>
+                    {
+                        Debug.Log($"itemId : {i.ItemId} ,itemClass : {i.ItemClass}");
+                    });
+                })
+                .Subscribe();
         });
     }
 

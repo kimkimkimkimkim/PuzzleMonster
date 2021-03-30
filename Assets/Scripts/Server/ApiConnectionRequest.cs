@@ -1,14 +1,13 @@
 ﻿using System;
 using PM.Enum.Item;
-using PM.Enum.UI;
+using PM.Enum.Gacha;
 using PlayFab;
 using PlayFab.ClientModels;
-using PlayFab.SharedModels;
-using UniRx;
-using UnityEngine;
+using System.Collections.Generic;
 
 public partial class ApiConnection
 {
+    #region ClientApi
     /// <summary>
     /// カスタムIDでのログイン処理
     /// </summary>
@@ -74,4 +73,18 @@ public partial class ApiConnection
     {
         return SendRequest<GetTitleDataRequest, GetTitleDataResult>(ApiType.GetTitleData, new GetTitleDataRequest());
     }
+    #endregion
+
+    #region CloudFunction
+    /// <summary>
+    /// ガチャを実行する
+    /// </summary>
+    public static IObservable<List<ItemInstance>> DropItem(DropTableType dropTableType)
+    {
+        return SendRequest<DropItemApiRequest, List<ItemInstance>>(DropItemApiInterface.functionName, new DropItemApiRequest()
+        {
+            dropTableName = dropTableType.ToString(),
+        });
+    }
+    #endregion
 }

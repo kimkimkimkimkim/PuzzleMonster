@@ -83,7 +83,7 @@ public partial class ApiConnection
             var callback = new Action<ExecuteFunctionResult>((ExecuteFunctionResult result) =>
             {
                 UIManager.Instance.TryHideTapBlocker();
-                var response = PlayFabSimpleJson.DeserializeObject<TResp>(result.FunctionResult.ToString());
+                var response = DataProcessUtil.GetResponse<TResp>(result.FunctionResult.ToString());
                 o.OnNext(response);
                 o.OnCompleted();
             });
@@ -102,6 +102,12 @@ public partial class ApiConnection
 
     private static void ExecuteCloudFunction<TReq>(string functionName,TReq request, Action<ExecuteFunctionResult> callback, Action<PlayFabError> onErrorAction)
     {
+        Debug.Log($"functionName : {functionName}");
+        var dict = DataProcessUtil.GetRequest<TReq>(request);
+        foreach(var kvp in dict) {
+            Debug.Log($"key:{kvp.Key} value:{kvp.Value}");
+        }
+
         PlayFabCloudScriptAPI.ExecuteFunction(new ExecuteFunctionRequest()
         {
             Entity = new PlayFab.CloudScriptModels.EntityKey()

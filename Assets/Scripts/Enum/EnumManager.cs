@@ -117,7 +117,10 @@ namespace PM
             /// </summary>
             public enum DropTableType
             {
-
+                /// <summary>
+                /// レア召喚（シングル）
+                /// </summary>
+                NormalGachaSingle,
             }
         }
     }
