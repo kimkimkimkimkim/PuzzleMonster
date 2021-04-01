@@ -5,12 +5,22 @@ using PM.Enum.UI;
 using GameBase;
 using UniRx;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class UserTestAction : ITestAction
 {
     public List<TestActionData> GetTestActionDataList()
     {
         var testActionDataList = new List<TestActionData>();
+
+        testActionDataList.Add(new TestActionData()
+        {
+            title = "セーブデータ削除",
+            action = new Action(() =>
+            {
+                SaveDataUtil.Clear();
+            }),
+        });
 
         testActionDataList.Add(new TestActionData()
         {

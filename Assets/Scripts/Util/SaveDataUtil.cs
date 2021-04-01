@@ -40,4 +40,9 @@ public class SaveDataUtil
         #endregion
     }
 
+    public static void Clear()
+    {
+        SaveData.Clear();
+        SaveData.Save();
+    }
 }
