@@ -90,7 +90,7 @@ namespace PM
                 /// <summary>
                 /// 仮想通貨
                 /// </summary>
-                VirtualCurrency,
+                VirtualCurrency = 1,
             }
 
             /// <summary>
@@ -121,6 +121,15 @@ namespace PM
                 /// レア召喚（シングル）
                 /// </summary>
                 NormalGachaSingle,
+            }
+
+            /// <summary>
+            /// どのようなモンスターが排出するガチャなのかを示す値
+            /// どのタイプのガチャから排出するモンスターなのかを示す値
+            /// </summary>
+            public enum GachaBoxType
+            {
+                Normal = 1,
             }
         }
     }

@@ -26,4 +26,9 @@ public class UserMonsterInfo
     /// 攻撃力
     /// </summary>
     public int attack { get; set; }
+
+    /// <summary>
+    /// グレード
+    /// </summary>
+    public int grade { get; set; }
 }

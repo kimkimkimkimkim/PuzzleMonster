@@ -1,15 +1,22 @@
-﻿/// <summary>
+﻿using System.Collections.Generic;
+using PM.Enum.Gacha;
+/// <summary>
 /// モンスターマスターデータ
 /// </summary>
-public class MonsterMB
+public class MonsterMB : MasterBookBase
 {
-    /// <summary>
-    /// ID
-    /// </summary>
-    public long id { get; set; }
-
     /// <summary>
     /// 名前
     /// </summary>
     public string name { get; set; }
+
+    /// <summary>
+    /// 初期グレード
+    /// </summary>
+    public int initialGrade { get; set; }
+
+    /// <summary>
+    /// ガチャボックスタイプリスト
+    /// </summary>
+    public List<GachaBoxType> gachaBoxTypeList { get; set; }
 }
