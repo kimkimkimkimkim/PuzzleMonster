@@ -2,6 +2,10 @@
 using PM.Enum.Item;
 using PlayFab.ClientModels;
 using UniRx;
+using System.Reflection;
+using System.Collections;
+using System.Collections.Generic;
+using PM.Enum.Data;
 
 public static class ApplicationContext
 {
@@ -25,6 +29,7 @@ public static class ApplicationContext
                 // ユーザーインベントリ情報の更新
                 UpdateUserInventory(res);
             }))
+            .SelectMany(_ => ApiConnection.GetUserData()) // ユーザーデータの更新
             .AsUnitObservable();
     }
 
@@ -39,5 +44,52 @@ public static class ApplicationContext
             if (virtualCurrency.Key == VirtualCurrencyType.OB.ToString()) userVirtualCurrency.orb = virtualCurrency.Value;
             if (virtualCurrency.Key == VirtualCurrencyType.CN.ToString()) userVirtualCurrency.coin = virtualCurrency.Value;
         }
+    }
+
+    /// <summary>
+    /// ユーザーデータ情報キャッシュを更新する
+    /// </summary>
+    public static void UpdateUserData(UserDataInfo userData)
+    {
+        var dict = new Dictionary<string, string>();
+        var properties = typeof(UserDataInfo).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        foreach (PropertyInfo property in properties)
+        {
+            var value = property.GetValue(userData);
+            if(value != null)property.SetValue(ApplicationContext.userData, property.GetValue(userData));
+        }
+    }
+
+    /// <summary>
+    /// サーバーから取得したユーザーデータ情報でキャッシュを更新する
+    /// </summary>
+    public static void UpdateUserData(Dictionary<string, UserDataRecord> dict)
+    {
+        var dictJson = Utf8Json.JsonSerializer.ToJsonString(dict);
+        var userData = Utf8Json.JsonSerializer.Deserialize<UserDataInfo>(dictJson);
+        UpdateUserData(userData);
+    }
+
+    /// <summary>
+    /// 指定したキーの値だけを更新する
+    /// </summary>
+    /// <param name="dict">更新したい値のキーとその値を保持した辞書</param>
+    public static void UpdateUserData(Dictionary<UserDataKey, object> dict)
+    {
+        var userData = ApplicationContext.userData;
+
+        foreach(var kvp in dict)
+        {
+            switch (kvp.Key)
+            {
+                case UserDataKey.userMonsterList:
+                    userData.userMonsterList = kvp.Value as List<UserMonsterInfo>;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        ApplicationContext.userData = userData;
     }
 }

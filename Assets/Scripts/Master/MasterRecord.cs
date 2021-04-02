@@ -23,6 +23,9 @@ static class MasterRecord
         cacheTitleData = titleData;
 
         LoadMasterData<GachaBoxMB>();
+        LoadMasterData<MonsterMB>();
+        LoadMasterData<GachaBoxDetailMB>();
+        LoadMasterData<VirtualCurrencyMB>();
     }
 
     /// <summary>

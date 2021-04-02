@@ -4,6 +4,9 @@ using PM.Enum.Gacha;
 using PlayFab;
 using PlayFab.ClientModels;
 using System.Collections.Generic;
+using UniRx;
+using PM.Enum.Data;
+using System.Linq;
 
 public partial class ApiConnection
 {
@@ -72,6 +75,29 @@ public partial class ApiConnection
     public static IObservable<GetTitleDataResult> GetTitleData()
     {
         return SendRequest<GetTitleDataRequest, GetTitleDataResult>(ApiType.GetTitleData, new GetTitleDataRequest());
+    }
+
+    /// <summary>
+    /// ユーザーデータを全取得する
+    /// </summary>
+    public static IObservable<UserDataInfo> GetUserData()
+    {
+        return SendRequest<GetUserDataRequest, GetUserDataResult>(ApiType.GetUserData, new GetUserDataRequest())
+            .Do(res => ApplicationContext.UpdateUserData(res.Data)) // 取得したデータでキャッシュを更新
+            .Select(_ => ApplicationContext.userData);
+    }
+
+    /// <summary>
+    /// ユーザーデータを更新する
+    /// </summary>
+    public static IObservable<UpdateUserDataResult> UpdateUserData(Dictionary<UserDataKey,object> dict)
+    {
+        var data = dict.ToDictionary(kvp => kvp.Key.ToString(),kvp => Utf8Json.JsonSerializer.ToJsonString(kvp.Value));
+        return SendRequest<UpdateUserDataRequest, UpdateUserDataResult>(ApiType.UpdateUserData, new UpdateUserDataRequest()
+        {
+            Data = data,
+        })
+        .Do(_ => ApplicationContext.UpdateUserData(dict));
     }
     #endregion
 

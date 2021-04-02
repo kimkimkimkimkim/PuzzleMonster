@@ -45,6 +45,9 @@ public class GachaWindowUIScript : WindowBase
                 content = "オーブを0個使用してガチャを1回まわしますか？",
             })
                 .Where(res => res.dialogResponseType == DialogResponseType.Yes)
+                .SelectMany(_ => ApiConnection.ExecuteGacha(new ExecuteGachaApiRequest() { gachaBoxDetailId = 1 }))
+                .Subscribe();
+                /*
                 .SelectMany(_ => ApiConnection.DropItem(DropTableType.NormalGachaSingle))
                 .SelectMany(res => CommonDialogFactory.Create(new CommonDialogRequest()
                 {
@@ -53,6 +56,7 @@ public class GachaWindowUIScript : WindowBase
                     content = $"itemId : {res[0].ItemId}\nitemClass : {res[0].ItemClass}\nを取得しました",
                 }))
                 .Subscribe();
+                */               
         });
     }
 

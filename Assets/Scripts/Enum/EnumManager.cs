@@ -101,12 +101,12 @@ namespace PM
                 /// <summary>
                 /// オーブ
                 /// </summary>
-                OB,
+                OB = 1,
 
                 /// <summary>
                 /// コイン
                 /// </summary>
-                CN,
+                CN = 2,
             }
         }
 
@@ -120,7 +120,7 @@ namespace PM
                 /// <summary>
                 /// レア召喚（シングル）
                 /// </summary>
-                NormalGachaSingle,
+                NormalGachaSingle = 1,
             }
 
             /// <summary>
@@ -130,6 +130,18 @@ namespace PM
             public enum GachaBoxType
             {
                 Normal = 1,
+            }
+        }
+
+        namespace Data
+        {
+            /// <summary>
+            /// ユーザーデータをPlayFabに保存する時のKey名
+            /// UserDataInfoのパラメータ名と同じにする必要がある
+            /// </summary>
+            public enum UserDataKey
+            {
+                userMonsterList,
             }
         }
     }

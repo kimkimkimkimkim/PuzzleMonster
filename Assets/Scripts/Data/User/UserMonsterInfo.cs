@@ -10,7 +10,7 @@ public class UserMonsterInfo
     /// <summary>
     /// ID
     /// </summary>
-    public long id { get; set; }
+    public string id { get; set; }
 
     /// <summary>
     /// モンスターID

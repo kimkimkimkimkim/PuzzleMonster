@@ -59,6 +59,12 @@ public partial class ApiConnection
             case ApiType.GetTitleData:
                 PlayFabClientAPI.GetTitleData(request as GetTitleDataRequest, res => callback(res as TResp), error => onErrorAction(error));
                 break;
+            case ApiType.GetUserData:
+                PlayFabClientAPI.GetUserData(request as GetUserDataRequest, res => callback(res as TResp), error => onErrorAction(error));
+                break;
+            case ApiType.UpdateUserData:
+                PlayFabClientAPI.UpdateUserData(request as UpdateUserDataRequest, res => callback(res as TResp), error => onErrorAction(error));
+                break;
             default:
                 break;
         }
@@ -72,6 +78,8 @@ public partial class ApiConnection
         GetUserInventory,
         AddUserVirtualCurrency,
         GetTitleData,
+        GetUserData,
+        UpdateUserData,
     }
     #endregion
 
