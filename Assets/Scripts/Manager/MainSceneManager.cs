@@ -18,7 +18,7 @@ public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
             .SelectMany(_ => ApiConnection.GetTitleData().Do(res => MasterRecord.SetCacheMasterDict(res.Data))) // マスタの取得と保存
             .SelectMany(_ =>
             {
-                if (string.IsNullOrWhiteSpace(ApplicationContext.userData.playerProfile.DisplayName))
+                if (string.IsNullOrWhiteSpace(ApplicationContext.playerProfile.DisplayName))
                 {
                     // 名前が未設定なので名前登録ダイアログを開く
                     return UserNameRegistrationDialogFactory.Create(new UserNameRegistrationDialogRequest())

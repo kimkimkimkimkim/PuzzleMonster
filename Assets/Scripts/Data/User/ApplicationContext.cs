@@ -5,6 +5,8 @@ using UniRx;
 
 public static class ApplicationContext
 {
+    public static PlayerProfileModel playerProfile { get; set; } = new PlayerProfileModel();
+    public static UserVirtualCurrencyInfo userVirtualCurrency { get; set; } = new UserVirtualCurrencyInfo();
     public static UserDataInfo userData { get; private set; } = new UserDataInfo();
 
     /// <summary>
@@ -16,7 +18,7 @@ public static class ApplicationContext
             .SelectMany(_ => ApiConnection.GetPlayerProfile().Do(res =>
             {
                 // ユーザープロフィールの同期
-                userData.playerProfile = res.PlayerProfile;
+                playerProfile = res.PlayerProfile;
             }))
             .SelectMany(_ => ApiConnection.GetUserInventory().Do(res =>
             {
@@ -34,8 +36,8 @@ public static class ApplicationContext
         // 仮想通貨情報の更新
         foreach (var virtualCurrency in result.VirtualCurrency)
         {
-            if (virtualCurrency.Key == VirtualCurrencyType.OB.ToString()) userData.userVirtualCurrency.orb = virtualCurrency.Value;
-            if (virtualCurrency.Key == VirtualCurrencyType.CN.ToString()) userData.userVirtualCurrency.coin = virtualCurrency.Value;
+            if (virtualCurrency.Key == VirtualCurrencyType.OB.ToString()) userVirtualCurrency.orb = virtualCurrency.Value;
+            if (virtualCurrency.Key == VirtualCurrencyType.CN.ToString()) userVirtualCurrency.coin = virtualCurrency.Value;
         }
     }
 }
