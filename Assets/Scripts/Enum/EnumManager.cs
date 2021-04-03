@@ -78,6 +78,14 @@ namespace PM
                 Gacha = 2,
                 Shop = 3,
             }
+
+            /// <summary>
+            /// アイコン画像タイプ
+            /// </summary>
+            public enum IconImageType
+            {
+                Monster,
+            }
         }
 
         namespace Item

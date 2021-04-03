@@ -19,7 +19,11 @@ namespace GameBase {
             var handle = Addressables.LoadResourceLocationsAsync(key);
             var isContain = handle.Status == AsyncOperationStatus.Succeeded && handle.Result != null && handle.Result.Count >= 1;
             Addressables.Release(handle);// 存在判定のoperationHandleも都度リリースする必要がある
-            return isContain;
+
+            // LoadResourceLocationAsyncはバンドルをビルドしておく必要がある？
+            // 現状ローカルで使用しているので強制的にtrueを返す
+            //return isContain;
+            return true;
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UniRx;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
@@ -31,7 +32,7 @@ namespace GameBase
             }
             else
             {
-                // KoiniwaLogger.Log("Not found asset. address:" + key);
+                Debug.Log("Not found asset. address:" + key);
                 return Observable.Return<T>(default);
             }
         }
