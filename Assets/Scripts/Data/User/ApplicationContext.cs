@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 using PM.Enum.Data;
+using System.Linq;
 
 public static class ApplicationContext
 {
@@ -65,9 +66,8 @@ public static class ApplicationContext
     /// </summary>
     public static void UpdateUserData(Dictionary<string, UserDataRecord> dict)
     {
-        var dictJson = Utf8Json.JsonSerializer.ToJsonString(dict);
-        var userData = Utf8Json.JsonSerializer.Deserialize<UserDataInfo>(dictJson);
-        UpdateUserData(userData);
+        var strDict = dict.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Value);
+        userData = GetUserData(strDict);
     }
 
     /// <summary>
@@ -76,20 +76,25 @@ public static class ApplicationContext
     /// <param name="dict">更新したい値のキーとその値を保持した辞書</param>
     public static void UpdateUserData(Dictionary<UserDataKey, object> dict)
     {
-        var userData = ApplicationContext.userData;
+        var strDict = dict.ToDictionary(kvp => kvp.Key.ToString(), kvp => Utf8Json.JsonSerializer.ToJsonString(kvp.Value));
+        userData = GetUserData(strDict);
+    }
+
+    /// <summary>
+    /// パラム名とその値のJsonからユーザーデータを返します
+    /// </summary>
+    /// <param name="dict">Dict.</param>
+    private static UserDataInfo GetUserData(Dictionary<string,string> dict)
+    {
+        var userData = new UserDataInfo();
 
         foreach(var kvp in dict)
         {
-            switch (kvp.Key)
-            {
-                case UserDataKey.userMonsterList:
-                    userData.userMonsterList = kvp.Value as List<UserMonsterInfo>;
-                    break;
-                default:
-                    break;
+            if(kvp.Key == UserDataKey.userMonsterList.ToString()) {
+                userData.userMonsterList = Utf8Json.JsonSerializer.Deserialize<List<UserMonsterInfo>>(kvp.Value);
             }
         }
 
-        ApplicationContext.userData = userData;
+        return userData;
     }
 }
