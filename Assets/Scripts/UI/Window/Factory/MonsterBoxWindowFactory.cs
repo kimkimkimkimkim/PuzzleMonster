@@ -10,6 +10,7 @@ public class MonsterBoxWindowFactory
         return Observable.Create<MonsterBoxWindowResponse>(observer =>
         {
             var param = new Dictionary<string, object>();
+            param.Add("userMonsterList", request.userMontserList);
             param.Add("onClose", new Action(() =>
             {
                 observer.OnNext(new MonsterBoxWindowResponse());

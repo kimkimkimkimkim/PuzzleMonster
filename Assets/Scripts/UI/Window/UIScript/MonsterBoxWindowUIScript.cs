@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using GameBase;
 using UniRx;
 using UnityEngine;
@@ -7,14 +9,41 @@ using UnityEngine.UI;
 public class MonsterBoxWindowUIScript : WindowBase
 {
     [SerializeField] protected Button _backButton;
+    [SerializeField] protected InfiniteScroll _infiniteScroll;
+
+    private List<UserMonsterInfo> userMonsterList;
 
     public override void Init(WindowInfo info)
     {
         base.Init(info);
 
+        userMonsterList = (List<UserMonsterInfo>)info.param["userMonsterList"];
+
         _backButton.OnClickIntentAsObservable()
             .Do(_ => UIManager.Instance.CloseWindow())
             .Subscribe();
+
+        RefreshScroll();
+    }
+
+    private void RefreshScroll()
+    {
+        _infiniteScroll.Clear();
+
+        if (userMonsterList.Any()) _infiniteScroll.Init(userMonsterList.Count, OnUpdateItem);
+    }
+
+    private void OnUpdateItem(int index, GameObject item)
+    {
+        if ((userMonsterList.Count <= index) || (index < 0)) return;
+
+        var scrollItem = item.GetComponent<MonsterBoxScrollItem>();
+        var userMonster = userMonsterList[index];
+
+        scrollItem.SetGradeImage(userMonster.grade);
+        scrollItem.SetOnClickAction(() =>
+        {
+        });
     }
 
     public override void Open(WindowInfo info)
