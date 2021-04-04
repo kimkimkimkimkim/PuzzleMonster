@@ -84,6 +84,7 @@ namespace PM
             /// </summary>
             public enum IconImageType
             {
+                None,
                 Monster,
             }
         }
@@ -96,9 +97,19 @@ namespace PM
             public enum ItemType
             {
                 /// <summary>
+                /// 初期値
+                /// </summary>
+                None = 0,
+
+                /// <summary>
                 /// 仮想通貨
                 /// </summary>
                 VirtualCurrency = 1,
+
+                /// <summary>
+                /// モンスター
+                /// </summary>
+                Monster,
             }
 
             /// <summary>

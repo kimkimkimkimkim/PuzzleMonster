@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using PM.Enum.Item;
+using PM.Enum.UI;
 
 public static class ItemUtil
 {
@@ -18,5 +20,19 @@ public static class ItemUtil
                 grade = m.initialGrade,
             };
         }).ToList();
+    }
+
+    /// <summary>
+    /// アイコン画像タイプを取得する
+    /// </summary>
+    public static IconImageType GetIconImageType(ItemType itemType)
+    {
+        switch (itemType)
+        {
+            case ItemType.Monster:
+                return IconImageType.Monster;
+            default:
+                return IconImageType.None;
+        }
     }
 }

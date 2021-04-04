@@ -58,6 +58,19 @@ public partial class ApiConnection
                 userMonsterList.AddRange(ItemUtil.GetUserMonsterList(rewardMonsterList));
                 return UpdateUserData(new Dictionary<UserDataKey, object>() { { UserDataKey.userMonsterList, userMonsterList } });
             })
-            .Select(_ => new ExecuteGachaApiResponse());
+            .Select(_ => {
+                // モンスターマスタリストからItemMIリストに変換
+                var rewardItemList = rewardMonsterList.Select(m => new ItemMI()
+                {
+                    itemType = ItemType.Monster,
+                    itemId = m.id,
+                    num = 1,
+                }).ToList();
+                return new ExecuteGachaApiResponse()
+                {
+                    isSuccess = true,
+                    rewardItemList = rewardItemList
+                };
+            });
     }
 }

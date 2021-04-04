@@ -46,17 +46,12 @@ public class GachaWindowUIScript : WindowBase
             })
                 .Where(res => res.dialogResponseType == DialogResponseType.Yes)
                 .SelectMany(_ => ApiConnection.ExecuteGacha(new ExecuteGachaApiRequest() { gachaBoxDetailId = 1 }))
-                .Subscribe();
-                /*
-                .SelectMany(_ => ApiConnection.DropItem(DropTableType.NormalGachaSingle))
-                .SelectMany(res => CommonDialogFactory.Create(new CommonDialogRequest()
+                .Where(res => res.isSuccess)
+                .SelectMany(res => GachaResultDialogFactory.Create(new GachaResultDialogRequest()
                 {
-                    commonDialogType = CommonDialogType.YesOnly,
-                    title = "ガチャ結果",
-                    content = $"itemId : {res[0].ItemId}\nitemClass : {res[0].ItemClass}\nを取得しました",
+                    itemList = res.rewardItemList
                 }))
-                .Subscribe();
-                */               
+                .Subscribe();            
         });
     }
 
