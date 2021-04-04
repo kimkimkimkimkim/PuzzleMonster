@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace GameBase
 {
@@ -37,7 +38,7 @@ namespace GameBase
         /// </summary>
         public static T GetResponse<T>(string json)
         {
-            return Utf8Json.JsonSerializer.Deserialize<T>(json);
+            return JsonConvert.DeserializeObject<T>(json);
         }
     }
 }

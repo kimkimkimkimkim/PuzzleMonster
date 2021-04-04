@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using UniRx;
 using PM.Enum.Data;
 using System.Linq;
+using Newtonsoft.Json;
 
 public partial class ApiConnection
 {
@@ -92,7 +93,7 @@ public partial class ApiConnection
     /// </summary>
     public static IObservable<UpdateUserDataResult> UpdateUserData(Dictionary<UserDataKey,object> dict)
     {
-        var data = dict.ToDictionary(kvp => kvp.Key.ToString(),kvp => Utf8Json.JsonSerializer.ToJsonString(kvp.Value));
+        var data = dict.ToDictionary(kvp => kvp.Key.ToString(),kvp => JsonConvert.SerializeObject(kvp.Value));
         return SendRequest<UpdateUserDataRequest, UpdateUserDataResult>(ApiType.UpdateUserData, new UpdateUserDataRequest()
         {
             Data = data,

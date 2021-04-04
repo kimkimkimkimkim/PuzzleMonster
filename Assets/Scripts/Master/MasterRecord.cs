@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GameBase;
+using Newtonsoft.Json;
 
 static class MasterRecord
 {
@@ -41,7 +42,7 @@ static class MasterRecord
 
         // 指定のマスタデータのjsonを取得
         var json = cacheTitleData[key];
-        var data = Utf8Json.JsonSerializer.Deserialize<T[]>(json);
+        var data = JsonConvert.DeserializeObject<T[]>(json);
 
         // キャッシュに追加
         var container = new MasterContentContainer<T>()

@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using PM.Enum.Data;
 using System.Linq;
+using Newtonsoft.Json;
 
 public static class ApplicationContext
 {
@@ -76,7 +77,7 @@ public static class ApplicationContext
     /// <param name="dict">更新したい値のキーとその値を保持した辞書</param>
     public static void UpdateUserData(Dictionary<UserDataKey, object> dict)
     {
-        var strDict = dict.ToDictionary(kvp => kvp.Key.ToString(), kvp => Utf8Json.JsonSerializer.ToJsonString(kvp.Value));
+        var strDict = dict.ToDictionary(kvp => kvp.Key.ToString(), kvp => JsonConvert.SerializeObject(kvp.Value));
         userData = GetUserData(strDict);
     }
 
@@ -91,7 +92,7 @@ public static class ApplicationContext
         foreach(var kvp in dict)
         {
             if(kvp.Key == UserDataKey.userMonsterList.ToString()) {
-                userData.userMonsterList = Utf8Json.JsonSerializer.Deserialize<List<UserMonsterInfo>>(kvp.Value);
+                userData.userMonsterList = JsonConvert.DeserializeObject<List<UserMonsterInfo>>(kvp.Value);
             }
         }
 
