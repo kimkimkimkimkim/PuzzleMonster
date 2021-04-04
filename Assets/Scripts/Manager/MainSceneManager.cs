@@ -9,7 +9,7 @@ public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
     private void Start()
     {
         // タイトル画面の表示
-        titleUIScript = UIManager.Instance.CreateContent<TitleWindowUIScript>(UIManager.Instance.windowParent);
+        titleUIScript = UIManager.Instance.CreateDummyWindow<TitleWindowUIScript>();
         titleUIScript.ShowTapToStartButton(false);
         titleUIScript.SetOnClickAction(() => StartGame());
 

@@ -573,6 +573,26 @@ namespace GameBase
 
         #endregion Popup Method
 
+        #region DummyWindow
+        public T CreateDummyWindow<T>(Transform parent = null) where T : DummyWindowBase
+        {
+            if (parent == null) parent = windowParent;
+            var dummyWindow = CreateContent<T>(parent);
+
+            // サイズ修正
+            if (dummyWindow._windowFrameRT != null)
+            {
+                dummyWindow._windowFrameRT.SetStretchedRectOffset(0, HEADER_HEIGHT, 0, FOOTER_HEIGHT);
+            }
+            if (dummyWindow._fullScreenBaseRT != null)
+            {
+                dummyWindow._fullScreenBaseRT.SetStretchedRectOffset(0, -topMargin, 0, -bottomMargin);
+            }
+
+            return dummyWindow;
+        }
+        #endregion DummyWindow
+
         public T CreateContent<T>(Transform parent = null) where T : MonoBehaviour
         {
             ResourcePathAttribute attr = (ResourcePathAttribute)Attribute.GetCustomAttribute(typeof(T), typeof(ResourcePathAttribute));

@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [ResourcePath("UI/Window/Window-Title")]
-public class TitleWindowUIScript : MonoBehaviour
+public class TitleWindowUIScript : DummyWindowBase
 {
     [SerializeField] protected GameObject _tapToStartButtonBase;
     [SerializeField] protected Button _tapToStartButton;
