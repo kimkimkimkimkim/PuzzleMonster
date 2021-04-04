@@ -5,19 +5,19 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
-[ResourcePath("UI/Window/Window-MonsterBox")]
-public class MonsterBoxWindowUIScript : WindowBase
+[ResourcePath("UI/Window/Window-QuestCategory")]
+public class QuestCategoryWindowUIScript : WindowBase
 {
     [SerializeField] protected Button _backButton;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
 
-    private List<UserMonsterInfo> userMonsterList;
+    private List<QuestCategoryMB> questCategoryList;
 
     public override void Init(WindowInfo info)
     {
         base.Init(info);
 
-        userMonsterList = (List<UserMonsterInfo>)info.param["userMonsterList"];
+        questCategoryList = MasterRecord.GetMasterOf<QuestCategoryMB>().GetAll().ToList();
 
         _backButton.OnClickIntentAsObservable()
             .Do(_ => UIManager.Instance.CloseWindow())
@@ -37,20 +37,20 @@ public class MonsterBoxWindowUIScript : WindowBase
     {
         _infiniteScroll.Clear();
 
-        if (userMonsterList.Any()) _infiniteScroll.Init(userMonsterList.Count, OnUpdateItem);
+        if (questCategoryList.Any()) _infiniteScroll.Init(questCategoryList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)
     {
-        if ((userMonsterList.Count <= index) || (index < 0)) return;
+        if ((questCategoryList.Count <= index) || (index < 0)) return;
 
-        var scrollItem = item.GetComponent<MonsterBoxScrollItem>();
-        var userMonster = userMonsterList[index];
+        var scrollItem = item.GetComponent<QuestCategoryScrollItem>();
+        var questCategory = questCategoryList[index];
 
-        scrollItem.SetGradeImage(userMonster.grade);
-        scrollItem.SetMonsterImage(userMonster.monsterId);
+        scrollItem.SetText(questCategory.name);
         scrollItem.SetOnClickAction(() =>
         {
+
         });
     }
 

@@ -14,7 +14,7 @@ namespace GameBase
         public GameObject _windowFrame;
         public RectTransform _fullScreenBaseRT; // セーフエリアにかかわらず画面サイズで表示されるUI
 
-        private Action onClose;
+        protected Action onClose;
 
         /// <summary>
         /// UIが生成された時に必ず一度だけ呼ばれます。

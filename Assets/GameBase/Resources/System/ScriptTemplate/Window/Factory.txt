@@ -10,7 +10,7 @@ public class #CLASS_NAME#WindowFactory
         return Observable.Create<#CLASS_NAME#WindowResponse>(observer =>
         {
             var param = new Dictionary<string, object>();
-            param.Add("onClose", new Action(() =>
+            param.Add("onClickClose", new Action(() =>
             {
                 observer.OnNext(new #CLASS_NAME#WindowResponse());
                 observer.OnCompleted();

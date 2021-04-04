@@ -8,8 +8,14 @@ using UnityEngine.UI;
 public class ScrollItem : MonoBehaviour
 {
     [SerializeField] protected Button _button;
+    [SerializeField] protected Text _text;
 
     private IDisposable onClickButtonObservable;
+
+    public void SetText(string text)
+    {
+        _text.text = text;
+    }
 
     public void SetOnClickAction(Action action) {
         if (action == null) return;

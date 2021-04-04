@@ -27,6 +27,8 @@ static class MasterRecord
         LoadMasterData<MonsterMB>();
         LoadMasterData<GachaBoxDetailMB>();
         LoadMasterData<VirtualCurrencyMB>();
+        LoadMasterData<QuestCategoryMB>();
+        LoadMasterData<QuestMB>();
     }
 
     /// <summary>
