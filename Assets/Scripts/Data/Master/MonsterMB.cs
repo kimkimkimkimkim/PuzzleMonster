@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using PM.Enum.Gacha;
+
 /// <summary>
 /// モンスターマスターデータ
 /// </summary>
+[Description("MonsterMB")]
 public class MonsterMB : MasterBookBase
 {
     /// <summary>

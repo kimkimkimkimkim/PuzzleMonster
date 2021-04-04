@@ -1,4 +1,10 @@
-﻿public class VirtualCurrencyMB : MasterBookBase
+﻿using System.ComponentModel;
+
+/// <summary>
+///  仮想通貨マスタ
+/// </summary>
+[Description("VirtualCurrencyMB")]
+public class VirtualCurrencyMB : MasterBookBase
 {
     /// <summary>
     /// 名前

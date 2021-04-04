@@ -163,5 +163,16 @@ namespace PM
                 userMonsterList,
             }
         }
+
+        namespace Quest
+        {
+            /// <summary>
+            /// クエストタイプ
+            /// </summary>
+            public enum QuestType
+            {
+                Normal,
+            }
+        }
     }
 }
