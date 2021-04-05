@@ -35,6 +35,7 @@ public class GachaWindowUIScript : WindowBase
 
         var scrollItem = item.GetComponent<GachaBoxScrollItem>();
         var gachaBox = gachaBoxList[index];
+        var gachaBoxDetail = MasterRecord.GetMasterOf<GachaBoxDetailMB>().GetAll().First(m => m.gachaBoxId == gachaBox.id);
 
         scrollItem.SetOnClickAction(() =>
         {
@@ -45,13 +46,12 @@ public class GachaWindowUIScript : WindowBase
                 content = "オーブを0個使用してガチャを1回まわしますか？",
             })
                 .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-                .SelectMany(_ => ApiConnection.ExecuteGacha(new ExecuteGachaApiRequest() { gachaBoxDetailId = 1 }))
-                .Where(res => res.isSuccess)
+                .SelectMany(_ => ApiConnection.DropItem(gachaBoxDetail.dropTableId))
                 .SelectMany(res => GachaResultDialogFactory.Create(new GachaResultDialogRequest()
                 {
-                    itemList = res.rewardItemList
+                    itemList = ItemUtil.GetItemMI(res)
                 }))
-                .Subscribe();            
+                .Subscribe();
         });
     }
 

@@ -11,9 +11,9 @@ public class GachaBoxDetailMB : MasterBookBase
     public long gachaBoxId { get; set; }
 
     /// <summary>
-    /// ガチャボックスタイプリスト
+    /// PlayFabで設定しているドロップテーブルID
     /// </summary>
-    public List<GachaBoxType> gachaBoxTypeList { get; set; }
+    public string dropTableId { get; set; }
 
     /// <summary>
     /// 必要アイテムリスト

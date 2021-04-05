@@ -106,11 +106,11 @@ public partial class ApiConnection
     /// <summary>
     /// ガチャを実行する
     /// </summary>
-    public static IObservable<List<ItemInstance>> DropItem(DropTableType dropTableType)
+    public static IObservable<List<ItemInstance>> DropItem(string dropTableId)
     {
         return SendRequest<DropItemApiRequest, List<ItemInstance>>(DropItemApiInterface.functionName, new DropItemApiRequest()
         {
-            dropTableName = dropTableType.ToString(),
+            dropTableName = dropTableId,
         });
     }
     #endregion

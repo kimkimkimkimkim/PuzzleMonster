@@ -33,11 +33,7 @@ public partial class ApiConnection
         if(!isEnough) return Observable.Return<ExecuteGachaApiResponse>(new ExecuteGachaApiResponse() { isSuccess = false });
 
         // 対象モンスターを取得
-        var monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().Where(m =>
-        {
-            // モンスターのガチャボックスタイプが１つでもガチャのガチャボックスタイプに含まれていたら対象モンスター
-            return m.gachaBoxTypeList.Any(t => gachaBoxDetail.gachaBoxTypeList.Contains(t));
-        }).ToList();
+        var monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().ToList();
         var rewardMonsterList = new List<MonsterMB>();
         var seed = Environment.TickCount;
         for (var i = 0; i < gachaBoxDetail.dropNum; i++)

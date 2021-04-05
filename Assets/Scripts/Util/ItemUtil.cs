@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using PlayFab.ClientModels;
 using PM.Enum.Item;
 using PM.Enum.UI;
 
@@ -20,6 +21,49 @@ public static class ItemUtil
                 grade = m.initialGrade,
             };
         }).ToList();
+    }
+
+    /// <summary>
+    /// ItemInstanceからItemMIを返す
+    /// </summary>
+    public static List<ItemMI> GetItemMI(List<ItemInstance> itemInstanceList)
+    {
+        return itemInstanceList.Select(i =>
+        {
+
+            return new ItemMI()
+            {
+                itemType = GetItemType(i),
+                itemId = GetItemId(i),
+                num = 1,
+            };
+        }).ToList();
+    }
+
+    /// <summary>
+    /// ItemInstanceからIdを返す
+    /// </summary>
+    private static long GetItemId(ItemInstance itemInstance)
+    {
+        // ItemInstanceのIdは「ItemType名+ID値」となっている
+        var itemTypeWordCount = itemInstance.ItemClass.Length;
+        var itemInstanceId = itemInstance.ItemId;
+        var id = itemInstanceId.Substring(itemTypeWordCount);
+        return long.Parse(id);
+    }
+
+    /// <summary>
+    /// ItemInstanceからItemTypeを返す
+    /// </summary>
+    private static ItemType GetItemType(ItemInstance itemInstance)
+    {
+        // ItemInstanceのClassはItemTypeと等しい
+        foreach (ItemType itemType in Enum.GetValues(typeof(ItemType)))
+        {
+            if (itemInstance.ItemClass == itemType.ToString()) return itemType;
+        }
+
+        return ItemType.None;
     }
 
     /// <summary>
