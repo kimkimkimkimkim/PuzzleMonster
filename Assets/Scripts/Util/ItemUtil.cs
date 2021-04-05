@@ -12,15 +12,20 @@ public static class ItemUtil
     /// </summary>
     public static List<UserMonsterInfo> GetUserMonsterList(List<MonsterMB> monsterList)
     {
-        return monsterList.Select(m =>
+        return monsterList.Select(m => GetUserMonster(m)).ToList();
+    }
+
+    /// <summary>
+    /// モンスターマスタからユーザーモンスターデータを作成する
+    /// </summary>
+    public static UserMonsterInfo GetUserMonster(MonsterMB monster)
+    {
+        return new UserMonsterInfo()
         {
-            return new UserMonsterInfo()
-            {
-                id = Guid.NewGuid().ToString(),
-                monsterId = m.id,
-                grade = m.initialGrade,
-            };
-        }).ToList();
+            id = Guid.NewGuid().ToString(),
+            monsterId = monster.id,
+            grade = monster.initialGrade,
+        };
     }
 
     /// <summary>
@@ -43,7 +48,7 @@ public static class ItemUtil
     /// <summary>
     /// ItemInstanceからIdを返す
     /// </summary>
-    private static long GetItemId(ItemInstance itemInstance)
+    public static long GetItemId(ItemInstance itemInstance)
     {
         // ItemInstanceのIdは「ItemType名+ID値」となっている
         var itemTypeWordCount = itemInstance.ItemClass.Length;
@@ -55,7 +60,7 @@ public static class ItemUtil
     /// <summary>
     /// ItemInstanceからItemTypeを返す
     /// </summary>
-    private static ItemType GetItemType(ItemInstance itemInstance)
+    public static ItemType GetItemType(ItemInstance itemInstance)
     {
         // ItemInstanceのClassはItemTypeと等しい
         foreach (ItemType itemType in Enum.GetValues(typeof(ItemType)))

@@ -44,7 +44,8 @@ public partial class ApiConnection
         return SendRequest<UpdateUserTitleDisplayNameRequest, UpdateUserTitleDisplayNameResult>(ApiType.UpdateUserTitleDisplayName, new UpdateUserTitleDisplayNameRequest()
         {
             DisplayName = userName
-        });
+        })
+            .SelectMany(res => ApplicationContext.UpdateUserDataObservable().Select(_ => res)); ;
     }
 
     /// <summary>
@@ -67,7 +68,8 @@ public partial class ApiConnection
         {
             Amount = num,
             VirtualCurrency = type.ToString(),
-        });
+        })
+            .SelectMany(res => ApplicationContext.UpdateUserDataObservable().Select(_ => res)); ;
     }
 
     /// <summary>
@@ -98,7 +100,7 @@ public partial class ApiConnection
         {
             Data = data,
         })
-        .Do(_ => ApplicationContext.UpdateUserData(dict));
+            .Do(_ => ApplicationContext.UpdateUserData(dict));
     }
     #endregion
 
@@ -111,7 +113,8 @@ public partial class ApiConnection
         return SendRequest<DropItemApiRequest, List<ItemInstance>>(DropItemApiInterface.functionName, new DropItemApiRequest()
         {
             dropTableName = dropTableId,
-        });
+        })
+            .SelectMany(res => ApplicationContext.UpdateUserDataObservable().Select(_ => res));
     }
     #endregion
 }
