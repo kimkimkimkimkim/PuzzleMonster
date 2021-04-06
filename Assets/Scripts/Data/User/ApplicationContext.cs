@@ -93,9 +93,12 @@ public static class ApplicationContext
     /// </summary>
     public static IObservable<Unit> UpdateUserDataObservable()
     {
+        // 一旦初期化
+        userData = new UserDataInfo();
+
         // ユーザーデータの更新
         // GetUserInventoryより前に実行する
-        return ApiConnection.GetUserData()
+        return ApiConnection.GetUserData() // PlayFabのユーザーデータと同期する
             .SelectMany(_ => ApiConnection.GetUserInventory().Do(res =>
             {
                 // ユーザーインベントリ情報の更新
@@ -142,6 +145,15 @@ public static class ApplicationContext
                         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(ItemUtil.GetItemId(i));
                         userData.userMonsterList.Add(ItemUtil.GetUserMonster(monster));
                     }
+                    break;
+                case ItemType.Property:
+                    var userProperty = new UserPropertyInfo()
+                    {
+                        id = i.ItemId,
+                        propertyId = ItemUtil.GetItemId(i),
+                        num = i.RemainingUses ?? 0,
+                    };
+                    userData.userPropertyList.Add(userProperty);
                     break;
                 case ItemType.VirtualCurrency:
                 default:

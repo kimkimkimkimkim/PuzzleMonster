@@ -91,6 +91,29 @@ public partial class ApiConnection
     }
 
     /// <summary>
+    /// ユーザーモンスターリストを取得する
+    /// </summary>
+    public static IObservable<List<UserMonsterInfo>> GetUserMonsterList()
+    {
+        return SendRequest<GetUserDataRequest, GetUserDataResult>(ApiType.GetUserData, new GetUserDataRequest()
+        {
+            Keys = new List<string>() { UserDataKey.userMonsterList.ToString() },
+        })
+            .Select(res =>
+            {
+                var userMonsterList = new List<UserMonsterInfo>();
+                foreach(var kvp in res.Data)
+                {
+                    if(kvp.Key == UserDataKey.userMonsterList.ToString())
+                    {
+                        userMonsterList = JsonConvert.DeserializeObject<List<UserMonsterInfo>>(kvp.Value.Value);
+                    }
+                }
+                return userMonsterList;
+            });
+    }
+
+    /// <summary>
     /// ユーザーデータを更新する
     /// </summary>
     public static IObservable<UpdateUserDataResult> UpdateUserData(Dictionary<UserDataKey,object> dict)

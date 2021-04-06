@@ -110,6 +110,11 @@ namespace PM
                 /// モンスター
                 /// </summary>
                 Monster,
+
+                /// <summary>
+                /// 資産
+                /// </summary>
+                Property,
             }
 
             /// <summary>
@@ -161,6 +166,7 @@ namespace PM
             public enum UserDataKey
             {
                 userMonsterList,
+                userPropertyList,
             }
         }
 
