@@ -58,6 +58,14 @@ public static class ItemUtil
     }
 
     /// <summary>
+    /// PlayFabのアイテムIDを返す
+    /// </summary>
+    public static string GetItemId(ItemType type,long id)
+    {
+        return $"{type}{id}";
+    }
+
+    /// <summary>
     /// ItemInstanceからItemTypeを返す
     /// </summary>
     public static ItemType GetItemType(ItemInstance itemInstance)

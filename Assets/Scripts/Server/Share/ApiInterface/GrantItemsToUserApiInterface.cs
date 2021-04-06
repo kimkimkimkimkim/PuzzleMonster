@@ -10,5 +10,5 @@ public class GrantItemsToUserApiRequest
     /// <summary>
     /// 付与するアイテムのアイテムIDリスト
     /// </summary>
-    public List<string> itemIdList { get; set; }
+    public List<string> itemIdList;
 }

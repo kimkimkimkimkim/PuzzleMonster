@@ -29,6 +29,8 @@ static class MasterRecord
         LoadMasterData<VirtualCurrencyMB>();
         LoadMasterData<QuestCategoryMB>();
         LoadMasterData<QuestMB>();
+        LoadMasterData<PropertyMB>();
+        LoadMasterData<MonsterLevelUpTableMB>();
     }
 
     /// <summary>

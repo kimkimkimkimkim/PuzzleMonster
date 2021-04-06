@@ -154,7 +154,7 @@ public partial class ApiConnection
     /// <summary>
     /// インベントリのアイテムをユーザーに付与する
     /// </summary>
-    public static IObservable<List<ItemInstance>> GrantItemToUser(List<string> itemIdList)
+    public static IObservable<List<ItemInstance>> GrantItemsToUser(List<string> itemIdList)
     {
         return SendRequest<GrantItemsToUserApiRequest, List<ItemInstance>>(GrantItemsToUserApiInterface.functionName, new GrantItemsToUserApiRequest()
         {

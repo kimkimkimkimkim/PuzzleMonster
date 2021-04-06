@@ -93,6 +93,7 @@ namespace PM
         {
             /// <summary>
             /// アイテムタイプ
+            /// インベントリアイテムのクラスとも対応
             /// </summary>
             public enum ItemType
             {
@@ -131,6 +132,23 @@ namespace PM
                 /// コイン
                 /// </summary>
                 CN = 2,
+            }
+
+            /// <summary>
+            /// 資産タイプ
+            /// PropertyMBのIDと対応
+            /// </summary>
+            public enum PropertyType
+            {
+                /// <summary>
+                /// プレイヤー経験値
+                /// </summary>
+                PlayerExp = 1,
+
+                /// <summary>
+                /// モンスター経験値
+                /// </summary>
+                MonsterExp = 2,
             }
         }
 
