@@ -65,6 +65,9 @@ public partial class ApiConnection
             case ApiType.UpdateUserData:
                 PlayFabClientAPI.UpdateUserData(request as UpdateUserDataRequest, res => callback(res as TResp), error => onErrorAction(error));
                 break;
+            case ApiType.GrantCharacterToUser:
+                PlayFabClientAPI.GrantCharacterToUser(request as GrantCharacterToUserRequest, res => callback(res as TResp), error => onErrorAction(error));
+                break;
             default:
                 break;
         }
@@ -80,6 +83,7 @@ public partial class ApiConnection
         GetTitleData,
         GetUserData,
         UpdateUserData,
+        GrantCharacterToUser,
     }
     #endregion
 

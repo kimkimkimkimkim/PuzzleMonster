@@ -102,6 +102,18 @@ public partial class ApiConnection
         })
             .Do(_ => ApplicationContext.UpdateUserData(dict));
     }
+
+    /// <summary>
+    /// ユーザーにキャラクターデータを追加する
+    /// </summary>
+    public static IObservable<GrantCharacterToUserResult> GrantCharacterToUser(ItemInstance item)
+    {
+        return SendRequest<GrantCharacterToUserRequest, GrantCharacterToUserResult>(ApiType.GrantCharacterToUser, new GrantCharacterToUserRequest()
+        {
+            CharacterName = item.DisplayName,
+            ItemId = item.ItemId,
+        });
+    }
     #endregion
 
     #region CloudFunction
@@ -113,8 +125,8 @@ public partial class ApiConnection
         return SendRequest<DropItemApiRequest, List<ItemInstance>>(DropItemApiInterface.functionName, new DropItemApiRequest()
         {
             dropTableName = dropTableId,
-        })
-            .SelectMany(res => ApplicationContext.UpdateUserDataObservable().Select(_ => res));
+        }).SelectMany(res => ApplicationContext.UpdateUserDataObservable().Select(_ => res));
     }
+
     #endregion
 }
