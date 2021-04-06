@@ -151,5 +151,15 @@ public partial class ApiConnection
         }).SelectMany(res => ApplicationContext.UpdateUserDataObservable().Select(_ => res));
     }
 
+    /// <summary>
+    /// インベントリのアイテムをユーザーに付与する
+    /// </summary>
+    public static IObservable<List<ItemInstance>> GrantItemToUser(List<string> itemIdList)
+    {
+        return SendRequest<GrantItemsToUserApiRequest, List<ItemInstance>>(GrantItemsToUserApiInterface.functionName, new GrantItemsToUserApiRequest()
+        {
+            itemIdList = itemIdList,
+        });
+    }
     #endregion
 }

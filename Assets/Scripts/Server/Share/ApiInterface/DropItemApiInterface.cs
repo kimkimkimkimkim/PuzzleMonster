@@ -8,5 +8,5 @@ public class DropItemApiRequest
     /// <summary>
     /// ドロップテーブル名
     /// </summary>
-    public string dropTableName;
+    public string dropTableName { get; set; }
 }
