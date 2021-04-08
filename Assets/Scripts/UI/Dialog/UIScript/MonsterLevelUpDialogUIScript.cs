@@ -8,11 +8,10 @@ using UnityEngine.UI;
 using GameBase;
 using PM.Enum.UI;
 
-[ResourcePath("UI/Dialog/Dialog-MonsterDetail")]
-public class MonsterDetailDialogUIScript : DialogBase
+[ResourcePath("UI/Dialog/Dialog-MonsterLevelUp")]
+public class MonsterLevelUpDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
-    [SerializeField] protected Button _levelUpButton;
 
     public override void Init(DialogInfo info)
     {
@@ -27,10 +26,6 @@ public class MonsterDetailDialogUIScript : DialogBase
                     onClickClose = null;
                 }
             })
-            .Subscribe();
-
-        _levelUpButton.OnClickIntentAsObservable()
-            .SelectMany(_ => MonsterLevelUpDialogFactory.Create(new MonsterLevelUpDialogRequest()))
             .Subscribe();
     }
 
