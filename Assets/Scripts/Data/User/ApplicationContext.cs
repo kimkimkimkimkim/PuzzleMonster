@@ -55,7 +55,7 @@ public static class ApplicationContext
     public static void UpdateUserData(Dictionary<string, UserDataRecord> dict)
     {
         var strDict = dict.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Value);
-        userData = GetUserData(strDict);
+        userData = UserDataUtil.GetUserData(strDict);
     }
 
     /// <summary>
@@ -65,31 +65,12 @@ public static class ApplicationContext
     public static void UpdateUserData(Dictionary<UserDataKey, object> dict)
     {
         var strDict = dict.ToDictionary(kvp => kvp.Key.ToString(), kvp => JsonConvert.SerializeObject(kvp.Value));
-        userData = GetUserData(strDict);
-    }
-
-    /// <summary>
-    /// パラム名とその値のJsonからユーザーデータを返します
-    /// </summary>
-    /// <param name="dict">Dict.</param>
-    private static UserDataInfo GetUserData(Dictionary<string,string> dict)
-    {
-        var userData = new UserDataInfo();
-
-        foreach(var kvp in dict)
-        {
-            if(kvp.Key == UserDataKey.userMonsterList.ToString()) {
-                userData.userMonsterList = JsonConvert.DeserializeObject<List<UserMonsterInfo>>(kvp.Value);
-            }
-        }
-
-        return userData;
+        userData = UserDataUtil.GetUserData(strDict);
     }
 
     /// <summary>
     /// ユーザーデータを更新
     /// ユーザーデータが更新されるタイミングでは毎回これを呼ぶ
-    /// TODO : いずれこのユーザーデータ更新処理はサーバー側に移す
     /// </summary>
     public static IObservable<Unit> UpdateUserDataObservable()
     {
@@ -106,10 +87,6 @@ public static class ApplicationContext
 
                 // インベントリ情報によるユーザーデータの更新
                 UpdateUserData(res.Inventory);
-            }))
-            .SelectMany(_ => ApiConnection.UpdateUserData(new Dictionary<UserDataKey, object>()
-            {
-                {UserDataKey.userMonsterList, userData.userMonsterList},
             }))
             .AsUnitObservable();
     }
@@ -128,7 +105,7 @@ public static class ApplicationContext
     }
 
     /// <summary>
-    /// ユーザーデータが更新されていることを前提にインベントリ情報を元にキャッシュユーザーデータとサーバーユーザーデータを更新
+    /// インベントリ情報を元にキャッシュユーザーデータとサーバーユーザーデータを更新
     /// </summary>
     private static void UpdateUserData(List<ItemInstance> itemInstanceList)
     {
@@ -137,15 +114,6 @@ public static class ApplicationContext
             var itemType = ItemUtil.GetItemType(i);
             switch (itemType)
             {
-                case ItemType.Monster:
-                    var userMonster = userData.userMonsterList.FirstOrDefault(u => u.monsterId == ItemUtil.GetItemId(i));
-                    if (userMonster == null)
-                    {
-                        // 新規作成
-                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(ItemUtil.GetItemId(i));
-                        userData.userMonsterList.Add(ItemUtil.GetUserMonster(monster));
-                    }
-                    break;
                 case ItemType.Property:
                     var userProperty = new UserPropertyInfo()
                     {

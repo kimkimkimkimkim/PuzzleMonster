@@ -22,7 +22,7 @@ public static class ItemUtil
     {
         return new UserMonsterInfo()
         {
-            id = Guid.NewGuid().ToString(),
+            id = UserDataUtil.CreateUserDataId(),
             monsterId = monster.id,
             grade = monster.initialGrade,
         };
