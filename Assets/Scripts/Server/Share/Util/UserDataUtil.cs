@@ -33,6 +33,7 @@ public static class UserDataUtil
     /// GetUserDataApiのレスポンスからユーザーデータを作成します
     /// サーバー用
     /// </summary>
+#if !UNITY_EDITOR
     public static UserDataInfo GetUserData(Dictionary<string, PlayFab.ServerModels.UserDataRecord> dict)
     {
         var userDataDict = dict.ToDictionary(kvp => kvp.Key, kvp => JsonConvert.DeserializeObject<object>(kvp.Value.Value));
@@ -40,4 +41,5 @@ public static class UserDataUtil
         var userData = JsonConvert.DeserializeObject<UserDataInfo>(userDataDictJson);
         return userData;
     }
+#endif
 }
