@@ -114,6 +114,7 @@ public partial class ApiConnection
 
     /// <summary>
     /// ユーザーデータを更新する
+    /// 開発用
     /// </summary>
     public static IObservable<UpdateUserDataResult> UpdateUserData(Dictionary<UserDataKey,object> dict)
     {
@@ -121,8 +122,7 @@ public partial class ApiConnection
         return SendRequest<UpdateUserDataRequest, UpdateUserDataResult>(ApiType.UpdateUserData, new UpdateUserDataRequest()
         {
             Data = data,
-        })
-            .Do(_ => ApplicationContext.UpdateUserData(dict));
+        });
     }
 
     /// <summary>

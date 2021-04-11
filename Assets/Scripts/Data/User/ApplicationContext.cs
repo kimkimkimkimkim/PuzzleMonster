@@ -51,25 +51,6 @@ public static class ApplicationContext
     }
 
     /// <summary>
-    /// サーバーから取得したユーザーデータ情報でキャッシュを更新する
-    /// </summary>
-    public static void UpdateUserData(Dictionary<string, UserDataRecord> dict)
-    {
-        var strDict = dict.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Value);
-        userData = UserDataUtil.GetUserData(strDict);
-    }
-
-    /// <summary>
-    /// 指定したキーの値だけを更新する
-    /// </summary>
-    /// <param name="dict">更新したい値のキーとその値を保持した辞書</param>
-    public static void UpdateUserData(Dictionary<UserDataKey, object> dict)
-    {
-        var strDict = dict.ToDictionary(kvp => kvp.Key.ToString(), kvp => JsonConvert.SerializeObject(kvp.Value));
-        userData = UserDataUtil.GetUserData(strDict);
-    }
-
-    /// <summary>
     /// ユーザーデータを更新
     /// ユーザーデータが更新されるタイミングでは毎回これを呼ぶ
     /// </summary>

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using PlayFab.ClientModels;
 using PM.Enum.Data;
 
 /// <summary>
@@ -19,29 +18,22 @@ public static class UserDataUtil
     }
 
     /// <summary>
-    /// パラム名とその値のJsonからユーザーデータを返します
+    /// GetUserDataApiのレスポンスからユーザーデータを作成します
+    /// クライアント用
     /// </summary>
-    /// string : "userMonsterList"
-    /// string : "[{"id":1,"name":"ヒコザル"}]"
-    public static UserDataInfo GetUserData(Dictionary<string, string> dict)
+    public static UserDataInfo GetUserData(Dictionary<string, PlayFab.ClientModels.UserDataRecord> dict)
     {
-        var userData = new UserDataInfo();
-
-        foreach (var kvp in dict)
-        {
-            if (kvp.Key == UserDataKey.userMonsterList.ToString())
-            {
-                userData.userMonsterList = JsonConvert.DeserializeObject<List<UserMonsterInfo>>(kvp.Value);
-            }
-        }
-
+        var userDataDict = dict.ToDictionary(kvp => kvp.Key, kvp => JsonConvert.DeserializeObject<object>(kvp.Value.Value));
+        var userDataDictJson = JsonConvert.SerializeObject(userDataDict);
+        var userData = JsonConvert.DeserializeObject<UserDataInfo>(userDataDictJson);
         return userData;
     }
 
     /// <summary>
     /// GetUserDataApiのレスポンスからユーザーデータを作成します
+    /// サーバー用
     /// </summary>
-    public static UserDataInfo GetUserData(Dictionary<string, UserDataRecord> dict)
+    public static UserDataInfo GetUserData(Dictionary<string, PlayFab.ServerModels.UserDataRecord> dict)
     {
         var userDataDict = dict.ToDictionary(kvp => kvp.Key, kvp => JsonConvert.DeserializeObject<object>(kvp.Value.Value));
         var userDataDictJson = JsonConvert.SerializeObject(userDataDict);
