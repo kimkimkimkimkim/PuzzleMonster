@@ -9,7 +9,7 @@ public class MonsterLevelUpApiRequest
     /// <summary>
     /// ユーザーモンスターID
     /// </summary>
-    public long userMonsterId;
+    public string userMonsterId;
 
     /// <summary>
     /// 与える経験値量

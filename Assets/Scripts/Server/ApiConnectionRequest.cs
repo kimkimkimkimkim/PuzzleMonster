@@ -164,7 +164,7 @@ public partial class ApiConnection
     /// <summary>
     /// モンスター強化
     /// </summary>
-    public static IObservable<MonsterLevelUpApiResponse> MonsterLevelUp(long userMonsterId, int exp)
+    public static IObservable<MonsterLevelUpApiResponse> MonsterLevelUp(string userMonsterId, int exp)
     {
         return SendRequest<MonsterLevelUpApiRequest, MonsterLevelUpApiResponse>(MonsterLevelUpApiInterface.functionName, new MonsterLevelUpApiRequest()
         {

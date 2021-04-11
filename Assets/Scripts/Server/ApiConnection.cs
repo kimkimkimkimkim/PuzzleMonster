@@ -101,6 +101,7 @@ public partial class ApiConnection
                     {
                         UIManager.Instance.TryHideTapBlocker();
                         var response = DataProcessUtil.GetResponse<TResp>(result.FunctionResult.ToString());
+
                         o.OnNext(response);
                         o.OnCompleted();
                     })

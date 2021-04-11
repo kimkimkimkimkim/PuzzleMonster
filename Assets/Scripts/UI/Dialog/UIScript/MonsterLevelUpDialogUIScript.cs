@@ -12,6 +12,7 @@ using PM.Enum.UI;
 public class MonsterLevelUpDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
+    [SerializeField] protected Button _levelUpButton;
 
     public override void Init(DialogInfo info)
     {
@@ -26,6 +27,21 @@ public class MonsterLevelUpDialogUIScript : DialogBase
                     onClickClose = null;
                 }
             })
+            .Subscribe();
+
+        _levelUpButton.OnClickIntentAsObservable()
+            .Where(_ => ApplicationContext.userData.userMonsterList.Any())
+            .SelectMany(_ =>
+            {
+                var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault();
+                return ApiConnection.MonsterLevelUp(userMonster.id, 100);
+            })
+            .SelectMany(res => CommonDialogFactory.Create(new CommonDialogRequest()
+            {
+                commonDialogType = CommonDialogType.YesOnly,
+                title = "強化結果",
+                content = $"{res.level}レベルになりました",
+            }))
             .Subscribe();
     }
 
