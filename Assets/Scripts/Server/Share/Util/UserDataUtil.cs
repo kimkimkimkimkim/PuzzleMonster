@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
+using PlayFab.ClientModels;
 using PM.Enum.Data;
 
 /// <summary>
@@ -33,6 +35,17 @@ public static class UserDataUtil
             }
         }
 
+        return userData;
+    }
+
+    /// <summary>
+    /// GetUserDataApiのレスポンスからユーザーデータを作成します
+    /// </summary>
+    public static UserDataInfo GetUserData(Dictionary<string, UserDataRecord> dict)
+    {
+        var userDataDict = dict.ToDictionary(kvp => kvp.Key, kvp => JsonConvert.DeserializeObject<object>(kvp.Value.Value));
+        var userDataDictJson = JsonConvert.SerializeObject(userDataDict);
+        var userData = JsonConvert.DeserializeObject<UserDataInfo>(userDataDictJson);
         return userData;
     }
 }

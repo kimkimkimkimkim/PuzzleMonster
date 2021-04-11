@@ -13,6 +13,7 @@ public static class ApplicationContext
 {
     public static PlayerProfileModel playerProfile { get; set; } = new PlayerProfileModel();
     public static UserVirtualCurrencyInfo userVirtualCurrency { get; set; } = new UserVirtualCurrencyInfo();
+    public static UserInventoryInfo userInventory { get; set; } = new UserInventoryInfo();
     public static UserDataInfo userData { get; private set; } = new UserDataInfo();
 
     /// <summary>
@@ -77,16 +78,19 @@ public static class ApplicationContext
         // 一旦初期化
         userData = new UserDataInfo();
 
-        // ユーザーデータの更新
-        // GetUserInventoryより前に実行する
-        return ApiConnection.GetUserData() // PlayFabのユーザーデータと同期する
+        return ApiConnection.GetUserData()
+            .Do(res =>
+            {
+                // ユーザーデータの更新
+                UpdateUserData(res);
+            })
             .SelectMany(_ => ApiConnection.GetUserInventory().Do(res =>
             {
                 // ユーザーインベントリ情報の更新
                 UpdateVirutalCurrency(res);
 
                 // インベントリ情報によるユーザーデータの更新
-                UpdateUserData(res.Inventory);
+                UpdateUserData(res);
             }))
             .AsUnitObservable();
     }
@@ -107,8 +111,9 @@ public static class ApplicationContext
     /// <summary>
     /// インベントリ情報を元にキャッシュユーザーデータとサーバーユーザーデータを更新
     /// </summary>
-    private static void UpdateUserData(List<ItemInstance> itemInstanceList)
+    private static void UpdateUserData(GetUserInventoryResult result)
     {
+        var itemInstanceList = result.Inventory;
         itemInstanceList.ForEach(i =>
         {
             var itemType = ItemUtil.GetItemType(i);
@@ -121,9 +126,8 @@ public static class ApplicationContext
                         propertyId = ItemUtil.GetItemId(i),
                         num = i.RemainingUses ?? 0,
                     };
-                    userData.userPropertyList.Add(userProperty);
+                    userInventory.userPropertyList?.Add(userProperty);
                     break;
-                case ItemType.VirtualCurrency:
                 default:
                     break;
             }

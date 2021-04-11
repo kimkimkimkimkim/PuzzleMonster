@@ -86,8 +86,7 @@ public partial class ApiConnection
     public static IObservable<UserDataInfo> GetUserData()
     {
         return SendRequest<GetUserDataRequest, GetUserDataResult>(ApiType.GetUserData, new GetUserDataRequest())
-            .Do(res => ApplicationContext.UpdateUserData(res.Data)) // 取得したデータでキャッシュを更新
-            .Select(_ => ApplicationContext.userData);
+            .Select(res => UserDataUtil.GetUserData(res.Data));
     }
 
     /// <summary>
