@@ -94,10 +94,17 @@ public partial class ApiConnection
         {
             var callback = new Action<ExecuteFunctionResult>((ExecuteFunctionResult result) =>
             {
-                UIManager.Instance.TryHideTapBlocker();
-                var response = DataProcessUtil.GetResponse<TResp>(result.FunctionResult.ToString());
-                o.OnNext(response);
-                o.OnCompleted();
+                // サーバーAPIを実行したら確定でユーザーデータを更新している
+                // TODO : いずれは適切に差分更新とかするべきかも
+                ApplicationContext.UpdateUserDataObservable()
+                    .Do(_ =>
+                    {
+                        UIManager.Instance.TryHideTapBlocker();
+                        var response = DataProcessUtil.GetResponse<TResp>(result.FunctionResult.ToString());
+                        o.OnNext(response);
+                        o.OnCompleted();
+                    })
+                    .Subscribe();
             });
             var onErrorAction = new Action<PlayFabError>(error =>
             {

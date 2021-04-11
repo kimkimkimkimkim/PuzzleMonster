@@ -147,7 +147,7 @@ public partial class ApiConnection
         return SendRequest<DropItemApiRequest, List<ItemInstance>>(DropItemApiInterface.functionName, new DropItemApiRequest()
         {
             dropTableName = dropTableId,
-        }).SelectMany(res => ApplicationContext.UpdateUserDataObservable().Select(_ => res));
+        });
     }
 
     /// <summary>
@@ -158,6 +158,18 @@ public partial class ApiConnection
         return SendRequest<GrantItemsToUserApiRequest, List<ItemInstance>>(GrantItemsToUserApiInterface.functionName, new GrantItemsToUserApiRequest()
         {
             itemIdList = itemIdList,
+        });
+    }
+
+    /// <summary>
+    /// モンスター強化
+    /// </summary>
+    public static IObservable<MonsterLevelUpApiResponse> MonsterLevelUp(long userMonsterId, int exp)
+    {
+        return SendRequest<MonsterLevelUpApiRequest, MonsterLevelUpApiResponse>(MonsterLevelUpApiInterface.functionName, new MonsterLevelUpApiRequest()
+        {
+            userMonsterId = userMonsterId,
+            exp = exp,
         });
     }
     #endregion
