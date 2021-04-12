@@ -24,7 +24,10 @@ public static class ItemUtil
         {
             id = UserDataUtil.CreateUserDataId(),
             monsterId = monster.id,
-            grade = monster.initialGrade,
+            customData = new UserMonsterCustomData()
+            {
+                grade = monster.initialGrade,
+            }
         };
     }
 

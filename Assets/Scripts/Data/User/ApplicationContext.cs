@@ -1,13 +1,7 @@
 ﻿using System;
-using PM.Enum.Item;
 using PlayFab.ClientModels;
 using UniRx;
-using System.Reflection;
-using System.Collections;
-using System.Collections.Generic;
-using PM.Enum.Data;
 using System.Linq;
-using Newtonsoft.Json;
 
 public static class ApplicationContext
 {
@@ -41,13 +35,7 @@ public static class ApplicationContext
     /// </summary>
     public static void UpdateUserData(UserDataInfo userData)
     {
-        var dict = new Dictionary<string, string>();
-        var properties = typeof(UserDataInfo).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-        foreach (PropertyInfo property in properties)
-        {
-            var value = property.GetValue(userData);
-            if(value != null)property.SetValue(ApplicationContext.userData, property.GetValue(userData));
-        }
+        ApplicationContext.userData = userData;
     }
 
     /// <summary>
@@ -67,11 +55,11 @@ public static class ApplicationContext
             })
             .SelectMany(_ => ApiConnection.GetUserInventory().Do(res =>
             {
-                // ユーザーインベントリ情報の更新
+                // 仮想通貨情報の更新
                 UpdateVirutalCurrency(res);
 
-                // インベントリ情報によるユーザーデータの更新
-                UpdateUserData(res);
+                // インベントリ情報の更新
+                UpdateUserInventory(res);
             }))
             .AsUnitObservable();
     }
@@ -81,37 +69,16 @@ public static class ApplicationContext
     /// </summary>
     private static void UpdateVirutalCurrency(GetUserInventoryResult result)
     {
-        // 仮想通貨情報の更新
-        foreach (var virtualCurrency in result.VirtualCurrency)
-        {
-            if (virtualCurrency.Key == VirtualCurrencyType.OB.ToString()) userVirtualCurrency.orb = virtualCurrency.Value;
-            if (virtualCurrency.Key == VirtualCurrencyType.CN.ToString()) userVirtualCurrency.coin = virtualCurrency.Value;
-        }
+        var userVirtualCurrency = UserDataUtil.GetUserVirutalCurrency(result);
+        ApplicationContext.userVirtualCurrency = userVirtualCurrency;
     }
 
     /// <summary>
-    /// インベントリ情報を元にキャッシュユーザーデータとサーバーユーザーデータを更新
+    /// インベントリ情報の更新
     /// </summary>
-    private static void UpdateUserData(GetUserInventoryResult result)
+    private static void UpdateUserInventory(GetUserInventoryResult result)
     {
-        var itemInstanceList = result.Inventory;
-        itemInstanceList.ForEach(i =>
-        {
-            var itemType = ItemUtil.GetItemType(i);
-            switch (itemType)
-            {
-                case ItemType.Property:
-                    var userProperty = new UserPropertyInfo()
-                    {
-                        id = i.ItemId,
-                        propertyId = ItemUtil.GetItemId(i),
-                        num = i.RemainingUses ?? 0,
-                    };
-                    userInventory.userPropertyList?.Add(userProperty);
-                    break;
-                default:
-                    break;
-            }
-        });
+        var userInventory = UserDataUtil.GetUserInventory(result);
+        ApplicationContext.userInventory = userInventory;
     }
 }

@@ -30,10 +30,10 @@ public class MonsterLevelUpDialogUIScript : DialogBase
             .Subscribe();
 
         _levelUpButton.OnClickIntentAsObservable()
-            .Where(_ => ApplicationContext.userData.userMonsterList.Any())
+            .Where(_ => ApplicationContext.userInventory.userMonsterList.Any())
             .SelectMany(_ =>
             {
-                var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault();
+                var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault();
                 return ApiConnection.MonsterLevelUp(userMonster.id, 100);
             })
             .SelectMany(res => CommonDialogFactory.Create(new CommonDialogRequest()

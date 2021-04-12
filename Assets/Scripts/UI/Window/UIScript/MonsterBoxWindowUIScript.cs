@@ -47,7 +47,7 @@ public class MonsterBoxWindowUIScript : WindowBase
         var scrollItem = item.GetComponent<MonsterBoxScrollItem>();
         var userMonster = userMonsterList[index];
 
-        scrollItem.SetGradeImage(userMonster.grade);
+        scrollItem.SetGradeImage(userMonster.customData.grade);
         scrollItem.SetMonsterImage(userMonster.monsterId);
         scrollItem.SetOnClickAction(() =>
         {

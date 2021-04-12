@@ -17,7 +17,7 @@ public class BattleManager
         this.gameWindowUIScript = gameWindowUIScript;
         enemyBattleMonsterList = enemyUserMonsterList.Select(u => GameUtil.GetBattleMonster(u)).ToList();
         playerBattleMonsterList = playerUserMonsterList.Select(u => GameUtil.GetBattleMonster(u)).ToList();
-        playerCurrentHp = playerUserMonsterList.Sum(u => u.hp);
+        playerCurrentHp = playerUserMonsterList.Sum(u => u.customData.hp);
     }
 
     public int GetPlayerCurrentHp()

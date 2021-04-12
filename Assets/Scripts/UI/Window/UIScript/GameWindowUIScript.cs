@@ -58,41 +58,55 @@ public class GameWindowUIScript : WindowBase
         {
             new UserMonsterInfo()
             {
-                hp = 1000,
-                attack = 100,
+                customData = new UserMonsterCustomData(){
+                    hp = 1000,
+                    attack = 100,
+                }
             },
         };
         var playerUserMonsterList = new List<UserMonsterInfo>()
         {
             new UserMonsterInfo()
             {
-                hp = 100,
-                attack = 100,
+                customData = new UserMonsterCustomData(){
+                    hp = 100,
+                    attack = 100,
+                }
             },
             new UserMonsterInfo()
             {
-                hp = 100,
-                attack = 100,
+                customData = new UserMonsterCustomData(){
+                    hp = 100,
+                    attack = 100,
+                }
             },
             new UserMonsterInfo()
             {
-                hp = 100,
-                attack = 100,
+                customData = new UserMonsterCustomData(){
+                    hp = 100,
+                    attack = 100,
+                }
             },
             new UserMonsterInfo()
             {
-                hp = 100,
-                attack = 100,
+                customData = new UserMonsterCustomData(){
+                    hp = 100,
+                    attack = 100,
+                }
             },
             new UserMonsterInfo()
             {
-                hp = 100,
-                attack = 100,
+                customData = new UserMonsterCustomData(){
+                    hp = 100,
+                    attack = 100,
+                }
             },
             new UserMonsterInfo()
             {
-                hp = 100,
-                attack = 100,
+                customData = new UserMonsterCustomData(){
+                    hp = 100,
+                    attack = 100,
+                }
             },
         };
         _enemyMonsterItemList.ForEach(e => e.Init(1000));
