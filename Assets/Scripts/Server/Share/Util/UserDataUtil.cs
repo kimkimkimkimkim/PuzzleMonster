@@ -107,4 +107,18 @@ public static class UserDataUtil
 
         return userInventory;
     }
+
+    /// <summary>
+    /// モンスターカスタムデータを辞書にして返す
+    /// </summary>
+    public static Dictionary<string,string> GetCustomDataDict(UserMonsterCustomData customData){
+        var dict = new Dictionary<string,string>(){
+            {"level",JsonConvert.SerializeObject(customData.level)},
+            {"exp",JsonConvert.SerializeObject(customData.exp)},
+            {"grade",JsonConvert.SerializeObject(customData.grade)},
+            {"hp",JsonConvert.SerializeObject(customData.hp)},
+            {"attack",JsonConvert.SerializeObject(customData.attack)},
+        };
+        return dict;
+    }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using PlayFab.ClientModels;
 
 public class GrantItemsToUserApiInterface
 {
@@ -19,5 +18,9 @@ public class GrantItemsToUserApiResponse : PMApiResponseBase
     /// <summary>
     /// 取得したアイテムリスト
     /// </summary>
-    public List<ItemInstance> itemInstanceList { get; set; }
+#if UNITY_EDITOR
+    public List<PlayFab.ClientModels.ItemInstance> itemInstanceList { get; set; }
+#else
+    public List<PlayFab.ServerModels.GrantedItemInstance> itemInstanceList { get; set; }
+#endif
 }
