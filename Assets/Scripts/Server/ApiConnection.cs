@@ -88,24 +88,36 @@ public partial class ApiConnection
     #endregion
 
     #region CloudFunction
-    private static IObservable<TResp> SendRequest<TReq, TResp>(string functionName,TReq request)
+    private static IObservable<TResp> SendRequest<TReq, TResp>(string functionName,TReq request) where TResp : PMApiResponseBase
     {
         return Observable.Create<TResp>(o =>
         {
             var callback = new Action<ExecuteFunctionResult>((ExecuteFunctionResult result) =>
             {
-                // サーバーAPIを実行したら確定でユーザーデータを更新している
-                // TODO : いずれは適切に差分更新とかするべきかも
-                ApplicationContext.UpdateUserDataObservable()
-                    .Do(_ =>
-                    {
-                        UIManager.Instance.TryHideTapBlocker();
-                        var response = DataProcessUtil.GetResponse<TResp>(result.FunctionResult.ToString());
+                var response = DataProcessUtil.GetResponse<TResp>(result.FunctionResult.ToString());
 
-                        o.OnNext(response);
-                        o.OnCompleted();
-                    })
-                    .Subscribe();
+                if(response.errorCode == PMErrorCode.Success)
+                {
+                    // サーバーAPIを実行したら確定でユーザーデータを更新している
+                    // TODO : いずれは適切に差分更新とかするべきかも
+                    ApplicationContext.UpdateUserDataObservable()
+                        .Do(_ =>
+                        {
+                            UIManager.Instance.TryHideTapBlocker();
+
+                            o.OnNext(response);
+                            o.OnCompleted();
+                        })
+                        .Subscribe();
+                }
+                else
+                {
+                    // エラーが返ってきた
+                    UIManager.Instance.TryHideTapBlocker();
+                    OnErrorAction(response.errorCode,response.message);
+                    o.OnCompleted();
+                }
+
             });
             var onErrorAction = new Action<PlayFabError>(error =>
             {
@@ -143,6 +155,20 @@ public partial class ApiConnection
     private static void OnErrorAction(PlayFabError error)
     {
         Debug.LogError(error.ErrorMessage);
+        CommonDialogFactory.Create(new CommonDialogRequest()
+        {
+            commonDialogType = CommonDialogType.YesOnly,
+            title = "お知らせ",
+            content = "エラーが発生しました"
+        }).Subscribe();
+    }
+
+    /// <summary>
+    /// CloudScriptでのエラーアクション
+    /// </summary>
+    private static void OnErrorAction(PMErrorCode errorCode,string message)
+    {
+        Debug.LogError(message);
         CommonDialogFactory.Create(new CommonDialogRequest()
         {
             commonDialogType = CommonDialogType.YesOnly,
