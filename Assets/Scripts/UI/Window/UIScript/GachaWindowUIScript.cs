@@ -49,7 +49,7 @@ public class GachaWindowUIScript : WindowBase
                 .SelectMany(_ => ApiConnection.DropItem(gachaBoxDetail.dropTableId))
                 .SelectMany(res => GachaResultDialogFactory.Create(new GachaResultDialogRequest()
                 {
-                    itemList = ItemUtil.GetItemMI(res)
+                    itemList = ItemUtil.GetItemMI(res.itemInstanceList)
                 }))
                 .Subscribe();
         });

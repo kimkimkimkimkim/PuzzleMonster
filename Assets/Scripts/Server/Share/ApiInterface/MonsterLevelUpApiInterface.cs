@@ -4,7 +4,7 @@
 }
 
 // APIリクエストの変数はプロパティにしてはいけない！(シリアライズの関係)
-public class MonsterLevelUpApiRequest
+public class MonsterLevelUpApiRequest : PMApiRequestBase
 {
     /// <summary>
     /// ユーザーモンスターID
@@ -17,7 +17,7 @@ public class MonsterLevelUpApiRequest
     public int exp;
 }
 
-public class MonsterLevelUpApiResponse
+public class MonsterLevelUpApiResponse : PMApiResponseBase
 {
     /// <summary>
     /// 経験値付与後のレベル

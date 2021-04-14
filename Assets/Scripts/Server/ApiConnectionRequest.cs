@@ -142,9 +142,9 @@ public partial class ApiConnection
     /// <summary>
     /// ガチャを実行する
     /// </summary>
-    public static IObservable<List<ItemInstance>> DropItem(string dropTableId)
+    public static IObservable<DropItemApiResponse> DropItem(string dropTableId)
     {
-        return SendRequest<DropItemApiRequest, List<ItemInstance>>(DropItemApiInterface.functionName, new DropItemApiRequest()
+        return SendRequest<DropItemApiRequest, DropItemApiResponse>(DropItemApiInterface.functionName, new DropItemApiRequest()
         {
             dropTableName = dropTableId,
         });
@@ -153,9 +153,9 @@ public partial class ApiConnection
     /// <summary>
     /// インベントリのアイテムをユーザーに付与する
     /// </summary>
-    public static IObservable<List<ItemInstance>> GrantItemsToUser(List<string> itemIdList)
+    public static IObservable<GrantItemsToUserApiResponse> GrantItemsToUser(List<string> itemIdList)
     {
-        return SendRequest<GrantItemsToUserApiRequest, List<ItemInstance>>(GrantItemsToUserApiInterface.functionName, new GrantItemsToUserApiRequest()
+        return SendRequest<GrantItemsToUserApiRequest, GrantItemsToUserApiResponse>(GrantItemsToUserApiInterface.functionName, new GrantItemsToUserApiRequest()
         {
             itemIdList = itemIdList,
         });
