@@ -4,7 +4,7 @@
 public class UserPropertyInfo
 {
     /// <summary>
-    /// ID
+    /// PlayFabのItemInstanceID
     /// </summary>
     public string id { get; set; }
 

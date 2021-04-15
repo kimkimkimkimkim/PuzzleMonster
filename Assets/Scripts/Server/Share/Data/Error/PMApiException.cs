@@ -2,6 +2,6 @@
 
 public class PMApiException : Exception
 {
-    public PMErrorCode erroCode { get; set; }
+    public PMErrorCode errorCode { get; set; }
     public string message { get; set; }
 }
