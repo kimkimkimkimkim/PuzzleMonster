@@ -22,4 +22,34 @@ public class MonsterMB : MasterBookBase
     /// ガチャボックスタイプリスト
     /// </summary>
     public List<GachaBoxType> gachaBoxTypeList { get; set; }
+
+    /// <summary>
+    /// レベル1でのHP
+    /// </summary>
+    public int level1Hp { get; set; }
+
+    /// <summary>
+    /// レベル1での攻撃力
+    /// </summary>
+    public int level1Attack { get; set; }
+
+    /// <summary>
+    /// レベル1での回復力
+    /// </summary>
+    public int level1Heal { get; set; }
+
+    /// <summary>
+    /// レベル100でのHP
+    /// </summary>
+    public int level100Hp { get; set; }
+
+    /// <summary>
+    /// レベル100での攻撃力
+    /// </summary>
+    public int level100Attack { get; set; }
+
+    /// <summary>
+    /// レベル100での回復力
+    /// </summary>
+    public int level100Heal { get; set; }
 }
