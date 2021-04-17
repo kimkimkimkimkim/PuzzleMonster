@@ -8,14 +8,12 @@ using UnityEngine.UI;
 [ResourcePath("UI/Parts/Parts-MonsterBoxScrollItem")]
 public class MonsterBoxScrollItem : ScrollItem
 {
-    [SerializeField] protected List<GameObject> _gradeStarOnImageBaseList;
+    [SerializeField] protected MonsterGradeParts _monsterGradeParts;
     [SerializeField] protected Image _monsterImage;
 
-    public void SetGradeImage(int grade) {
-        if (grade < 0 || _gradeStarOnImageBaseList.Count < grade) return;
-        _gradeStarOnImageBaseList.ForEach((b, index) => {
-            b.SetActive(index <= grade - 1);
-        });
+    public void SetGradeImage(int grade)
+    {
+        _monsterGradeParts.SetGradeImage(grade);
     }
 
     public void SetMonsterImage(long monsterId)

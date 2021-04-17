@@ -2985,6 +2985,13 @@ MonoBehaviour:
   _grayOutImage: {fileID: 242772588366187851}
   _closeButton: {fileID: 6734736857157977049}
   _levelUpButton: {fileID: 1181040389832038385}
+  _nameText: {fileID: 8548297311044414951}
+  _monsterGradeParts: {fileID: 6068053046452008290}
+  _monsterImage: {fileID: 2056441106780394999}
+  _levelText: {fileID: 6178951775551454807}
+  _hpText: {fileID: 6885738687566871242}
+  _attackText: {fileID: 4230551218357649866}
+  _healText: {fileID: 5711949978443099428}
 --- !u!1 &3283656783286435662
 GameObject:
   m_ObjectHideFlags: 0
@@ -5097,8 +5104,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2396062107387467293}
   - component: {fileID: 2508018846268923909}
+  - component: {fileID: 6068053046452008290}
   m_Layer: 5
-  m_Name: GradeImageBase
+  m_Name: Parts-MonsterGrade
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5154,6 +5162,25 @@ MonoBehaviour:
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
+--- !u!114 &6068053046452008290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6163362550868451478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce0d07cac6e3841e8bbbf57706a2d70a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _gradeStarOnImageBaseList:
+  - {fileID: 5186399777741083147}
+  - {fileID: 2594992478720606248}
+  - {fileID: 1788074916919483915}
+  - {fileID: 7985273077551485308}
+  - {fileID: 6005023295343775068}
+  - {fileID: 1011866342105766220}
 --- !u!1 &6192674746755908667
 GameObject:
   m_ObjectHideFlags: 0

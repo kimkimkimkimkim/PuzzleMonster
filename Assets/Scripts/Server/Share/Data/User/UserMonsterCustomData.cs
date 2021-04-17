@@ -27,4 +27,9 @@ public class UserMonsterCustomData
     /// 攻撃力
     /// </summary>
     public int attack { get; set; }
+
+    /// <summary>
+    /// 回復力
+    /// </summary>
+    public int heal { get; set; }
 }

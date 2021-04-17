@@ -10,6 +10,7 @@ public class MonsterDetailDialogFactory
     {
         return Observable.Create<MonsterDetailDialogResponse>(observer => {
             var param = new Dictionary<string, object>();
+            param.Add("userMonster", request.userMonster);
             param.Add("onClickClose", new Action(() => {
                 observer.OnNext(new MonsterDetailDialogResponse());
                 observer.OnCompleted();

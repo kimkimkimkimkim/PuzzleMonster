@@ -51,7 +51,10 @@ public class MonsterBoxWindowUIScript : WindowBase
         scrollItem.SetMonsterImage(userMonster.monsterId);
         scrollItem.SetOnClickAction(() =>
         {
-            MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest()).Subscribe();
+            MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest()
+            {
+                userMonster = userMonster,
+            }).Subscribe();
         });
     }
 
