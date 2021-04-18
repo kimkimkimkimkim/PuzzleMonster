@@ -16,6 +16,7 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Text _nameText;
     [SerializeField] protected MonsterGradeParts _monsterGradeParts;
     [SerializeField] protected Image _monsterImage;
+    [SerializeField] protected Image _monsterAttributeImage;
     [SerializeField] protected Text _levelText;
     [SerializeField] protected Text _hpText;
     [SerializeField] protected Text _attackText;
@@ -90,10 +91,11 @@ public class MonsterDetailDialogUIScript : DialogBase
         _healSliderBack.value = monster.level100Heal;
         _healSliderFront.value = userMonster.customData.heal;
 
-        // モンスター画像
-        return PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monster.id)
-            .Do(sprite => _monsterImage.sprite = sprite)
-            .AsUnitObservable();
+        // モンスター画像、属性画像の設定
+        return Observable.WhenAll(
+            PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monster.id).Do(sprite => _monsterImage.sprite = sprite),
+            PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterAttribute, (int)monster.attribute).Do(sprite => _monsterAttributeImage.sprite = sprite)
+        ).AsUnitObservable();
     }
 
     /// <summary>

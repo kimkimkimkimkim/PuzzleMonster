@@ -86,6 +86,7 @@ namespace PM
             {
                 None,
                 Monster,
+                MonsterAttribute,
             }
         }
 
