@@ -20,5 +20,10 @@
         /// ゲージの最大値として使用する
         /// </summary>
         public static int MAX_STATUS_VALUE = 5000;
+
+        /// <summary>
+        /// 最大レベル
+        /// </summary>
+        public static int MAX_LEVEL = 100;
     }
 }

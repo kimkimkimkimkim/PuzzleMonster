@@ -50,7 +50,10 @@ public class MonsterDetailDialogUIScript : DialogBase
             .Subscribe();
 
         _levelUpButton.OnClickIntentAsObservable()
-            .SelectMany(_ => MonsterLevelUpDialogFactory.Create(new MonsterLevelUpDialogRequest()))
+            .SelectMany(_ => MonsterLevelUpDialogFactory.Create(new MonsterLevelUpDialogRequest()
+            {
+                userMonster = userMonster,
+            }))
             .Subscribe();
 
         SetSliderMaxValue();
