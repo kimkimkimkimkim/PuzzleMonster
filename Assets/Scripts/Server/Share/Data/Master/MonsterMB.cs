@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using PM.Enum.Gacha;
+using PM.Enum.Monster;
 
 /// <summary>
 /// モンスターマスターデータ
@@ -12,6 +13,11 @@ public class MonsterMB : MasterBookBase
     /// 名前
     /// </summary>
     public string name { get; set; }
+
+    /// <summary>
+    /// 属性
+    /// </summary>
+    public MonsterAttribute attribute { get; set; }
 
     /// <summary>
     /// 初期グレード
