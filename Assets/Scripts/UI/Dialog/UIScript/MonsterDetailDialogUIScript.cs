@@ -20,6 +20,14 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Text _hpText;
     [SerializeField] protected Text _attackText;
     [SerializeField] protected Text _healText;
+    [SerializeField] protected Slider _hpSliderBack;
+    [SerializeField] protected Slider _hpSliderFront;
+    [SerializeField] protected Slider _attackSliderBack;
+    [SerializeField] protected Slider _attackSliderFront;
+    [SerializeField] protected Slider _healSliderBack;
+    [SerializeField] protected Slider _healSliderFront;
+
+    private const int MAX_STATUS_VALUE = 5000; // 全モンスターの中での最大ステータス値
 
     private MonsterMB monster;
     private UserMonsterInfo userMonster;
@@ -46,18 +54,43 @@ public class MonsterDetailDialogUIScript : DialogBase
             .SelectMany(_ => MonsterLevelUpDialogFactory.Create(new MonsterLevelUpDialogRequest()))
             .Subscribe();
 
+        SetSliderMaxValue();
         RefreshUI().Subscribe();
+    }
+
+    private void SetSliderMaxValue()
+    {
+        _hpSliderBack.maxValue = MAX_STATUS_VALUE;
+        _hpSliderFront.maxValue = MAX_STATUS_VALUE;
+        _attackSliderBack.maxValue = MAX_STATUS_VALUE;
+        _attackSliderFront.maxValue = MAX_STATUS_VALUE;
+        _healSliderBack.maxValue = MAX_STATUS_VALUE;
+        _healSliderFront.maxValue = MAX_STATUS_VALUE;
     }
 
     private IObservable<Unit> RefreshUI()
     {
+        // 名前
         _nameText.text = monster.name;
+
+        // グレード
         _monsterGradeParts.SetGradeImage(userMonster.customData.grade);
+
+        // ステータス
         _levelText.text = GetLevelText(userMonster.customData.level);
         _hpText.text = userMonster.customData.hp.ToString();
         _attackText.text = userMonster.customData.attack.ToString();
         _healText.text = userMonster.customData.heal.ToString();
 
+        // ゲージ
+        _hpSliderBack.value = monster.level100Hp;
+        _hpSliderFront.value = userMonster.customData.hp;
+        _attackSliderBack.value = monster.level100Attack;
+        _attackSliderFront.value = userMonster.customData.attack;
+        _healSliderBack.value = monster.level100Heal;
+        _healSliderFront.value = userMonster.customData.heal;
+
+        // モンスター画像
         return PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monster.id)
             .Do(sprite => _monsterImage.sprite = sprite)
             .AsUnitObservable();
