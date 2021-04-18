@@ -28,8 +28,6 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Slider _healSliderBack;
     [SerializeField] protected Slider _healSliderFront;
 
-    private const int MAX_STATUS_VALUE = 5000; // 全モンスターの中での最大ステータス値
-
     private MonsterMB monster;
     private UserMonsterInfo userMonster;
 
@@ -61,12 +59,12 @@ public class MonsterDetailDialogUIScript : DialogBase
 
     private void SetSliderMaxValue()
     {
-        _hpSliderBack.maxValue = MAX_STATUS_VALUE;
-        _hpSliderFront.maxValue = MAX_STATUS_VALUE;
-        _attackSliderBack.maxValue = MAX_STATUS_VALUE;
-        _attackSliderFront.maxValue = MAX_STATUS_VALUE;
-        _healSliderBack.maxValue = MAX_STATUS_VALUE;
-        _healSliderFront.maxValue = MAX_STATUS_VALUE;
+        _hpSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _hpSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _attackSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _attackSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _healSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _healSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
     }
 
     private IObservable<Unit> RefreshUI()
