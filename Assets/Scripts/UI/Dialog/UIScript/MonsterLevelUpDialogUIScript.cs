@@ -14,6 +14,8 @@ public class MonsterLevelUpDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
     [SerializeField] protected Button _levelUpButton;
+    [SerializeField] protected Button _minusButton;
+    [SerializeField] protected Button _plusButton;
     [SerializeField] protected Text _hpValueText;
     [SerializeField] protected Text _attackValueText;
     [SerializeField] protected Text _healValueText;
@@ -72,17 +74,45 @@ public class MonsterLevelUpDialogUIScript : DialogBase
             }))
             .Subscribe();
 
-        _levelSlider.onValueChanged.AsObservable()
-            .Do(value =>
+        _minusButton.OnClickIntentAsObservable()
+            .Do(_ =>
             {
-                afterLevel = (int)value;
+                afterLevel = Math.Max(afterLevel - 1, minAfterLevel);
+                _levelSlider.value = afterLevel;
                 RefreshUI();
             })
             .Subscribe();
 
-        //SetAfterLevel();
+        _plusButton.OnClickIntentAsObservable()
+            .Do(_ =>
+            {
+                afterLevel = Math.Min(afterLevel + 1, maxAfterLevel);
+                _levelSlider.value = afterLevel;
+                RefreshUI();
+            })
+            .Subscribe();
+
+        SetAfterLevel();
         SetSliderValue();
         RefreshUI();
+
+        // レベルスライダーの宣言は強化後レベルの計算が終わってから行う
+        _levelSlider.OnValueChangedIntentAsObservable()
+           .Do(value =>
+           {
+               // 強化後のレベルはスライダーの値を四捨五入した値
+               afterLevel = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+
+               // 最小or最大ならスライダーの値を変更
+               if (afterLevel == minAfterLevel || afterLevel == maxAfterLevel)
+               {
+                   // floatの比較は誤差があるので以下のように比較
+                   if (!Mathf.Approximately(value, afterLevel)) _levelSlider.value = afterLevel;
+               }
+
+               RefreshUI();
+           })
+           .Subscribe();
     }
 
     /// <summary>
@@ -92,10 +122,9 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         // 最小強化後レベルは現在レベル
         minAfterLevel = userMonster.customData.level;
 
-        var monsterExp = ApplicationContext.userInventory.userPropertyList.GetOrDefault(PropertyType.MonsterExp);
-        var monsterExpNum = monsterExp == null ? 0 : monsterExp.num;
+        var monsterExpNum = ApplicationContext.userInventory.userPropertyList.GetNum(PropertyType.MonsterExp);
 
-        // 所持している経験値を全て使用した際のモンスター経験値量
+        // 所持している経験値を全て使用した際のモンスター総経験値量
         var maxExp = userMonster.customData.exp + monsterExpNum;
 
         // maxExpで到達可能なレベルのレベルアップテーブルマスタ
@@ -135,6 +164,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         // レベルスライダー
         _levelSlider.minValue = minAfterLevel;
         _levelSlider.maxValue = maxAfterLevel;
+        _levelSlider.value = afterLevel;
     }
 
     /// <summary>
@@ -142,17 +172,19 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     /// </summary>
     private void RefreshUI()
     {
-        // ステータス
+        // ステータステキスト
         var afterStatus = MonsterUtil.GetMonsterStatus(monster, afterLevel);
         _hpValueText.text = GetStatusValueText(afterStatus.hp, afterStatus.hp - userMonster.customData.hp);
         _attackValueText.text = GetStatusValueText(afterStatus.attack, afterStatus.attack - userMonster.customData.attack);
         _healValueText.text = GetStatusValueText(afterStatus.heal, afterStatus.heal - userMonster.customData.heal);
 
+        // ステータススライダー
+        _hpSliderAfterValue.value = afterStatus.hp;
+        _attackSliderAfterValue.value = afterStatus.attack;
+        _healSliderAfterValue.value = afterStatus.heal;
+
         // レベルテキスト
         _levelText.text = GetLevelText(userMonster.customData.level, afterLevel);
-
-        // レベルスライダー
-        _levelSlider.value = afterLevel;
 
         // 経験値
         var targetLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll().First(m => m.level == afterLevel);
