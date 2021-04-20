@@ -80,7 +80,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
             })
             .Subscribe();
 
-        SetAfterLevel();
+        //SetAfterLevel();
         SetSliderValue();
         RefreshUI();
     }
