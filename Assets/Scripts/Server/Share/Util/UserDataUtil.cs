@@ -118,6 +118,7 @@ public static class UserDataUtil
             {"grade",JsonConvert.SerializeObject(customData.grade)},
             {"hp",JsonConvert.SerializeObject(customData.hp)},
             {"attack",JsonConvert.SerializeObject(customData.attack)},
+            {"heal",JsonConvert.SerializeObject(customData.heal)},
         };
         return dict;
     }
