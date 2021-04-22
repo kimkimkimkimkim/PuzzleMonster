@@ -172,5 +172,17 @@ public partial class ApiConnection
             exp = exp,
         });
     }
+
+    /// <summary>
+    /// 開発用:インベントリのカスタムデータ更新
+    /// </summary>
+    public static IObservable<DevelopUpdateUserInventoryCustomDataApiResponse> DevelopUpdateUserInventoryCustomData(string itemInstanceId, Dictionary<string,string> data)
+    {
+        return SendRequest<DevelopUpdateUserInventoryCustomDataApiRequest, DevelopUpdateUserInventoryCustomDataApiResponse>(DevelopUpdateUserInventoryCustomDataApiInterface.functionName, new DevelopUpdateUserInventoryCustomDataApiRequest()
+        {
+            itemInstanceId = itemInstanceId,
+            data = data,
+        });
+    }
     #endregion
 }
