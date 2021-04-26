@@ -76,6 +76,37 @@ public class UserTestAction : ITestAction
             }),
         });
 
+        testActionDataList.Add(new TestActionData()
+        {
+            title = "開発用:インベントリカスタムデータ更新",
+            action = new Action(() =>
+            {
+                var itemInstanceId = "24C48BD78B361A0C";
+                var data = new Dictionary<string, string>()
+                {
+                    {"sampleDataKey","sampleDataValue" },
+                };
+
+                CommonDialogFactory.Create(new CommonDialogRequest()
+                {
+                    commonDialogType = CommonDialogType.NoAndYes,
+                    title = "確認",
+                    content = "インベントリカスタムデータを更新します"
+                })
+                    .Where(res => res.dialogResponseType == DialogResponseType.Yes)
+                    .SelectMany(_ => {
+                        return ApiConnection.DevelopUpdateUserInventoryCustomData(itemInstanceId,data);
+                    })
+                    .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
+                        commonDialogType = CommonDialogType.YesOnly,
+                        title = "お知らせ",
+                        content = "データの更新が完了しました",
+                    }))
+                    .Subscribe();
+            }),
+        });
+
         return testActionDataList;
 
     }
