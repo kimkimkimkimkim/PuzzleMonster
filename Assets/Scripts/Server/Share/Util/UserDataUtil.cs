@@ -113,12 +113,12 @@ public static class UserDataUtil
     /// </summary>
     public static Dictionary<string,string> GetCustomDataDict(UserMonsterCustomData customData){
         var dict = new Dictionary<string,string>(){
-            {"level",JsonConvert.SerializeObject(customData.level)},
-            {"exp",JsonConvert.SerializeObject(customData.exp)},
-            {"grade",JsonConvert.SerializeObject(customData.grade)},
-            {"hp",JsonConvert.SerializeObject(customData.hp)},
-            {"attack",JsonConvert.SerializeObject(customData.attack)},
-            {"heal",JsonConvert.SerializeObject(customData.heal)},
+            {"level",customData.level.ToString()},
+            {"exp",customData.exp.ToString()},
+            {"grade",customData.grade.ToString()},
+            {"hp",customData.hp.ToString()},
+            {"attack",customData.attack.ToString()},
+            // {"heal",customData.heal.ToString()}, // TODO: 何故か6要素以上のDictionaryは更新されない
         };
         return dict;
     }

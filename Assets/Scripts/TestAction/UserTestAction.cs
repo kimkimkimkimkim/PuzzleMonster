@@ -85,6 +85,8 @@ public class UserTestAction : ITestAction
                 var data = new Dictionary<string, string>()
                 {
                     {"sampleDataKey","sampleDataValue" },
+                    {"level","1" },
+                    {"grade","3" },
                 };
 
                 CommonDialogFactory.Create(new CommonDialogRequest()
