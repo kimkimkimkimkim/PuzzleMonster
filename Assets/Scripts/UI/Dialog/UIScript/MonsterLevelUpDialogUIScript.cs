@@ -187,8 +187,8 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         _levelText.text = GetLevelText(userMonster.customData.level, afterLevel);
 
         // 経験値
-        var targetLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll().First(m => m.level == afterLevel);
-        var consumedExp = Math.Max(targetLevelUpTable.totalRequiredExp - userMonster.customData.exp,0);
+        var targetLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll().FirstOrDefault(m => m.level == afterLevel);
+        var consumedExp = targetLevelUpTable == null ? 0 : Math.Max(targetLevelUpTable.totalRequiredExp - userMonster.customData.exp,0);
         var monsterExpNum = ApplicationContext.userInventory.userPropertyList.GetNum(PropertyType.MonsterExp);
         _possessionExpNumText.text = GetPossessionExpNumText(monsterExpNum, monsterExpNum - consumedExp);
         _consumedExpNumText.text = consumedExp.ToString();
