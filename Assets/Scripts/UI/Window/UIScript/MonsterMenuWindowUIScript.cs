@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class MonsterMenuWindowUIScript : WindowBase
 {
     [SerializeField] protected Button _boxButton;
+    [SerializeField] protected Button _formationButton;
 
     public override void Init(WindowInfo info)
     {
@@ -14,6 +15,13 @@ public class MonsterMenuWindowUIScript : WindowBase
 
         _boxButton.OnClickIntentAsObservable()
             .SelectMany(_ => MonsterBoxWindowFactory.Create(new MonsterBoxWindowRequest()
+            {
+                userMontserList = ApplicationContext.userInventory.userMonsterList,
+            }))
+            .Subscribe();
+
+        _formationButton.OnClickIntentAsObservable()
+            .SelectMany(_ => MonsterFormationWindowFactory.Create(new MonsterFormationWindowRequest()
             {
                 userMontserList = ApplicationContext.userInventory.userMonsterList,
             }))
