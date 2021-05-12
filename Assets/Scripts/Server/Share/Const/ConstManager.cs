@@ -26,4 +26,12 @@
         /// </summary>
         public static int MAX_LEVEL = 100;
     }
+
+    public class Battle
+    {
+        /// <summary>
+        /// 最大パーティーメンバー数
+        /// </summary>
+        public static int MAX_PARTY_MEMBER_NUM = 3;
+    }
 }
