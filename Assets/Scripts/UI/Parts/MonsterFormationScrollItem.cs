@@ -30,13 +30,13 @@ public class MonsterFormationScrollItem : ScrollItem {
     {
         if(number <= 0)
         {
-            _backgroundPanel.SetActive(false);
+            if(_backgroundPanel != null)_backgroundPanel.SetActive(false);
             _numberPanel.SetActive(false);
         }
         else
         {
             _numberText.text = number.ToString();
-            _backgroundPanel.SetActive(true);
+            if(_backgroundPanel != null)_backgroundPanel.SetActive(true);
             _numberPanel.SetActive(true);
         }
     }
