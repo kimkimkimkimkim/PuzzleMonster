@@ -174,6 +174,17 @@ public partial class ApiConnection
     }
 
     /// <summary>
+    /// パーティの編成情報更新
+    /// </summary>
+    public static IObservable<UpdateUserMonsterFormationApiResponse> UpdateUserMosnterFormation(int partyId, List<string> userMosnterIdList) {
+        return SendRequest<UpdateUserMonsterFormationApiRequest, UpdateUserMonsterFormationApiResponse>(UpdateUserMonsterFormationApiInterface.functionName, new UpdateUserMonsterFormationApiRequest()
+        {
+            partyId = partyId,
+            userMonsterIdList = userMosnterIdList,
+        });
+    }
+
+    /// <summary>
     /// 開発用:インベントリのカスタムデータ更新
     /// </summary>
     public static IObservable<DevelopUpdateUserInventoryCustomDataApiResponse> DevelopUpdateUserInventoryCustomData(string itemInstanceId, Dictionary<string,string> data)

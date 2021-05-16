@@ -186,6 +186,7 @@ namespace PM
             {
                 userMonsterList,
                 userPropertyList,
+                userMonsterPartyList,
             }
         }
 

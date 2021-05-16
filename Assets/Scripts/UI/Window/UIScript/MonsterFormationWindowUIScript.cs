@@ -109,6 +109,7 @@ public class MonsterFormationWindowUIScript : WindowBase
                     content = "こちらのパーティでよろしいですか？"
                 })
                     .Where(res => res.dialogResponseType == PM.Enum.UI.DialogResponseType.Yes)
+                    .SelectMany(_ => ApiConnection.UpdateUserMosnterFormation(1, selectedUserMonsterIdList))
                     .Do(_ => UIManager.Instance.CloseWindow())
                     .Do(_ => {
                         if (onClose != null)
