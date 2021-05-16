@@ -5,4 +5,8 @@
 /// </summary>
 public class UserDataInfo
 {
+    /// <summary>
+    /// ユーザーモンスターパーティーリスト
+    /// </summary>
+    public List<UserMonsterPartyInfo> userMonsterPartyList { get; set; }
 }
