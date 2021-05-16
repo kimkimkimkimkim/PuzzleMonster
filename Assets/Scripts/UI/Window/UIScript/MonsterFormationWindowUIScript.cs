@@ -21,17 +21,10 @@ public class MonsterFormationWindowUIScript : WindowBase
     {
         base.Init(info);
 
+        initialUserMonsterList = (List<UserMonsterInfo>)info.param["initialUserMonsterList"];
         userMonsterList = (List<UserMonsterInfo>)info.param["userMonsterList"];
 
-        // TODO : userDataから選択したパーティのモンスター情報を取得するように
-        userMonsterList.ForEach((u, i) =>
-        {
-            if (i == 1 || i == 3 || i == 5 || i == 7 || i == 9 || i == 1)
-            {
-                initialUserMonsterList.Add(u);
-            }
-        });
-
+        // すでに編成済みのモンスターを排除
         userMonsterList = userMonsterList.Where(u => !initialUserMonsterList.Any(initialUserMonster => initialUserMonster.id == u.id)).ToList();
 
         _backButton.OnClickIntentAsObservable()
