@@ -32,6 +32,11 @@
         /// <summary>
         /// 最大パーティーメンバー数
         /// </summary>
-        public static int MAX_PARTY_MEMBER_NUM = 3;
+        public static int MAX_PARTY_MEMBER_NUM = 6;
+
+        /// <summary>
+        /// 最大パーティ数
+        /// </summary>
+        public static int MAX_PARTY_NUM = 12;
     }
 }

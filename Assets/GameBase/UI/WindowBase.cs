@@ -2,6 +2,7 @@
 using System;
 using UniRx;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace GameBase
 {
@@ -13,6 +14,7 @@ namespace GameBase
 
         public GameObject _windowFrame;
         public RectTransform _fullScreenBaseRT; // セーフエリアにかかわらず画面サイズで表示されるUI
+        public Button _backButton;
 
         protected Action onClose;
 
@@ -22,6 +24,18 @@ namespace GameBase
         /// <param name="info"></param>
         public virtual void Init(WindowInfo info) {
             onClose = (Action)info.param["onClose"];
+            if(_backButton != null) { 
+                _backButton.OnClickIntentAsObservable()
+                    .Do(_ => UIManager.Instance.CloseWindow())
+                    .Do(_ => {
+                        if (onClose != null)
+                        {
+                            onClose();
+                            onClose = null;
+                        }
+                    })
+                    .Subscribe();
+            }
         }
 
         /// <summary>

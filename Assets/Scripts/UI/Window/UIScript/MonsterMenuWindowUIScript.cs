@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using GameBase;
 using UniRx;
@@ -23,17 +22,7 @@ public class MonsterMenuWindowUIScript : WindowBase
             .Subscribe();
 
         _formationButton.OnClickIntentAsObservable()
-            .SelectMany(_ => {
-                var userMonsterList = ApplicationContext.userInventory.userMonsterList;
-                var partyId = 1;
-                var initialUserMonsterIdList = ApplicationContext.userData.userMonsterPartyList?.FirstOrDefault(u => u.partyId == partyId)?.userMonsterIdList ?? new List<string>();
-                var initialUserMonsterList = initialUserMonsterIdList.Select(id => userMonsterList.First(u => u.id == id)).ToList();
-                return MonsterFormationWindowFactory.Create(new MonsterFormationWindowRequest()
-                {
-                    userMontserList = userMonsterList,
-                    initialUserMonsterList = initialUserMonsterList,
-                });
-            })
+            .SelectMany(_ => MonsterPartyListWindowFactory.Create(new MonsterPartyListWindowRequest() { }))
             .Subscribe();
     }
 

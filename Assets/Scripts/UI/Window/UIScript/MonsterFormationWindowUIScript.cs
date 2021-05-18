@@ -8,10 +8,10 @@ using UnityEngine.UI;
 [ResourcePath("UI/Window/Window-MonsterFormation")]
 public class MonsterFormationWindowUIScript : WindowBase
 {
-    [SerializeField] protected Button _backButton;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
     [SerializeField] protected RectTransform _initialMonsterAreaPanel;
 
+    private int partyId;
     private List<UserMonsterInfo> initialUserMonsterList = new List<UserMonsterInfo>();
     private List<UserMonsterInfo> userMonsterList;
     private List<string> selectedUserMonsterIdList = Enumerable.Repeat<string>("", ConstManager.Battle.MAX_PARTY_MEMBER_NUM).ToList();
@@ -21,22 +21,12 @@ public class MonsterFormationWindowUIScript : WindowBase
     {
         base.Init(info);
 
+        partyId = (int)info.param["partyId"];
         initialUserMonsterList = (List<UserMonsterInfo>)info.param["initialUserMonsterList"];
         userMonsterList = (List<UserMonsterInfo>)info.param["userMonsterList"];
 
         // すでに編成済みのモンスターを排除
         userMonsterList = userMonsterList.Where(u => !initialUserMonsterList.Any(initialUserMonster => initialUserMonster.id == u.id)).ToList();
-
-        _backButton.OnClickIntentAsObservable()
-            .Do(_ => UIManager.Instance.CloseWindow())
-            .Do(_ => {
-                if (onClose != null)
-                {
-                    onClose();
-                    onClose = null;
-                }
-            })
-            .Subscribe();
 
         SetInitialMonster();
         RefreshScroll();
@@ -102,7 +92,7 @@ public class MonsterFormationWindowUIScript : WindowBase
                     content = "こちらのパーティでよろしいですか？"
                 })
                     .Where(res => res.dialogResponseType == PM.Enum.UI.DialogResponseType.Yes)
-                    .SelectMany(_ => ApiConnection.UpdateUserMosnterFormation(1, selectedUserMonsterIdList))
+                    .SelectMany(_ => ApiConnection.UpdateUserMosnterFormation(partyId, selectedUserMonsterIdList))
                     .Do(_ => UIManager.Instance.CloseWindow())
                     .Do(_ => {
                         if (onClose != null)

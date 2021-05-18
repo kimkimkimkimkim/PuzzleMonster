@@ -8,7 +8,6 @@ using UnityEngine.UI;
 [ResourcePath("UI/Window/Window-QuestCategory")]
 public class QuestCategoryWindowUIScript : WindowBase
 {
-    [SerializeField] protected Button _backButton;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
 
     private List<QuestCategoryMB> questCategoryList;
@@ -18,17 +17,6 @@ public class QuestCategoryWindowUIScript : WindowBase
         base.Init(info);
 
         questCategoryList = MasterRecord.GetMasterOf<QuestCategoryMB>().GetAll().ToList();
-
-        _backButton.OnClickIntentAsObservable()
-            .Do(_ => UIManager.Instance.CloseWindow())
-            .Do(_ => {
-                if (onClose != null)
-                {
-                    onClose();
-                    onClose = null;
-                }
-            })
-            .Subscribe();
 
         RefreshScroll();
     }

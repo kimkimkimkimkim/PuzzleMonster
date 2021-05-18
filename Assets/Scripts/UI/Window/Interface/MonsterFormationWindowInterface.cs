@@ -3,6 +3,12 @@ using System.Collections.Generic;
 public class MonsterFormationWindowRequest
 {
     /// <summary>
+    /// パーティID
+    /// </summary>
+    /// <value>The party identifier.</value>
+    public int partyId { get; set; }
+
+    /// <summary>
     /// ユーザーモンスターリスト
     /// </summary>
     public List<UserMonsterInfo> userMontserList { get; set; }

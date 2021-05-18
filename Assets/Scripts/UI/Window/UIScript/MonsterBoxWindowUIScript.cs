@@ -8,7 +8,6 @@ using UnityEngine.UI;
 [ResourcePath("UI/Window/Window-MonsterBox")]
 public class MonsterBoxWindowUIScript : WindowBase
 {
-    [SerializeField] protected Button _backButton;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
 
     private List<UserMonsterInfo> userMonsterList;
@@ -18,17 +17,6 @@ public class MonsterBoxWindowUIScript : WindowBase
         base.Init(info);
 
         userMonsterList = (List<UserMonsterInfo>)info.param["userMonsterList"];
-
-        _backButton.OnClickIntentAsObservable()
-            .Do(_ => UIManager.Instance.CloseWindow())
-            .Do(_ => {
-                if (onClose != null)
-                {
-                    onClose();
-                    onClose = null;
-                }
-            })
-            .Subscribe();
 
         RefreshScroll();
     }
