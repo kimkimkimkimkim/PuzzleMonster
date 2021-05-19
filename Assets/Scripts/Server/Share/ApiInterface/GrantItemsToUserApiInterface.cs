@@ -14,11 +14,11 @@ public class GrantItemsToUserApiRequest : PMApiRequestBase
 }
 
 public class GrantItemsToUserApiResponse : PMApiResponseBase
-{    
+{
     /// <summary>
     /// 取得したアイテムリスト
     /// </summary>
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_IOS || UNITY_ANDROID
     public List<PlayFab.ClientModels.ItemInstance> itemInstanceList { get; set; }
 #else
     public List<PlayFab.ServerModels.GrantedItemInstance> itemInstanceList { get; set; }
