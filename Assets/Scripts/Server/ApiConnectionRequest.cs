@@ -140,6 +140,17 @@ public partial class ApiConnection
 
     #region CloudFunction
     /// <summary>
+    /// ログイン時に行いたいことを実行する
+    /// </summary>
+    public static IObservable<LoginApiResponse> Login()
+    {
+        return SendRequest<LoginApiRequest, LoginApiResponse>(LoginApiInterface.functionName, new LoginApiRequest()
+        {
+
+        });
+    }
+
+    /// <summary>
     /// ガチャを実行する
     /// </summary>
     public static IObservable<DropItemApiResponse> DropItem(string dropTableId)
