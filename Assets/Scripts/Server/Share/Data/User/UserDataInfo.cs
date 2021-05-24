@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 /// <summary>
 /// ユーザーデータ情報
+/// 新しくパラメータを追加した際はEnum.UserDataKeyの追加を忘れないように
 /// </summary>
 public class UserDataInfo
 {

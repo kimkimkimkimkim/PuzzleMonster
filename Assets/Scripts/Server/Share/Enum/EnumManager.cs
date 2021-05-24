@@ -188,6 +188,8 @@ namespace PM
                 userPropertyList,
                 userMonsterPartyList,
                 lastLoginDateTime,
+                lastCalculatedStaminaDateTime,
+                stamina,
             }
         }
 
