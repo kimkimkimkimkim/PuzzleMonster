@@ -16,6 +16,7 @@ public static class ApplicationContext
     public static IObservable<Unit> EstablishSession()
     {
         return ApiConnection.LoginWithCustomID()
+            .SelectMany(_ => ApiConnection.Login())
             .SelectMany(_ => ApiConnection.GetTitleData().Do(res =>
             {
                 // マスタの取得と保存

@@ -187,6 +187,7 @@ namespace PM
                 userMonsterList,
                 userPropertyList,
                 userMonsterPartyList,
+                lastLoginDateTime,
             }
         }
 

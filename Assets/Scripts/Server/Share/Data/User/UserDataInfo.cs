@@ -15,4 +15,14 @@ public class UserDataInfo
     /// 前回のログイン日時
     /// </summary>
     public DateTime lastLoginDateTime { get; set; }
+
+    /// <summary>
+    /// 前回スタミナ計算を行った日時
+    /// </summary>
+    public DateTime lastCalculatedStaminaDateTime { get; set; }
+
+    /// <summary>
+    /// スタミナ
+    /// </summary>
+    public int stamina { get; set; }
 }
