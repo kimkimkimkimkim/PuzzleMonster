@@ -1,4 +1,6 @@
-﻿public class ConstManager
+﻿using System;
+
+public class ConstManager
 {
     public class System
     {
@@ -11,6 +13,14 @@
         /// ユーザー名の最大文字数
         /// </summary>
         public static int userNameMaxWordCount = 10;
+    }
+
+    public class User
+    {
+        /// <summary>
+        /// 1スタミナ溜まるのに必要な時間[ms]
+        /// </summary>
+        public static int millSecondsPerStamina = 180000;
     }
 
     public class Monster
