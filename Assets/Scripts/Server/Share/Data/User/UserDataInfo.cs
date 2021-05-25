@@ -26,4 +26,9 @@ public class UserDataInfo
     /// スタミナ
     /// </summary>
     public int stamina { get; set; }
+
+    /// <summary>
+    /// ランク
+    /// </summary>
+    public int rank { get; set; }
 }

@@ -190,6 +190,7 @@ namespace PM
                 lastLoginDateTime,
                 lastCalculatedStaminaDateTime,
                 stamina,
+                rank,
             }
         }
 
