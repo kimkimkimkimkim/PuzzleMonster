@@ -31,6 +31,8 @@ static class MasterRecord
         LoadMasterData<QuestMB>();
         LoadMasterData<PropertyMB>();
         LoadMasterData<MonsterLevelUpTableMB>();
+        LoadMasterData<UserRankUpTableMB>();
+        LoadMasterData<StaminaMB>();
     }
 
     /// <summary>
