@@ -206,5 +206,16 @@ public partial class ApiConnection
             data = data,
         });
     }
+
+    /// <summary>
+    /// スタミナを消費する
+    /// </summary>
+    public static IObservable<DevelopConsumeStaminaApiResponse> DevelopConsumeStamina(int consumeStamina)
+    {
+        return SendRequest<DevelopConsumeStaminaApiRequest, DevelopConsumeStaminaApiResponse>(DevelopConsumeStaminaApiInterface.functionName, new DevelopConsumeStaminaApiRequest()
+        {
+            consumeStamina = consumeStamina,
+        });
+    }
     #endregion
 }

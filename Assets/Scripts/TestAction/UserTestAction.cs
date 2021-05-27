@@ -109,6 +109,31 @@ public class UserTestAction : ITestAction
             }),
         });
 
+        testActionDataList.Add(new TestActionData()
+        {
+            title = "スタミナ消費(5)",
+            action = new Action(() =>
+            {
+                var consumeStamina = 5;
+
+                CommonDialogFactory.Create(new CommonDialogRequest()
+                {
+                    commonDialogType = CommonDialogType.NoAndYes,
+                    title = "確認",
+                    content = $"スタミナを{consumeStamina}消費します",
+                })
+                    .Where(res => res.dialogResponseType == DialogResponseType.Yes)
+                    .SelectMany(_ => ApiConnection.DevelopConsumeStamina(consumeStamina))
+                    .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
+                        commonDialogType = CommonDialogType.YesOnly,
+                        title = "お知らせ",
+                        content = "スタミナを消費しました",
+                    }))
+                    .Subscribe();
+            })
+        });
+
         return testActionDataList;
 
     }
