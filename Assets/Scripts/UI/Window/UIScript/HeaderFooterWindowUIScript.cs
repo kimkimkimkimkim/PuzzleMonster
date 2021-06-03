@@ -6,12 +6,14 @@ using GameBase;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 [ResourcePath("UI/Window/Window-HeaderFooter")]
 public class HeaderFooterWindowUIScript : WindowBase
 {
     [SerializeField] protected Text _coinText;
     [SerializeField] protected Text _orbText;
+    [SerializeField] protected Text _staminaText;
     [SerializeField] protected Toggle _homeToggle;
     [SerializeField] protected Toggle _monsterToggle;
     [SerializeField] protected Toggle _gachaToggle;
@@ -87,6 +89,13 @@ public class HeaderFooterWindowUIScript : WindowBase
                 }
             })
             .Subscribe();
+    }
+
+    public void UpdateStaminaText()
+    {
+        var maxStamina = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.rank == ApplicationContext.userData.rank)?.stamina;
+        if (maxStamina == null) return;
+        _staminaText.text = $"{ApplicationContext.userData.stamina}/{maxStamina}";
     }
 
     public override void Open(WindowInfo info)
