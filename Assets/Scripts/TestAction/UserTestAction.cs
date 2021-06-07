@@ -124,6 +124,7 @@ public class UserTestAction : ITestAction
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
                     .SelectMany(_ => ApiConnection.DevelopConsumeStamina(consumeStamina))
+                    .Do(_ => HeaderManager.Instance.SetStaminaText())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,

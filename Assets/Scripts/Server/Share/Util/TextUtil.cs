@@ -27,4 +27,12 @@ public static class TextUtil
         var descriptionString = attributes.Select(n => ((DescriptionAttribute)n).Description).FirstOrDefault();
         return descriptionString ?? typeof(T).ToString();
     }
+
+    /// <summary>
+    /// 指定した数値を2桁の0埋めした文字列に変換して返します。
+    /// </summary>
+    public static string GetZeroPaddingText2Digits(int num)
+    {
+        return String.Format("{0:D2}", num);
+    }
 }

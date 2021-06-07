@@ -18,5 +18,11 @@ public class HeaderManager : SingletonMonoBehaviour<HeaderManager>
         if (uiScript == null) return;
         uiScript.UpdateVirtualCurrencyText();
     }
+
+    public void SetStaminaText()
+    {
+        if (uiScript == null) return;
+        uiScript.SetStaminaText();
+    }
 }
 
