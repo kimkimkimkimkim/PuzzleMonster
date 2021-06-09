@@ -38,7 +38,7 @@ public class QuestCategoryWindowUIScript : WindowBase
         scrollItem.SetText(questCategory.name);
         scrollItem.SetOnClickAction(() =>
         {
-
+            // ゲーム画面に遷移
         });
     }
 
