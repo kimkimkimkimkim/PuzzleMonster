@@ -22,8 +22,10 @@ public class FadeManager : SingletonMonoBehaviour<FadeManager>
 
     public IObservable<Unit> PlayFadeAnimationObservable(float toValue, float animationTime)
     {
+        UIManager.Instance.ShowTapBlocker();
         return DOVirtual.Float(_fade.Range, toValue, animationTime, value => _fade.Range = value)
             .OnCompleteAsObservable()
+            .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .AsUnitObservable();
     }
 }

@@ -1,7 +1,7 @@
 ﻿using GameBase;
 using UniRx;
 
-public class HeaderManager : SingletonMonoBehaviour<HeaderManager>
+public class HeaderFooterManager : SingletonMonoBehaviour<HeaderFooterManager>
 {
     private HeaderFooterWindowUIScript uiScript;
 
@@ -19,10 +19,21 @@ public class HeaderManager : SingletonMonoBehaviour<HeaderManager>
         uiScript.UpdateVirtualCurrencyText();
     }
 
+    /// <summary>
+    /// スタミナ値を更新
+    /// </summary>
     public void SetStaminaText()
     {
         if (uiScript == null) return;
         uiScript.SetStaminaText();
+    }
+
+    /// <summary>
+    /// 表示制御
+    /// </summary>
+    public void Show(bool isShow){
+        uiScript.headerPanel.SetActive(isShow);
+        uiScript.footerPanel.SetActive(isShow);
     }
 }
 

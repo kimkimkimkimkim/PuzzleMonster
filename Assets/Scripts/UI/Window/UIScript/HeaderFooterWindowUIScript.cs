@@ -19,6 +19,11 @@ public class HeaderFooterWindowUIScript : WindowBase
     [SerializeField] protected Toggle _monsterToggle;
     [SerializeField] protected Toggle _gachaToggle;
     [SerializeField] protected Toggle _shopToggle;
+    [SerializeField] protected GameObject _headerPanel;
+    [SerializeField] protected GameObject _footerPanel;
+
+    public GameObject headerPanel { get { return _headerPanel; } }
+    public GameObject footerPanel { get { return _footerPanel; } }
 
     private IDisposable staminaCountDownObservable;
     private int initialStamina;

@@ -36,7 +36,7 @@ public class UserTestAction : ITestAction
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
                     .SelectMany(_ => ApiConnection.AddUserVirtualCurrency(VirtualCurrencyType.OB,1000))
-                    .Do(res => HeaderManager.Instance.UpdateVirutalCurrencyText())
+                    .Do(res => HeaderFooterManager.Instance.UpdateVirutalCurrencyText())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
@@ -124,7 +124,7 @@ public class UserTestAction : ITestAction
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
                     .SelectMany(_ => ApiConnection.DevelopConsumeStamina(consumeStamina))
-                    .Do(_ => HeaderManager.Instance.SetStaminaText())
+                    .Do(_ => HeaderFooterManager.Instance.SetStaminaText())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
