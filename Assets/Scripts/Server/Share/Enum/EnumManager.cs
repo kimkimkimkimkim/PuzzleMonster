@@ -44,6 +44,16 @@ namespace PM
                 Win,
                 Lose,
             }
+
+            /// <summary>
+            /// ピースの色
+            /// </summary>
+            public enum PieceColor
+            {
+                TransParent,
+                LightBrown,
+                DarkBrown,
+            }
         }
 
         namespace UI

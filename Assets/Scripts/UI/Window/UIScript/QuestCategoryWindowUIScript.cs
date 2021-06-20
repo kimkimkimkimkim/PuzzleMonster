@@ -43,6 +43,7 @@ public class QuestCategoryWindowUIScript : WindowBase
                 .Do(_ =>
                 {
                     var battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
+                    battleWindow.Init();
                     HeaderFooterManager.Instance.Show(false);
                 })
                 .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
