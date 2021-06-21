@@ -13,7 +13,7 @@ public class BattleBoardPieceItem : MonoBehaviour
     [SerializeField] protected Color _lightBrown;
     [SerializeField] protected Image _image;
 
-    private const float ANIMATION_TIME = 0.5f;
+    private const float ANIMATION_TIME = 0.25f;
 
     private BattleBoardPieceItem _targetPosPiece;
     private Vector3 _initialPos;
@@ -40,7 +40,7 @@ public class BattleBoardPieceItem : MonoBehaviour
 
     public void SetInitialPos()
     {
-        _initialPos = transform.position;
+        _initialPos = transform.localPosition;
     }
 
     public void SetTargetPosPiece(BattleBoardPieceItem piece)
@@ -50,19 +50,28 @@ public class BattleBoardPieceItem : MonoBehaviour
 
     public IObservable<Unit> PlayMoveToTargetPosAnimationObservable()
     {
-        var moveAnimation = transform.DOMove(_targetPosPiece.transform.position, ANIMATION_TIME);
+        var targetPosition = _targetPosPiece.transform.localPosition + new Vector3(0, 250, 0);
+        var moveAnimation = transform.DOLocalMove(targetPosition, ANIMATION_TIME);
 
         var sequence = DOTween.Sequence()
             .Join(moveAnimation);
-        return sequence.PlayAsObservable().AsUnitObservable();
+
+        UIManager.Instance.ShowTapBlocker();
+        return sequence.OnCompleteAsObservable()
+            .Do(_ => UIManager.Instance.TryHideTapBlocker())
+            .AsUnitObservable();
     }
 
     public IObservable<Unit> PlayMoveToInitialPosAnimationObservable()
     {
-        var moveAnimation = transform.DOMove(_initialPos, ANIMATION_TIME);
+        var moveAnimation = transform.DOLocalMove(_initialPos, ANIMATION_TIME);
 
         var sequence = DOTween.Sequence()
             .Join(moveAnimation);
-        return sequence.PlayAsObservable().AsUnitObservable();
+
+        UIManager.Instance.ShowTapBlocker();
+        return sequence.OnCompleteAsObservable()
+            .Do(_ => UIManager.Instance.TryHideTapBlocker())
+            .AsUnitObservable();
     }
 }

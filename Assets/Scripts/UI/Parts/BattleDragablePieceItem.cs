@@ -107,11 +107,14 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
             var boardP = UIManager.Instance.CreateContent<BattleBoardPieceItem>(_boardPieceBaseRT);
             boardP.SetColor(PieceColor.TransParent);
 
-            p.SetInitialPos();
             p.SetTargetPosPiece(boardP);
             pieceItemList.Add(p);
         });
 
-
+        UIManager.Instance.ShowTapBlocker();
+        Observable.NextFrame()
+            .Do(_ => pieceItemList.ForEach(p => p.SetInitialPos()))
+            .Do(_ => UIManager.Instance.TryHideTapBlocker())
+            .Subscribe();
     }
 }
