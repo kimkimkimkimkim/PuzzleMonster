@@ -28,11 +28,8 @@ public class BattleWindowUIScript : DummyWindowBase
             boardPiece.SetColor(PieceColor.DarkBrown);
         }
 
-        for(var i = 1; i <= 5; i++)
-        {
-            var dragablePiece = UIManager.Instance.CreateContent<BattleDragablePieceItem>(_dragablePieceBaseRT);
-            dragablePiece.SetPiece(BOARD_PIECE_SPACE, pieceWidth, i);
-        }
+        var dragablePiece = UIManager.Instance.CreateContent<BattleDragablePieceItem>(_dragablePieceBaseRT);
+        dragablePiece.SetPiece(BOARD_PIECE_SPACE, pieceWidth, 2);
     }
 
     private void SetBoard()

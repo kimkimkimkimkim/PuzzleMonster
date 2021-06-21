@@ -2,18 +2,20 @@ using System.Collections.Generic;
 using System.Linq;
 using GameBase;
 using PM.Enum.Battle;
+using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [ResourcePath("UI/Parts/Parts-BattleDragablePieceItem")]
-public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDragHandler
+public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
     [SerializeField] protected RectTransform _pieceBaseRT;
     [SerializeField] protected RectTransform _boardPieceBaseRT;
     [SerializeField] protected GridLayoutGroup _pieceBaseGridLayoutGroup;
     [SerializeField] protected GridLayoutGroup _boardPieceBaseGridLayoutGroup;
 
+    private List<BattleBoardPieceItem> pieceItemList = new List<BattleBoardPieceItem>();
     private List<PieceMB> pieceList = new List<PieceMB>()
     {
         new PieceMB()
@@ -65,7 +67,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
 
     public void OnPointerDown(PointerEventData data)
     {
-        Debug.Log("touch");
+        pieceItemList.ForEach(piece => piece.PlayMoveToTargetPosAnimationObservable().Subscribe());
     }
 
     public void OnDrag(PointerEventData data)
@@ -75,20 +77,41 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         transform.position = targetPos;
     }
 
-    public void SetPiece(float boardSpace,float pieceWidth, long pieceId)
+    public void OnPointerUp(PointerEventData data) {
+        pieceItemList.ForEach(piece => piece.PlayMoveToInitialPosAnimationObservable().Subscribe());
+    }
+
+    public void SetPiece(int boardSpace,float pieceWidth, long pieceId)
     {
         var piece = pieceList.First(m => m.id == pieceId);
+        var startAxis = piece.isHorizontal ? GridLayoutGroup.Axis.Horizontal : GridLayoutGroup.Axis.Vertical;
+        var constraint = piece.horizontalConstraint != 0 ? GridLayoutGroup.Constraint.FixedColumnCount : GridLayoutGroup.Constraint.FixedRowCount;
         var contraintCount = piece.horizontalConstraint != 0 ? piece.horizontalConstraint : piece.verticalConstraint;
 
-        _pieceBaseGridLayoutGroup.startAxis = piece.isHorizontal ? GridLayoutGroup.Axis.Horizontal : GridLayoutGroup.Axis.Vertical;
-        _pieceBaseGridLayoutGroup.constraint = piece.horizontalConstraint != 0 ? GridLayoutGroup.Constraint.FixedColumnCount : GridLayoutGroup.Constraint.FixedRowCount;
+        _pieceBaseGridLayoutGroup.startAxis = startAxis;
+        _pieceBaseGridLayoutGroup.constraint = constraint;
         _pieceBaseGridLayoutGroup.constraintCount = contraintCount;
+
+        _boardPieceBaseGridLayoutGroup.padding = new RectOffset(boardSpace, boardSpace, boardSpace, boardSpace);
+        _boardPieceBaseGridLayoutGroup.cellSize = new Vector2(pieceWidth, pieceWidth);
+        _boardPieceBaseGridLayoutGroup.startAxis = startAxis;
+        _boardPieceBaseGridLayoutGroup.constraint = constraint;
+        _boardPieceBaseGridLayoutGroup.constraintCount = contraintCount;
 
         piece.pieceList.ForEach(b =>
         {
             var p = UIManager.Instance.CreateContent<BattleBoardPieceItem>(_pieceBaseRT);
             var pieceColor = b ? PieceColor.LightBrown : PieceColor.TransParent;
             p.SetColor(pieceColor);
+
+            var boardP = UIManager.Instance.CreateContent<BattleBoardPieceItem>(_boardPieceBaseRT);
+            boardP.SetColor(PieceColor.TransParent);
+
+            p.SetInitialPos();
+            p.SetTargetPosPiece(boardP);
+            pieceItemList.Add(p);
         });
+
+
     }
 }
