@@ -16,7 +16,10 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     [SerializeField] protected GridLayoutGroup _pieceBaseGridLayoutGroup;
     [SerializeField] protected GridLayoutGroup _boardPieceBaseGridLayoutGroup;
 
-    private List<BattleBoardPieceItem> pieceItemList = new List<BattleBoardPieceItem>();
+    private const float ANIMATION_TIME = 0.25f;
+
+    private List<PieceData> pieceDataList = new List<PieceData>();
+    #region list
     private List<PieceMB> pieceList = new List<PieceMB>()
     {
         new PieceMB()
@@ -65,10 +68,24 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
             pieceList = new List<bool>(){ false, true, true, true},
         },
     };
+    #endregion
 
     public void OnPointerDown(PointerEventData data)
     {
-        pieceItemList.ForEach(piece => piece.PlayMoveToTargetPosAnimationObservable().Subscribe());
+        // ドラッガブル内のピースを形に応じた位置に移動させるアニメーション
+        pieceDataList.ForEach(pieceData =>
+        {
+            var targetPosition = pieceData.targetPieceItem.transform.localPosition + new Vector3(0, 250, 0);
+            var moveAnimation = pieceData.pieceItem.transform.DOLocalMove(targetPosition, ANIMATION_TIME);
+
+            var sequence = DOTween.Sequence()
+                .Join(moveAnimation);
+
+            UIManager.Instance.ShowTapBlocker();
+            sequence.OnCompleteAsObservable()
+                .Do(_ => UIManager.Instance.TryHideTapBlocker())
+                .Subscribe();
+        });
     }
 
     public void OnDrag(PointerEventData data)
@@ -79,15 +96,25 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     }
 
     public void OnPointerUp(PointerEventData data) {
-        pieceItemList.ForEach(piece => piece.PlayMoveToInitialPosAnimationObservable().Subscribe());
+        // ドラッガブル内のピースの位置元に戻すアニメーション
+        pieceDataList.ForEach(pieceData =>
+        {
+            var moveAnimation = pieceData.pieceItem.transform.DOLocalMove(pieceData.initialPos, ANIMATION_TIME);
 
-        var moveAnimation = transform.DOLocalMove(new Vector3(0,0,0), 0.2f);
+            var sequence = DOTween.Sequence()
+                .Join(moveAnimation);
 
-        var sequence = DOTween.Sequence()
-            .Join(moveAnimation);
+            UIManager.Instance.ShowTapBlocker();
+            sequence.OnCompleteAsObservable()
+                .Do(_ => UIManager.Instance.TryHideTapBlocker())
+                .AsUnitObservable();
+        });
 
+        // ドラッガブルピースを元の位置に戻すアニメーション
         UIManager.Instance.ShowTapBlocker();
-        sequence.OnCompleteAsObservable()
+        DOTween.Sequence()
+            .Join(transform.DOLocalMove(new Vector3(0, 0, 0), ANIMATION_TIME))
+            .OnCompleteAsObservable()
             .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .AsUnitObservable()
             .Subscribe();
@@ -110,23 +137,36 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         _boardPieceBaseGridLayoutGroup.constraint = constraint;
         _boardPieceBaseGridLayoutGroup.constraintCount = contraintCount;
 
+        // ピース生成
         piece.pieceList.ForEach(b =>
         {
-            var p = UIManager.Instance.CreateContent<BattleBoardPieceItem>(_pieceBaseRT);
+            var p = UIManager.Instance.CreateContent<BattlePieceItem>(_pieceBaseRT);
             var pieceColor = b ? PieceColor.LightBrown : PieceColor.TransParent;
             p.SetColor(pieceColor);
 
-            var boardP = UIManager.Instance.CreateContent<BattleBoardPieceItem>(_boardPieceBaseRT);
+            var boardP = UIManager.Instance.CreateContent<BattlePieceItem>(_boardPieceBaseRT);
             boardP.SetColor(PieceColor.TransParent);
 
-            p.SetTargetPosPiece(boardP);
-            pieceItemList.Add(p);
+            var pieceData = new PieceData()
+            {
+                pieceItem = p,
+                targetPieceItem = boardP,
+            };
+            pieceDataList.Add(pieceData);
         });
 
+        // GridLayoutGroupの関係上1フレーム遅らせて初期位置を指定
         UIManager.Instance.ShowTapBlocker();
         Observable.NextFrame()
-            .Do(_ => pieceItemList.ForEach(p => p.SetInitialPos()))
+            .Do(_ => pieceDataList.ForEach(p => p.initialPos = p.pieceItem.transform.localPosition))
             .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .Subscribe();
+    }
+
+    private class PieceData
+    {
+        public BattlePieceItem pieceItem { get; set; }
+        public BattlePieceItem targetPieceItem { get; set; }
+        public Vector3 initialPos { get; set; }
     }
 }
