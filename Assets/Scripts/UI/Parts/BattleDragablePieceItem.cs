@@ -76,10 +76,16 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         pieceDataList.ForEach(pieceData =>
         {
             var targetPosition = pieceData.targetPieceItem.transform.localPosition + new Vector3(0, 250, 0);
+            var targetPieceSize = pieceData.targetPieceItem.GetRectTransform().sizeDelta;
+            var pieceSize = pieceData.pieceItem.GetRectTransform().sizeDelta;
+            var scale = targetPieceSize.x / pieceSize.x; // 現状ピースは正方形なのでxの値だけで指定
+
             var moveAnimation = pieceData.pieceItem.transform.DOLocalMove(targetPosition, ANIMATION_TIME);
+            var scaleAnimation = pieceData.pieceItem.transform.DOScale(scale, ANIMATION_TIME);
 
             var sequence = DOTween.Sequence()
-                .Join(moveAnimation);
+                .Join(moveAnimation)
+                .Join(scaleAnimation);
 
             UIManager.Instance.ShowTapBlocker();
             sequence.OnCompleteAsObservable()
@@ -100,9 +106,11 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         pieceDataList.ForEach(pieceData =>
         {
             var moveAnimation = pieceData.pieceItem.transform.DOLocalMove(pieceData.initialPos, ANIMATION_TIME);
+            var scaleAnimation = pieceData.pieceItem.transform.DOScale(1, ANIMATION_TIME);
 
             var sequence = DOTween.Sequence()
-                .Join(moveAnimation);
+                .Join(moveAnimation)
+                .Join(scaleAnimation);
 
             UIManager.Instance.ShowTapBlocker();
             sequence.OnCompleteAsObservable()
@@ -132,6 +140,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         _pieceBaseGridLayoutGroup.constraintCount = contraintCount;
 
         _boardPieceBaseGridLayoutGroup.padding = new RectOffset(boardSpace, boardSpace, boardSpace, boardSpace);
+        _boardPieceBaseGridLayoutGroup.spacing = new Vector2(boardSpace, boardSpace);
         _boardPieceBaseGridLayoutGroup.cellSize = new Vector2(pieceWidth, pieceWidth);
         _boardPieceBaseGridLayoutGroup.startAxis = startAxis;
         _boardPieceBaseGridLayoutGroup.constraint = constraint;
