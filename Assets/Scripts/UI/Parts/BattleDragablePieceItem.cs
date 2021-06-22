@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using GameBase;
 using PM.Enum.Battle;
 using UniRx;
@@ -79,6 +80,17 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
 
     public void OnPointerUp(PointerEventData data) {
         pieceItemList.ForEach(piece => piece.PlayMoveToInitialPosAnimationObservable().Subscribe());
+
+        var moveAnimation = transform.DOLocalMove(new Vector3(0,0,0), 0.2f);
+
+        var sequence = DOTween.Sequence()
+            .Join(moveAnimation);
+
+        UIManager.Instance.ShowTapBlocker();
+        sequence.OnCompleteAsObservable()
+            .Do(_ => UIManager.Instance.TryHideTapBlocker())
+            .AsUnitObservable()
+            .Subscribe();
     }
 
     public void SetPiece(int boardSpace,float pieceWidth, long pieceId)
