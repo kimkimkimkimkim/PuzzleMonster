@@ -17,7 +17,9 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     [SerializeField] protected GridLayoutGroup _boardPieceBaseGridLayoutGroup;
 
     private const float ANIMATION_TIME = 0.25f;
+    private const float MIN_PIECE_SPAN = 0.23f;
 
+    private List<BattleBoardPieceItem> boardPieceList = new List<BattleBoardPieceItem>();
     private List<PieceData> pieceDataList = new List<PieceData>();
     #region list
     private List<PieceMB> pieceList = new List<PieceMB>()
@@ -102,6 +104,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     }
 
     public void OnPointerUp(PointerEventData data) {
+        IsFit();
         // ドラッガブル内のピースの位置元に戻すアニメーション
         pieceDataList.ForEach(pieceData =>
         {
@@ -126,6 +129,34 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
             .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .AsUnitObservable()
             .Subscribe();
+    }
+
+    // ドラッガブルピースの位置から考えて盤面にハマるかどうかを返す
+    private bool IsFit()
+    {
+        // 位置の基準となるピース
+        var basePieceItem = pieceDataList.First(pieceData => pieceData.pieceItem.GetPieceColor() == PieceColor.LightBrown).pieceItem;
+        // 基準ピースに一番近いボードピース
+        var nearestBoardPiece = boardPieceList.OrderBy(p => Get2DDistance(basePieceItem.transform.position, p.transform.position)).First();
+
+        var distance = Get2DDistance(basePieceItem.transform.position, nearestBoardPiece.transform.position);
+        // 基準ピースと最近距離ボードピースとの距離が範囲外だったらその時点でfalseを返す
+        if (distance > MIN_PIECE_SPAN) return false;
+
+
+        return false;
+    }
+
+    private float Get2DDistance(Vector3 a, Vector3 b)
+    {
+        var newA = new Vector3(a.x, a.y, 0);
+        var newB = new Vector3(b.x, b.y, 0);
+        return Vector3.Distance(newA, newB);
+    }
+
+    public void SetBoardPieceList(List<BattleBoardPieceItem> boardPieceList)
+    {
+        this.boardPieceList = boardPieceList;
     }
 
     public void SetPiece(int boardSpace,float pieceWidth, long pieceId)

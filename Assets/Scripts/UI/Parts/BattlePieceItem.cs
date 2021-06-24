@@ -11,8 +11,16 @@ public class BattlePieceItem : MonoBehaviour
     [SerializeField] protected Color _lightBrown;
     [SerializeField] protected Image _image;
 
+    private PieceColor pieceColor;
+
+    public PieceColor GetPieceColor()
+    {
+        return pieceColor;
+    }
+
     public void SetColor(PieceColor pieceColor)
     {
+        this.pieceColor = pieceColor;
         var color = new Color();
         switch (pieceColor)
         {

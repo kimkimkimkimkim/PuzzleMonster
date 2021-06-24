@@ -15,7 +15,7 @@ public class BattleWindowUIScript : DummyWindowBase
     const int BOARD_PIECE_SPACE = 12;
 
     private float pieceWidth;
-
+    private List<BattleBoardPieceItem> boardPieceList = new List<BattleBoardPieceItem>();
 
     public void Init()
     {
@@ -26,10 +26,12 @@ public class BattleWindowUIScript : DummyWindowBase
         {
             var boardPiece = UIManager.Instance.CreateContent<BattleBoardPieceItem>(_boardPanelRT);
             boardPiece.SetColor(PieceColor.DarkBrown);
+            boardPieceList.Add(boardPiece);
         }
 
         var dragablePiece = UIManager.Instance.CreateContent<BattleDragablePieceItem>(_dragablePieceBaseRT);
         dragablePiece.SetPiece(BOARD_PIECE_SPACE, pieceWidth, 2);
+        dragablePiece.SetBoardPieceList(boardPieceList);
     }
 
     private void SetBoard()
