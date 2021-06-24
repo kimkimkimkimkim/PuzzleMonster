@@ -19,6 +19,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     private const float ANIMATION_TIME = 0.25f;
     private const float MIN_PIECE_SPAN = 0.23f;
 
+    private PieceMB piece;
     private List<BattleBoardPieceItem> boardPieceList = new List<BattleBoardPieceItem>();
     private List<PieceData> pieceDataList = new List<PieceData>();
     #region list
@@ -143,7 +144,12 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         // 基準ピースと最近距離ボードピースとの距離が範囲外だったらその時点でfalseを返す
         if (distance > MIN_PIECE_SPAN) return false;
 
+        return IsFit(nearestBoardPiece.index);
+    }
 
+    // 最近距離ボードピースのインデックスとピースの形からそこにはめることができるかどうかを返す
+    private bool IsFit(int nearestBoardPieceIndex)
+    {
         return false;
     }
 
@@ -161,7 +167,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
 
     public void SetPiece(int boardSpace,float pieceWidth, long pieceId)
     {
-        var piece = pieceList.First(m => m.id == pieceId);
+        piece = pieceList.First(m => m.id == pieceId);
         var startAxis = piece.isHorizontal ? GridLayoutGroup.Axis.Horizontal : GridLayoutGroup.Axis.Vertical;
         var constraint = piece.horizontalConstraint != 0 ? GridLayoutGroup.Constraint.FixedColumnCount : GridLayoutGroup.Constraint.FixedRowCount;
         var contraintCount = piece.horizontalConstraint != 0 ? piece.horizontalConstraint : piece.verticalConstraint;
