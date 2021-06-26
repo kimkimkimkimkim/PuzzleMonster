@@ -54,6 +54,16 @@ namespace PM
                 LightBrown,
                 DarkBrown,
             }
+
+            /// <summary>
+            /// ピースのステータス
+            /// </summary>
+            public enum PieceStatus
+            {
+                None,
+                Free,
+                Normal,
+            }
         }
 
         namespace UI

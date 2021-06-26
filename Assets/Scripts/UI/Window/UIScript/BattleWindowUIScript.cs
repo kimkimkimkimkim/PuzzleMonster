@@ -11,33 +11,37 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected RectTransform _dragablePieceBaseRT;
     [SerializeField] protected GridLayoutGroup _boardGridLayoutGroup;
 
-    const int ROW_NUM = 8;
-    const int BOARD_PIECE_SPACE = 12;
+    private const  int BOARD_PIECE_SPACE = 12;
 
+    private int BOARD_HEIGHT = ConstManager.Battle.BOARD_HEIGHT;
+    private int BOARD_WIDTH = ConstManager.Battle.BOARD_WIDTH;
     private float pieceWidth;
-    private List<BattleBoardPieceItem> boardPieceList = new List<BattleBoardPieceItem>();
 
     public void Init()
     {
         // ボードのパラメータ設定
         SetBoard();
 
-        for(var i = 0; i < ROW_NUM * ROW_NUM; i++)
+        for(var i=0; i< BOARD_HEIGHT; i++)
         {
-            var boardPiece = UIManager.Instance.CreateContent<BattleBoardPieceItem>(_boardPanelRT);
-            boardPiece.SetColor(PieceColor.DarkBrown);
-            boardPieceList.Add(boardPiece);
+            for(var j = 0; j < BOARD_WIDTH; j++)
+            {
+                var boardPiece = UIManager.Instance.CreateContent<BattleBoardPieceItem>(_boardPanelRT);
+                boardPiece.SetPieceStatus(PieceStatus.Free);
+                boardPiece.SetColor(PieceColor.DarkBrown);
+                boardPiece.SetBoardIndex(new BoardIndex(i, j));
+                BattleManager.Instance.board[i, j] = boardPiece;
+            }
         }
 
         var dragablePiece = UIManager.Instance.CreateContent<BattleDragablePieceItem>(_dragablePieceBaseRT);
         dragablePiece.SetPiece(BOARD_PIECE_SPACE, pieceWidth, 2);
-        dragablePiece.SetBoardPieceList(boardPieceList);
     }
 
     private void SetBoard()
     {
         var boardWidth = _boardPanelRT.sizeDelta.x;
-        pieceWidth = (boardWidth - ((ROW_NUM + 1) * BOARD_PIECE_SPACE)) / ROW_NUM;
+        pieceWidth = (boardWidth - ((BOARD_WIDTH + 1) * BOARD_PIECE_SPACE)) / BOARD_WIDTH;
 
         _boardGridLayoutGroup.cellSize = new Vector2(pieceWidth, pieceWidth);
         _boardGridLayoutGroup.spacing = new Vector2(BOARD_PIECE_SPACE, BOARD_PIECE_SPACE);

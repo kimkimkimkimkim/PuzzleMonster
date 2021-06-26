@@ -38,16 +38,7 @@ public class QuestCategoryWindowUIScript : WindowBase
         scrollItem.SetText(questCategory.name);
         scrollItem.SetOnClickAction(() =>
         {
-            // ゲーム画面に遷移
-            FadeManager.Instance.PlayFadeAnimationObservable(1)
-                .Do(_ =>
-                {
-                    var battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
-                    battleWindow.Init();
-                    HeaderFooterManager.Instance.Show(false);
-                })
-                .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
-                .Subscribe();
+            BattleManager.Instance.BattleStart();
         });
     }
 

@@ -12,10 +12,16 @@ public class BattlePieceItem : MonoBehaviour
     [SerializeField] protected Image _image;
 
     private PieceColor pieceColor;
+    private PieceStatus pieceStatus;
 
     public PieceColor GetPieceColor()
     {
         return pieceColor;
+    }
+
+    public PieceStatus GetPieceStatus()
+    {
+        return pieceStatus;
     }
 
     public void SetColor(PieceColor pieceColor)
@@ -37,6 +43,11 @@ public class BattlePieceItem : MonoBehaviour
         }
 
         _image.color = color;
+    }
+
+    public void SetPieceStatus(PieceStatus pieceStatus)
+    {
+        this.pieceStatus = pieceStatus;
     }
 
     public RectTransform GetRectTransform()

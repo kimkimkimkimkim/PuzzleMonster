@@ -3,10 +3,10 @@ using GameBase;
 [ResourcePath("UI/Parts/Parts-BattleBoardPieceItem")]
 public class BattleBoardPieceItem : BattlePieceItem
 {
-    public int index { get; private set; }
+    public BoardIndex boardIndex { get; private set; }
 
-    public void SetIndex(int index)
+    public void SetBoardIndex(BoardIndex boardIndex)
     {
-        this.index = index;
+        this.boardIndex = boardIndex;
     }
 }

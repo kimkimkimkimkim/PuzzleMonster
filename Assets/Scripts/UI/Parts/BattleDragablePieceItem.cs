@@ -20,7 +20,6 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     private const float MIN_PIECE_SPAN = 0.23f;
 
     private PieceMB piece;
-    private List<BattleBoardPieceItem> boardPieceList = new List<BattleBoardPieceItem>();
     private List<PieceData> pieceDataList = new List<PieceData>();
     #region list
     private List<PieceMB> pieceList = new List<PieceMB>()
@@ -105,7 +104,9 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     }
 
     public void OnPointerUp(PointerEventData data) {
-        IsFit();
+        var fitBoardIndexList = GetFitBoardIndexList();
+        Debug.Log(string.Join(", ", fitBoardIndexList.Select(i => $"({i.row},{i.column})")));
+
         // ドラッガブル内のピースの位置元に戻すアニメーション
         pieceDataList.ForEach(pieceData =>
         {
@@ -132,25 +133,72 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
             .Subscribe();
     }
 
-    // ドラッガブルピースの位置から考えて盤面にハマるかどうかを返す
-    private bool IsFit()
+    private List<BoardIndex> GetFitBoardIndexList()
     {
-        // 位置の基準となるピース
-        var basePieceItem = pieceDataList.First(pieceData => pieceData.pieceItem.GetPieceColor() == PieceColor.LightBrown).pieceItem;
-        // 基準ピースに一番近いボードピース
-        var nearestBoardPiece = boardPieceList.OrderBy(p => Get2DDistance(basePieceItem.transform.position, p.transform.position)).First();
+        // 一番左上のピース
+        var leftUpperPiece = pieceDataList.First().pieceItem;
+        // 左上のピースに一番近いボードピース
+        BattleBoardPieceItem nearestBoardPiece = null;
+        var minDistance = float.MaxValue;
+        // TODO : おそらく基本的には距離が短くなり続けて最近距離になってからは遠くなり続けるので、その時点で検索を終了してもいいかも
+        for (var i = 0; i < ConstManager.Battle.BOARD_HEIGHT; i++)
+        {
+            for (var j = 0; j < ConstManager.Battle.BOARD_WIDTH; j++)
+            {
+                var p = BattleManager.Instance.board[i, j];
+                var dist = Get2DDistance(leftUpperPiece.transform.position, p.transform.position);
+                if (dist > minDistance) continue;
 
-        var distance = Get2DDistance(basePieceItem.transform.position, nearestBoardPiece.transform.position);
-        // 基準ピースと最近距離ボードピースとの距離が範囲外だったらその時点でfalseを返す
-        if (distance > MIN_PIECE_SPAN) return false;
+                minDistance = dist;
+                nearestBoardPiece = p;
+            }
+        }
 
-        return IsFit(nearestBoardPiece.index);
+        // 左上のピースと最近距離ボードピースとの距離が範囲外だったらその時点で終了
+        if (minDistance > MIN_PIECE_SPAN) return new List<BoardIndex>();
+
+        // 左上のピースがはまるボードピースを元に全体のピースが盤面に含まれているかを判定
+        var isInclude = IsInclude(nearestBoardPiece.boardIndex);
+        if (!isInclude) return new List<BoardIndex>();
+
+        var truePieceIndexList = new List<int>();
+        for (var i = 0; i < piece.pieceList.Count; i++)
+        {
+            if (piece.pieceList[i]) truePieceIndexList.Add(i);
+        }
+        truePieceIndexList = truePieceIndexList
+            .Select(index => {
+                var row = index / piece.horizontalConstraint;
+                var column = index % piece.horizontalConstraint;
+                return column + (row * ConstManager.Battle.BOARD_WIDTH);
+            })
+            .Select(index =>
+            {
+                var nearestBoardPieceIndex = nearestBoardPiece.boardIndex.row * ConstManager.Battle.BOARD_WIDTH + nearestBoardPiece.boardIndex.column;
+                return index + nearestBoardPieceIndex;
+            }).ToList();
+        var fitBoardIndexList = truePieceIndexList.Select(index => GetBoardIndex(index)).ToList();
+
+        var isOverlaped = fitBoardIndexList.Any(i => BattleManager.Instance.board[i.row, i.column].GetPieceStatus() != PieceStatus.Free);
+        if (isOverlaped) return new List<BoardIndex>();
+
+        return truePieceIndexList.Select(index => GetBoardIndex(index)).ToList();
     }
 
-    // 最近距離ボードピースのインデックスとピースの形からそこにはめることができるかどうかを返す
-    private bool IsFit(int nearestBoardPieceIndex)
+    private BoardIndex GetBoardIndex(int listIndex)
     {
-        return false;
+        var row = listIndex / ConstManager.Battle.BOARD_WIDTH;
+        var column = listIndex % ConstManager.Battle.BOARD_WIDTH;
+        return new BoardIndex(row, column);
+    }
+
+    // ピースが盤面に収まっているかどうかを返す
+    private bool IsInclude(BoardIndex baseBoardIndex)
+    {
+        var width = piece.horizontalConstraint;
+        var height = piece.pieceList.Count / width;
+        var lowerRightPieceBoardIndex = new BoardIndex(baseBoardIndex.row + height - 1, baseBoardIndex.column + width - 1);
+        return lowerRightPieceBoardIndex.row < ConstManager.Battle.BOARD_HEIGHT && lowerRightPieceBoardIndex.column < ConstManager.Battle.BOARD_WIDTH;
     }
 
     private float Get2DDistance(Vector3 a, Vector3 b)
@@ -158,11 +206,6 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         var newA = new Vector3(a.x, a.y, 0);
         var newB = new Vector3(b.x, b.y, 0);
         return Vector3.Distance(newA, newB);
-    }
-
-    public void SetBoardPieceList(List<BattleBoardPieceItem> boardPieceList)
-    {
-        this.boardPieceList = boardPieceList;
     }
 
     public void SetPiece(int boardSpace,float pieceWidth, long pieceId)
