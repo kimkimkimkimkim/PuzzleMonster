@@ -25,6 +25,33 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
             .Subscribe();
     }
+
+    /// <summary>
+    /// ピースがハマった時の処理
+    /// </summary>
+    public void OnPieceFit(List<BoardIndex> fitBoardIndexList)
+    {
+        fitBoardIndexList.ForEach(i => board[i.row, i.column].SetPieceStatus(PieceStatus.Normal));
+        UpdateBoard();
+
+        battleWindow.CreateDragablePiece(3);
+    }
+
+    /// <summary>
+    /// boardを元に盤面を更新
+    /// </summary>
+    public void UpdateBoard()
+    {
+        for(var i = 0; i < ConstManager.Battle.BOARD_HEIGHT; i++)
+        {
+            for(var j = 0; j < ConstManager.Battle.BOARD_WIDTH; j++)
+            {
+                var piece = board[i, j];
+                var color = piece.GetPieceStatus() == PieceStatus.Normal ? PieceColor.LightBrown : PieceColor.DarkBrown;
+                piece.SetColor(color);
+            }
+        }
+    }
 }
 
 public class BoardIndex

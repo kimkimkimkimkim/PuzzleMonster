@@ -105,8 +105,21 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
 
     public void OnPointerUp(PointerEventData data) {
         var fitBoardIndexList = GetFitBoardIndexList();
-        Debug.Log(string.Join(", ", fitBoardIndexList.Select(i => $"({i.row},{i.column})")));
+        if (fitBoardIndexList.Any())
+        {
+            // ピースがハマる場合
+            BattleManager.Instance.OnPieceFit(fitBoardIndexList);
+            Destroy(gameObject);
+        }
+        else
+        {
+            // どこにもハマらないなら初期位置に戻す
+            PlayMoveInitialPositionAnimation();
+        }
+    }
 
+    private void PlayMoveInitialPositionAnimation()
+    {
         // ドラッガブル内のピースの位置元に戻すアニメーション
         pieceDataList.ForEach(pieceData =>
         {

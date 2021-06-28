@@ -34,8 +34,13 @@ public class BattleWindowUIScript : DummyWindowBase
             }
         }
 
+        CreateDragablePiece(2);
+    }
+
+    public void CreateDragablePiece(long id)
+    {
         var dragablePiece = UIManager.Instance.CreateContent<BattleDragablePieceItem>(_dragablePieceBaseRT);
-        dragablePiece.SetPiece(BOARD_PIECE_SPACE, pieceWidth, 2);
+        dragablePiece.SetPiece(BOARD_PIECE_SPACE, pieceWidth, id);
     }
 
     private void SetBoard()
