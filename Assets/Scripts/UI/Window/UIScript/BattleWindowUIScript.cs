@@ -8,8 +8,8 @@ using UnityEngine.UI;
 public class BattleWindowUIScript : DummyWindowBase
 {
     [SerializeField] protected RectTransform _boardPanelRT;
-    [SerializeField] protected RectTransform _dragablePieceBaseRT;
     [SerializeField] protected GridLayoutGroup _boardGridLayoutGroup;
+    [SerializeField] protected List<RectTransform> _dragablePieceBaseRTList;
 
     private const  int BOARD_PIECE_SPACE = 12;
 
@@ -34,12 +34,17 @@ public class BattleWindowUIScript : DummyWindowBase
             }
         }
 
-        CreateDragablePiece(2);
+        _dragablePieceBaseRTList.ForEach((rt, index) =>
+        {
+            var pieceId = UnityEngine.Random.Range(1, 6);
+            CreateDragablePiece(index, pieceId);
+        });
     }
 
-    public void CreateDragablePiece(long id)
+    public void CreateDragablePiece(int index,long id)
     {
-        var dragablePiece = UIManager.Instance.CreateContent<BattleDragablePieceItem>(_dragablePieceBaseRT);
+        var dragablePieceBaseRT = _dragablePieceBaseRTList[index];
+        var dragablePiece = UIManager.Instance.CreateContent<BattleDragablePieceItem>(dragablePieceBaseRT);
         dragablePiece.SetPiece(BOARD_PIECE_SPACE, pieceWidth, id);
     }
 
