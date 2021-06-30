@@ -38,8 +38,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     public void OnPieceFit(List<BoardIndex> fitBoardIndexList)
     {
         moveCountPerTurn++;
-        fitBoardIndexList.ForEach(i => board[i.row, i.column].SetPieceStatus(PieceStatus.Normal));
-        UpdateBoard();
+
+        Fit(fitBoardIndexList);
+        Crash();
 
         // 全てのピースをはめ終わったら再生成
         if(moveCountPerTurn == ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
@@ -68,6 +69,56 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
                 piece.SetColor(color);
             }
         }
+    }
+
+    /// <summary>
+    /// ピースをはめる
+    /// </summary>
+    private void Fit(List<BoardIndex> fitBoardIndexList)
+    {
+        fitBoardIndexList.ForEach(i => board[i.row, i.column].SetPieceStatus(PieceStatus.Normal));
+        UpdateBoard();
+    }
+
+    /// <summary>
+    /// 揃った列を壊す
+    /// </summary>
+    private void Crash()
+    {
+        var crashRowIndexList = new List<int>();
+        var crashColumnIndexList = new List<int>();
+
+        // 壊す行、列のインデックスを取得
+        for(var i = 0; i < ConstManager.Battle.BOARD_HEIGHT; i++)
+        {
+            for(var j = 0; j < ConstManager.Battle.BOARD_WIDTH; j++)
+            {
+                var piece = board[i,j];
+                if (piece.GetPieceStatus() != PieceStatus.Normal) break;
+                if (j == ConstManager.Battle.BOARD_WIDTH - 1) crashRowIndexList.Add(i);
+            }
+        }
+        for (var i = 0; i < ConstManager.Battle.BOARD_WIDTH; i++)
+        {
+            for (var j = 0; j < ConstManager.Battle.BOARD_HEIGHT; j++)
+            {
+                var piece = board[j, i];
+                if (piece.GetPieceStatus() != PieceStatus.Normal) break;
+                if (j == ConstManager.Battle.BOARD_HEIGHT - 1) crashColumnIndexList.Add(i);
+            }
+        }
+
+        // リストを元にピースを壊す
+        for (var i = 0; i < ConstManager.Battle.BOARD_HEIGHT; i++)
+        {
+            for (var j = 0; j < ConstManager.Battle.BOARD_WIDTH; j++)
+            {
+                if (crashRowIndexList.Contains(i) || crashColumnIndexList.Contains(j)) board[i, j].SetPieceStatus(PieceStatus.Free);
+            }
+        }
+
+        // UIを更新
+        UpdateBoard();
     }
 }
 
