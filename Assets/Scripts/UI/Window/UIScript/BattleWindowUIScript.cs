@@ -33,12 +33,6 @@ public class BattleWindowUIScript : DummyWindowBase
                 BattleManager.Instance.board[i, j] = boardPiece;
             }
         }
-
-        _dragablePieceBaseRTList.ForEach((rt, index) =>
-        {
-            var pieceId = UnityEngine.Random.Range(1, 6);
-            CreateDragablePiece(index, pieceId);
-        });
     }
 
     public void CreateDragablePiece(int index,long id)

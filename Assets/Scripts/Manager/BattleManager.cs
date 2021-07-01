@@ -9,6 +9,7 @@ using UnityEngine;
 public class BattleManager: SingletonMonoBehaviour<BattleManager>
 {
     [HideInInspector] public BattleBoardPieceItem[,] board = new BattleBoardPieceItem[ConstManager.Battle.BOARD_HEIGHT, ConstManager.Battle.BOARD_WIDTH];
+    [HideInInspector] public long[] pieceIdList = new long[ConstManager.Battle.MAX_PARTY_MEMBER_NUM];
 
     private BattleWindowUIScript battleWindow;
     private int moveCountPerTurn = 0;
@@ -26,6 +27,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             {
                 battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
                 battleWindow.Init();
+                CreateDragablePiece();
                 HeaderFooterManager.Instance.Show(false);
             })
             .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
@@ -47,11 +49,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         {
             moveCountPerTurn = 0;
             turnCount++;
-            for(var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM;i++)
-            {
-                var pieceId = UnityEngine.Random.Range(1, 6);
-                battleWindow.CreateDragablePiece(i, pieceId);
-            }
+            CreateDragablePiece();
         }
     }
 
@@ -68,6 +66,16 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
                 var color = piece.GetPieceStatus() == PieceStatus.Normal ? PieceColor.LightBrown : PieceColor.DarkBrown;
                 piece.SetColor(color);
             }
+        }
+    }
+
+    private void CreateDragablePiece()
+    {
+        for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
+        {
+            var pieceId = UnityEngine.Random.Range(1, 6);
+            pieceIdList[i] = pieceId;
+            battleWindow.CreateDragablePiece(i, pieceId);
         }
     }
 
