@@ -5,11 +5,12 @@ using PM.Enum.Battle;
 using UniRx;
 using GameBase;
 using UnityEngine;
+using PM.Enum.UI;
 
 public class BattleManager: SingletonMonoBehaviour<BattleManager>
 {
     [HideInInspector] public BattleBoardPieceItem[,] board = new BattleBoardPieceItem[ConstManager.Battle.BOARD_HEIGHT, ConstManager.Battle.BOARD_WIDTH];
-    [HideInInspector] public long[] pieceIdList = new long[ConstManager.Battle.MAX_PARTY_MEMBER_NUM];
+    [HideInInspector] public BattleDragablePieceItem[] dragablePieceList = new BattleDragablePieceItem[ConstManager.Battle.MAX_PARTY_MEMBER_NUM];
 
     private BattleWindowUIScript battleWindow;
     private int moveCountPerTurn = 0;
@@ -37,19 +38,39 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// ピースがハマった時の処理
     /// </summary>
-    public void OnPieceFit(List<BoardIndex> fitBoardIndexList)
+    public void OnPieceFit(int dragablePieceIndex,List<BoardIndex> fitBoardIndexList)
     {
         moveCountPerTurn++;
+        dragablePieceList[dragablePieceIndex] = null;
 
         Fit(fitBoardIndexList);
         Crash();
 
         // 全てのピースをはめ終わったら再生成
-        if(moveCountPerTurn == ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
+        if (moveCountPerTurn == ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
         {
             moveCountPerTurn = 0;
             turnCount++;
             CreateDragablePiece();
+        }
+
+        if (!IsRemainPieceCanFit())
+        {
+            // 残りのピースをはめることができなければこの時点で終了
+            CommonDialogFactory.Create(new CommonDialogRequest()
+            {
+                title = "確認",
+                content = "これ以上動かせません",
+                commonDialogType = CommonDialogType.YesOnly,
+            })
+                .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(1))
+                .Do(_ =>
+                {
+                    Destroy(battleWindow.gameObject);
+                })
+                .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
+                .Subscribe();
+            return;
         }
     }
 
@@ -74,7 +95,6 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
         {
             var pieceId = UnityEngine.Random.Range(1, 6);
-            pieceIdList[i] = pieceId;
             battleWindow.CreateDragablePiece(i, pieceId);
         }
     }
@@ -127,6 +147,33 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
 
         // UIを更新
         UpdateBoard();
+    }
+
+    /// <summary>
+    /// 残りのピースをはめることができるか否かを返す
+    /// </summary>
+    private bool IsRemainPieceCanFit()
+    {
+        var boardIndexList = new List<BoardIndex>();
+        for(var i = 0; i < ConstManager.Battle.BOARD_HEIGHT; i++)
+        {
+            for(var j = 0; j < ConstManager.Battle.BOARD_WIDTH; j++)
+            {
+                boardIndexList.Add(new BoardIndex(i,j));
+            }
+
+        }
+        return dragablePieceList.Any(piece =>
+        {
+            if (piece == null) return false;
+
+            // 全盤面を順に見ていき１つでもはめられればOK
+            return boardIndexList.Any(index =>
+            {
+                if (board[index.row, index.column].GetPieceStatus() != PieceStatus.Free) return false;
+                return piece.GetFitBoardIndexList(index).Any();
+            });
+        });
     }
 }
 

@@ -16,6 +16,8 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     [SerializeField] protected GridLayoutGroup _pieceBaseGridLayoutGroup;
     [SerializeField] protected GridLayoutGroup _boardPieceBaseGridLayoutGroup;
 
+    [HideInInspector] public int index { get; private set; }
+
     private const float ANIMATION_TIME = 0.25f;
     private const float MIN_PIECE_SPAN = 0.23f;
 
@@ -108,7 +110,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         if (fitBoardIndexList.Any())
         {
             // ピースがハマる場合
-            BattleManager.Instance.OnPieceFit(fitBoardIndexList);
+            BattleManager.Instance.OnPieceFit(index, fitBoardIndexList);
             Destroy(gameObject);
         }
         else
@@ -146,6 +148,39 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
             .Subscribe();
     }
 
+    /// <summary>
+    /// Gets the fit board index list.
+    /// </summary>
+    public List<BoardIndex> GetFitBoardIndexList(BoardIndex boardIndex)
+    {
+        // 左上のピースがはまるボードピースを元に全体のピースが盤面に含まれているかを判定
+        var isInclude = IsInclude(boardIndex);
+        if (!isInclude) return new List<BoardIndex>();
+
+        var truePieceIndexList = new List<int>();
+        for (var i = 0; i < piece.pieceList.Count; i++)
+        {
+            if (piece.pieceList[i]) truePieceIndexList.Add(i);
+        }
+        truePieceIndexList = truePieceIndexList
+            .Select(index => {
+                var row = index / piece.horizontalConstraint;
+                var column = index % piece.horizontalConstraint;
+                return column + (row * ConstManager.Battle.BOARD_WIDTH);
+            })
+            .Select(index =>
+            {
+                var nearestBoardPieceIndex = boardIndex.row * ConstManager.Battle.BOARD_WIDTH + boardIndex.column;
+                return index + nearestBoardPieceIndex;
+            }).ToList();
+        var fitBoardIndexList = truePieceIndexList.Select(index => GetBoardIndex(index)).ToList();
+
+        var isOverlaped = fitBoardIndexList.Any(i => BattleManager.Instance.board[i.row, i.column].GetPieceStatus() != PieceStatus.Free);
+        if (isOverlaped) return new List<BoardIndex>();
+
+        return truePieceIndexList.Select(index => GetBoardIndex(index)).ToList();
+    }
+
     private List<BoardIndex> GetFitBoardIndexList()
     {
         // 一番左上のピース
@@ -170,32 +205,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         // 左上のピースと最近距離ボードピースとの距離が範囲外だったらその時点で終了
         if (minDistance > MIN_PIECE_SPAN) return new List<BoardIndex>();
 
-        // 左上のピースがはまるボードピースを元に全体のピースが盤面に含まれているかを判定
-        var isInclude = IsInclude(nearestBoardPiece.boardIndex);
-        if (!isInclude) return new List<BoardIndex>();
-
-        var truePieceIndexList = new List<int>();
-        for (var i = 0; i < piece.pieceList.Count; i++)
-        {
-            if (piece.pieceList[i]) truePieceIndexList.Add(i);
-        }
-        truePieceIndexList = truePieceIndexList
-            .Select(index => {
-                var row = index / piece.horizontalConstraint;
-                var column = index % piece.horizontalConstraint;
-                return column + (row * ConstManager.Battle.BOARD_WIDTH);
-            })
-            .Select(index =>
-            {
-                var nearestBoardPieceIndex = nearestBoardPiece.boardIndex.row * ConstManager.Battle.BOARD_WIDTH + nearestBoardPiece.boardIndex.column;
-                return index + nearestBoardPieceIndex;
-            }).ToList();
-        var fitBoardIndexList = truePieceIndexList.Select(index => GetBoardIndex(index)).ToList();
-
-        var isOverlaped = fitBoardIndexList.Any(i => BattleManager.Instance.board[i.row, i.column].GetPieceStatus() != PieceStatus.Free);
-        if (isOverlaped) return new List<BoardIndex>();
-
-        return truePieceIndexList.Select(index => GetBoardIndex(index)).ToList();
+        return GetFitBoardIndexList(nearestBoardPiece.boardIndex);
     }
 
     private BoardIndex GetBoardIndex(int listIndex)
@@ -221,8 +231,9 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         return Vector3.Distance(newA, newB);
     }
 
-    public void SetPiece(int boardSpace,float pieceWidth, long pieceId)
+    public void SetPiece(int index, int boardSpace,float pieceWidth, long pieceId)
     {
+        this.index = index;
         piece = pieceList.First(m => m.id == pieceId);
         var startAxis = piece.isHorizontal ? GridLayoutGroup.Axis.Horizontal : GridLayoutGroup.Axis.Vertical;
         var constraint = piece.horizontalConstraint != 0 ? GridLayoutGroup.Constraint.FixedColumnCount : GridLayoutGroup.Constraint.FixedRowCount;

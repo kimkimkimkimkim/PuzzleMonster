@@ -39,7 +39,8 @@ public class BattleWindowUIScript : DummyWindowBase
     {
         var dragablePieceBaseRT = _dragablePieceBaseRTList[index];
         var dragablePiece = UIManager.Instance.CreateContent<BattleDragablePieceItem>(dragablePieceBaseRT);
-        dragablePiece.SetPiece(BOARD_PIECE_SPACE, pieceWidth, id);
+        dragablePiece.SetPiece(index, BOARD_PIECE_SPACE, pieceWidth, id);
+        BattleManager.Instance.dragablePieceList[index] = dragablePiece;
     }
 
     private void SetBoard()
