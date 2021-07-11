@@ -38,7 +38,8 @@ public class QuestCategoryWindowUIScript : WindowBase
         scrollItem.SetText(questCategory.name);
         scrollItem.SetOnClickAction(() =>
         {
-            BattleManager.Instance.BattleStart();
+            BattleManager.Instance.BattleStartObservable()
+                .Subscribe();
         });
     }
 

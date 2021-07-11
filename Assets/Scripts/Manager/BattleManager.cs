@@ -12,6 +12,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     [HideInInspector] public BattleBoardPieceItem[,] board = new BattleBoardPieceItem[ConstManager.Battle.BOARD_HEIGHT, ConstManager.Battle.BOARD_WIDTH];
     [HideInInspector] public BattleDragablePieceItem[] dragablePieceList = new BattleDragablePieceItem[ConstManager.Battle.MAX_PARTY_MEMBER_NUM];
 
+    private IObserver<BattleResult> battleObserver;
     private BattleWindowUIScript battleWindow;
     private int moveCountPerTurn = 0;
     private int turnCount = 0;
@@ -36,6 +37,64 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     }
 
     /// <summary>
+    /// バトルを開始する
+    /// </summary>
+    public IObservable<BattleResult> BattleStartObservable()
+    {
+        // 初期化
+        moveCountPerTurn = 0;
+        turnCount = 0;
+
+        return Observable.Create<BattleResult>(observer => {
+            battleObserver = observer;
+
+            // ゲーム画面に遷移
+            FadeManager.Instance.PlayFadeAnimationObservable(1)
+                .Do(_ =>
+                {
+                    battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
+                    battleWindow.Init();
+                    CreateDragablePiece();
+                    HeaderFooterManager.Instance.Show(false);
+                })
+                .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
+                .Subscribe();
+
+            return Disposable.Empty;
+        });
+    }
+
+    /// <summary>
+    /// バトルを終了する
+    /// </summary>
+    public void EndBattle(BattleResult result)
+    {
+        if (battleObserver == null) return;
+
+        // 残りのピースをはめることができなければこの時点で終了
+        CommonDialogFactory.Create(new CommonDialogRequest()
+        {
+            title = "確認",
+            content = "これ以上動かせません",
+            commonDialogType = CommonDialogType.YesOnly,
+        })
+            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(1))
+            .Do(_ =>
+            {
+                Destroy(battleWindow.gameObject);
+            })
+            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
+            .Do(_ =>
+            {
+                battleObserver.OnNext(result);
+                battleObserver.OnCompleted();
+            })
+            .Subscribe();
+
+        battleObserver = null;
+    }
+
+    /// <summary>
     /// ピースがハマった時の処理
     /// </summary>
     public void OnPieceFit(int dragablePieceIndex,List<BoardIndex> fitBoardIndexList)
@@ -57,19 +116,8 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         if (!IsRemainPieceCanFit())
         {
             // 残りのピースをはめることができなければこの時点で終了
-            CommonDialogFactory.Create(new CommonDialogRequest()
-            {
-                title = "確認",
-                content = "これ以上動かせません",
-                commonDialogType = CommonDialogType.YesOnly,
-            })
-                .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(1))
-                .Do(_ =>
-                {
-                    Destroy(battleWindow.gameObject);
-                })
-                .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
-                .Subscribe();
+            var result = new BattleResult() { isWin = false };
+            EndBattle(result);
             return;
         }
     }
