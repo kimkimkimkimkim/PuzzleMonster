@@ -17,25 +17,6 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private int moveCountPerTurn = 0;
     private int turnCount = 0;
 
-    public void BattleStart()
-    {
-        // 初期化
-        moveCountPerTurn = 0;
-        turnCount = 0;
-
-        // ゲーム画面に遷移
-        FadeManager.Instance.PlayFadeAnimationObservable(1)
-            .Do(_ =>
-            {
-                battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
-                battleWindow.Init();
-                CreateDragablePiece();
-                HeaderFooterManager.Instance.Show(false);
-            })
-            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
-            .Subscribe();
-    }
-
     /// <summary>
     /// バトルを開始する
     /// </summary>
@@ -138,6 +119,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         }
     }
 
+    /// <summary>
+    /// ドラッガブルピースを生成する
+    /// </summary>
     private void CreateDragablePiece()
     {
         for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
@@ -145,6 +129,14 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             var pieceId = UnityEngine.Random.Range(1, 6);
             battleWindow.CreateDragablePiece(i, pieceId);
         }
+    }
+
+    /// <summary>
+    /// 敵モンスターを生成する
+    /// </summary>
+    private void CreateEnemy()
+    {
+
     }
 
     /// <summary>
