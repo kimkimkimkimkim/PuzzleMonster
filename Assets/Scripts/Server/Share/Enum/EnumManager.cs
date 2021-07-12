@@ -43,6 +43,7 @@ namespace PM
                 None,
                 Win,
                 Lose,
+                Continue,
             }
 
             /// <summary>

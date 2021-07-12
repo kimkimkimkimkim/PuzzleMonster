@@ -13,9 +13,12 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     [HideInInspector] public BattleDragablePieceItem[] dragablePieceList = new BattleDragablePieceItem[ConstManager.Battle.MAX_PARTY_MEMBER_NUM];
 
     private IObserver<BattleResult> battleObserver;
+    private IObserver<Unit> battleTurnObserver;
+    private IObserver<Unit> pieceMoveObserver;
     private BattleWindowUIScript battleWindow;
     private int moveCountPerTurn = 0;
     private int turnCount = 0;
+    private WinOrLose wol = WinOrLose.None;
 
     /// <summary>
     /// バトルを開始する
@@ -26,19 +29,20 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         moveCountPerTurn = 0;
         turnCount = 0;
 
-        return Observable.Create<BattleResult>(observer => {
-            battleObserver = observer;
+        return Observable.Create<BattleResult>(battleObserver => {
+            this.battleObserver = battleObserver;
 
-            // ゲーム画面に遷移
-            FadeManager.Instance.PlayFadeAnimationObservable(1)
-                .Do(_ =>
-                {
-                    battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
-                    battleWindow.Init();
-                    CreateDragablePiece();
-                    HeaderFooterManager.Instance.Show(false);
-                })
-                .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
+            Observable.ReturnUnit()
+                .SelectMany(_ => FadeInObservable())
+                .SelectMany(_ => (
+                    // バトルのターン進行開始
+                    Observable.Create<Unit>(battleTurnObserver => {
+                        this.battleTurnObserver = battleTurnObserver;
+                        StartTurnProgress();
+                        return Disposable.Empty;
+                    })
+                ))
+                .SelectMany(_ => FadeOutObservable())
                 .Subscribe();
 
             return Disposable.Empty;
@@ -46,33 +50,156 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     }
 
     /// <summary>
-    /// バトルを終了する
+    /// 画面遷移（フェードイン）時処理を実行
     /// </summary>
-    public void EndBattle(BattleResult result)
+    private IObservable<Unit> FadeInObservable()
     {
-        if (battleObserver == null) return;
+        return FadeManager.Instance.PlayFadeAnimationObservable(1)
+            .Do(res =>
+            {
+                battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
+                battleWindow.Init();
+                HeaderFooterManager.Instance.Show(false);
+            })
+            .SelectMany(res => FadeManager.Instance.PlayFadeAnimationObservable(0));
+    }
 
-        // 残りのピースをはめることができなければこの時点で終了
-        CommonDialogFactory.Create(new CommonDialogRequest()
+    /// <summary>
+    /// 画面遷移（フェードアウト）時処理を実行
+    /// </summary>
+    private IObservable<Unit> FadeOutObservable()
+    {
+        return CommonDialogFactory.Create(new CommonDialogRequest()
         {
             title = "確認",
             content = "これ以上動かせません",
             commonDialogType = CommonDialogType.YesOnly,
         })
-            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(1))
-            .Do(_ =>
+            .SelectMany(res => FadeManager.Instance.PlayFadeAnimationObservable(1))
+            .Do(res =>
             {
                 Destroy(battleWindow.gameObject);
             })
-            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
-            .Do(_ =>
+            .SelectMany(res => FadeManager.Instance.PlayFadeAnimationObservable(0))
+            .Do(res =>
             {
-                battleObserver.OnNext(result);
-                battleObserver.OnCompleted();
-            })
-            .Subscribe();
+                var result = new BattleResult();
 
-        battleObserver = null;
+                if (battleObserver != null)
+                {
+                    battleObserver.OnNext(result);
+                    battleObserver.OnCompleted();
+                    battleObserver = null;
+                }
+            });
+    }
+
+    /// <summary>
+    /// バトルのターン進行を開始する
+    /// </summary>
+    private void StartTurnProgress()
+    {
+        Observable.ReturnUnit()
+            .SelectMany(_ => CreateEnemyObservable())
+            .SelectMany(_ => CreateDragablePieceObservable())
+            .SelectMany(_ => StartPieceMovingTimeObservable())
+            .SelectMany(_ => StartPlayerAttackObservable())
+            .SelectMany(_ => StartEnemyAttackObservable())
+            .SelectMany(_ => MoveNextWaveObservable())
+            .SelectMany(_ => JudgeContinueBattleObservable())
+            .Where(isContinue => isContinue)
+            .RepeatSafe()
+            .Subscribe();
+    }
+
+    /// <summary>
+    /// 敵を生成する
+    /// </summary>
+    private IObservable<Unit> CreateEnemyObservable()
+    {
+        return Observable.ReturnUnit();
+    }
+
+    /// <summary>
+    /// ドラッガブルピースを生成する
+    /// </summary>
+    private IObservable<Unit> CreateDragablePieceObservable()
+    {
+        for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
+        {
+            var pieceId = UnityEngine.Random.Range(1, 6);
+            battleWindow.CreateDragablePiece(i, pieceId);
+        }
+        return Observable.ReturnUnit();
+    }
+
+    /// <summary>
+    /// ピース移動タイムを開始する
+    /// </summary>
+    private IObservable<Unit> StartPieceMovingTimeObservable()
+    {
+        return Observable.Create<Unit>(pieceMoveObserver =>
+        {
+            this.pieceMoveObserver = pieceMoveObserver;
+            return Disposable.Empty;
+        });
+    }
+
+    /// <summary>
+    /// プレイヤーの攻撃フェイズを開始する
+    /// </summary>
+    private IObservable<Unit> StartPlayerAttackObservable()
+    {
+        return Observable.ReturnUnit();
+    }
+
+    /// <summary>
+    /// 敵の攻撃フェイズを開始する
+    /// </summary>
+    private IObservable<Unit> StartEnemyAttackObservable()
+    {
+        JudgeWinOrLoseObservable();
+        return Observable.ReturnUnit();
+    }
+
+    /// <summary>
+    /// 次のウェーブに移動する
+    /// </summary>
+    private IObservable<Unit> MoveNextWaveObservable()
+    {
+        return Observable.ReturnUnit();
+    }
+
+    /// <summary>
+    /// バトルを続行するか（勝敗がついたか）否かを判定する
+    /// </summary>
+    private IObservable<bool> JudgeContinueBattleObservable()
+    {
+        if (wol == WinOrLose.Win || wol == WinOrLose.Lose)
+        {
+            // 勝敗がついたのでバトルを終了
+            if (battleTurnObserver != null)
+            {
+                battleTurnObserver.OnNext(Unit.Default);
+                battleTurnObserver.OnCompleted();
+                battleTurnObserver = null;
+            }
+            return Observable.ReturnUnit().DelayFrame(1).Select(_ => false);
+        }
+        else
+        {
+            // まだ続行
+            return Observable.ReturnUnit().DelayFrame(1).Select(_ => true);
+        }
+    }
+
+    /// <summary>
+    /// 勝敗を判定する
+    /// </summary>
+    private void JudgeWinOrLoseObservable()
+    {
+        var isRemainPieceCanFit = IsRemainPieceCanFit();
+        wol = !isRemainPieceCanFit ? WinOrLose.Lose : WinOrLose.Continue;
     }
 
     /// <summary>
@@ -91,15 +218,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         {
             moveCountPerTurn = 0;
             turnCount++;
-            CreateDragablePiece();
-        }
-
-        if (!IsRemainPieceCanFit())
-        {
-            // 残りのピースをはめることができなければこの時点で終了
-            var result = new BattleResult() { isWin = false };
-            EndBattle(result);
-            return;
+            pieceMoveObserver.OnNext(Unit.Default);
         }
     }
 
@@ -117,26 +236,6 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
                 piece.SetColor(color);
             }
         }
-    }
-
-    /// <summary>
-    /// ドラッガブルピースを生成する
-    /// </summary>
-    private void CreateDragablePiece()
-    {
-        for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
-        {
-            var pieceId = UnityEngine.Random.Range(1, 6);
-            battleWindow.CreateDragablePiece(i, pieceId);
-        }
-    }
-
-    /// <summary>
-    /// 敵モンスターを生成する
-    /// </summary>
-    private void CreateEnemy()
-    {
-
     }
 
     /// <summary>
