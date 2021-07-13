@@ -18,6 +18,8 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private BattleWindowUIScript battleWindow;
     private int moveCountPerTurn = 0;
     private int turnCount = 0;
+    private int enemyHp = 100;
+    private int playerHp = 100;
     private WinOrLose wol = WinOrLose.None;
 
     /// <summary>
@@ -34,6 +36,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
 
             Observable.ReturnUnit()
                 .SelectMany(_ => FadeInObservable())
+                .Do(_ => Debug.Log("バトル開始"))
                 .SelectMany(_ => (
                     // バトルのターン進行開始
                     Observable.Create<Unit>(battleTurnObserver => {
@@ -42,6 +45,8 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
                         return Disposable.Empty;
                     })
                 ))
+                .Do(_ => Debug.Log("バトル終了"))
+                .Do(_ => Debug.Log(wol == WinOrLose.Win ? "勝利" : "敗北"))
                 .SelectMany(_ => FadeOutObservable())
                 .Subscribe();
 
@@ -57,6 +62,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
             .Do(res =>
             {
+                wol = WinOrLose.Continue;
                 battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
                 battleWindow.Init();
                 HeaderFooterManager.Instance.Show(false);
@@ -117,6 +123,11 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private IObservable<Unit> CreateEnemyObservable()
     {
+        // 勝敗がついていれば何もしない
+        if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
+        
+        Debug.Log($"自分のHP:{playerHP}, 敵のHP:{enemyHp}");
+        
         return Observable.ReturnUnit();
     }
 
@@ -125,6 +136,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private IObservable<Unit> CreateDragablePieceObservable()
     {
+        // 勝敗がついていれば何もしない
+        if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
+        
         for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
         {
             var pieceId = UnityEngine.Random.Range(1, 6);
@@ -138,6 +152,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private IObservable<Unit> StartPieceMovingTimeObservable()
     {
+        // 勝敗がついていれば何もしない
+        if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
+        
         return Observable.Create<Unit>(pieceMoveObserver =>
         {
             this.pieceMoveObserver = pieceMoveObserver;
@@ -150,6 +167,15 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private IObservable<Unit> StartPlayerAttackObservable()
     {
+        // 勝敗がついていれば何もしない
+        if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
+        
+        var damage = UnityEngine.Random.Range(1,25);
+        enemyHp -= damage;
+        JudgeWinOrLoseObservable();
+        
+        Debug.Log($"プレイヤーの攻撃！　{damage}のダメージ.　敵のHP:{enemyHp}");
+        
         return Observable.ReturnUnit();
     }
 
@@ -158,7 +184,15 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private IObservable<Unit> StartEnemyAttackObservable()
     {
+        // 勝敗がついていれば何もしない
+        if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
+        
+        var damage = UnityEngine.Random.Range(1,25);
+        enemyHp -= damage;
         JudgeWinOrLoseObservable();
+        
+        Debug.Log($"敵の攻撃！　{damage}のダメージ.　プレイヤーのHP:{playerHp}");
+        
         return Observable.ReturnUnit();
     }
 
@@ -167,6 +201,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private IObservable<Unit> MoveNextWaveObservable()
     {
+        // 勝敗がついていれば何もしない
+        if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
+        
         return Observable.ReturnUnit();
     }
 
@@ -198,8 +235,19 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private void JudgeWinOrLoseObservable()
     {
-        var isRemainPieceCanFit = IsRemainPieceCanFit();
-        wol = !isRemainPieceCanFit ? WinOrLose.Lose : WinOrLose.Continue;
+        if(enemyHp <= 0){
+            // 相手のHPが0なら勝利
+            wol = WinOrLose.Win;
+        }else if(playerHp <= 0){
+            // 自分のHPが0なら敗北
+            wol = WinOrLose.Lose;
+        }if(!IsRemainPieceCanFit()){
+            // ピースを置く場所が無ければ敗北
+            wol = WinOrLose.Lose;
+        }else{
+            // それ以外なら続行
+            wol = WinOrLose.Continue;
+        }
     }
 
     /// <summary>
@@ -212,8 +260,16 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
 
         Fit(fitBoardIndexList);
         Crash();
+        
+        JudgeWinOrLoseObservable();
+        
+        // 勝敗がついていれば次の処理へ
+        if(wol != WinOrLose.Continue) {
+            pieceMoveObserver.OnNext(Unit.Default);
+        }
+        
 
-        // 全てのピースをはめ終わったら再生成
+        // 全てのピースをはめ終わったら次の処理へ
         if (moveCountPerTurn == ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
         {
             moveCountPerTurn = 0;
