@@ -21,6 +21,17 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private int enemyHp = 100;
     private int playerHp = 100;
     private WinOrLose wol = WinOrLose.None;
+    
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
+    private void Init(){
+        moveCountPerTurn = 0;
+        turnCount = 1;
+        playerHp = 100;
+        enemyHp = 100;
+        wol = WinOrLose.Continue;
+    }
 
     /// <summary>
     /// バトルを開始する
@@ -28,8 +39,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     public IObservable<BattleResult> BattleStartObservable()
     {
         // 初期化
-        moveCountPerTurn = 0;
-        turnCount = 0;
+        Init();
 
         return Observable.Create<BattleResult>(battleObserver => {
             this.battleObserver = battleObserver;
@@ -62,7 +72,6 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
             .Do(res =>
             {
-                wol = WinOrLose.Continue;
                 battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
                 battleWindow.Init();
                 HeaderFooterManager.Instance.Show(false);
@@ -106,6 +115,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private void StartTurnProgress()
     {
         Observable.ReturnUnit()
+            .Do(_ => Debug.Log($"ターン{turnCount}開始"))
             .SelectMany(_ => CreateEnemyObservable())
             .SelectMany(_ => CreateDragablePieceObservable())
             .SelectMany(_ => StartPieceMovingTimeObservable())
@@ -188,7 +198,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
         var damage = UnityEngine.Random.Range(1,25);
-        enemyHp -= damage;
+        playerHp -= damage;
         JudgeWinOrLoseObservable();
         
         Debug.Log($"敵の攻撃！　{damage}のダメージ.　プレイヤーのHP:{playerHp}");
@@ -241,7 +251,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         }else if(playerHp <= 0){
             // 自分のHPが0なら敗北
             wol = WinOrLose.Lose;
-        }if(!IsRemainPieceCanFit()){
+        }else if(!IsRemainPieceCanFit()){
             // ピースを置く場所が無ければ敗北
             wol = WinOrLose.Lose;
         }else{
@@ -266,6 +276,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         // 勝敗がついていれば次の処理へ
         if(wol != WinOrLose.Continue) {
             pieceMoveObserver.OnNext(Unit.Default);
+            pieceMoveObserver.OnCompleted();
+            pieceMoveObserver = null;
+            return;
         }
         
 
@@ -275,6 +288,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             moveCountPerTurn = 0;
             turnCount++;
             pieceMoveObserver.OnNext(Unit.Default);
+            pieceMoveObserver.OnCompleted();
+            pieceMoveObserver = null;
+            return;
         }
     }
 
@@ -358,6 +374,10 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             }
 
         }
+        
+        // すべてのピースをはめ終わっていたらtrueを返す
+        if(boardIndexList.All(p => p == null)) return true;
+        
         return dragablePieceList.Any(piece =>
         {
             if (piece == null) return false;
