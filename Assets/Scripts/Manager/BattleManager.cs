@@ -136,7 +136,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         // 勝敗がついていれば何もしない
         if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
-        Debug.Log($"自分のHP:{playerHP}, 敵のHP:{enemyHp}");
+        Debug.Log($"自分のHP:{playerHp}, 敵のHP:{enemyHp}");
         
         return Observable.ReturnUnit();
     }
@@ -374,10 +374,10 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             }
 
         }
-        
-        // すべてのピースをはめ終わっていたらtrueを返す
-        if(boardIndexList.All(p => p == null)) return true;
-        
+
+        // ピースを全てはめ終わっていればtrueを返す
+        if (dragablePieceList.All(p => p == null)) return true;
+
         return dragablePieceList.Any(piece =>
         {
             if (piece == null) return false;
