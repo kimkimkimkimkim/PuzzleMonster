@@ -4,6 +4,8 @@ using System.IO;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using Newtonsoft.Json;
+using System;
+using System.Text;
 
 /// <summary>
 /// 指定パスに存在するExcelファイルを参考にマスターデータ用のJsonを作成しPlayFabにアップロードする
@@ -19,7 +21,9 @@ public class MasterDataPublisher : EditorWindow
     public static int START_DATA_ROW_INDEX = 9; // データ記述が開始される行インデックス
     public static int START_DATA_COLUMN_INDEX = 1; // データ記述が開始される行インデックス
 
-    private string filePath = $"Assets/Excel/MasterData.xlsm";
+    private DateTime date;
+    private string filePath = $"Assets/MasterData/Excel/MasterData.xlsm";
+    private string outputFilePath(DateTime date) => $"Assets/MasterData/Json/masterData_{date.ToString("yyyyMMdd_HHmmss")}.json";
 
     [MenuItem("Tools/MasterDataPublisher")]
     static void Init()
@@ -30,12 +34,15 @@ public class MasterDataPublisher : EditorWindow
 
     public void OnGUI()
     {
-        if (GUILayout.Button("チェック", new GUILayoutOption[] { }))
+        if (GUILayout.Button("マスタデータ出力", new GUILayoutOption[] { }))
         {
+            date = DateTime.Now;
+
             var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             var book = new XSSFWorkbook(fs);
             var sheetNum = book.NumberOfSheets;
 
+            var allJsonStr = "{";
             for (var i = 0; i < sheetNum; i++)
             {
                 // シートを取得
@@ -80,12 +87,17 @@ public class MasterDataPublisher : EditorWindow
                 jsonStr = jsonStr.Remove(jsonStr.Length - 1);
                 jsonStr += "]";
 
-                var parsedJson = JsonConvert.DeserializeObject(jsonStr);
-                var formattedJsonStr = JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
-                Debug.Log(name);
-                Debug.Log(jsonStr);
-                Debug.Log(formattedJsonStr);
+                allJsonStr += $"\"{name}\":\"{jsonStr}\",";
             }
+            allJsonStr = allJsonStr.Remove(allJsonStr.Length - 1);
+            allJsonStr += "}";
+
+            var parsedJson = JsonConvert.DeserializeObject(allJsonStr);
+            var formattedJsonStr = JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
+
+            File.WriteAllText(outputFilePath(date), formattedJsonStr);
+
+            EditorUtility.DisplayDialog("確認", "Jsonの出力が完了しました", "OK");
         }
     }
 
@@ -132,7 +144,7 @@ public class MasterDataPublisher : EditorWindow
                 case "boolean":
                     return cell.BooleanCellValue.ToString().ToLower();
                 case "string":
-                    return $"\"{cell.StringCellValue}\"";
+                    return $"\\\"{cell.StringCellValue}\\\"";
                 default:
                     return cell.StringCellValue;
             }
@@ -164,9 +176,9 @@ public class MasterDataPublisher : EditorWindow
         switch (cell.CellType)
         {
             case CellType.String:
-                return $"\"{cell.StringCellValue}\"";
+                return $"\\\"{cell.StringCellValue}\\\"";
             case CellType.Numeric:
-                return $"\"{cell.NumericCellValue.ToString()}\"";
+                return $"\\\"{cell.NumericCellValue.ToString()}\\\"";
             case CellType.Blank:
             default:
                 return "";
