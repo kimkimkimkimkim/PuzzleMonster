@@ -5,12 +5,11 @@ using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using Newtonsoft.Json;
 using System;
-using System.Text;
 
 /// <summary>
 /// 指定パスに存在するExcelファイルを参考にPlayFabData用のJsonを作成
 /// </summary>
-public class PlayFabDataPublisher : EditorWindow
+public partial class PlayFabDataPublisher : EditorWindow
 {
     public static int NAME_ROW_INDEX = 1; // マスタ名が記述されたセルの行インデックス
     public static int NAME_COLUMN_INDEX = 1; // マスタ名が記述されたセルの列インデックス
@@ -22,9 +21,8 @@ public class PlayFabDataPublisher : EditorWindow
     public static int START_DATA_COLUMN_INDEX = 1; // データ記述が開始される行インデックス
 
     private DateTime date;
-    private string filePath = $"Assets/PlayFabData/Excel/Data.xlsm";
+    private string excelFilePath = $"Assets/PlayFabData/Excel/Data.xlsm";
     private string outputDirectoryPath(DateTime date) => $"Assets/PlayFabData/Json/{date.ToString("yyyyMMdd_HHmmss")}";
-    private string masterDataFileName = "masterData.json";
     private string catalogDataFileName = "catalogData.json";
     private string storeDataFileName = "storeData.json";
 
@@ -41,66 +39,11 @@ public class PlayFabDataPublisher : EditorWindow
         {
             date = DateTime.Now;
 
-            var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            var book = new XSSFWorkbook(fs);
-            var sheetNum = book.NumberOfSheets;
-
-            var allJsonStr = "{";
-            for (var i = 0; i < sheetNum; i++)
-            {
-                // シートを取得
-                var sheet = book.GetSheetAt(i);
-
-                // マスタ名を取得
-                var name = sheet.GetRow(NAME_ROW_INDEX).GetCell(NAME_COLUMN_INDEX).StringCellValue;
-
-                var rowIndex = START_DATA_ROW_INDEX;
-                var jsonStr = "[";
-                while (GetValueStr(sheet, rowIndex, START_DATA_COLUMN_INDEX) != "")
-                {
-                    // 各データに対する処理開始
-                    var columnIndex = 1;
-                    jsonStr += "{";
-                    while (GetTypeStr(sheet, columnIndex) != "")
-                    {
-                        // 各値に対する処理開始
-                        var type = GetTypeStr(sheet, columnIndex);
-
-                        // 階層1が空ならスキップ
-                        var key1 = GetHierarchyStr(sheet, HIERARCHY_1_ROW_INDEX, columnIndex);
-                        if (key1 == "")
-                        {
-                            columnIndex++;
-                            continue;
-                        }
-
-                        // 階層1が空じゃないならKeyValue文字列を取得
-                        var keyValueStr = GetKeyValueStr(sheet, rowIndex, columnIndex);
-                        if (keyValueStr != "")
-                        {
-                            jsonStr += $"{keyValueStr}";
-                            jsonStr += ",";
-                        }
-                        columnIndex++;
-                    }
-                    jsonStr = jsonStr.Remove(jsonStr.Length - 1);
-                    jsonStr += "},";
-                    rowIndex++;
-                }
-                jsonStr = jsonStr.Remove(jsonStr.Length - 1);
-                jsonStr += "]";
-
-                allJsonStr += $"\"{name}\":\"{jsonStr}\",";
-            }
-            allJsonStr = allJsonStr.Remove(allJsonStr.Length - 1);
-            allJsonStr += "}";
-
-            var parsedJson = JsonConvert.DeserializeObject(allJsonStr);
-            var formattedJsonStr = JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
+            var masterDataJson = GetMasterDataJson(date);
 
             Directory.CreateDirectory(outputDirectoryPath(date));
 
-            File.WriteAllText($"{outputDirectoryPath(date)}/{masterDataFileName}", formattedJsonStr);
+            File.WriteAllText($"{outputDirectoryPath(date)}/{masterDataFileName}", masterDataJson);
 
             EditorUtility.DisplayDialog("確認", "Jsonの出力が完了しました", "OK");
         }
