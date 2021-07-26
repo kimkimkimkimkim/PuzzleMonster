@@ -8,9 +8,9 @@ using System;
 using System.Text;
 
 /// <summary>
-/// 指定パスに存在するExcelファイルを参考にマスターデータ用のJsonを作成しPlayFabにアップロードする
+/// 指定パスに存在するExcelファイルを参考にPlayFabData用のJsonを作成
 /// </summary>
-public class MasterDataPublisher : EditorWindow
+public class PlayFabDataPublisher : EditorWindow
 {
     public static int NAME_ROW_INDEX = 1; // マスタ名が記述されたセルの行インデックス
     public static int NAME_COLUMN_INDEX = 1; // マスタ名が記述されたセルの列インデックス
@@ -22,13 +22,16 @@ public class MasterDataPublisher : EditorWindow
     public static int START_DATA_COLUMN_INDEX = 1; // データ記述が開始される行インデックス
 
     private DateTime date;
-    private string filePath = $"Assets/MasterData/Excel/MasterData.xlsm";
-    private string outputFilePath(DateTime date) => $"Assets/MasterData/Json/masterData_{date.ToString("yyyyMMdd_HHmmss")}.json";
+    private string filePath = $"Assets/PlayFabData/Excel/Data.xlsm";
+    private string outputDirectoryPath(DateTime date) => $"Assets/PlayFabData/Json/{date.ToString("yyyyMMdd_HHmmss")}";
+    private string masterDataFileName = "masterData.json";
+    private string catalogDataFileName = "catalogData.json";
+    private string storeDataFileName = "storeData.json";
 
-    [MenuItem("Tools/MasterDataPublisher")]
+    [MenuItem("Tools/PlayFabDataPublisher")]
     static void Init()
     {
-        var window = GetWindow<MasterDataPublisher>(typeof(MasterDataPublisher));
+        var window = GetWindow<PlayFabDataPublisher>(typeof(PlayFabDataPublisher));
         window.Show();
     }
 
@@ -95,7 +98,9 @@ public class MasterDataPublisher : EditorWindow
             var parsedJson = JsonConvert.DeserializeObject(allJsonStr);
             var formattedJsonStr = JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
 
-            File.WriteAllText(outputFilePath(date), formattedJsonStr);
+            Directory.CreateDirectory(outputDirectoryPath(date));
+
+            File.WriteAllText($"{outputDirectoryPath(date)}/{masterDataFileName}", formattedJsonStr);
 
             EditorUtility.DisplayDialog("確認", "Jsonの出力が完了しました", "OK");
         }
