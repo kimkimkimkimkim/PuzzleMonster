@@ -1,10 +1,7 @@
 ﻿using UnityEditor;
-using UnityEngine;
 using System.IO;
-using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using Newtonsoft.Json;
-using System;
 
 /// <summary>
 /// 指定パスに存在するExcelファイルを参考にPlayFabData用のJsonを作成
@@ -13,7 +10,7 @@ public partial class PlayFabDataPublisher : EditorWindow
 {
     private string masterDataFileName = "masterData.json";
 
-    private string GetMasterDataJson(DateTime date)
+    private string GetMasterDataJson()
     {
         var fs = new FileStream(excelFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         var book = new XSSFWorkbook(fs);
@@ -33,7 +30,7 @@ public partial class PlayFabDataPublisher : EditorWindow
             while (GetValueStr(sheet, rowIndex, START_DATA_COLUMN_INDEX) != "")
             {
                 // 各データに対する処理開始
-                var columnIndex = 1;
+                var columnIndex = START_DATA_COLUMN_INDEX;
                 jsonStr += "{";
                 while (GetTypeStr(sheet, columnIndex) != "")
                 {

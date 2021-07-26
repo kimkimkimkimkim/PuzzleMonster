@@ -2,8 +2,6 @@
 using UnityEngine;
 using System.IO;
 using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
-using Newtonsoft.Json;
 using System;
 
 /// <summary>
@@ -23,7 +21,6 @@ public partial class PlayFabDataPublisher : EditorWindow
     private DateTime date;
     private string excelFilePath = $"Assets/PlayFabData/Excel/Data.xlsm";
     private string outputDirectoryPath(DateTime date) => $"Assets/PlayFabData/Json/{date.ToString("yyyyMMdd_HHmmss")}";
-    private string catalogDataFileName = "catalogData.json";
     private string storeDataFileName = "storeData.json";
 
     [MenuItem("Tools/PlayFabDataPublisher")]
@@ -39,11 +36,13 @@ public partial class PlayFabDataPublisher : EditorWindow
         {
             date = DateTime.Now;
 
-            var masterDataJson = GetMasterDataJson(date);
+            var masterDataJson = GetMasterDataJson();
+            var catalogDataJson = GetCatalogDataJson();
 
             Directory.CreateDirectory(outputDirectoryPath(date));
 
             File.WriteAllText($"{outputDirectoryPath(date)}/{masterDataFileName}", masterDataJson);
+            File.WriteAllText($"{outputDirectoryPath(date)}/{catalogDataFileName}", catalogDataJson);
 
             EditorUtility.DisplayDialog("確認", "Jsonの出力が完了しました", "OK");
         }
@@ -55,6 +54,28 @@ public partial class PlayFabDataPublisher : EditorWindow
     private ICell GetCell(ISheet sheet, int rowIndex, int columnIndex)
     {
         return sheet.GetRow(rowIndex).GetCell(columnIndex);
+    }
+
+    /// <summary>
+    /// 指定したセルの値を文字列で返す
+    /// </summary>
+    private string GetCellValueStr(ISheet sheet, int rowIndex, int columnIndex)
+    {
+        var cell = sheet?.GetRow(rowIndex)?.GetCell(columnIndex);
+        if (cell == null) return "";
+
+        var type = cell.CellType;
+        switch (type)
+        {
+            case CellType.Numeric:
+                return cell.NumericCellValue.ToString();
+            case CellType.Boolean:
+                return cell.BooleanCellValue.ToString().ToLower();
+            case CellType.String:
+                return cell.StringCellValue;
+            default:
+                return "";
+        }
     }
 
     /// <summary>
