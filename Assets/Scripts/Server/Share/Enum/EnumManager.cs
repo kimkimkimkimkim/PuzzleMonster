@@ -138,10 +138,16 @@ namespace PM
                 /// 資産
                 /// </summary>
                 Property,
+
+                /// <summary>
+                /// ドロップテーブル
+                /// </summary>
+                DropTable,
             }
 
             /// <summary>
             /// 仮想通貨タイプ
+            /// VirtualCurrencyMBのIDと対応
             /// </summary>
             public enum VirtualCurrencyType
             {
