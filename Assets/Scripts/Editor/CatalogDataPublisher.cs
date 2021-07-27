@@ -147,7 +147,41 @@ public partial class PlayFabDataPublisher : EditorWindow
             "\"IsLimitedEdition\": false," +
             "\"InitialLimitedEditionCount\": 0," +
             "\"ActivatedMembership\": null" +
-            "}";
+        "}";
     }
 
+    private string GetBudleDataJson(string masterName, string id,string name)
+    {
+        var itemClass = masterName.Substring(0, masterName.Length - 2);
+        var itemId = $"{itemClass}{id}";
+        return "{" +
+            "\"ItemId\": \"" + itemId + "\"," +
+            "\"ItemClass\": \"" + itemClass + "\"," +
+            "\"CatalogVersion\": \"" + catalogVersion + "\"," +
+            "\"DisplayName\": \"" + name + "\"," +
+            "\"Description\": null," +
+            "\"VirtualCurrencyPrices\": {}," +
+            "\"RealCurrencyPrices\": {}," +
+            "\"Tags\": []," +
+            "\"CustomData\": null," +
+            "\"Consumable\": {" +
+                "\"UsageCount\": null," +
+                "\"UsagePeriod\": 3," +
+                "\"UsagePeriodGroup\": null" +
+            "}," +
+            "\"Container\": null," +
+            "\"Bundle\": {" +
+                "\"BundledItems\": []," +
+                "\"BundledResultTables\": []," +
+                "\"BundledVirtualCurrencies\": null" +
+            "}," +
+            "\"CanBecomeCharacter\": true," +
+            "\"IsStackable\": true," +
+            "\"IsTradable\": false," +
+            "\"ItemImageUrl\": null," +
+            "\"IsLimitedEdition\": false," +
+            "\"InitialLimitedEditionCount\": 0," +
+            "\"ActivatedMembership\": null" +
+        "}";
+    }
 }
