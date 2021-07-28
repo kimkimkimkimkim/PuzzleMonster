@@ -140,8 +140,7 @@ public partial class PlayFabDataPublisher : EditorWindow
                     if (key == "rewardItemList")
                     {
                         var listValue = GetListValueStr(sheet, rowIndex, columnIndex);
-                        listValue = "[{\"itemType\":1, \"itemId\":2,\"num\":100}]";
-                        UnityEngine.Debug.Log(listValue);
+                        listValue = listValue.Replace("\\","");
                         rewardItemList = JsonConvert.DeserializeObject<ItemMI[]>(listValue).ToList();
                     }
                     columnIndex++;
