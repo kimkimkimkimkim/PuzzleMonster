@@ -264,4 +264,40 @@ public partial class PlayFabDataPublisher : EditorWindow
             "\"ActivatedMembership\": null" +
         "}";
     }
+    
+    private string GetDropTableDataJson(string masterName, string id, List<ProbabilityItemMI> probabilityItemList)
+    {
+        var itemClass = masterName.Substring(0, masterName.Length - 2);
+        var itemId = $"{itemClass}{id}";
+
+        // nodesの作成
+        var probabilityItemDataList = probabilityItemList.Select(m => {
+            var _itemType = GetItemType(m);
+            var _itemId = ItemUtil.GetItemId(m.itemType, m.itemId);
+            return "{" +
+                "\"ResultItemType\": \"" + _itemType + "\"," +
+                "\"ResultItem\": \"" + _itemId + "\"," +
+                "\"Weight\": " + m.probability.ToString() +
+            "}";
+        });
+        var nodes = $"[{string.Join(",", probabilityItemDataList)}]";
+
+        return "{" +
+            "\"TableId\": \"" + itemId + "\"," +
+            "\"Nodes\": " + nodes +
+        "}";
+    }
+    
+    private string GetItemType(ItemMI item){
+        switch(item.itemType){
+            case ItemType.Monster:
+            case ItemType.Property:
+            case ItemType.Bundle:
+                return "ItemId";
+            case ItemType.DropTable:
+                return "TableId";
+            default:
+                return "";
+        }
+    }
 }
