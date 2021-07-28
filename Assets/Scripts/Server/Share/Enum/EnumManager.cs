@@ -132,17 +132,22 @@ namespace PM
                 /// <summary>
                 /// モンスター
                 /// </summary>
-                Monster,
+                Monster = 2,
 
                 /// <summary>
                 /// 資産
                 /// </summary>
-                Property,
+                Property = 3,
 
                 /// <summary>
                 /// ドロップテーブル
                 /// </summary>
-                DropTable,
+                DropTable = 4,
+
+                /// <summary>
+                /// バンドル
+                /// </summary>
+                Bundle = 5,
             }
 
             /// <summary>

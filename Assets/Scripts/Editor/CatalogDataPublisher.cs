@@ -118,7 +118,7 @@ public partial class PlayFabDataPublisher : EditorWindow
             {
                 var id = "";
                 var name = "";
-                var rewardItemList = new List<ItemMI>();
+                var itemList = new List<ItemMI>();
 
                 var columnIndex = START_DATA_COLUMN_INDEX;
 
@@ -137,16 +137,16 @@ public partial class PlayFabDataPublisher : EditorWindow
 
                     if (key == "id") id = value;
                     if (key == "name") name = value;
-                    if (key == "rewardItemList")
+                    if (key == "itemList")
                     {
                         var listValue = GetListValueStr(sheet, rowIndex, columnIndex);
                         listValue = listValue.Replace("\\","");
-                        rewardItemList = JsonConvert.DeserializeObject<ItemMI[]>(listValue).ToList();
+                        itemList = JsonConvert.DeserializeObject<ItemMI[]>(listValue).ToList();
                     }
                     columnIndex++;
                 }
 
-                var jsonStr = GetBundleDataJson(masterName, id, name, rewardItemList);
+                var jsonStr = GetBundleDataJson(masterName, id, name, itemList);
                 allJsonStr += jsonStr + ",";
                 rowIndex++;
             }
@@ -157,9 +157,53 @@ public partial class PlayFabDataPublisher : EditorWindow
         allJsonStr += "],\"DropTables\":[";
 
         // DropTableMBをDropTableに追加
+        for (var i = 0; i < sheetNum; i++)
+        {
+            var sheet = book.GetSheetAt(i);
+            var masterName = sheet.GetRow(NAME_ROW_INDEX).GetCell(NAME_COLUMN_INDEX).StringCellValue;
+            if (masterName != "DropTableMB") continue;
+
+            var rowIndex = START_DATA_ROW_INDEX;
+
+            // 各レコードに対する処理開始
+            while (GetValueStr(sheet, rowIndex, START_DATA_COLUMN_INDEX) != "")
+            {
+                var id = "";
+                var itemList = new List<ProbabilityItemMI>();
+
+                var columnIndex = START_DATA_COLUMN_INDEX;
+
+                // 各カラムに対する処理開始
+                while (GetTypeStr(sheet, columnIndex) != "")
+                {
+                    // 階層1が空ならスキップ
+                    var key = GetCellValueStr(sheet, HIERARCHY_1_ROW_INDEX, columnIndex);
+                    if (key == "")
+                    {
+                        columnIndex++;
+                        continue;
+                    }
+
+                    var value = GetCellValueStr(sheet, rowIndex, columnIndex);
+
+                    if (key == "id") id = value;
+                    if (key == "itemList")
+                    {
+                        var listValue = GetListValueStr(sheet, rowIndex, columnIndex);
+                        listValue = listValue.Replace("\\", "");
+                        itemList = JsonConvert.DeserializeObject<ProbabilityItemMI[]>(listValue).ToList();
+                    }
+                    columnIndex++;
+                }
+
+                var jsonStr = GetDropTableDataJson(masterName, id, itemList);
+                allJsonStr += jsonStr + ",";
+                rowIndex++;
+            }
+        }
 
         // DropTableの追加終了
-        // allJsonStr = allJsonStr.Remove(allJsonStr.Length - 1);
+        allJsonStr = allJsonStr.Remove(allJsonStr.Length - 1);
         allJsonStr += "]}";
 
         var parsedJson = JsonConvert.DeserializeObject(allJsonStr);
@@ -198,14 +242,14 @@ public partial class PlayFabDataPublisher : EditorWindow
         "}";
     }
 
-    private string GetBundleDataJson(string masterName, string id,string name, List<ItemMI> rewardItemList)
+    private string GetBundleDataJson(string masterName, string id,string name, List<ItemMI> itemList)
     {
         var itemClass = masterName.Substring(0, masterName.Length - 2);
         var itemId = $"{itemClass}{id}";
 
         // bundledItemsの作成
         var bundledItemIdList = new List<string>();
-        rewardItemList.Where(m => m.itemType == ItemType.Monster || m.itemType == ItemType.Property).ToList().ForEach(m =>
+        itemList.Where(m => m.itemType == ItemType.Monster || m.itemType == ItemType.Property).ToList().ForEach(m =>
         {
             var _itemId = ItemUtil.GetItemId(m.itemType, m.itemId);
             for (var i = 0; i < m.num; i++)
@@ -217,7 +261,7 @@ public partial class PlayFabDataPublisher : EditorWindow
 
         // bundledResultTablesの作成
         var bundledDropTableIdList = new List<string>();
-        rewardItemList.Where(m => m.itemType == ItemType.DropTable).ToList().ForEach(m =>
+        itemList.Where(m => m.itemType == ItemType.DropTable).ToList().ForEach(m =>
         {
             var _itemId = ItemUtil.GetItemId(m.itemType, m.itemId);
             for (var i = 0; i < m.num; i++)
@@ -228,9 +272,10 @@ public partial class PlayFabDataPublisher : EditorWindow
         var bundledResultTables = $"[{string.Join(",", bundledDropTableIdList)}]";
 
         // bundledVirtualCurrenciesの作成
-        var bundledVirtualCurrencyDataList = rewardItemList.Where(m => m.itemType == ItemType.VirtualCurrency).Select(m =>
+        var bundledVirtualCurrencyDataList = itemList.Where(m => m.itemType == ItemType.VirtualCurrency).Select(m =>
         {
-            return $"\"{m.itemType}\":{m.num}";
+            var virtualCurrency = (VirtualCurrencyType)m.itemId;
+            return $"\"{virtualCurrency}\":{m.num}";
         }).ToList();
         var bundledVirtualCurrencies = bundledVirtualCurrencyDataList.Any() ? $"{{{string.Join(",", bundledVirtualCurrencyDataList)}}}" : "null";
 
