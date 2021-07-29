@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 /// <summary>
 /// クエストマスタ
@@ -18,12 +17,12 @@ public class QuestMB : MasterBookBase
     public long questCategoryId { get; set; }
 
     /// <summary>
-    /// 報酬アイテムリスト
+    /// 初回報酬バンドルID
     /// </summary>
-    public List<ItemMI> firstRewardItemList { get; set; }
+    public long firstRewardBundleId { get; set; }
 
     /// <summary>
-    /// 報酬アイテムリスト
+    /// ドロップアイテムバンドルID
     /// </summary>
-    public List<ItemMI> dropItemList { get; set; }
+    public long dropBundleId { get; set; }
 }
