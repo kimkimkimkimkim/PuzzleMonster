@@ -300,8 +300,8 @@ public partial class PlayFabDataPublisher : EditorWindow
                 "\"BundledResultTables\": "+ bundledResultTables +"," +
                 "\"BundledVirtualCurrencies\": "+ bundledVirtualCurrencies +
             "}," +
-            "\"CanBecomeCharacter\": true," +
-            "\"IsStackable\": true," +
+            "\"CanBecomeCharacter\": false," +
+            "\"IsStackable\": false," +
             "\"IsTradable\": false," +
             "\"ItemImageUrl\": null," +
             "\"IsLimitedEdition\": false," +
