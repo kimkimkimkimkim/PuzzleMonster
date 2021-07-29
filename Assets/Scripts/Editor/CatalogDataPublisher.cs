@@ -20,6 +20,9 @@ public partial class PlayFabDataPublisher : EditorWindow
         var sheetNum = book.NumberOfSheets;
 
         var allJsonStr = "{\"CatalogVersion\": \""+ catalogVersion + "\",\"Catalog\":[";
+        
+        // NoneアイテムをItemに追加
+        allJsonStr += GetNoneItemDataJson() + ",";
 
         // MonsterMBをItemに追加
         for (var i = 0; i < sheetNum; i++)
@@ -210,6 +213,35 @@ public partial class PlayFabDataPublisher : EditorWindow
         var formattedJsonStr = JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
         return formattedJsonStr;
     }
+    
+    private string GetNoneItemDataJson()
+    {
+        return "{" +
+            "\"ItemId\": \"" + "None1" + "\"," +
+            "\"ItemClass\": \"" + "None" + "\"," +
+            "\"CatalogVersion\": \"" + catalogVersion + "\"," +
+            "\"DisplayName\": \"" + "はずれアイテム" + "\"," +
+            "\"Description\": null," +
+            "\"VirtualCurrencyPrices\": {}," +
+            "\"RealCurrencyPrices\": {}," +
+            "\"Tags\": []," +
+            "\"CustomData\": null," +
+            "\"Consumable\": {" +
+                "\"UsageCount\": null," +
+                "\"UsagePeriod\": 3," +
+                "\"UsagePeriodGroup\": null" +
+            "}," +
+            "\"Container\": null," +
+            "\"Bundle\": null," +
+            "\"CanBecomeCharacter\": false," +
+            "\"IsStackable\": false," +
+            "\"IsTradable\": false," +
+            "\"ItemImageUrl\": null," +
+            "\"IsLimitedEdition\": false," +
+            "\"InitialLimitedEditionCount\": 0," +
+            "\"ActivatedMembership\": null" +
+        "}";
+    }
 
     private string GetItemDataJson(string masterName, string id,string name)
     {
@@ -232,7 +264,7 @@ public partial class PlayFabDataPublisher : EditorWindow
             "}," +
             "\"Container\": null," +
             "\"Bundle\": null," +
-            "\"CanBecomeCharacter\": true," +
+            "\"CanBecomeCharacter\": false," +
             "\"IsStackable\": true," +
             "\"IsTradable\": false," +
             "\"ItemImageUrl\": null," +
