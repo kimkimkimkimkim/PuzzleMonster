@@ -367,6 +367,7 @@ public partial class PlayFabDataPublisher : EditorWindow
     
     private string GetItemType(ItemMI item){
         switch(item.itemType){
+            case ItemType.None:
             case ItemType.Monster:
             case ItemType.Property:
             case ItemType.Bundle:
