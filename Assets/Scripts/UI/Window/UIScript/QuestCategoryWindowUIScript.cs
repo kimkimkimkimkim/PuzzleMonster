@@ -3,7 +3,6 @@ using System.Linq;
 using GameBase;
 using UniRx;
 using UnityEngine;
-using UnityEngine.UI;
 
 [ResourcePath("UI/Window/Window-QuestCategory")]
 public class QuestCategoryWindowUIScript : WindowBase
@@ -38,8 +37,7 @@ public class QuestCategoryWindowUIScript : WindowBase
         scrollItem.SetText(questCategory.name);
         scrollItem.SetOnClickAction(() =>
         {
-            BattleManager.Instance.BattleStartObservable()
-                .Subscribe();
+            QuestListWindowFactory.Create(new QuestListWindowRequest() { questCategoryId = questCategory.id }).Subscribe();
         });
     }
 
