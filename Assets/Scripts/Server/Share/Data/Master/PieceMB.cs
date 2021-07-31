@@ -13,19 +13,9 @@ public class PieceMB : MasterBookBase
     public string name { get; set; }
 
     /// <summary>
-    /// 横軸か否か
-    /// </summary>
-    public bool isHorizontal { get; set; }
-
-    /// <summary>
     /// 横軸方向の個数制限（0は制限なし）
     /// </summary>
     public int horizontalConstraint { get; set; }
-
-    /// <summary>
-    /// 縦軸方向の個数制限（0は制限なし）
-    /// </summary>
-    public int verticalConstraint { get; set; }
 
     /// <summary>
     /// 生成するピースのリスト

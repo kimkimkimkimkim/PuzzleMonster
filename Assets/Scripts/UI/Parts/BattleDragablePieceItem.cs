@@ -30,45 +30,35 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         {
             id = 1,
             name = "正方形1",
-            isHorizontal = true,
             horizontalConstraint = 1,
-            verticalConstraint = 0,
             pieceList = new List<bool>(){ true },
         },
         new PieceMB()
         {
             id = 2,
             name = "左上三角3",
-            isHorizontal = true,
             horizontalConstraint = 3,
-            verticalConstraint = 0,
             pieceList = new List<bool>(){ true, true, true, true, false, false, true, false, false },
         },
         new PieceMB()
         {
             id = 3,
             name = "縦線2",
-            isHorizontal = false,
             horizontalConstraint = 1,
-            verticalConstraint = 0,
             pieceList = new List<bool>(){ true, true },
         },
         new PieceMB()
         {
             id = 4,
             name = "横線5",
-            isHorizontal = true,
             horizontalConstraint = 5,
-            verticalConstraint = 0,
             pieceList = new List<bool>(){ true, true, true, true, true },
         },
         new PieceMB()
         {
             id = 5,
             name = "右下三角2",
-            isHorizontal = true,
             horizontalConstraint = 2,
-            verticalConstraint = 0,
             pieceList = new List<bool>(){ false, true, true, true},
         },
     };
@@ -235,9 +225,9 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     {
         this.index = index;
         piece = pieceList.First(m => m.id == pieceId);
-        var startAxis = piece.isHorizontal ? GridLayoutGroup.Axis.Horizontal : GridLayoutGroup.Axis.Vertical;
+        var startAxis = GridLayoutGroup.Axis.Horizontal;
         var constraint = piece.horizontalConstraint != 0 ? GridLayoutGroup.Constraint.FixedColumnCount : GridLayoutGroup.Constraint.FixedRowCount;
-        var contraintCount = piece.horizontalConstraint != 0 ? piece.horizontalConstraint : piece.verticalConstraint;
+        var contraintCount = piece.horizontalConstraint;
 
         _pieceBaseGridLayoutGroup.startAxis = startAxis;
         _pieceBaseGridLayoutGroup.constraint = constraint;
