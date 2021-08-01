@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using GameBase;
 using PM.Enum.Battle;
+using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +13,7 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected RectTransform _boardPanelRT;
     [SerializeField] protected GridLayoutGroup _boardGridLayoutGroup;
     [SerializeField] protected List<RectTransform> _dragablePieceBaseRTList;
+    [SerializeField] protected Transform _enemyParentTransform;
 
     private const  int BOARD_PIECE_SPACE = 12;
 
@@ -33,6 +37,22 @@ public class BattleWindowUIScript : DummyWindowBase
                 BattleManager.Instance.board[i, j] = boardPiece;
             }
         }
+    }
+
+    public IObservable<Unit> CreateEnemyObservable(long questId)
+    {
+        var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
+        var observableList = quest.phase1QuestMonsterIdList.Select(questMonsterId =>
+        {
+            var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().Get(questMonsterId);
+            return Observable.ReturnUnit()
+                .SelectMany(_ =>
+                {
+                    var item = UIManager.Instance.CreateContent<QuestMonsterItem>(_enemyParentTransform);
+                    return item.SetMonsterImageObservable(questMonster.monsterId);
+                });
+        }).ToList();
+        return Observable.WhenAll(observableList).AsUnitObservable();
     }
 
     public void CreateDragablePiece(int index,long id)

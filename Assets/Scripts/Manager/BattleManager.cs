@@ -16,6 +16,8 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private IObserver<Unit> battleTurnObserver;
     private IObserver<Unit> pieceMoveObserver;
     private BattleWindowUIScript battleWindow;
+    private long questId;
+    private QuestMB quest;
     private int moveCountPerTurn = 0;
     private int turnCount = 0;
     private int enemyHp = 100;
@@ -25,7 +27,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 初期化処理
     /// </summary>
-    private void Init(){
+    private void Init(long questId){
+        this.questId = questId;
+        quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
         moveCountPerTurn = 0;
         turnCount = 1;
         playerHp = 100;
@@ -39,7 +43,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     public IObservable<BattleResult> BattleStartObservable(long questId)
     {
         // 初期化
-        Init();
+        Init(questId);
 
         return Observable.Create<BattleResult>(battleObserver => {
             this.battleObserver = battleObserver;
@@ -138,7 +142,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         
         Debug.Log($"自分のHP:{playerHp}, 敵のHP:{enemyHp}");
         
-        return Observable.ReturnUnit();
+        return battleWindow.CreateEnemyObservable(questId);
     }
 
     /// <summary>
