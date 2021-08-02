@@ -18,11 +18,14 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private BattleWindowUIScript battleWindow;
     private long questId;
     private QuestMB quest;
-    private int moveCountPerTurn = 0;
-    private int turnCount = 0;
-    private int enemyHp = 100;
-    private int playerHp = 100;
-    private WinOrLose wol = WinOrLose.None;
+    private int moveCountPerTurn;
+    private int turnCount;
+    private int waveCount;
+    private int enemyHp;
+    private int playerHp;
+    private WinOrLose wol;
+    private List<BattleEnemyMonsterInfo> battleEnemyMonsterList;
+    private BattlePlayerInfo battlePlayer;
     
     /// <summary>
     /// 初期化処理
@@ -32,9 +35,14 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
         moveCountPerTurn = 0;
         turnCount = 1;
+        turnCountInWave = 1;
+        waveCount = 0;
+        maxWaveCount = 0;
         playerHp = 100;
         enemyHp = 100;
         wol = WinOrLose.Continue;
+        battleEnemyMonsterList = new List<BattleEnemyMonsterInfo>();
+        battlePlayer = null;
     }
 
     /// <summary>
@@ -120,16 +128,29 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     {
         Observable.ReturnUnit()
             .Do(_ => Debug.Log($"ターン{turnCount}開始"))
+            .SelectMany(_ => MoveNextWaveObservable())
             .SelectMany(_ => CreateEnemyObservable())
             .SelectMany(_ => CreateDragablePieceObservable())
             .SelectMany(_ => StartPieceMovingTimeObservable())
             .SelectMany(_ => StartPlayerAttackObservable())
             .SelectMany(_ => StartEnemyAttackObservable())
-            .SelectMany(_ => MoveNextWaveObservable())
             .SelectMany(_ => JudgeContinueBattleObservable())
             .Where(isContinue => isContinue)
             .RepeatSafe()
             .Subscribe();
+    }
+    
+    /// <summary>
+    /// 次のウェーブに移動する
+    /// </summary>
+    private IObservable<Unit> MoveNextWaveObservable()
+    {
+        // 勝敗がついていれば何もしない
+        if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
+        
+        var 
+        
+        return Observable.ReturnUnit();
     }
 
     /// <summary>
@@ -206,17 +227,6 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         JudgeWinOrLoseObservable();
         
         Debug.Log($"敵の攻撃！　{damage}のダメージ.　プレイヤーのHP:{playerHp}");
-        
-        return Observable.ReturnUnit();
-    }
-
-    /// <summary>
-    /// 次のウェーブに移動する
-    /// </summary>
-    private IObservable<Unit> MoveNextWaveObservable()
-    {
-        // 勝敗がついていれば何もしない
-        if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
         return Observable.ReturnUnit();
     }
