@@ -28,17 +28,17 @@ public class QuestMB : MasterBookBase
     public long dropBundleId { get; set; }
 
     /// <summary>
-    /// phase1のクエストモンスターIDリスト
+    /// wave1のクエストモンスターIDリスト
     /// </summary>
-    public List<long> phase1QuestMonsterIdList { get; set; }
+    public List<long> wave1QuestMonsterIdList { get; set; }
 
     /// <summary>
-    /// phase2のクエストモンスターIDリスト
+    /// wave2のクエストモンスターIDリスト
     /// </summary>
-    public List<long> phase2QuestMonsterIdList { get; set; }
+    public List<long> wave2QuestMonsterIdList { get; set; }
 
     /// <summary>
-    /// phase3のクエストモンスターIDリスト
+    /// wave3のクエストモンスターIDリスト
     /// </summary>
-    public List<long> phase3QuestMonsterIdList { get; set; }
+    public List<long> wave3QuestMonsterIdList { get; set; }
 }

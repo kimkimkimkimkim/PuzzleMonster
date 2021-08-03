@@ -42,7 +42,7 @@ public class BattleWindowUIScript : DummyWindowBase
     public IObservable<Unit> CreateEnemyObservable(long questId)
     {
         var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
-        var observableList = quest.phase1QuestMonsterIdList.Select(questMonsterId =>
+        var observableList = quest.wave1QuestMonsterIdList.Select(questMonsterId =>
         {
             var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().Get(questMonsterId);
             return Observable.ReturnUnit()
