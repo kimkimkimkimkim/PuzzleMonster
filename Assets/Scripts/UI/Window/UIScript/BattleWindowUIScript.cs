@@ -39,10 +39,18 @@ public class BattleWindowUIScript : DummyWindowBase
         }
     }
 
-    public IObservable<Unit> CreateEnemyObservable(long questId)
+    public IObservable<Unit> CreateEnemyObservable(long questId, int waveCount)
     {
+        // すでに生成済みのPrefabを削除する
+        foreach(Transform t in _enemyParentTransform)
+        {
+            Destroy(t.gameObject);
+        }
+
+        // 生成
         var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
-        var observableList = quest.wave1QuestMonsterIdList.Select(questMonsterId =>
+        var questMonsterIdList = waveCount == 1 ? quest.wave1QuestMonsterIdList : waveCount == 2 ? quest.wave2QuestMonsterIdList : quest.wave3QuestMonsterIdList;
+        var observableList = questMonsterIdList.Select(questMonsterId =>
         {
             var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().Get(questMonsterId);
             return Observable.ReturnUnit()

@@ -34,10 +34,10 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         this.questId = questId;
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
         currentMoveCountPerTurn = 0;
-        currentTurnCount = 1;
-        currentTurnCountInWave = 1;
+        currentTurnCount = 0;
+        currentTurnCountInWave = 0;
         currentWaveCount = 0;
-        maxWaveCount = 0;
+        maxWaveCount = quest.wave3QuestMonsterIdList.Any() ? 3 : quest.wave2QuestMonsterIdList.Any() ? 2 : 1;
         battleResult = new BattleResult() { wol = WinOrLose.Continue };
         battleEnemyMonsterList = new List<BattleEnemyMonsterInfo>();
         battlePlayer = new BattlePlayerInfo() { currentHp = 100};
@@ -127,6 +127,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         Observable.ReturnUnit()
             .Do(_ => Debug.Log($"ターン{currentTurnCount}開始"))
             .SelectMany(_ => MoveNextWaveObservable())
+            .SelectMany(isMoveNextWave => CountUpTurnObservable(isMoveNextWave))
             .SelectMany(_ => CreateEnemyObservable())
             .SelectMany(_ => CreateDragablePieceObservable())
             .SelectMany(_ => StartPieceMovingTimeObservable())
@@ -141,10 +142,10 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 次のウェーブに移動する
     /// </summary>
-    private IObservable<Unit> MoveNextWaveObservable()
+    private IObservable<bool> MoveNextWaveObservable()
     {
         // 勝敗がついていれば何もしない
-        if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
+        if(battleResult.wol != WinOrLose.Continue) return Observable.Return(false);
 
         var isNoEnemy = battleEnemyMonsterList.All(m => m.currentHp <= 0);
         var isMaxWave = currentWaveCount == maxWaveCount;
@@ -152,10 +153,28 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         // 敵が全滅かつ最終Waveではないなら次のWaveに移動
         if(isNoEnemy && !isMaxWave)
         {
-            currentWaveCount++;
-            currentTurnCountInWave = 1;
-            return Observable.ReturnUnit();
+            return Observable.Return(true);
         }
+
+        return Observable.Return(false);
+    }
+
+    /// <summary>
+    /// 各種ターンの計算を行う
+    /// </summary>
+    private IObservable<Unit> CountUpTurnObservable(bool isMoveNextWave)
+    {
+        // 勝敗がついていれば何もしない
+        if (battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
+
+        if (isMoveNextWave)
+        {
+            currentWaveCount++;
+            currentTurnCountInWave = 0;
+        }
+
+        currentTurnCount++;
+        currentTurnCountInWave++;
 
         return Observable.ReturnUnit();
     }
@@ -167,8 +186,18 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     {
         // 勝敗がついていれば何もしない
         if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
+
+        // Waveの最初のターンでなければ何もしない
+        if (currentTurnCountInWave != 1) return Observable.ReturnUnit();
+
+        var questMonsterIdList = currentWaveCount == 1 ? quest.wave1QuestMonsterIdList : currentWaveCount == 2 ? quest.wave2QuestMonsterIdList : quest.wave3QuestMonsterIdList;
+        var questMonsterList = questMonsterIdList.Select(id => MasterRecord.GetMasterOf<QuestMonsterMB>().Get(id)).ToList();
+        battleEnemyMonsterList = questMonsterList.Select(m => new BattleEnemyMonsterInfo()
+        {
+            currentHp = m.hp,
+        }).ToList();
         
-        return battleWindow.CreateEnemyObservable(questId);
+        return battleWindow.CreateEnemyObservable(questId, currentWaveCount);
     }
 
     /// <summary>
@@ -182,7 +211,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
         {
             var pieceId = UnityEngine.Random.Range(1, 6);
-            battleWindow.CreateDragablePiece(i, pieceId);
+            battleWindow.CreateDragablePiece(i, 1);
         }
         return Observable.ReturnUnit();
     }
@@ -211,7 +240,10 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
         var damage = UnityEngine.Random.Range(1,25);
-        JudgeWinOrLoseObservable();
+        var enemy = battleEnemyMonsterList.First(m => m.currentHp > 0);
+        enemy.currentHp -= damage;
+
+        JudgeWinOrLose();
         
         return Observable.ReturnUnit();
     }
@@ -224,8 +256,10 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         // 勝敗がついていれば何もしない
         if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
-        var damage = UnityEngine.Random.Range(1,25);
-        JudgeWinOrLoseObservable();
+        var damage = UnityEngine.Random.Range(1,5);
+        battlePlayer.currentHp -= damage;
+
+        JudgeWinOrLose();
         
         return Observable.ReturnUnit();
     }
@@ -256,8 +290,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 勝敗を判定する
     /// </summary>
-    private void JudgeWinOrLoseObservable()
+    private void JudgeWinOrLose()
     {
+        Debug.Log($"自分のHP：{battlePlayer.currentHp}, 相手のHP：{string.Join(",", battleEnemyMonsterList.Select(m => m.currentHp.ToString()))}");
         if(battleEnemyMonsterList.All(m => m.currentHp <= 0) && currentWaveCount == maxWaveCount){
             // 相手のHPが0なら勝利
             battleResult.wol = WinOrLose.Win;
@@ -284,7 +319,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         Fit(fitBoardIndexList);
         Crash();
         
-        JudgeWinOrLoseObservable();
+        JudgeWinOrLose();
         
         // 勝敗がついていれば次の処理へ
         if(battleResult.wol != WinOrLose.Continue) {
@@ -299,7 +334,6 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         if (currentMoveCountPerTurn == ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
         {
             currentMoveCountPerTurn = 0;
-            currentTurnCount++;
             pieceMoveObserver.OnNext(Unit.Default);
             pieceMoveObserver.OnCompleted();
             pieceMoveObserver = null;
