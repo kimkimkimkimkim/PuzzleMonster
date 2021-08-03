@@ -1,4 +1,6 @@
-﻿public class BattleResult
+﻿using PM.Enum.Battle;
+
+public class BattleResult
 {
-    public bool isWin { get; set; }
+    public WinOrLose wol { get; set; }
 }
