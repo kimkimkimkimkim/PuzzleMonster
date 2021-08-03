@@ -23,8 +23,6 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private int currentTurnCountInWave;
     private int currentWaveCount;
     private int maxWaveCount;
-    private int enemyHp;
-    private int playerHp;
     private WinOrLose wol;
     private List<BattleEnemyMonsterInfo> battleEnemyMonsterList;
     private BattlePlayerInfo battlePlayer;
@@ -40,11 +38,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         currentTurnCountInWave = 1;
         currentWaveCount = 0;
         maxWaveCount = 0;
-        playerHp = 100;
-        enemyHp = 100;
         wol = WinOrLose.Continue;
         battleEnemyMonsterList = new List<BattleEnemyMonsterInfo>();
-        battlePlayer = null;
+        battlePlayer = new BattlePlayerInfo() { currentHp = 100};
     }
 
     /// <summary>
@@ -172,8 +168,6 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         // 勝敗がついていれば何もしない
         if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
-        Debug.Log($"自分のHP:{playerHp}, 敵のHP:{enemyHp}");
-        
         return battleWindow.CreateEnemyObservable(questId);
     }
 
@@ -217,10 +211,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
         var damage = UnityEngine.Random.Range(1,25);
-        enemyHp -= damage;
         JudgeWinOrLoseObservable();
-        
-        Debug.Log($"プレイヤーの攻撃！　{damage}のダメージ.　敵のHP:{enemyHp}");
         
         return Observable.ReturnUnit();
     }
@@ -234,10 +225,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
         var damage = UnityEngine.Random.Range(1,25);
-        playerHp -= damage;
         JudgeWinOrLoseObservable();
-        
-        Debug.Log($"敵の攻撃！　{damage}のダメージ.　プレイヤーのHP:{playerHp}");
         
         return Observable.ReturnUnit();
     }
@@ -270,10 +258,10 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private void JudgeWinOrLoseObservable()
     {
-        if(enemyHp <= 0){
+        if(battleEnemyMonsterList.All(m => m.currentHp <= 0) && currentWaveCount == maxWaveCount){
             // 相手のHPが0なら勝利
             wol = WinOrLose.Win;
-        }else if(playerHp <= 0){
+        }else if(battlePlayer.currentHp <= 0){
             // 自分のHPが0なら敗北
             wol = WinOrLose.Lose;
         }else if(!IsRemainPieceCanFit()){
