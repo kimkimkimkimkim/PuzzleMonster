@@ -18,9 +18,11 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private BattleWindowUIScript battleWindow;
     private long questId;
     private QuestMB quest;
-    private int moveCountPerTurn;
-    private int turnCount;
-    private int waveCount;
+    private int currentMoveCountPerTurn;
+    private int currentTurnCount;
+    private int currentTurnCountInWave;
+    private int currentWaveCount;
+    private int maxWaveCount;
     private int enemyHp;
     private int playerHp;
     private WinOrLose wol;
@@ -33,10 +35,10 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private void Init(long questId){
         this.questId = questId;
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
-        moveCountPerTurn = 0;
-        turnCount = 1;
-        turnCountInWave = 1;
-        waveCount = 0;
+        currentMoveCountPerTurn = 0;
+        currentTurnCount = 1;
+        currentTurnCountInWave = 1;
+        currentWaveCount = 0;
         maxWaveCount = 0;
         playerHp = 100;
         enemyHp = 100;
@@ -127,7 +129,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private void StartTurnProgress()
     {
         Observable.ReturnUnit()
-            .Do(_ => Debug.Log($"ターン{turnCount}開始"))
+            .Do(_ => Debug.Log($"ターン{currentTurnCount}開始"))
             .SelectMany(_ => MoveNextWaveObservable())
             .SelectMany(_ => CreateEnemyObservable())
             .SelectMany(_ => CreateDragablePieceObservable())
@@ -147,9 +149,18 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     {
         // 勝敗がついていれば何もしない
         if(wol != WinOrLose.Continue) return Observable.ReturnUnit();
-        
-        var 
-        
+
+        var isNoEnemy = battleEnemyMonsterList.All(m => m.currentHp <= 0);
+        var isMaxWave = currentWaveCount == maxWaveCount;
+
+        // 敵が全滅かつ最終Waveではないなら次のWaveに移動
+        if(isNoEnemy && !isMaxWave)
+        {
+            currentWaveCount++;
+            currentTurnCountInWave = 1;
+            return Observable.ReturnUnit();
+        }
+
         return Observable.ReturnUnit();
     }
 
@@ -279,7 +290,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     public void OnPieceFit(int dragablePieceIndex,List<BoardIndex> fitBoardIndexList)
     {
-        moveCountPerTurn++;
+        currentMoveCountPerTurn++;
         dragablePieceList[dragablePieceIndex] = null;
 
         Fit(fitBoardIndexList);
@@ -297,10 +308,10 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         
 
         // 全てのピースをはめ終わったら次の処理へ
-        if (moveCountPerTurn == ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
+        if (currentMoveCountPerTurn == ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
         {
-            moveCountPerTurn = 0;
-            turnCount++;
+            currentMoveCountPerTurn = 0;
+            currentTurnCount++;
             pieceMoveObserver.OnNext(Unit.Default);
             pieceMoveObserver.OnCompleted();
             pieceMoveObserver = null;
