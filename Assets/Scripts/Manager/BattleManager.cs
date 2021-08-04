@@ -67,6 +67,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
                 ))
                 .Do(_ => Debug.Log("バトル終了"))
                 .Do(_ => Debug.Log(battleResult.wol))
+                .SelectMany(_ => ShowResultDialogObservable())
                 .SelectMany(_ => FadeOutObservable())
                 .Subscribe();
 
@@ -88,31 +89,31 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             })
             .SelectMany(res => FadeManager.Instance.PlayFadeAnimationObservable(0));
     }
+    
+    /// <summary>
+    /// バトル結果ダイアログを表示する
+    /// </summary>
+    private IObservable<Unit> ShowResultDialogObservable()
+    {
+        var content = $"{battleResult.wol == WinOrLose.Win ? "勝利" : "敗北"}しました";
+        return CommonDialogFactory,Create(new CommonDialogRequest(){
+            title = "バトル結果",
+            content = content,
+            commonDialogType = CommonDialogType.YesOnly,
+        }).AsUnitObservable();
+    }
 
     /// <summary>
     /// 画面遷移（フェードアウト）時処理を実行
     /// </summary>
     private IObservable<Unit> FadeOutObservable()
     {
-        return CommonDialogFactory.Create(new CommonDialogRequest()
-        {
-            title = "確認",
-            content = "これ以上動かせません",
-            commonDialogType = CommonDialogType.YesOnly,
-        })
-            .SelectMany(res => FadeManager.Instance.PlayFadeAnimationObservable(1))
+        return FadeManager.Instance.PlayFadeAnimationObservable(0)
             .Do(res =>
             {
-                Destroy(battleWindow.gameObject);
-            })
-            .SelectMany(res => FadeManager.Instance.PlayFadeAnimationObservable(0))
-            .Do(res =>
-            {
-                var result = new BattleResult();
-
                 if (battleObserver != null)
                 {
-                    battleObserver.OnNext(result);
+                    battleObserver.OnNext(battleResult);
                     battleObserver.OnCompleted();
                     battleObserver = null;
                 }
@@ -274,16 +275,20 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             // 勝敗がついたのでバトルを終了
             if (battleTurnObserver != null)
             {
-                battleTurnObserver.OnNext(Unit.Default);
-                battleTurnObserver.OnCompleted();
-                battleTurnObserver = null;
+                Observable.NextFrame()
+                    .Do(_ => {
+                        battleTurnObserver.OnNext(Unit.Default);
+                        battleTurnObserver.OnCompleted();
+                        battleTurnObserver = null;
+                    })
+                    .Subscribe();
             }
-            return Observable.ReturnUnit().DelayFrame(1).Select(_ => false);
+            return Observable.NextFrame().Select(_ => false);
         }
         else
         {
             // まだ続行
-            return Observable.ReturnUnit().DelayFrame(1).Select(_ => true);
+            return Observable.NextFrame().Select(_ => true);
         }
     }
 
