@@ -95,8 +95,8 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private IObservable<Unit> ShowResultDialogObservable()
     {
-        var content = $"{battleResult.wol == WinOrLose.Win ? "勝利" : "敗北"}しました";
-        return CommonDialogFactory,Create(new CommonDialogRequest(){
+        var content = $"{(battleResult.wol == WinOrLose.Win ? "勝利" : "敗北")}しました";
+        return CommonDialogFactory.Create(new CommonDialogRequest(){
             title = "バトル結果",
             content = content,
             commonDialogType = CommonDialogType.YesOnly,
@@ -108,7 +108,13 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private IObservable<Unit> FadeOutObservable()
     {
-        return FadeManager.Instance.PlayFadeAnimationObservable(0)
+        return FadeManager.Instance.PlayFadeAnimationObservable(1)
+            .Do(_ =>
+            {
+                Destroy(battleWindow.gameObject);
+                HeaderFooterManager.Instance.Show(true);
+            })
+            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
             .Do(res =>
             {
                 if (battleObserver != null)
