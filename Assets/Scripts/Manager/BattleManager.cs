@@ -46,7 +46,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// バトルを開始する
     /// </summary>
-    public IObservable<BattleResult> BattleStartObservable(long questId)
+    public IObservable<BattleResult> BattleStartObservable(long questId, long userMonsterPartyId)
     {
         // 初期化
         Init(questId);
