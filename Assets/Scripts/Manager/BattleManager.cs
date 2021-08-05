@@ -25,12 +25,13 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private int maxWaveCount;
     private BattleResult battleResult;
     private List<BattleEnemyMonsterInfo> battleEnemyMonsterList;
+    private List<BattlePlayerMonsterInfo> battlePlayerMonsterList;
     private BattlePlayerInfo battlePlayer;
     
     /// <summary>
     /// 初期化処理
     /// </summary>
-    private void Init(long questId){
+    private void Init(long questId, long userMonsterPartyId){
         this.questId = questId;
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
         currentMoveCountPerTurn = 0;
@@ -40,7 +41,16 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         maxWaveCount = quest.wave3QuestMonsterIdList.Any() ? 3 : quest.wave2QuestMonsterIdList.Any() ? 2 : 1;
         battleResult = new BattleResult() { wol = WinOrLose.Continue };
         battleEnemyMonsterList = new List<BattleEnemyMonsterInfo>();
-        battlePlayer = new BattlePlayerInfo() { currentHp = 100};
+        battlePlayerMonsterList = new List<BattlePlayerMonsterInfo>(){
+            new BattlePlayerMonsterInfo(){ monsterId = 1, hp = 15, attack = 3 },
+            new BattlePlayerMonsterInfo(){ monsterId = 2, hp = 15, attack = 4 },
+            new BattlePlayerMonsterInfo(){ monsterId = 3, hp = 15, attack = 1 },
+            new BattlePlayerMonsterInfo(){ monsterId = 4, hp = 15, attack = 3 },
+            new BattlePlayerMonsterInfo(){ monsterId = 5, hp = 15, attack = 5 },
+            new BattlePlayerMonsterInfo(){ monsterId = 6, hp = 15, attack = 7 },
+        };
+        var playerHp = battlePlayerMonsterList.Sum(m => m.hp);
+        battlePlayer = new BattlePlayerInfo() { currentHp = playerHp};
     }
 
     /// <summary>
@@ -49,7 +59,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     public IObservable<BattleResult> BattleStartObservable(long questId, long userMonsterPartyId)
     {
         // 初期化
-        Init(questId);
+        Init(questId, userMonsterPartyId);
 
         return Observable.Create<BattleResult>(battleObserver => {
             this.battleObserver = battleObserver;
@@ -246,7 +256,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         // 勝敗がついていれば何もしない
         if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
-        var damage = UnityEngine.Random.Range(1,25);
+        var damage = battlePlayerMonsterList.Sum(m => m.attack);
         var enemy = battleEnemyMonsterList.First(m => m.currentHp > 0);
         enemy.currentHp -= damage;
 
@@ -263,7 +273,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         // 勝敗がついていれば何もしない
         if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
-        var damage = UnityEngine.Random.Range(1,5);
+        var damage = battleEnemyMonsterList.Where(m => m.currentHp > 0).Sum(m => 5);
         battlePlayer.currentHp -= damage;
 
         JudgeWinOrLose();
