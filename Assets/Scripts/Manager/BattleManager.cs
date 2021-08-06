@@ -97,7 +97,8 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
                 battleWindow.Init();
                 HeaderFooterManager.Instance.Show(false);
             })
-            .SelectMany(res => FadeManager.Instance.PlayFadeAnimationObservable(0));
+            .SelectMany(_ => VisualFxManager.Instance.PlayQuestTitleFxObservable())
+            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0));
     }
     
     /// <summary>

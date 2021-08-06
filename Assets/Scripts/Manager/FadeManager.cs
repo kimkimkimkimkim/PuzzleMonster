@@ -6,6 +6,7 @@ using DG.Tweening;
 
 public class FadeManager : SingletonMonoBehaviour<FadeManager>
 {
+    [SerializeField] RectTransform _fadeCanvasRT;
     [SerializeField] FadeImage _fade;
 
     private const float ANIMATION_TIME = 1.0f;
@@ -27,6 +28,11 @@ public class FadeManager : SingletonMonoBehaviour<FadeManager>
             .OnCompleteAsObservable()
             .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .AsUnitObservable();
+    }
+
+    public RectTransform GetFadeCanvasRT()
+    {
+        return _fadeCanvasRT;
     }
 }
 

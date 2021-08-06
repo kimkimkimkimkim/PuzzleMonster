@@ -267,6 +267,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 53c22e1773be7f84aad8ed8b7b58fa6e, type: 3}
+--- !u!224 &444732649 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 22424616, guid: 53c22e1773be7f84aad8ed8b7b58fa6e,
+    type: 3}
+  m_PrefabInstance: {fileID: 412809082}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -554,6 +560,7 @@ GameObject:
   - component: {fileID: 1014122078}
   - component: {fileID: 1014122079}
   - component: {fileID: 1014122080}
+  - component: {fileID: 1014122081}
   m_Layer: 0
   m_Name: ManagerObject
   m_TagString: Untagged
@@ -663,6 +670,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6636b5bc4f681409e9d0c351187df2bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _fadeCanvasRT: {fileID: 444732649}
   _fade: {fileID: 1176165614}
 --- !u!114 &1014122080
 MonoBehaviour:
@@ -683,6 +691,18 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+--- !u!114 &1014122081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1014122072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4deff9426f6b4ed39dea021468540ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1050840648
 GameObject:
   m_ObjectHideFlags: 0
