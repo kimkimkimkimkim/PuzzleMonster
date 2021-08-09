@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using GameBase;
 using DG.Tweening;
 
-public class QuestTitleFx : MonoBehaviour, IVisualFxItem
+public class QuestTitleFx : MonoBehaviour
 {
     [SerializeField] Text _text;
 
@@ -19,6 +19,7 @@ public class QuestTitleFx : MonoBehaviour, IVisualFxItem
             .AppendInterval(2.0f)
             .Append(DOVirtual.Float(1.0f, 0.0f, 1.0f, value => _text.SetAlpha(value)))
             .OnCompleteAsObservable()
+            .Do(_ => Destroy(gameObject))
             .AsUnitObservable();
     }
 }

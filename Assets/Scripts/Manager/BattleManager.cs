@@ -171,7 +171,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         // 敵が全滅かつ最終Waveではないなら次のWaveに移動
         if(isNoEnemy && !isMaxWave)
         {
-            return Observable.Return(true);
+            return VisualFxManager.Instance.PlayWaveTitleFxObservable(battleWindow._windowFrameRT, currentWaveCount, maxWaveCount).Select(_ => true);
         }
 
         return Observable.Return(false);
