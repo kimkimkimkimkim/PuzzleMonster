@@ -20,7 +20,9 @@ public class QuestTitleFx : MonoBehaviour
             .AppendInterval(2.0f)
             .Append(DOVirtual.Float(1.0f, 0.0f, 1.0f, value => _text.SetAlpha(value)))
             .OnCompleteAsObservable()
-            .Do(_ => Destroy(gameObject))
+            .Do(_ => {
+                if(gameObject != null) Addressables.ReleaseInstance(gameObject);
+            })
             .AsUnitObservable();
     }
 }
