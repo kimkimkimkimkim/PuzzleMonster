@@ -53,14 +53,9 @@ public class BattleWindowUIScript : DummyWindowBase
         var observableList = questMonsterIdList.Select(questMonsterId =>
         {
             var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().Get(questMonsterId);
-            return Observable.ReturnUnit()
-                .SelectMany(_ =>
-                {
-                    var item = UIManager.Instance.CreateContent<QuestMonsterItem>(_enemyParentTransform);
-                    return item.SetMonsterImageObservable(questMonster.monsterId);
-                });
+            return VisualFxManager.Instance.PlayCreateMonsterFxObservable(_enemyParentTransform, questMonster.monsterId).AsUnitObservable();
         }).ToList();
-        return Observable.WhenAll(observableList).AsUnitObservable();
+        return Observable.Concat(observableList).Buffer(observableList.Count).AsUnitObservable();
     }
 
     public void CreateDragablePiece(int index,long id)

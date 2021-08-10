@@ -9,6 +9,12 @@ using UnityEngine.UI;
 public class QuestMonsterItem : MonoBehaviour
 {
     [SerializeField] protected Image _monsterImage;
+    [SerializeField] protected CanvasGroup _canvasGroup;
+
+    public CanvasGroup GetCanvasGroup()
+    {
+        return _canvasGroup;
+    }
 
     public IObservable<Unit> SetMonsterImageObservable(long monsterId)
     {
