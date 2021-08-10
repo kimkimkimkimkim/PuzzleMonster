@@ -24,6 +24,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private int currentWaveCount;
     private int maxWaveCount;
     private BattleResult battleResult;
+    private List<QuestMonsterItem> questMonsterItemList;
     private List<BattleEnemyMonsterInfo> battleEnemyMonsterList;
     private List<BattlePlayerMonsterInfo> battlePlayerMonsterList;
     private BattlePlayerInfo battlePlayer;
@@ -216,7 +217,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             currentHp = m.hp,
         }).ToList();
         
-        return battleWindow.CreateEnemyObservable(questId, currentWaveCount);
+        return battleWindow.CreateEnemyObservable(questId, currentWaveCount)
+            .Do(list => questMonsterItemList = list)
+            .AsUnitObservable();
     }
 
     /// <summary>
@@ -259,12 +262,22 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
         var damage = battlePlayerMonsterList.Sum(m => m.attack);
-        var enemy = battleEnemyMonsterList.First(m => m.currentHp > 0);
-        enemy.currentHp -= damage;
+        var index = battleEnemyMonsterList.FindIndex(m => m.currentHp > 0);
+        var enemyMonsterItem = questMonsterItemList[index];
+        var enemyMonster = battleEnemyMonsterList[index];
+
+        enemyMonster.currentHp -= damage;
 
         JudgeWinOrLose();
-        
-        return Observable.ReturnUnit();
+
+        if(enemyMonster.currentHp <= 0)
+        {
+            return VisualFxManager.Instance.PlayDefeatMonsterFxObservable(enemyMonsterItem);
+        }
+        else
+        {
+            return Observable.ReturnUnit();
+        }
     }
 
     /// <summary>

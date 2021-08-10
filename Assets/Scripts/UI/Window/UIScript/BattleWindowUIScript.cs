@@ -39,7 +39,7 @@ public class BattleWindowUIScript : DummyWindowBase
         }
     }
 
-    public IObservable<Unit> CreateEnemyObservable(long questId, int waveCount)
+    public IObservable<List<QuestMonsterItem>> CreateEnemyObservable(long questId, int waveCount)
     {
         // すでに生成済みのPrefabを削除する
         foreach(Transform t in _enemyParentTransform)
@@ -48,14 +48,18 @@ public class BattleWindowUIScript : DummyWindowBase
         }
 
         // 生成
+        var list = new List<QuestMonsterItem>();
         var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
         var questMonsterIdList = waveCount == 1 ? quest.wave1QuestMonsterIdList : waveCount == 2 ? quest.wave2QuestMonsterIdList : quest.wave3QuestMonsterIdList;
         var observableList = questMonsterIdList.Select(questMonsterId =>
         {
             var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().Get(questMonsterId);
-            return VisualFxManager.Instance.PlayCreateMonsterFxObservable(_enemyParentTransform, questMonster.monsterId).AsUnitObservable();
+            return VisualFxManager.Instance.PlayCreateMonsterFxObservable(_enemyParentTransform, questMonster.monsterId);
         }).ToList();
-        return Observable.Concat(observableList).Buffer(observableList.Count).AsUnitObservable();
+        return Observable.Concat(observableList)
+            .Do(item => list.Add(item))
+            .Buffer(observableList.Count)
+            .Select(_ => list);
     }
 
     public void CreateDragablePiece(int index,long id)
