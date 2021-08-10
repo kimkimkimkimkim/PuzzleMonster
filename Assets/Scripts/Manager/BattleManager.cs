@@ -144,8 +144,8 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     {
         Observable.ReturnUnit()
             .Do(_ => Debug.Log($"ターン{currentTurnCount}開始"))
-            .SelectMany(_ => MoveNextWaveObservable())
-            .SelectMany(isMoveNextWave => CountUpTurnObservable(isMoveNextWave))
+            .SelectMany(_ => CountUpTurnObservable())
+            .SelectMany(isMoveNextWave => MoveNextWaveObservable(isMoveNextWave))
             .SelectMany(_ => CreateEnemyObservable())
             .SelectMany(_ => CreateDragablePieceObservable())
             .SelectMany(_ => StartPieceMovingTimeObservable())
@@ -156,35 +156,20 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             .RepeatSafe()
             .Subscribe();
     }
-    
-    /// <summary>
-    /// 次のウェーブに移動する
-    /// </summary>
-    private IObservable<bool> MoveNextWaveObservable()
-    {
-        // 勝敗がついていれば何もしない
-        if(battleResult.wol != WinOrLose.Continue) return Observable.Return(false);
-
-        var isNoEnemy = battleEnemyMonsterList.All(m => m.currentHp <= 0);
-        var isMaxWave = currentWaveCount == maxWaveCount;
-
-        // 敵が全滅かつ最終Waveではないなら次のWaveに移動
-        if(isNoEnemy && !isMaxWave)
-        {
-            return VisualFxManager.Instance.PlayWaveTitleFxObservable(battleWindow._windowFrameRT, currentWaveCount, maxWaveCount).Select(_ => true);
-        }
-
-        return Observable.Return(false);
-    }
 
     /// <summary>
     /// 各種ターンの計算を行う
     /// </summary>
-    private IObservable<Unit> CountUpTurnObservable(bool isMoveNextWave)
+    private IObservable<bool> CountUpTurnObservable()
     {
         // 勝敗がついていれば何もしない
-        if (battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
+        if (battleResult.wol != WinOrLose.Continue) return Observable.Return(false);
 
+        var isNoEnemy = battleEnemyMonsterList.All(m => m.currentHp <= 0);
+        var isMaxWave = currentWaveCount == maxWaveCount;
+        var isMoveNextWave = isNoEnemy && !isMaxWave;
+
+        // 敵が全滅かつ最終Waveではないなら次のWaveに移動
         if (isMoveNextWave)
         {
             currentWaveCount++;
@@ -193,6 +178,22 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
 
         currentTurnCount++;
         currentTurnCountInWave++;
+
+        return Observable.Return(isMoveNextWave);
+    }
+
+    /// <summary>
+    /// 次のウェーブに移動する
+    /// </summary>
+    private IObservable<Unit> MoveNextWaveObservable(bool isMoveNextWave)
+    {
+        // 勝敗がついていれば何もしない
+        if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
+
+        if(isMoveNextWave)
+        {
+            return VisualFxManager.Instance.PlayWaveTitleFxObservable(battleWindow._windowFrameRT, currentWaveCount, maxWaveCount);
+        }
 
         return Observable.ReturnUnit();
     }
