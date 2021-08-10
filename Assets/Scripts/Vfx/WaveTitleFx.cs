@@ -12,7 +12,7 @@ public class WaveTitleFx : MonoBehaviour
 
     public IObservable<Unit> PlayFxObservable(int currentWaveCount, int maxWaveCount)
     {
-        var distance = 10.0f;
+        var distance = 100.0f;
 
         _text.SetAlpha(0);
         _text.text = $"Wave {currentWaveCount}/{maxWaveCount}";
@@ -21,7 +21,7 @@ public class WaveTitleFx : MonoBehaviour
         return DOTween.Sequence()
             .Append(transform.DOLocalMoveX(distance, 0.0f))
             .Append(DOVirtual.Float(0.0f, 1.0f, 1.0f, value => _text.SetAlpha(value)))
-            .Join(transform.DOLocalMoveX(-distance, 1.0f))
+            .Join(transform.DOLocalMoveX(0.0f, 1.0f))
             .AppendInterval(1.0f)
             .Append(DOVirtual.Float(1.0f, 0.0f, 1.0f, value => _text.SetAlpha(value)))
             .Join(transform.DOLocalMoveX(-distance, 1.0f))
