@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
 {
-    public IObservable<Unit> PlayQuestTitleFxObservable()
+    public IObservable<Unit> PlayQuestTitleFxObservable(string title)
     {
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<QuestTitleFx>("QuestTitleFx",FadeManager.Instance.GetFadeCanvasRT())
-            .SelectMany(fx => fx.PlayFxObservable());
+            .SelectMany(fx => fx.PlayFxObservable(title));
     }
 
     public IObservable<Unit> PlayWaveTitleFxObservable(Transform parent, int currentWaveCount, int maxWaveCount)
