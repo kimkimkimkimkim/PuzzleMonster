@@ -26,7 +26,9 @@ public class WaveTitleFx : MonoBehaviour
             .Append(DOVirtual.Float(1.0f, 0.0f, 1.0f, value => _text.SetAlpha(value)))
             .Join(transform.DOLocalMoveX(-distance, 1.0f))
             .OnCompleteAsObservable()
-            .Do(_ => Destroy(gameObject))
+            .Do(_ => {
+                if(gameObject != null) Addressables.ReleaseInstance(gameObject);
+            })
             .AsUnitObservable();
     }
 }
