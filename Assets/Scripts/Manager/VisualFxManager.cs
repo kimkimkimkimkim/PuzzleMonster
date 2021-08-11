@@ -10,7 +10,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     #region FxItem
     public IObservable<Unit> PlayQuestTitleFxObservable(string title)
     {
-        return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<QuestTitleFx>("QuestTitleFx",FadeManager.Instance.GetFadeCanvasRT())
+        return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<QuestTitleFx>(FadeManager.Instance.GetFadeCanvasRT())
             .SelectMany(fx => {
                 fx.text.SetAlpha(0);
                 fx.text.text = title;
@@ -30,7 +30,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
 
     public IObservable<Unit> PlayWaveTitleFxObservable(Transform parent, int currentWaveCount, int maxWaveCount)
     {
-        return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<WaveTitleFx>("WaveTitleFx", parent)
+        return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<WaveTitleFx>(parent)
             .SelectMany(fx => {
                 var distance = 100.0f;
 
