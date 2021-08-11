@@ -21,9 +21,11 @@ public class PMAddressableAssetUtil
     /// <summary>
     /// 指定した演出Prefabを取得する
     /// </summary>
-    public static IObservable<T> InstantiateVisualFxItemObservable<T>(string name, Transform parent) where T : MonoBehaviour
+    public static IObservable<T> InstantiateVisualFxItemObservable<T>(Transform parent) where T : MonoBehaviour
     {
-        var address = $"{ASSET_PATH_PREFIX}/VisualFx/{name}.prefab";
+        // プレハブ名はクラスメイト同じにすること
+        var prefabName = typeof(T).Name;
+        var address = $"{ASSET_PATH_PREFIX}/VisualFx/{prefabName}.prefab";
         return AddressableAssetController.InstantiateAsObservable<T>(address, parent);
 
     }
