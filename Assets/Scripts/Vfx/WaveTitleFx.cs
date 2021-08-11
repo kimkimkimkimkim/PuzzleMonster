@@ -8,5 +8,5 @@ using UnityEngine.AddressableAssets;
 
 public class WaveTitleFx : MonoBehaviour
 {
-    public Text _text;
+    public Text text;
 }
