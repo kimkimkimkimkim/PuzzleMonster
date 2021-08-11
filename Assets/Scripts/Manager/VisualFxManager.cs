@@ -3,6 +3,7 @@ using DG.Tweening;
 using GameBase;
 using UniRx;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
 {
@@ -10,13 +11,46 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     public IObservable<Unit> PlayQuestTitleFxObservable(string title)
     {
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<QuestTitleFx>("QuestTitleFx",FadeManager.Instance.GetFadeCanvasRT())
-            .SelectMany(fx => fx.PlayFxObservable(title));
+            .SelectMany(fx => {
+                fx.text.SetAlpha(0);
+                fx.text.text = title;
+                gameObject.SetActive(true);
+
+                return DOTween.Sequence()
+                    .Append(DOVirtual.Float(0.0f, 1.0f, 1.0f, value => fx.text.SetAlpha(value)))
+                    .AppendInterval(2.0f)
+                    .Append(DOVirtual.Float(1.0f, 0.0f, 1.0f, value => fx.text.SetAlpha(value)))
+                    .OnCompleteAsObservable()
+                    .Do(_ => {
+                        if(fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
+                    })
+                    .AsUnitObservable();
+            });
     }
 
     public IObservable<Unit> PlayWaveTitleFxObservable(Transform parent, int currentWaveCount, int maxWaveCount)
     {
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<WaveTitleFx>("WaveTitleFx", parent)
-            .SelectMany(fx => fx.PlayFxObservable(currentWaveCount, maxWaveCount));
+            .SelectMany(fx => {
+                var distance = 100.0f;
+
+                fx.text.SetAlpha(0);
+                fx.text.text = $"Wave {currentWaveCount}/{maxWaveCount}";
+                gameObject.SetActive(true);
+
+                return DOTween.Sequence()
+                    .Append(transform.DOLocalMoveX(distance, 0.0f))
+                    .Append(DOVirtual.Float(0.0f, 1.0f, 1.0f, value => fx.text.SetAlpha(value)))
+                    .Join(transform.DOLocalMoveX(0.0f, 1.0f))
+                    .AppendInterval(1.0f)
+                    .Append(DOVirtual.Float(1.0f, 0.0f, 1.0f, value => fx.text.SetAlpha(value)))
+                    .Join(transform.DOLocalMoveX(-distance, 1.0f))
+                    .OnCompleteAsObservable()
+                    .Do(_ => {
+                        if(fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
+                    })
+                    .AsUnitObservable();
+            });
     }
     #endregion
 
