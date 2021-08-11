@@ -14,7 +14,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             .SelectMany(fx => {
                 fx.text.SetAlpha(0);
                 fx.text.text = title;
-                gameObject.SetActive(true);
+                fx.gameObject.SetActive(true);
 
                 return DOTween.Sequence()
                     .Append(DOVirtual.Float(0.0f, 1.0f, 1.0f, value => fx.text.SetAlpha(value)))
@@ -36,15 +36,15 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
 
                 fx.text.SetAlpha(0);
                 fx.text.text = $"Wave {currentWaveCount}/{maxWaveCount}";
-                gameObject.SetActive(true);
+                fx.gameObject.SetActive(true);
 
                 return DOTween.Sequence()
-                    .Append(transform.DOLocalMoveX(distance, 0.0f))
+                    .Append(fx.transform.DOLocalMoveX(distance, 0.0f))
                     .Append(DOVirtual.Float(0.0f, 1.0f, 1.0f, value => fx.text.SetAlpha(value)))
-                    .Join(transform.DOLocalMoveX(0.0f, 1.0f))
+                    .Join(fx.transform.DOLocalMoveX(0.0f, 1.0f))
                     .AppendInterval(1.0f)
                     .Append(DOVirtual.Float(1.0f, 0.0f, 1.0f, value => fx.text.SetAlpha(value)))
-                    .Join(transform.DOLocalMoveX(-distance, 1.0f))
+                    .Join(fx.transform.DOLocalMoveX(-distance, 1.0f))
                     .OnCompleteAsObservable()
                     .Do(_ => {
                         if(fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
