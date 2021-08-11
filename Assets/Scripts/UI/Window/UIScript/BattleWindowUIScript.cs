@@ -14,6 +14,7 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected GridLayoutGroup _boardGridLayoutGroup;
     [SerializeField] protected List<RectTransform> _dragablePieceBaseRTList;
     [SerializeField] protected Transform _enemyParentTransform;
+    [SerializeField] protected Transform _playerMonsterParentTransform;
 
     private const  int BOARD_PIECE_SPACE = 12;
 
@@ -55,6 +56,31 @@ public class BattleWindowUIScript : DummyWindowBase
         {
             var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().Get(questMonsterId);
             return VisualFxManager.Instance.PlayCreateMonsterFxObservable(_enemyParentTransform, questMonster.monsterId);
+        }).ToList();
+        return Observable.Concat(observableList)
+            .Do(item => list.Add(item))
+            .Buffer(observableList.Count)
+            .Select(_ => list);
+    }
+
+    public IObservable<List<QuestMonsterItem>> CreatePlayerMonsterObservable(List<BattlePlayerMonsterInfo> battlePlayerMonsterList)
+    {
+        // すでに生成済みのPrefabを削除する
+        foreach (Transform t in _playerMonsterParentTransform)
+        {
+            Destroy(t.gameObject);
+        }
+
+        // 生成
+        var list = new List<QuestMonsterItem>();
+        var observableList = battlePlayerMonsterList.Select(battlePlayerMonster =>
+        {
+            return Observable.ReturnUnit()
+                .SelectMany(_ =>
+                {
+                    var item = UIManager.Instance.CreateContent<QuestMonsterItem>(_playerMonsterParentTransform);
+                    return item.SetMonsterImageObservable(battlePlayerMonster.monsterId).Select(res => item);
+                });
         }).ToList();
         return Observable.Concat(observableList)
             .Do(item => list.Add(item))

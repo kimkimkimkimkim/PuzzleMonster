@@ -92,11 +92,12 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private IObservable<Unit> FadeInObservable()
     {
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
-            .Do(res =>
+            .SelectMany(res =>
             {
                 battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
                 battleWindow.Init();
                 HeaderFooterManager.Instance.Show(false);
+                return battleWindow.CreatePlayerMonsterObservable(battlePlayerMonsterList);
             })
             .SelectMany(_ => VisualFxManager.Instance.PlayQuestTitleFxObservable(quest.name))
             .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0));
