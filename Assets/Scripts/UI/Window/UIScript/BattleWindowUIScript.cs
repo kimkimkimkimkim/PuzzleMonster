@@ -10,6 +10,8 @@ using UnityEngine.UI;
 [ResourcePath("UI/Window/Window-Battle")]
 public class BattleWindowUIScript : DummyWindowBase
 {
+    public Transform fxParentTransform;
+
     [SerializeField] protected RectTransform _boardPanelRT;
     [SerializeField] protected GridLayoutGroup _boardGridLayoutGroup;
     [SerializeField] protected List<RectTransform> _dragablePieceBaseRTList;

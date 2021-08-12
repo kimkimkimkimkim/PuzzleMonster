@@ -6,6 +6,7 @@ using UniRx;
 using GameBase;
 using UnityEngine;
 using PM.Enum.UI;
+using PM.Enum.Monster;
 
 public class BattleManager: SingletonMonoBehaviour<BattleManager>
 {
@@ -24,7 +25,8 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     private int currentWaveCount;
     private int maxWaveCount;
     private BattleResult battleResult;
-    private List<QuestMonsterItem> questMonsterItemList;
+    private List<QuestMonsterItem> enemyQuestMonsterItemList;
+    private List<QuestMonsterItem> playerQuestMonsterItemList;
     private List<BattleEnemyMonsterInfo> battleEnemyMonsterList;
     private List<BattlePlayerMonsterInfo> battlePlayerMonsterList;
     private BattlePlayerInfo battlePlayer;
@@ -97,7 +99,8 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
                 battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
                 battleWindow.Init();
                 HeaderFooterManager.Instance.Show(false);
-                return battleWindow.CreatePlayerMonsterObservable(battlePlayerMonsterList);
+                return battleWindow.CreatePlayerMonsterObservable(battlePlayerMonsterList)
+                    .Do(list => playerQuestMonsterItemList = list);
             })
             .SelectMany(_ => VisualFxManager.Instance.PlayQuestTitleFxObservable(quest.name))
             .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0));
@@ -219,7 +222,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         }).ToList();
         
         return battleWindow.CreateEnemyObservable(questId, currentWaveCount)
-            .Do(list => questMonsterItemList = list)
+            .Do(list => enemyQuestMonsterItemList = list)
             .AsUnitObservable();
     }
 
@@ -261,24 +264,32 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     {
         // 勝敗がついていれば何もしない
         if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
-        
+
+        var playerMonsterIndex = UnityEngine.Random.Range(0, ConstManager.Battle.MAX_PARTY_MEMBER_NUM);
         var damage = battlePlayerMonsterList.Sum(m => m.attack);
-        var index = battleEnemyMonsterList.FindIndex(m => m.currentHp > 0);
-        var enemyMonsterItem = questMonsterItemList[index];
-        var enemyMonster = battleEnemyMonsterList[index];
+        var enemyMonsterIndex = battleEnemyMonsterList.FindIndex(m => m.currentHp > 0);
+        var enemyMonsterItem = enemyQuestMonsterItemList[enemyMonsterIndex];
+        var enemyMonster = battleEnemyMonsterList[enemyMonsterIndex];
 
         enemyMonster.currentHp -= damage;
 
         JudgeWinOrLose();
 
-        if(enemyMonster.currentHp <= 0)
-        {
-            return VisualFxManager.Instance.PlayDefeatMonsterFxObservable(enemyMonsterItem);
-        }
-        else
-        {
-            return Observable.ReturnUnit();
-        }
+        var fromPosition = playerQuestMonsterItemList[playerMonsterIndex].transform.position;
+        var toPosition = enemyQuestMonsterItemList[enemyMonsterIndex].transform.position;
+
+        return VisualFxManager.Instance.PlayPlayerAttackFxObservable(battleWindow.fxParentTransform, fromPosition, toPosition, MonsterAttribute.Red, 1)
+            .SelectMany(_ =>
+            {
+                if (enemyMonster.currentHp <= 0)
+                {
+                    return VisualFxManager.Instance.PlayDefeatMonsterFxObservable(enemyMonsterItem);
+                }
+                else
+                {
+                    return Observable.ReturnUnit();
+                }
+            });
     }
 
     /// <summary>

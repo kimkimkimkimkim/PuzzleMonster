@@ -37,7 +37,7 @@ namespace GameBase
             }
         }
 
-        public static IObservable<T> InstantiateAsObservable<T>(string key, Transform parent, bool instantiateInWorldSpace = false) where T : MonoBehaviour
+        public static IObservable<T> InstantiateAsObservable<T>(string key, Transform parent, bool instantiateInWorldSpace = false)
         {
             if (AddressableAssetUtil.ContainsAddress(key))
             {

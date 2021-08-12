@@ -183,7 +183,7 @@ RectTransform:
   - {fileID: 6335497249680716571}
   - {fileID: 7972401104183198106}
   m_Father: {fileID: 2731161259198735128}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
@@ -289,6 +289,41 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &1243660613560978875
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2707596173977540506}
+  m_Layer: 5
+  m_Name: FxParent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2707596173977540506
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1243660613560978875}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 2731161259198735128}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: 0, y: 1766.5}
+  m_SizeDelta: {x: -49, y: 708.06323}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1912805498759836487
 GameObject:
   m_ObjectHideFlags: 0
@@ -350,6 +385,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _windowFrameRT: {fileID: 2731161259198735128}
   _fullScreenBaseRT: {fileID: 9068004852698399097}
+  fxParentTransform: {fileID: 2707596173977540506}
   _boardPanelRT: {fileID: 3435083506113171977}
   _boardGridLayoutGroup: {fileID: 9104257707907474729}
   _dragablePieceBaseRTList:
@@ -466,7 +502,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2731161259198735128}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
@@ -563,6 +599,7 @@ RectTransform:
   m_Children:
   - {fileID: 1923605799793994455}
   - {fileID: 7633446153304161817}
+  - {fileID: 2707596173977540506}
   - {fileID: 3435083506113171977}
   - {fileID: 403520839183745208}
   m_Father: {fileID: 7567535075439787020}

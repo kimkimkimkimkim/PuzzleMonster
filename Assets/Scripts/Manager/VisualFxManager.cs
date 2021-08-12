@@ -4,10 +4,10 @@ using GameBase;
 using UniRx;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using PM.Enum.Monster;
 
 public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
 {
-    #region FxItem
     public IObservable<Unit> PlayQuestTitleFxObservable(string title)
     {
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<QuestTitleFx>(FadeManager.Instance.GetFadeCanvasRT())
@@ -52,9 +52,39 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .AsUnitObservable();
             });
     }
-    #endregion
 
-    #region Prefab
+    public IObservable<Unit> PlayPlayerAttackFxObservable(Transform parent, Vector3 fromPosition, Vector3 toPosition, MonsterAttribute attribute, long attackId)
+    {
+        ParticleSystem orbitPS = null;
+        ParticleSystem fxPS = null;
+        return Observable.WhenAll(
+            PMAddressableAssetUtil.InstantiateNormalAttackOrbitObservable(parent, attribute).Do(ps => orbitPS = ps).AsUnitObservable(),
+            PMAddressableAssetUtil.InstantiateNormalAttackFxObservable(parent, attackId).Do(ps => fxPS = ps).AsUnitObservable()
+        )
+            .SelectMany(_ =>
+            {
+                orbitPS.transform.position = new Vector3(fromPosition.x, fromPosition.y, 0);
+                fxPS.transform.position = new Vector3(toPosition.x, toPosition.y, 0);
+
+                return DOTween.Sequence()
+                    .AppendCallback(() => orbitPS.Play())
+                    .Append(orbitPS.transform.DOMoveX(toPosition.x, 0.5f).SetEase(Ease.Linear))
+                    .Join(orbitPS.transform.DOMoveY(toPosition.y, 0.5f).SetEase(Ease.OutQuad))
+                    .AppendCallback(() =>
+                    {
+                        if (orbitPS.gameObject != null) Addressables.ReleaseInstance(orbitPS.gameObject);
+                        fxPS.Play();
+                    })
+                    .AppendInterval(1.0f)
+                    .AppendCallback(() =>
+                    {
+                        if (fxPS.gameObject != null) Addressables.ReleaseInstance(fxPS.gameObject);
+                    })
+                    .OnCompleteAsObservable()
+                    .AsUnitObservable();
+            });
+    }
+
     public IObservable<QuestMonsterItem> PlayCreateMonsterFxObservable(Transform parent, long monsterId)
     {
         // 最初に一度に生成する必要があるため、生成処理はObservableの外に出す
@@ -81,5 +111,4 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             .OnCompleteAsObservable()
             .AsUnitObservable();
     }
-    #endregion
 }
