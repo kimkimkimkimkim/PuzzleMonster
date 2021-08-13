@@ -267,6 +267,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
 
         var playerMonsterIndex = UnityEngine.Random.Range(0, ConstManager.Battle.MAX_PARTY_MEMBER_NUM);
         var damage = battlePlayerMonsterList.Sum(m => m.attack);
+        damage = 1; // TODO
         var enemyMonsterIndex = battleEnemyMonsterList.FindIndex(m => m.currentHp > 0);
         var enemyMonsterItem = enemyQuestMonsterItemList[enemyMonsterIndex];
         var enemyMonster = battleEnemyMonsterList[enemyMonsterIndex];
@@ -278,7 +279,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         var fromPosition = playerQuestMonsterItemList[playerMonsterIndex].transform.position;
         var toPosition = enemyQuestMonsterItemList[enemyMonsterIndex].transform.position;
 
-        return VisualFxManager.Instance.PlayPlayerAttackFxObservable(battleWindow.fxParentTransform, fromPosition, toPosition, MonsterAttribute.Red, 1)
+        var attribute = (MonsterAttribute)UnityEngine.Random.Range(1,6); // TODO
+        var attackId = UnityEngine.Random.Range(1, 16); // TODO
+        return VisualFxManager.Instance.PlayPlayerAttackFxObservable(battleWindow.fxParentTransform, fromPosition, toPosition, attribute, attackId)
             .SelectMany(_ =>
             {
                 if (enemyMonster.currentHp <= 0)
@@ -299,13 +302,17 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     {
         // 勝敗がついていれば何もしない
         if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
-        
+
+        var enemyIndex = battleEnemyMonsterList.FindIndex(m => m.currentHp > 0);
         var damage = battleEnemyMonsterList.Where(m => m.currentHp > 0).Sum(m => 5);
         battlePlayer.currentHp -= damage;
 
         JudgeWinOrLose();
         
-        return Observable.ReturnUnit();
+        if(damage <= 0 || enemyIndex < 0) return Observable.ReturnUnit();
+
+        var item = enemyQuestMonsterItemList[enemyIndex];
+        return VisualFxManager.Instance.PlayEnemyAttackFxObservable(battleWindow.fxParentTransform, item, battleWindow.backgroundImageTransform);
     }
 
     /// <summary>

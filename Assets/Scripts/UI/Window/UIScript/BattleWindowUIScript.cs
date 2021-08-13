@@ -11,6 +11,7 @@ using UnityEngine.UI;
 public class BattleWindowUIScript : DummyWindowBase
 {
     public Transform fxParentTransform;
+    public Transform backgroundImageTransform;
 
     [SerializeField] protected RectTransform _boardPanelRT;
     [SerializeField] protected GridLayoutGroup _boardGridLayoutGroup;

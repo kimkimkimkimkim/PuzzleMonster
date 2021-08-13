@@ -53,6 +53,25 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             });
     }
 
+    public IObservable<Unit> PlayEnemyAttackFxObservable(Transform parent, QuestMonsterItem item, Transform backgroundImageTransform)
+    {
+        var animationTime = 0.25f;
+        var scaleEndValue = 1.4f;
+        var hopDistanceY = 20.0f;
+        var downMagnification = 2f;
+
+        return DOTween.Sequence()
+            .Append(DOTween.Sequence().Append(item.transform.DOLocalMoveY(hopDistanceY, animationTime / 2).SetRelative().SetEase(Ease.OutSine)).Append(item.transform.DOLocalMoveY(-hopDistanceY * downMagnification, animationTime / 2).SetRelative().SetEase(Ease.InSine)))
+            .Join(item.transform.DOScaleX(scaleEndValue, animationTime))
+            .Join(item.transform.DOScaleY(scaleEndValue, animationTime))
+            .Append(backgroundImageTransform.DOShakePosition(0.25f, new Vector3(50,50,0)))
+            .Append(DOTween.Sequence().Append(item.transform.DOLocalMoveY(hopDistanceY * downMagnification, animationTime / 2).SetRelative().SetEase(Ease.OutSine)).Append(item.transform.DOLocalMoveY(-hopDistanceY, animationTime / 2).SetRelative().SetEase(Ease.InSine)))
+            .Join(item.transform.DOScaleX(1, animationTime))
+            .Join(item.transform.DOScaleY(1, animationTime))
+            .OnCompleteAsObservable()
+            .AsUnitObservable();
+    }
+
     public IObservable<Unit> PlayPlayerAttackFxObservable(Transform parent, Vector3 fromPosition, Vector3 toPosition, MonsterAttribute attribute, long attackId)
     {
         ParticleSystem orbitPS = null;
