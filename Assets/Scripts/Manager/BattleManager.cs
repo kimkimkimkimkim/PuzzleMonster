@@ -239,7 +239,15 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
             var pieceId = UnityEngine.Random.Range(1, 6);
             battleWindow.CreateDragablePiece(i, 1);
         }
-        return Observable.ReturnUnit();
+        
+        var observableList = new List<IObservable<Unit>>();
+        for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
+        {
+            var pieceId = UnityEngine.Random.Range(1, 6);
+            observableList.Add(battleWindow.CreateDragablePieceAndPlayAnimationObservable(i, pieceId));
+        }
+        
+        return Observable.WhenAll(observableList).AsUnitObservable();
     }
 
     /// <summary>
