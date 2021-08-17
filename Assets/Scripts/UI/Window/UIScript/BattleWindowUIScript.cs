@@ -6,7 +6,7 @@ using PM.Enum.Battle;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
-using DG.Tween;
+using DG.Tweening;
 
 [ResourcePath("UI/Window/Window-Battle")]
 public class BattleWindowUIScript : DummyWindowBase
@@ -17,7 +17,7 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected RectTransform _boardPanelRT;
     [SerializeField] protected GridLayoutGroup _boardGridLayoutGroup;
     [SerializeField] protected List<RectTransform> _dragablePieceBaseRTList;
-    [serializeField] protected Transform _dragablePieceInitialPositionTransform;
+    [SerializeField] protected Transform _dragablePieceInitialPositionTransform;
     [SerializeField] protected Transform _enemyParentTransform;
     [SerializeField] protected Transform _playerMonsterParentTransform;
 
@@ -105,7 +105,7 @@ public class BattleWindowUIScript : DummyWindowBase
     /// ドラッガブルピースを生成しアニメーションまで実行します
     /// </summary>
     public IObservable<Unit> CreateDragablePieceAndPlayAnimationObservable(int index, long id){
-        var animationTime = 0.5f;
+        var animationTime = 0.1f;
         var ease = Ease.InSine;
         
         var dragablePieceBaseRT = _dragablePieceBaseRTList[index];

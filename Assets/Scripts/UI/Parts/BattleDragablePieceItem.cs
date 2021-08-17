@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
@@ -96,16 +97,16 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     }
 
     public void OnPointerUp(PointerEventData data) {
-        var fitBoardIndexList = GetFitBoardIndexList();
+        var fitBoardIndexList = GetFitBoardIndexList(out BoardIndex boardIndex);
         if (fitBoardIndexList.Any())
         {
             // ピースがハマる場合
-            PlayFitAnimationObservable()
+            PlayFitAnimationObservable(boardIndex)
                 .Do(_ => {
                     BattleManager.Instance.OnPieceFit(index, fitBoardIndexList);
                     Destroy(gameObject);
                 })
-                .Subscibe();
+                .Subscribe();
         }
         else
         {
@@ -118,6 +119,8 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     /// ドラッガブルピースがボードにはまるアニメーションを実行します
     /// </summary>
     private IObservable<Unit> PlayFitAnimationObservable(BoardIndex nearestPieceBoardIndex){
+        var animationTime = 0.1f;
+
         var board = BattleManager.Instance.board;
         var horizontalConstraint = piece.horizontalConstraint;
         var observableList = pieceDataList.Select((p, index) => {
@@ -128,7 +131,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
                 .SelectMany(_ => {
                     var toPosition = board[targetBoardIndex.row, targetBoardIndex.column].transform.position;
                     return DOTween.Sequence()
-                        .Append(p.transform.DOMove(toPosition, ANIMATION_TIME))
+                        .Append(p.pieceItem.transform.DOMove(toPosition, animationTime))
                         .OnCompleteAsObservable()
                         .AsUnitObservable();
                 });
@@ -198,7 +201,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         return truePieceIndexList.Select(index => GetBoardIndex(index)).ToList();
     }
 
-    private List<BoardIndex> GetFitBoardIndexList()
+    private List<BoardIndex> GetFitBoardIndexList(out BoardIndex boardIndex)
     {
         // 一番左上のピース
         var leftUpperPiece = pieceDataList.First().pieceItem;
@@ -220,8 +223,13 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         }
 
         // 左上のピースと最近距離ボードピースとの距離が範囲外だったらその時点で終了
-        if (minDistance > MIN_PIECE_SPAN) return new List<BoardIndex>();
+        if (minDistance > MIN_PIECE_SPAN)
+        {
+            boardIndex = null;
+            return new List<BoardIndex>();
+        }
 
+        boardIndex = nearestBoardPiece.boardIndex;
         return GetFitBoardIndexList(nearestBoardPiece.boardIndex);
     }
 

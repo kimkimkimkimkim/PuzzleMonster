@@ -396,6 +396,7 @@ MonoBehaviour:
   - {fileID: 2878975076783838580}
   - {fileID: 6335497249680716571}
   - {fileID: 7972401104183198106}
+  _dragablePieceInitialPositionTransform: {fileID: 7265726703276830772}
   _enemyParentTransform: {fileID: 1923605799793994455}
   _playerMonsterParentTransform: {fileID: 7633446153304161817}
 --- !u!1 &2085435533960598954
@@ -603,6 +604,7 @@ RectTransform:
   - {fileID: 2707596173977540506}
   - {fileID: 3435083506113171977}
   - {fileID: 403520839183745208}
+  - {fileID: 7265726703276830772}
   m_Father: {fileID: 7567535075439787020}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -894,6 +896,41 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &7576989769417233794
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7265726703276830772}
+  m_Layer: 5
+  m_Name: DragablePieceInitialPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &7265726703276830772
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7576989769417233794}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 2731161259198735128}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: 225, y: 2}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0, y: 1}
 --- !u!1 &7658761091882140629
 GameObject:
   m_ObjectHideFlags: 0

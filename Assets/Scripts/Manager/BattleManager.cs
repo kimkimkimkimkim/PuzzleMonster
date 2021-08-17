@@ -234,12 +234,6 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         // 勝敗がついていれば何もしない
         if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
         
-        for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
-        {
-            var pieceId = UnityEngine.Random.Range(1, 6);
-            battleWindow.CreateDragablePiece(i, 1);
-        }
-        
         var observableList = new List<IObservable<Unit>>();
         for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
         {
