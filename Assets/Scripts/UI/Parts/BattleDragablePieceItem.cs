@@ -100,14 +100,41 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         if (fitBoardIndexList.Any())
         {
             // ピースがハマる場合
-            BattleManager.Instance.OnPieceFit(index, fitBoardIndexList);
-            Destroy(gameObject);
+            PlayFitAnimationObservable()
+                .Do(_ => {
+                    BattleManager.Instance.OnPieceFit(index, fitBoardIndexList);
+                    Destroy(gameObject);
+                })
+                .Subscibe();
         }
         else
         {
             // どこにもハマらないなら初期位置に戻す
             PlayMoveInitialPositionAnimation();
         }
+    }
+    
+    /// <summary>
+    /// ドラッガブルピースがボードにはまるアニメーションを実行します
+    /// </summary>
+    private IObservable<Unit> PlayFitAnimationObservable(BoardIndex nearestPieceBoardIndex){
+        var board = BattleManager.Instance.board;
+        var horizontalConstraint = piece.horizontalConstraint;
+        var observableList = pieceDataList.Select((p, index) => {
+            var additiveRow = index / horizontalConstraint;
+            var additiveColumn = index % horizontalConstraint;
+            var targetBoardIndex = new BoardIndex(nearestPieceBoardIndex.row + additiveRow, nearestPieceBoardIndex.column + additiveColumn);
+            return Observable.ReturnUnit()
+                .SelectMany(_ => {
+                    var toPosition = board[targetBoardIndex.row, targetBoardIndex.column].transform.position;
+                    return DOTween.Sequence()
+                        .Append(p.transform.DOMove(toPosition, ANIMATION_TIME))
+                        .OnCompleteAsObservable()
+                        .AsUnitObservable();
+                });
+        });
+        
+        return Observable.WhenAll(observableList);
     }
 
     private void PlayMoveInitialPositionAnimation()
