@@ -6,6 +6,7 @@ using PM.Enum.Battle;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tween;
 
 [ResourcePath("UI/Window/Window-Battle")]
 public class BattleWindowUIScript : DummyWindowBase
@@ -16,6 +17,7 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected RectTransform _boardPanelRT;
     [SerializeField] protected GridLayoutGroup _boardGridLayoutGroup;
     [SerializeField] protected List<RectTransform> _dragablePieceBaseRTList;
+    [serializeField] protected Transform _dragablePieceInitialPositionTransform;
     [SerializeField] protected Transform _enemyParentTransform;
     [SerializeField] protected Transform _playerMonsterParentTransform;
 
@@ -97,6 +99,27 @@ public class BattleWindowUIScript : DummyWindowBase
         var dragablePiece = UIManager.Instance.CreateContent<BattleDragablePieceItem>(dragablePieceBaseRT);
         dragablePiece.SetPiece(index, BOARD_PIECE_SPACE, pieceWidth, id);
         BattleManager.Instance.dragablePieceList[index] = dragablePiece;
+    }
+    
+    /// <summary>
+    /// ドラッガブルピースを生成しアニメーションまで実行します
+    /// </summary>
+    public IObservable<Unit> CreateDragablePieceAndPlayAnimationObservable(int index, long id){
+        var animationTime = 0.5f;
+        var ease = Ease.InSine;
+        
+        var dragablePieceBaseRT = _dragablePieceBaseRTList[index];
+        var dragablePiece = UIManager.Instance.CreateContent<BattleDragablePieceItem>(dragablePieceBaseRT);
+        dragablePiece.transform.position = _dragablePieceInitialPositionTransform.position;
+        dragablePiece.SetPiece(index, BOARD_PIECE_SPACE, pieceWidth, id);
+        BattleManager.Instance.dragablePieceList[index] = dragablePiece;
+        
+        UIManager.Instance.ShowTapBlocker();
+        return DOTween.Sequence()
+            .Append(dragablePiece.transform.DOMove(dragablePieceBaseRT.position, animationTime).SetEase(ease))
+            .OnCompleteAsObservable()
+            .Do(_ => UIManager.Instance.TryHideTapBlocker())
+            .AsUnitObservable();
     }
 
     private void SetBoard()
