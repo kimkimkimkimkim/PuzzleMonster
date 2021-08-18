@@ -8,6 +8,8 @@ using PM.Enum.Monster;
 
 public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
 {
+    // FxItemは基本的に初期状態でSetActiveがfalseにしてある
+    #region FxItem
     /// <summary>
     /// クエストタイトル表示演出を実行
     /// </summary>
@@ -62,7 +64,51 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .AsUnitObservable();
             });
     }
+    
+    /// <summary>
+    /// バトル勝利演出を実行
+    /// </summary>
+    public IObservable<Unit> PlayWinBattleFxObservable(Transform parent)
+    {
+        var animationTime = 0.5f;
+        var delayTime = 0.1f;
+        var moveXEase = Ease.InSine;
+        var moveYEase = Ease.OutSine;
+        var fadeEase = Ease.InQuard;
+        
+        UIManager.Instance.ShowTapBlocker();
+        return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<WinBattleFx>(parent)
+            .SelectMany(fx => {
+                var initialPosition = fx.textInitialPositionTransform.position;
+                var toPositionList = new List<Vector3>();
+                fx.textList.ForEach(text => {
+                    text.SetAlpha(0);
+                    toPositionList.Add(text.transform.position);
+                    text.transform.position = initialPosition;
+                });
+                fx.gameObject.SetActive(true);
+                
+                var observableList = fx.textList.Select((text, index) => {
+                    var toPosition = toPositionList[index];
+                    
+                    return Observable.Delay(TimeSpan.FromSeconds(delayTime * index))
+                        .SelectMany(_ => {
+                            return DOTween.Sequence()
+                                .Append(text.transformDOMoveX(toPosition.x, animationTime).SetEase(moveXEase))
+                                .Join(text.transformDOMoveY(toPosition.y, animationTime).SetEase(moveYEase))
+                                .Join(DOVirtual.Float(0.0f, 1.0f, animationTime, value => text.SetAlpha(value)).SetEase(fadeEase))
+                                .OnCompleteAsObservable()
+                                .AsUnitObservable();
+                        });
+                });
 
+                return Observable.WhenAll(observableList);
+            })
+            .Do(_ => UIManager.Instance.TryHideTapBlocker());
+    }
+    #endregion FxItem
+    
+    #region ParticleSystem
     /// <summary>
     /// 敵モンスターの攻撃演出を実行
     /// </summary>
@@ -124,7 +170,9 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .AsUnitObservable();
             });
     }
+    #endregion ParticleSystem
 
+    #region GameObject
     /// <summary>
     /// 敵モンスターの生成演出を実行
     /// </summary>
@@ -296,4 +344,5 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         return Observable.WhenAll(observableList)
             .Do(_ => UIManager.Instance.TryHideTapBlocker());
     }
+    #endregion GameObject
 }
