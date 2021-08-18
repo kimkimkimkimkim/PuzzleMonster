@@ -6,6 +6,8 @@ using UnityEngine.UI;
 [ResourcePath("UI/Parts/Parts-BattlePieceItem")]
 public class BattlePieceItem : MonoBehaviour
 {
+    public CanvasGroup canvasGroup;
+    
     [SerializeField] protected RectTransform _rectTransform;
     [SerializeField] protected Color _darkBrown;
     [SerializeField] protected Color _lightBrown;
