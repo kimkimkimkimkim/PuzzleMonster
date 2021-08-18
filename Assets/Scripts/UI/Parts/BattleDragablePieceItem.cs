@@ -68,25 +68,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
     public void OnPointerDown(PointerEventData data)
     {
         // ドラッガブル内のピースを形に応じた位置に移動させるアニメーション
-        pieceDataList.ForEach(pieceData =>
-        {
-            var targetPosition = pieceData.targetPieceItem.transform.localPosition + new Vector3(0, 250, 0);
-            var targetPieceSize = pieceData.targetPieceItem.GetRectTransform().sizeDelta;
-            var pieceSize = pieceData.pieceItem.GetRectTransform().sizeDelta;
-            var scale = targetPieceSize.x / pieceSize.x; // 現状ピースは正方形なのでxの値だけで指定
-
-            var moveAnimation = pieceData.pieceItem.transform.DOLocalMove(targetPosition, ANIMATION_TIME);
-            var scaleAnimation = pieceData.pieceItem.transform.DOScale(scale, ANIMATION_TIME);
-
-            var sequence = DOTween.Sequence()
-                .Join(moveAnimation)
-                .Join(scaleAnimation);
-
-            UIManager.Instance.ShowTapBlocker();
-            sequence.OnCompleteAsObservable()
-                .Do(_ => UIManager.Instance.TryHideTapBlocker())
-                .Subscribe();
-        });
+        VisualFxManager.Instance.PlayOnPointerDownAtDragablePieceFxObservable(pieceDataList).Subscribe();
     }
 
     public void OnDrag(PointerEventData data)
@@ -101,7 +83,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         if (fitBoardIndexList.Any())
         {
             // ピースがハマる場合
-            PlayFitAnimationObservable(boardIndex)
+            VisualFxManager.Instance.PlayOnDragablePieceFitFxObservable(boardIndex)
                 .Do(_ => {
                     BattleManager.Instance.OnPieceFit(index, fitBoardIndexList);
                     Destroy(gameObject);
@@ -111,61 +93,8 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         else
         {
             // どこにもハマらないなら初期位置に戻す
-            PlayMoveInitialPositionAnimation();
+            VisualFxManager.Instance.PlayDragablePieceMoveInitialPositionFxObservable(transform, pieceDataList).Subscribe();
         }
-    }
-    
-    /// <summary>
-    /// ドラッガブルピースがボードにはまるアニメーションを実行します
-    /// </summary>
-    private IObservable<Unit> PlayFitAnimationObservable(BoardIndex nearestPieceBoardIndex){
-        var animationTime = 0.1f;
-
-        var board = BattleManager.Instance.board;
-        var horizontalConstraint = piece.horizontalConstraint;
-        var observableList = pieceDataList.Select((p, index) => {
-            var additiveRow = index / horizontalConstraint;
-            var additiveColumn = index % horizontalConstraint;
-            var targetBoardIndex = new BoardIndex(nearestPieceBoardIndex.row + additiveRow, nearestPieceBoardIndex.column + additiveColumn);
-            return Observable.ReturnUnit()
-                .SelectMany(_ => {
-                    var toPosition = board[targetBoardIndex.row, targetBoardIndex.column].transform.position;
-                    return DOTween.Sequence()
-                        .Append(p.pieceItem.transform.DOMove(toPosition, animationTime))
-                        .OnCompleteAsObservable()
-                        .AsUnitObservable();
-                });
-        });
-        
-        return Observable.WhenAll(observableList);
-    }
-
-    private void PlayMoveInitialPositionAnimation()
-    {
-        // ドラッガブル内のピースの位置元に戻すアニメーション
-        pieceDataList.ForEach(pieceData =>
-        {
-            var moveAnimation = pieceData.pieceItem.transform.DOLocalMove(pieceData.initialPos, ANIMATION_TIME);
-            var scaleAnimation = pieceData.pieceItem.transform.DOScale(1, ANIMATION_TIME);
-
-            var sequence = DOTween.Sequence()
-                .Join(moveAnimation)
-                .Join(scaleAnimation);
-
-            UIManager.Instance.ShowTapBlocker();
-            sequence.OnCompleteAsObservable()
-                .Do(_ => UIManager.Instance.TryHideTapBlocker())
-                .AsUnitObservable();
-        });
-
-        // ドラッガブルピースを元の位置に戻すアニメーション
-        UIManager.Instance.ShowTapBlocker();
-        DOTween.Sequence()
-            .Join(transform.DOLocalMove(new Vector3(0, 0, 0), ANIMATION_TIME))
-            .OnCompleteAsObservable()
-            .Do(_ => UIManager.Instance.TryHideTapBlocker())
-            .AsUnitObservable()
-            .Subscribe();
     }
 
     /// <summary>
@@ -300,11 +229,11 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
             .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .Subscribe();
     }
+}
 
-    private class PieceData
-    {
-        public BattlePieceItem pieceItem { get; set; }
-        public BattlePieceItem targetPieceItem { get; set; }
-        public Vector3 initialPos { get; set; }
-    }
+public class PieceData
+{
+    public BattlePieceItem pieceItem { get; set; }
+    public BattlePieceItem targetPieceItem { get; set; }
+    public Vector3 initialPos { get; set; }
 }
