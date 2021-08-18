@@ -254,4 +254,46 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         )
             .Do(_ => UIManager.Instance.TryHideTapBlocker());
     }
+    
+    /// <summary>
+    /// ピース破壊演出を実行
+    /// </summary>
+    public IObservable<Unit> PlayCrashPieceFxObservabe(List<int> crashRowIndexList, List<int> crashColumnIndexList)
+    {
+        var animationTime = 0.5;
+        
+        // 破壊するピースのボードインデックスを作成
+        var crashBoardIndexList = new List<BoardIndex>();
+        crashRowIndexList.ForEach(rowIndex => {
+            for (var columnIndex = 0; columnIndex < ConstManager.Battle.BOARD_WIDTH; columnIndex++)
+            {
+                crashBoardIndexList.Add(new BoardIndex(rowIndex, columnIndex));
+            }
+        });
+        crashColumnIndexList.ForEach(columnIndex => {
+            for (var rowIndex = 0; rowIndex < ConstManager.Battle.BOARD_HEIGHT; rowIndex++)
+            {
+                // 重複の無いようにする
+                if(!crashRowIndexList.Contains(rowIndex)){
+                    crashBoardIndexList.Add(new BoardIndex(rowIndex, columnIndex));
+                }
+            }
+        });
+        
+        var observableList = crashBoardIndexList.Select(boardIndex => {
+            return Observable.ReturnUnit()
+                .SelectMane(_ => {
+                    var boardPieceItem = BattleManager.Instance.board[boardIndex.row, boardIndex.column];
+                    var canvasGroup = boardPieceItem.canvasGroup;
+                    return DOTween.Sequence()
+                        .Append(canvasGroup.DOFade(0.0f, animationTime)
+                        .OnCompleteAsObservable()
+                        .AsUnitObservable();
+                })
+        })
+        
+        UIManager.Instance.ShowTapBlocker();
+        return Observable.WhenAll(observableList)
+            .Do(_ => UIManager.Instance.TryHideTapBlocker());
+    }
 }
