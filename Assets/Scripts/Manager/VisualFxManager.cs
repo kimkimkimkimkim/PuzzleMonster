@@ -5,6 +5,8 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using PM.Enum.Monster;
+using System.Collections.Generic;
+using System.Linq;
 
 public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
 {
@@ -74,7 +76,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         var delayTime = 0.1f;
         var moveXEase = Ease.InSine;
         var moveYEase = Ease.OutSine;
-        var fadeEase = Ease.InQuard;
+        var fadeEase = Ease.InQuad;
         
         UIManager.Instance.ShowTapBlocker();
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<WinBattleFx>(parent)
@@ -91,11 +93,11 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                 var observableList = fx.textList.Select((text, index) => {
                     var toPosition = toPositionList[index];
                     
-                    return Observable.Delay(TimeSpan.FromSeconds(delayTime * index))
+                    return Observable.Timer(TimeSpan.FromSeconds(delayTime * index))
                         .SelectMany(_ => {
                             return DOTween.Sequence()
-                                .Append(text.transformDOMoveX(toPosition.x, animationTime).SetEase(moveXEase))
-                                .Join(text.transformDOMoveY(toPosition.y, animationTime).SetEase(moveYEase))
+                                .Append(text.transform.DOMoveX(toPosition.x, animationTime).SetEase(moveXEase))
+                                .Join(text.transform.DOMoveY(toPosition.y, animationTime).SetEase(moveYEase))
                                 .Join(DOVirtual.Float(0.0f, 1.0f, animationTime, value => text.SetAlpha(value)).SetEase(fadeEase))
                                 .OnCompleteAsObservable()
                                 .AsUnitObservable();
@@ -229,7 +231,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                 .SelectMany(_ => {
                     return DOTween.Sequence()
                         .Join(pieceData.pieceItem.transform.DOLocalMove(targetPosition, animationTime))
-                        .Join(pieceData.pieceItem.transform.DOScale(scale, animationTime));
+                        .Join(pieceData.pieceItem.transform.DOScale(scale, animationTime))
                         .OnCompleteAsObservable()
                         .AsUnitObservable();
                 });
@@ -243,7 +245,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     /// <summary>
     /// ドラッガブルピースが盤面にはまる際の演出を実行
     /// </summary>
-    public IObservable<Unit> PlayOnDragablePieceFitFxObservable(BoardIndex nearestPieceBoardIndex)
+    public IObservable<Unit> PlayOnDragablePieceFitFxObservable(BoardIndex nearestPieceBoardIndex, PieceMB piece, List<PieceData> pieceDataList)
     {
         var animationTime = 0.1f;
 
@@ -282,33 +284,36 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                 .SelectMany(_ => {
                     return DOTween.Sequence()
                         .Join(pieceData.pieceItem.transform.DOLocalMove(pieceData.initialPos, animationTime))
-                        .Join(pieceData.pieceItem.transform.DOScale(1, animationTime));
+                        .Join(pieceData.pieceItem.transform.DOScale(1, animationTime))
+                        .OnCompleteAsObservable()
+                        .AsUnitObservable();
                 })
                 .AsUnitObservable();
-        });
-        
+        }).ToList();
+
         // ドラッガブルピースを元の位置に戻すアニメーション
         var observable = Observable.ReturnUnit()
             .SelectMany(_ => {
                 return DOTween.Sequence()
-                    .Append(dragablePieceTransform..DOLocalMove(new Vector3(0, 0, 0), animationTime))
+                    .Append(dragablePieceTransform.DOLocalMove(new Vector3(0, 0, 0), animationTime))
+                    .OnCompleteAsObservable()
+                    .AsUnitObservable();
             })
             .AsUnitObservable();
+
+        observableList.Add(observable);
             
         UIManager.Instance.ShowTapBlocker();
-        return Observable.WhenAll(
-            observableList,
-            observable
-        )
+        return Observable.WhenAll(observableList)
             .Do(_ => UIManager.Instance.TryHideTapBlocker());
     }
-    
+
     /// <summary>
     /// ピース破壊演出を実行
     /// </summary>
     public IObservable<Unit> PlayCrashPieceFxObservabe(List<int> crashRowIndexList, List<int> crashColumnIndexList)
     {
-        var animationTime = 0.5;
+        var animationTime = 0.5f;
         
         // 破壊するピースのボードインデックスを作成
         var crashBoardIndexList = new List<BoardIndex>();
@@ -327,18 +332,19 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                 }
             }
         });
-        
+
         var observableList = crashBoardIndexList.Select(boardIndex => {
             return Observable.ReturnUnit()
-                .SelectMane(_ => {
+                .SelectMany(_ =>
+                {
                     var boardPieceItem = BattleManager.Instance.board[boardIndex.row, boardIndex.column];
                     var canvasGroup = boardPieceItem.canvasGroup;
                     return DOTween.Sequence()
-                        .Append(canvasGroup.DOFade(0.0f, animationTime)
+                        .Append(canvasGroup.DOFade(0.0f, animationTime))
                         .OnCompleteAsObservable()
                         .AsUnitObservable();
-                })
-        })
+                });
+        });
         
         UIManager.Instance.ShowTapBlocker();
         return Observable.WhenAll(observableList)

@@ -83,7 +83,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         if (fitBoardIndexList.Any())
         {
             // ピースがハマる場合
-            VisualFxManager.Instance.PlayOnDragablePieceFitFxObservable(boardIndex)
+            VisualFxManager.Instance.PlayOnDragablePieceFitFxObservable(boardIndex, piece, pieceDataList)
                 .Do(_ => {
                     BattleManager.Instance.OnPieceFit(index, fitBoardIndexList);
                     Destroy(gameObject);

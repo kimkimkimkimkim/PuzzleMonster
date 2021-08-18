@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2220773501592828289}
   - component: {fileID: 7429041711346792059}
   - component: {fileID: 6788725288924808453}
+  - component: {fileID: 7901739963250943047}
   m_Layer: 5
   m_Name: Parts-BattleBoardPieceItem
   m_TagString: Untagged
@@ -87,6 +88,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2d27fa998e1d4881bf0fdc900bf274a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvasGroup: {fileID: 7901739963250943047}
+  _rectTransform: {fileID: 0}
   _darkBrown: {r: 0.4509804, g: 0.2784314, b: 0.07450981, a: 1}
   _lightBrown: {r: 1, g: 0.86695653, b: 0.6084906, a: 1}
   _image: {fileID: 7429041711346792059}
+--- !u!225 &7901739963250943047
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5764397924398222934}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0

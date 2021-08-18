@@ -14,7 +14,9 @@ public class BattleWindowUIScript : DummyWindowBase
     public Transform fxParentTransform;
     public Transform backgroundImageTransform;
 
+    [SerializeField] protected RectTransform _dummyBoardPanelRT;
     [SerializeField] protected RectTransform _boardPanelRT;
+    [SerializeField] protected GridLayoutGroup _dummyBoardGridLayoutGroup;
     [SerializeField] protected GridLayoutGroup _boardGridLayoutGroup;
     [SerializeField] protected List<RectTransform> _dragablePieceBaseRTList;
     [SerializeField] protected Transform _dragablePieceInitialPositionTransform;
@@ -41,6 +43,18 @@ public class BattleWindowUIScript : DummyWindowBase
                 boardPiece.SetColor(PieceColor.DarkBrown);
                 boardPiece.SetBoardIndex(new BoardIndex(i, j));
                 BattleManager.Instance.board[i, j] = boardPiece;
+            }
+        }
+
+        // 背景用のダミーボードも作成
+        for (var i = 0; i < BOARD_HEIGHT; i++)
+        {
+            for (var j = 0; j < BOARD_WIDTH; j++)
+            {
+                var boardPiece = UIManager.Instance.CreateContent<BattleBoardPieceItem>(_dummyBoardPanelRT);
+                boardPiece.SetPieceStatus(PieceStatus.Free);
+                boardPiece.SetColor(PieceColor.DarkBrown);
+                boardPiece.SetBoardIndex(new BoardIndex(i, j));
             }
         }
     }
@@ -130,5 +144,9 @@ public class BattleWindowUIScript : DummyWindowBase
         _boardGridLayoutGroup.cellSize = new Vector2(pieceWidth, pieceWidth);
         _boardGridLayoutGroup.spacing = new Vector2(BOARD_PIECE_SPACE, BOARD_PIECE_SPACE);
         _boardGridLayoutGroup.padding = new RectOffset(BOARD_PIECE_SPACE, BOARD_PIECE_SPACE, BOARD_PIECE_SPACE, BOARD_PIECE_SPACE);
+
+        _dummyBoardGridLayoutGroup.cellSize = new Vector2(pieceWidth, pieceWidth);
+        _dummyBoardGridLayoutGroup.spacing = new Vector2(BOARD_PIECE_SPACE, BOARD_PIECE_SPACE);
+        _dummyBoardGridLayoutGroup.padding = new RectOffset(BOARD_PIECE_SPACE, BOARD_PIECE_SPACE, BOARD_PIECE_SPACE, BOARD_PIECE_SPACE);
     }
 }

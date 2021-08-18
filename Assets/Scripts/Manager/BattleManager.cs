@@ -111,12 +111,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private IObservable<Unit> ShowResultDialogObservable()
     {
-        var content = $"{(battleResult.wol == WinOrLose.Win ? "勝利" : "敗北")}しました";
-        return CommonDialogFactory.Create(new CommonDialogRequest(){
-            title = "バトル結果",
-            content = content,
-            commonDialogType = CommonDialogType.YesOnly,
-        }).AsUnitObservable();
+        return VisualFxManager.Instance.PlayWinBattleFxObservable(battleWindow._windowFrameRT);
     }
 
     /// <summary>
@@ -268,8 +263,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         if(battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
 
         var playerMonsterIndex = UnityEngine.Random.Range(0, ConstManager.Battle.MAX_PARTY_MEMBER_NUM);
-        var damage = battlePlayerMonsterList.Sum(m => m.attack);
-        damage = 1; // TODO
+        var damage = battlePlayerMonsterList.Sum(m => m.attack); // TODO
         var enemyMonsterIndex = battleEnemyMonsterList.FindIndex(m => m.currentHp > 0);
         var enemyMonsterItem = enemyQuestMonsterItemList[enemyMonsterIndex];
         var enemyMonster = battleEnemyMonsterList[enemyMonsterIndex];
@@ -466,7 +460,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         }
         
         // ピース破壊演出を再生
-        return VisualFxManager.Intance.PlayCrashPieceFxObservabe(crashRowIndexList, crashColumnIndexList)
+        return VisualFxManager.Instance.PlayCrashPieceFxObservabe(crashRowIndexList, crashColumnIndexList)
             .Do(_ => {
                 // UIを更新
                 UpdateBoard();
