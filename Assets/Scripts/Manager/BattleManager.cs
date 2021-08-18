@@ -374,28 +374,30 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
         dragablePieceList[dragablePieceIndex] = null;
 
         Fit(fitBoardIndexList);
-        Crash();
         
-        JudgeWinOrLose();
-        
-        // 勝敗がついていれば次の処理へ
-        if(battleResult.wol != WinOrLose.Continue) {
-            pieceMoveObserver.OnNext(Unit.Default);
-            pieceMoveObserver.OnCompleted();
-            pieceMoveObserver = null;
-            return;
-        }
-        
+        CrashObservable()
+            .Do(_ => {
+                JudgeWinOrLose();
 
-        // 全てのピースをはめ終わったら次の処理へ
-        if (currentMoveCountPerTurn == ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
-        {
-            currentMoveCountPerTurn = 0;
-            pieceMoveObserver.OnNext(Unit.Default);
-            pieceMoveObserver.OnCompleted();
-            pieceMoveObserver = null;
-            return;
-        }
+                // 勝敗がついていれば次の処理へ
+                if(battleResult.wol != WinOrLose.Continue) {
+                    pieceMoveObserver.OnNext(Unit.Default);
+                    pieceMoveObserver.OnCompleted();
+                    pieceMoveObserver = null;
+                    return;
+                }
+
+                // 全てのピースをはめ終わったら次の処理へ
+                if (currentMoveCountPerTurn == ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
+                {
+                    currentMoveCountPerTurn = 0;
+                    pieceMoveObserver.OnNext(Unit.Default);
+                    pieceMoveObserver.OnCompleted();
+                    pieceMoveObserver = null;
+                    return;
+                }
+            })
+            .Subscribe();
     }
 
     /// <summary>
@@ -410,6 +412,9 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
                 var piece = board[i, j];
                 var color = piece.GetPieceStatus() == PieceStatus.Normal ? PieceColor.LightBrown : PieceColor.DarkBrown;
                 piece.SetColor(color);
+                
+                // アニメーションの都合上CanvasGroupのアルファが0になっていることがあるので1に戻す
+                piece.canvasGroup.alpha = 1;
             }
         }
     }
@@ -426,7 +431,7 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 揃った列を壊す
     /// </summary>
-    private void Crash()
+    private IObservable<Unit> CrashObservable()
     {
         var crashRowIndexList = new List<int>();
         var crashColumnIndexList = new List<int>();
@@ -459,9 +464,13 @@ public class BattleManager: SingletonMonoBehaviour<BattleManager>
                 if (crashRowIndexList.Contains(i) || crashColumnIndexList.Contains(j)) board[i, j].SetPieceStatus(PieceStatus.Free);
             }
         }
-
-        // UIを更新
-        UpdateBoard();
+        
+        // ピース破壊演出を再生
+        return VisualFxManager.Intance.PlayCrashPieceFxObservabe(crashRowIndexList, crashColumnIndexList)
+            .Do(_ => {
+                // UIを更新
+                UpdateBoard();
+            });
     }
 
     /// <summary>
