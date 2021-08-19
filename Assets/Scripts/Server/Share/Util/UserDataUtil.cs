@@ -34,7 +34,7 @@ public static class UserDataUtil
     /// <summary>
     /// GetUserDataApiのレスポンスからユーザーデータを作成します
     /// </summary>
-#if UNITY_EDITOR || UNITY_IOS || UNITY_ANDROID
+#if UNITY_EDITOR || UNITY_IOS || UNITY_ANDROID || UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN
     public static UserDataInfo GetUserData(Dictionary<string, PlayFab.ClientModels.UserDataRecord> dict)
 #else
     public static UserDataInfo GetUserData(Dictionary<string, PlayFab.ServerModels.UserDataRecord> dict)
@@ -49,7 +49,7 @@ public static class UserDataUtil
     /// <summary>
     /// GetUserInventoryApiのレスポンスからユーザー仮想通貨情報を作成します
     /// </summary>
-#if UNITY_EDITOR || UNITY_IOS || UNITY_ANDROID
+#if UNITY_EDITOR || UNITY_IOS || UNITY_ANDROID || UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN
     public static UserVirtualCurrencyInfo GetUserVirutalCurrency(PlayFab.ClientModels.GetUserInventoryResult result)
 #else
     public static UserVirtualCurrencyInfo GetUserVirutalCurrency(PlayFab.ServerModels.GetUserInventoryResult result)
@@ -68,7 +68,7 @@ public static class UserDataUtil
     /// <summary>
     /// GetUserInventoryApiのレスポンスからユーザーインベントリを作成します
     /// </summary>
-#if UNITY_EDITOR || UNITY_IOS || UNITY_ANDROID
+#if UNITY_EDITOR || UNITY_IOS || UNITY_ANDROID || UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN
     public static UserInventoryInfo GetUserInventory(PlayFab.ClientModels.GetUserInventoryResult result)
 #else
     public static UserInventoryInfo GetUserInventory(PlayFab.ServerModels.GetUserInventoryResult result)

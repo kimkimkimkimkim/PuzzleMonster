@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_DefaultGroup: 47259024658e048b4a139e80739efba5
   m_OptimizeCatalogSize: 0
-  m_BuildRemoteCatalog: 0
+  m_BuildRemoteCatalog: 1
   m_BundleLocalCatalog: 0
   m_DisableCatalogUpdateOnStart: 0
   m_IgnoreUnsupportedFilesInBuild: 0
@@ -22,13 +22,17 @@ MonoBehaviour:
   m_maxConcurrentWebRequests: 500
   m_ContiguousBundles: 0
   m_RemoteCatalogBuildPath:
-    m_Id: 
+    m_Id: 8281e346fad224efd9ae2ea5db7935da
   m_RemoteCatalogLoadPath:
-    m_Id: 
+    m_Id: 11437d34d0fed4748a947c08fb77682a
   m_overridePlayerVersion: 
   m_GroupAssets:
   - {fileID: 11400000, guid: fc7ec18a0f0c645f897ed321dc85cb49, type: 2}
   - {fileID: 11400000, guid: ffeb89ab9874648bf96a02db9086edb6, type: 2}
+  - {fileID: 11400000, guid: 6a70565632312482cb526bce58f6d562, type: 2}
+  - {fileID: 11400000, guid: 6113cf240d84443be8d68ba8d25eb8e0, type: 2}
+  - {fileID: 11400000, guid: 48ead933413df40049774b5128922195, type: 2}
+  - {fileID: 11400000, guid: aaded41a43e204357b6c7d1015495b88, type: 2}
   m_BuildSettings:
     m_CompileScriptsInVirtualMode: 0
     m_CleanupStreamingAssetsAfterBuilds: 1
@@ -49,7 +53,7 @@ MonoBehaviour:
       - m_Id: 8281e346fad224efd9ae2ea5db7935da
         m_Value: ServerData/[BuildTarget]
       - m_Id: 11437d34d0fed4748a947c08fb77682a
-        m_Value: http://localhost/[BuildTarget]
+        m_Value: https://puzzle-monster-resources.s3.amazonaws.com/AssetBundle/[BuildTarget]
     m_ProfileEntryNames:
     - m_Id: d7a38b02248134ae393d3951821d0973
       m_Name: BuildTarget

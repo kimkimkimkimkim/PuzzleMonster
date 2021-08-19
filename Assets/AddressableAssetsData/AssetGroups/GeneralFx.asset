@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: GeneralFx
+  m_EditorClassIdentifier: 
+  m_GroupName: GeneralFx
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 963380424504b40e28f4065f71ab5d30
+  m_SerializeEntries:
+  - m_GUID: aa952ebca1b97410890f1f6ba69bd81a
+    m_Address: Assets/Contents/PMResources/VisualFx/QuestTitleFx.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    m_MainAsset: {fileID: 3710203903021782902, guid: aa952ebca1b97410890f1f6ba69bd81a,
+      type: 3}
+    m_TargetAsset: {fileID: 3710203903021782902, guid: aa952ebca1b97410890f1f6ba69bd81a,
+      type: 3}
+  - m_GUID: 503f2c9cfda534b79b8cb0ee998b2026
+    m_Address: Assets/Contents/PMResources/VisualFx/WaveTitleFx.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    m_MainAsset: {fileID: 8212144921095194711, guid: 503f2c9cfda534b79b8cb0ee998b2026,
+      type: 3}
+    m_TargetAsset: {fileID: 8212144921095194711, guid: 503f2c9cfda534b79b8cb0ee998b2026,
+      type: 3}
+  - m_GUID: 4b9d52c6852b7457e8a3183de1716d2d
+    m_Address: Assets/Contents/PMResources/VisualFx/WinBattleFx.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    m_MainAsset: {fileID: 566046833130715762, guid: 4b9d52c6852b7457e8a3183de1716d2d,
+      type: 3}
+    m_TargetAsset: {fileID: 566046833130715762, guid: 4b9d52c6852b7457e8a3183de1716d2d,
+      type: 3}
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 7cc64ae56f5264b1bbcac9b21c2420a4, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 9d2e90e6667194025b062644b2f7383a, type: 2}
+    - {fileID: 11400000, guid: 076429b27cc264acdb666df5892d9ad6, type: 2}
