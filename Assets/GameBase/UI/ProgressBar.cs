@@ -26,22 +26,22 @@ namespace GameBase
             this.maxValue = maxValue;
             this.currentValue = currentValue;
 
-            ChangeValueObservable(this.currentValue, 0.0f);
+            ChangeValueObservable(this.currentValue, 0.0f).Subscribe();
         }
 
         public IObservable<Unit> ChangeValueObservable(float toValue, float animationTime = 1.0f, Ease ease = Ease.InOutSine, Action<float> onValueChangeAction = null)
         {
-            UIManager.Instance.ShowTapBlocker();
             return DOTween.Sequence()
                 .Append(DOVirtual.Float(currentValue, toValue, animationTime, value =>
                 {
+                    currentValue = value;
+                    
                     var ratio = value / maxValue;
                     _progressBarRT.sizeDelta = new Vector2(maxWidth * ratio, _progressBarRT.rect.height);
 
                     if (onValueChangeAction != null) onValueChangeAction(value);
                 }).SetEase(ease))
                 .OnCompleteAsObservable()
-                .Do(_ => UIManager.Instance.TryHideTapBlocker())
                 .AsUnitObservable();
         }
 
