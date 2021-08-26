@@ -275,6 +275,6 @@ public partial class PlayFabDataPublisher : EditorWindow
         jsonStr = jsonStr.Remove(jsonStr.Length - 1);
         jsonStr += "]";
 
-        return jsonStr != "]" ? jsonStr : "";
+        return jsonStr != "]" ? jsonStr : "[]";
     }
 }
