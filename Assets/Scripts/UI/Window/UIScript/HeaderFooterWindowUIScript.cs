@@ -7,14 +7,15 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using TMPro;
 
 [ResourcePath("UI/Window/Window-HeaderFooter")]
 public class HeaderFooterWindowUIScript : WindowBase
 {
-    [SerializeField] protected Text _coinText;
-    [SerializeField] protected Text _orbText;
-    [SerializeField] protected Text _staminaText;
-    [SerializeField] protected Text _staminaCountdownText;
+    [SerializeField] protected TextMeshProUGUI _orbText;
+    [SerializeField] protected TextMeshProUGUI _coinText;
+    [SerializeField] protected TextMeshProUGUI _staminaText;
+    [SerializeField] protected TextMeshProUGUI _staminaCountdownText;
     [SerializeField] protected Toggle _homeToggle;
     [SerializeField] protected Toggle _monsterToggle;
     [SerializeField] protected Toggle _gachaToggle;
