@@ -249,7 +249,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     {
         var animationTime = 0.1f;
 
-        var board = BattleManager.Instance.board;
+        var board = BattlePuzzleManager.Instance.board;
         var horizontalConstraint = piece.horizontalConstraint;
         var observableList = pieceDataList.Select((p, index) => {
             var additiveRow = index / horizontalConstraint;
@@ -337,7 +337,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             return Observable.ReturnUnit()
                 .SelectMany(_ =>
                 {
-                    var boardPieceItem = BattleManager.Instance.board[boardIndex.row, boardIndex.column];
+                    var boardPieceItem = BattlePuzzleManager.Instance.board[boardIndex.row, boardIndex.column];
                     var canvasGroup = boardPieceItem.canvasGroup;
                     return DOTween.Sequence()
                         .Append(canvasGroup.DOFade(0.0f, animationTime))

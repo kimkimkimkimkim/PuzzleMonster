@@ -85,7 +85,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
             // ピースがハマる場合
             VisualFxManager.Instance.PlayOnDragablePieceFitFxObservable(boardIndex, piece, pieceDataList)
                 .Do(_ => {
-                    BattleManager.Instance.OnPieceFit(index, fitBoardIndexList);
+                    BattlePuzzleManager.Instance.OnPieceFit(index, fitBoardIndexList);
                     Destroy(gameObject);
                 })
                 .Subscribe();
@@ -124,7 +124,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
             }).ToList();
         var fitBoardIndexList = truePieceIndexList.Select(index => GetBoardIndex(index)).ToList();
 
-        var isOverlaped = fitBoardIndexList.Any(i => BattleManager.Instance.board[i.row, i.column].GetPieceStatus() != PieceStatus.Free);
+        var isOverlaped = fitBoardIndexList.Any(i => BattlePuzzleManager.Instance.board[i.row, i.column].GetPieceStatus() != PieceStatus.Free);
         if (isOverlaped) return new List<BoardIndex>();
 
         return truePieceIndexList.Select(index => GetBoardIndex(index)).ToList();
@@ -142,7 +142,7 @@ public class BattleDragablePieceItem : MonoBehaviour, IPointerDownHandler, IDrag
         {
             for (var j = 0; j < ConstManager.Battle.BOARD_WIDTH; j++)
             {
-                var p = BattleManager.Instance.board[i, j];
+                var p = BattlePuzzleManager.Instance.board[i, j];
                 var dist = Get2DDistance(leftUpperPiece.transform.position, p.transform.position);
                 if (dist > minDistance) continue;
 
