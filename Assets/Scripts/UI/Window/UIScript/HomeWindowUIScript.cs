@@ -21,7 +21,7 @@ public class HomeWindowUIScript : WindowBase
     {
         base.Init(info);
 
-        quest = MasterRecord.GetMasterOf<QuestMB>().Get(1); // TODO: 挑戦するクエストの指定処理の追加
+        quest = MasterRecord.GetMasterOf<QuestMB>().Get(2); // TODO: 挑戦するクエストの指定処理の追加
 
         _questButton.OnClickIntentAsObservable()
             .SelectMany(_ => BattleManager.Instance.BattleStartObservable(quest.id, 1)) // TODO: 実際のuserMonsterPartyIdを指定するように

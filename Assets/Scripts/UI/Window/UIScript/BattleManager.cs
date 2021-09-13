@@ -246,6 +246,13 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private void JudgeWinOrLose()
     {
-        battleResult.wol = WinOrLose.Continue;
+        if(currentWaveCount == maxWaveCount)
+        {
+            battleResult.wol = WinOrLose.Win;
+        }
+        else
+        {
+            battleResult.wol = WinOrLose.Continue;
+        }
     }
 }
