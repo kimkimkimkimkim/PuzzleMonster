@@ -84,9 +84,9 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// バトル結果ダイアログを表示する
     /// </summary>
-    private IObservable<Unit> ShowResultDialogObservable()
-    {
-        return VisualFxManager.Instance.PlayWinBattleFxObservable(battleWindow._windowFrameRT);
+    private IObservable<Unit> ShowResultDialogObservable() { 
+        return BattleResultDialogFactory.Create(new BattleResultDialogRequest())
+            .AsUnitObservable();
     }
 
     /// <summary>
