@@ -46,7 +46,7 @@ public class GachaWindowUIScript : WindowBase
                 content = "オーブを0個使用してガチャを1回まわしますか？",
             })
                 .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-                .SelectMany(_ => ApiConnection.DropItem(gachaBoxDetail.dropTableId))
+                .SelectMany(_ => ApiConnection.DropItem(gachaBoxDetail.bundleId))
                 .SelectMany(res => GachaResultDialogFactory.Create(new GachaResultDialogRequest()
                 {
                     itemList = ItemUtil.GetItemMI(res.itemInstanceList)

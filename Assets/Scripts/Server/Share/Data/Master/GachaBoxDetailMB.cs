@@ -11,17 +11,12 @@ public class GachaBoxDetailMB : MasterBookBase
     public long gachaBoxId { get; set; }
 
     /// <summary>
-    /// PlayFabで設定しているドロップテーブルID
+    /// PlayFabで設定しているバンドルID
     /// </summary>
-    public string dropTableId { get; set; }
+    public string bundleId { get; set; }
 
     /// <summary>
     /// 必要アイテムリスト
     /// </summary>
     public List<ItemMI> requiredItemList { get; set; }
-
-    /// <summary>
-    /// 排出するモンスターの数
-    /// </summary>
-    public int dropNum { get; set; }
 }
