@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using GameBase;
@@ -10,7 +11,6 @@ using UnityEngine;
 public class GachaWindowUIScript : WindowBase
 {
     [SerializeField] protected InfiniteScroll _infiniteScroll;
-    [SerializeField] protected Transform _executeButtonBase;
 
     private List<GachaBoxMB> gachaBoxList;
 
@@ -39,13 +39,17 @@ public class GachaWindowUIScript : WindowBase
         var gachaBoxDetailList = MasterRecord.GetMasterOf<GachaBoxDetailMB>().GetAll().Where(m => m.gachaBoxId == gachaBox.id).ToList();
         
         gachaBoxDetailList.ForEach(gachaBoxDetail => {
-            var gachaExecuteButton = UIManager.Instance.CreateContent<GachaExecuteButton>(_buttonBase);
-            gachaExecuteButton.Init(gachaBoxDetail);
-            gachaExecuteButton.SetOnClickAction(() => OnClickGachaExecute(gachaBoxDetail));
+            var gachaExecuteButton = UIManager.Instance.CreateContent<GachaExecuteButton>(scrollItem._executeButtonBase);
+            var title = gachaBoxDetail.title;
+            var cost = gachaBoxDetail.requiredItemList.First().num.ToString();
+
+            gachaExecuteButton.SetText(title);
+            gachaExecuteButton.SetCostText(cost);
+            gachaExecuteButton.SetOnClickAction(() => OnClickGachaExecuteButtonAction(gachaBoxDetail));
         });
     }
-    
-    private void OnClickGachaExecuteButtonAction(GachaBoxDetailMB gachaBoxDetail){
+
+    private void OnClickGachaExecuteButtonAction(GachaBoxDetailMB gachaBoxDetail) {
         CommonDialogFactory.Create(new CommonDialogRequest()
         {
             commonDialogType = CommonDialogType.NoAndYes,
@@ -53,12 +57,18 @@ public class GachaWindowUIScript : WindowBase
             content = "オーブを0個使用してガチャを1回まわしますか？",
         })
             .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-            //.SelectMany(_ => ApiConnection.DropItem(gachaBoxDetail.dropTableId))
+            .SelectMany(_ => ExecuteGachaObservable())
             .SelectMany(res => GachaResultDialogFactory.Create(new GachaResultDialogRequest()
             {
                 itemList = ItemUtil.GetItemMI(res.itemInstanceList)
             }))
             .Subscribe();
+    }
+
+    private IObservable<GrantItemsToUserApiResponse> ExecuteGachaObservable()
+    {
+        var itemIdList = new List<string>() { "Bundle3001001" };
+        return ApiConnection.GrantItemsToUser(itemIdList);
     }
 
     public override void Open(WindowInfo info)
