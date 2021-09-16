@@ -41,7 +41,7 @@ public class BattlePuzzleManager: SingletonMonoBehaviour<BattlePuzzleManager>
         currentTurnCount = 0;
         currentTurnCountInWave = 0;
         currentWaveCount = 0;
-        maxWaveCount = quest.wave3QuestMonsterIdList.Any() ? 3 : quest.wave2QuestMonsterIdList.Any() ? 2 : 1;
+        maxWaveCount = quest.questWaveIdList.Count;
         battleResult = new BattleResult() { wol = WinOrLose.Continue };
         battleEnemyMonsterList = new List<BattleEnemyMonsterInfo>();
         battlePlayerMonsterList = new List<BattlePlayerMonsterInfo>(){
@@ -209,11 +209,13 @@ public class BattlePuzzleManager: SingletonMonoBehaviour<BattlePuzzleManager>
         // Waveの最初のターンでなければ何もしない
         if (currentTurnCountInWave != 1) return Observable.ReturnUnit();
 
-        var questMonsterIdList = currentWaveCount == 1 ? quest.wave1QuestMonsterIdList : currentWaveCount == 2 ? quest.wave2QuestMonsterIdList : quest.wave3QuestMonsterIdList;
+        var questWaveId = quest.questWaveIdList[currentWaveCount - 1];
+        var questWave = MasterRecord.GetMasterOf<QuestWaveMB>().Get(questWaveId);
+        var questMonsterIdList = new List<long>() { questWave.questMonsterId1 };
         var questMonsterList = questMonsterIdList.Select(id => MasterRecord.GetMasterOf<QuestMonsterMB>().Get(id)).ToList();
         battleEnemyMonsterList = questMonsterList.Select(m => new BattleEnemyMonsterInfo()
         {
-            currentHp = m.hp,
+            currentHp = 10,
         }).ToList();
         
         return battleWindow.CreateEnemyObservable(questId, currentWaveCount)

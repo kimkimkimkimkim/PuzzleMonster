@@ -70,7 +70,7 @@ public class BattlePuzzleWindowUIScript : DummyWindowBase
         // 生成
         var list = new List<QuestMonsterItem>();
         var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
-        var questMonsterIdList = waveCount == 1 ? quest.wave1QuestMonsterIdList : waveCount == 2 ? quest.wave2QuestMonsterIdList : quest.wave3QuestMonsterIdList;
+        var questMonsterIdList = new List<long>();
         var observableList = questMonsterIdList.Select(questMonsterId =>
         {
             var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().Get(questMonsterId);

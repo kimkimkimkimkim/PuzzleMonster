@@ -12,7 +12,7 @@ public class QuestMonsterMB : MasterBookBase
     public long monsterId { get; set; }
 
     /// <summary>
-    /// HP
+    /// レベル
     /// </summary>
-    public int hp { get; set; }
+    public int level { get; set; }
 }

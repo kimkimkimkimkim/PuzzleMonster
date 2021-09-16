@@ -182,10 +182,24 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         // Waveの最初のターンでなければ何もしない
         if (currentTurnCountInWave != 1) return Observable.ReturnUnit();
 
-        var questMonsterIdList = currentWaveCount == 1 ? quest.wave1QuestMonsterIdList : currentWaveCount == 2 ? quest.wave2QuestMonsterIdList : quest.wave3QuestMonsterIdList;
+        var questWaveId = quest.questWaveIdList[currentWaveCount - 1];
+        var questWave = MasterRecord.GetMasterOf<QuestWaveMB>().Get(questWaveId);
+        var questMonsterIdList = GetQuestMonsterIdList(questWave);
         var questMonsterList = questMonsterIdList.Select(id => MasterRecord.GetMasterOf<QuestMonsterMB>().Get(id)).ToList();
 
         return Observable.ReturnUnit();
+    }
+
+    private List<long> GetQuestMonsterIdList(QuestWaveMB questWave)
+    {
+        return new List<long>()
+        {
+            questWave.questMonsterId1,
+            questWave.questMonsterId2,
+            questWave.questMonsterId3,
+            questWave.questMonsterId4,
+            questWave.questMonsterId5,
+        }.Where(id => id != 0).ToList();
     }
 
     /// <summary>
