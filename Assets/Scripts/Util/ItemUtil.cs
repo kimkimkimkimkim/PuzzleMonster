@@ -34,18 +34,22 @@ public static class ItemUtil
     /// <summary>
     /// ItemInstanceからItemMIを返す
     /// </summary>
+    public static ItemMI GetItemMI(ItemInstance itemInstance)
+    {
+        return new ItemMI()
+        {
+            itemType = GetItemType(itemInstance),
+            itemId = GetItemId(itemInstance),
+            num = 1,
+        };
+    }
+
+    /// <summary>
+    /// ItemInstanceからItemMIを返す
+    /// </summary>
     public static List<ItemMI> GetItemMI(List<ItemInstance> itemInstanceList)
     {
-        return itemInstanceList.Select(i =>
-        {
-
-            return new ItemMI()
-            {
-                itemType = GetItemType(i),
-                itemId = GetItemId(i),
-                num = 1,
-            };
-        }).ToList();
+        return itemInstanceList.Select(i => GetItemMI(i)).ToList();
     }
 
     /// <summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GameBase;
 using PM.Enum.Gacha;
+using PM.Enum.Item;
 using PM.Enum.UI;
 using UniRx;
 using UnityEngine;
@@ -37,27 +38,29 @@ public class GachaWindowUIScript : WindowBase
         var scrollItem = item.GetComponent<GachaBoxScrollItem>();
         var gachaBox = gachaBoxList[index];
         var gachaBoxDetailList = MasterRecord.GetMasterOf<GachaBoxDetailMB>().GetAll().Where(m => m.gachaBoxId == gachaBox.id).ToList();
-        
+
+        scrollItem.SetText(gachaBox.title);
         gachaBoxDetailList.ForEach(gachaBoxDetail => {
             var gachaExecuteButton = UIManager.Instance.CreateContent<GachaExecuteButton>(scrollItem._executeButtonBase);
             var title = gachaBoxDetail.title;
-            var cost = gachaBoxDetail.requiredItemList.First().num.ToString();
-
+            
             gachaExecuteButton.SetText(title);
-            gachaExecuteButton.SetCostText(cost);
             gachaExecuteButton.SetOnClickAction(() => OnClickGachaExecuteButtonAction(gachaBoxDetail));
         });
     }
 
     private void OnClickGachaExecuteButtonAction(GachaBoxDetailMB gachaBoxDetail) {
+        var cost = gachaBoxDetail.requiredItemList.First().num;
+        var num = cost / 5; // TODO
+
         CommonDialogFactory.Create(new CommonDialogRequest()
         {
             commonDialogType = CommonDialogType.NoAndYes,
             title = "開発用ガチャ",
-            content = "オーブを0個使用してガチャを1回まわしますか？",
+            content = $"オーブを{cost}個使用してガチャを{num}回まわしますか？",
         })
             .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-            .SelectMany(_ => ExecuteGachaObservable())
+            .SelectMany(_ => ExecuteGachaObservable(gachaBoxDetail))
             .SelectMany(res => GachaResultDialogFactory.Create(new GachaResultDialogRequest()
             {
                 itemList = ItemUtil.GetItemMI(res.itemInstanceList)
@@ -65,10 +68,17 @@ public class GachaWindowUIScript : WindowBase
             .Subscribe();
     }
 
-    private IObservable<GrantItemsToUserApiResponse> ExecuteGachaObservable()
+    private IObservable<GrantItemsToUserApiResponse> ExecuteGachaObservable(GachaBoxDetailMB gachaBoxDetail)
     {
-        var itemIdList = new List<string>() { "Bundle3001001" };
-        return ApiConnection.GrantItemsToUser(itemIdList);
+        var itemId = ItemUtil.GetItemId(ItemType.Bundle, gachaBoxDetail.bundleId);
+        var itemIdList = new List<string>() { itemId };
+        return ApiConnection.GrantItemsToUser(itemIdList)
+            .Select(res =>
+            {
+                // バンドルが含まれているので外す
+                res.itemInstanceList = res.itemInstanceList.Where(i => ItemUtil.GetItemMI(i).itemType != ItemType.Bundle).ToList();
+                return res;
+            });
     }
 
     public override void Open(WindowInfo info)
