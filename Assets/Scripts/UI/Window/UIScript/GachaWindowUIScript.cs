@@ -10,6 +10,7 @@ using UnityEngine;
 public class GachaWindowUIScript : WindowBase
 {
     [SerializeField] protected InfiniteScroll _infiniteScroll;
+    [SerializeField] protected Transform _executeButtonBase;
 
     private List<GachaBoxMB> gachaBoxList;
 
@@ -35,24 +36,29 @@ public class GachaWindowUIScript : WindowBase
 
         var scrollItem = item.GetComponent<GachaBoxScrollItem>();
         var gachaBox = gachaBoxList[index];
-        var gachaBoxDetail = MasterRecord.GetMasterOf<GachaBoxDetailMB>().GetAll().First(m => m.gachaBoxId == gachaBox.id);
-
-        scrollItem.SetOnClickAction(() =>
-        {
-            CommonDialogFactory.Create(new CommonDialogRequest()
-            {
-                commonDialogType = CommonDialogType.NoAndYes,
-                title = "開発用ガチャ",
-                content = "オーブを0個使用してガチャを1回まわしますか？",
-            })
-                .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-                .SelectMany(_ => ApiConnection.DropItem(gachaBoxDetail.bundleId))
-                .SelectMany(res => GachaResultDialogFactory.Create(new GachaResultDialogRequest()
-                {
-                    itemList = ItemUtil.GetItemMI(res.itemInstanceList)
-                }))
-                .Subscribe();
+        var gachaBoxDetailList = MasterRecord.GetMasterOf<GachaBoxDetailMB>().GetAll().Where(m => m.gachaBoxId == gachaBox.id).ToList();
+        
+        gachaBoxDetailList.ForEach(gachaBoxDetail => {
+            var gachaExecuteButton = UIManager.Instance.CreateContent<GachaExecuteButton>(_buttonBase);
+            gachaExecuteButton.Init(gachaBoxDetail);
+            gachaExecuteButton.SetOnClickAction(() => OnClickGachaExecute(gachaBoxDetail));
         });
+    }
+    
+    private void OnClickGachaExecuteButtonAction(GachaBoxDetailMB gachaBoxDetail){
+        CommonDialogFactory.Create(new CommonDialogRequest()
+        {
+            commonDialogType = CommonDialogType.NoAndYes,
+            title = "開発用ガチャ",
+            content = "オーブを0個使用してガチャを1回まわしますか？",
+        })
+            .Where(res => res.dialogResponseType == DialogResponseType.Yes)
+            //.SelectMany(_ => ApiConnection.DropItem(gachaBoxDetail.dropTableId))
+            .SelectMany(res => GachaResultDialogFactory.Create(new GachaResultDialogRequest()
+            {
+                itemList = ItemUtil.GetItemMI(res.itemInstanceList)
+            }))
+            .Subscribe();
     }
 
     public override void Open(WindowInfo info)
