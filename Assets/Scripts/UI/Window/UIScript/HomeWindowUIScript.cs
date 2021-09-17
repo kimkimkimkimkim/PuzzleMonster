@@ -14,17 +14,14 @@ public class HomeWindowUIScript : WindowBase
     [SerializeField] protected Button _questButton;
     [SerializeField] protected Transform _monsterAreaParentBase;
 
-    private QuestMB quest;
     private List<Transform> monsterAreaParentList = new List<Transform>();
 
     public override void Init(WindowInfo info)
     {
         base.Init(info);
 
-        quest = MasterRecord.GetMasterOf<QuestMB>().Get(2); // TODO: 挑戦するクエストの指定処理の追加
-
         _questButton.OnClickIntentAsObservable()
-            .SelectMany(_ => BattleManager.Instance.BattleStartObservable(quest.id, 1)) // TODO: 実際のuserMonsterPartyIdを指定するように
+            .SelectMany(_ => QuestCategoryWindowFactory.Create(new QuestCategoryWindowRequest()))
             .Subscribe();
 
         SetMonsterImage();

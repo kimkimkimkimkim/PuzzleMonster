@@ -38,7 +38,7 @@ public class QuestListWindowUIScript : WindowBase
         scrollItem.SetText(quest.name);
         scrollItem.SetOnClickAction(() =>
         {
-            BattlePuzzleManager.Instance.BattleStartObservable(quest.id, 1) // TODO: 実際のuserMonsterPartyIdを指定するように
+            BattleManager.Instance.BattleStartObservable(quest.id, 1) // TODO: 実際のuserMonsterPartyIdを指定するように
                 .Subscribe();
         });
     }
