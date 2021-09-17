@@ -27,8 +27,7 @@ public class MonsterPartyListWindowUIScript : WindowBase
         userMonsterPartyList = Enumerable.Repeat<UserMonsterPartyInfo>(null, ConstManager.Battle.MAX_PARTY_NUM)
             .Select((_, index) =>
             {
-                var partyId = index + 1;
-                var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyId == partyId);
+                var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == index);
                 if (userMonsterParty != null)
                 {
                     return userMonsterParty;
@@ -38,7 +37,7 @@ public class MonsterPartyListWindowUIScript : WindowBase
                     return new UserMonsterPartyInfo()
                     {
                         id = "",
-                        partyId = partyId,
+                        partyIndex = index,
                         userMonsterIdList = new List<string>(),
                     };
                 }
@@ -57,12 +56,12 @@ public class MonsterPartyListWindowUIScript : WindowBase
         var initialUserMonsterList = userMonsterParty.userMonsterIdList.Select(id => ApplicationContext.userInventory.userMonsterList.First(u => u.id == id)).ToList();
         var monsterIdList = initialUserMonsterList.Select(u => MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId).id).ToList();
 
-        scrollItem.SetMonsterImage(userMonsterParty.partyId, monsterIdList);
+        scrollItem.SetMonsterImage(userMonsterParty.partyIndex, monsterIdList);
         scrollItem.SetOnClickAction(() =>
         {
             MonsterFormationWindowFactory.Create(new MonsterFormationWindowRequest()
             {
-                partyId = userMonsterParty.partyId,
+                partyId = userMonsterParty.partyIndex,
                 userMontserList = ApplicationContext.userInventory.userMonsterList,
                 initialUserMonsterList = initialUserMonsterList,
             }).Subscribe();

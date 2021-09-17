@@ -248,7 +248,7 @@ public partial class PlayFabDataPublisher : EditorWindow
             {
                 var key = GetHierarchyStr(sheet, HIERARCHY_3_ROW_INDEX, columnIndex);
                 var value = GetValueStr(sheet, rowIndex, columnIndex);
-                
+
                 // もし"null"文字列ならnullにする
                 if(value == "\\\"null\\\"") value = "null";
 

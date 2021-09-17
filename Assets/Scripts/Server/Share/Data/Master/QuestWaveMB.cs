@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 
 /// <summary>
 /// クエストウェーブマスタ
@@ -7,27 +8,7 @@
 public class QuestWaveMB : MasterBookBase
 {
     /// <summary>
-    /// クエストモンスターID1
+    /// クエストモンスターIDリスト
     /// </summary>
-    public long questMonsterId1 { get; set; }
-
-    /// <summary>
-    /// クエストモンスターID2
-    /// </summary>
-    public long questMonsterId2 { get; set; }
-
-    /// <summary>
-    /// クエストモンスターID3
-    /// </summary>
-    public long questMonsterId3 { get; set; }
-
-    /// <summary>
-    /// クエストモンスターID4
-    /// </summary>
-    public long questMonsterId4 { get; set; }
-
-    /// <summary>
-    /// クエストモンスターID5
-    /// </summary>
-    public long questMonsterId5 { get; set; }
+    public List<long> questMonsterIdList { get; set; }
 }

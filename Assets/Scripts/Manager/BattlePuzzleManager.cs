@@ -211,8 +211,7 @@ public class BattlePuzzleManager: SingletonMonoBehaviour<BattlePuzzleManager>
 
         var questWaveId = quest.questWaveIdList[currentWaveCount - 1];
         var questWave = MasterRecord.GetMasterOf<QuestWaveMB>().Get(questWaveId);
-        var questMonsterIdList = new List<long>() { questWave.questMonsterId1 };
-        var questMonsterList = questMonsterIdList.Select(id => MasterRecord.GetMasterOf<QuestMonsterMB>().Get(id)).ToList();
+        var questMonsterList = questWave.questMonsterIdList.Select(id => MasterRecord.GetMasterOf<QuestMonsterMB>().Get(id)).ToList();
         battleEnemyMonsterList = questMonsterList.Select(m => new BattleEnemyMonsterInfo()
         {
             currentHp = 10,
