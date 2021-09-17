@@ -8,12 +8,12 @@ public class UserMonsterPartyInfo
     public string id { get; set; }
 
     /// <summary>
-    /// パーティーID（1 ~ MAX_PARTY_NUM）
+    /// パーティーインデックス（0 ~ MAX_PARTY_NUM - 1）
     /// </summary>
-    public int partyId { get; set; }
+    public int partyIndex { get; set; }
 
     /// <summary>
-    /// ユーザーモンスターIDリスト
+    /// ユーザーモンスターIDリスト（空の場合はnullが入っている）
     /// </summary>
     public List<string> userMonsterIdList { get; set; }
 }
