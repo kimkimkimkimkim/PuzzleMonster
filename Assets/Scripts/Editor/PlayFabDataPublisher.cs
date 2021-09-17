@@ -171,6 +171,10 @@ public partial class PlayFabDataPublisher : EditorWindow
             case CellType.Blank:
                 // 空ならそのままKeyValue文字列を作成
                 var value = GetValueStr(sheet, rowIndex, columnIndex);
+                
+                // もし"null"文字列ならnullにする
+                if(value == "\\\"null\\\"") value = "null";
+                
                 return value != "" ? $"{key1}:{value}" : "";
             case CellType.Numeric:
                 // 数値ならリストとして処理
@@ -206,6 +210,10 @@ public partial class PlayFabDataPublisher : EditorWindow
         {
             var key = GetHierarchyStr(sheet, hierarchyRowIndex, columnIndex);
             var value = GetValueStr(sheet, rowIndex, columnIndex);
+            
+            // もし"null"文字列ならnullにする
+            if(value == "\\\"null\\\"") value = "null";
+                
             if (value != "")
             {
                 jsonStr += $"{key}:{value},";
@@ -240,6 +248,9 @@ public partial class PlayFabDataPublisher : EditorWindow
             {
                 var key = GetHierarchyStr(sheet, HIERARCHY_3_ROW_INDEX, columnIndex);
                 var value = GetValueStr(sheet, rowIndex, columnIndex);
+                
+                // もし"null"文字列ならnullにする
+                if(value == "\\\"null\\\"") value = "null";
 
                 if (key == "")
                 {
