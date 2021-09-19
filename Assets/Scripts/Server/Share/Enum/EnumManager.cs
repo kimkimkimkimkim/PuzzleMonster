@@ -105,9 +105,30 @@ namespace PM
             /// </summary>
             public enum IconImageType
             {
-                None,
-                Monster,
-                MonsterAttribute,
+                /// <summary>
+                /// 初期値
+                /// </summary>
+                None = 0,
+
+                /// <summary>
+                /// 仮想通貨
+                /// </summary>
+                VirtualCurrency = 1,
+
+                /// <summary>
+                /// モンスター
+                /// </summary>
+                Monster = 2,
+
+                /// <summary>
+                /// 資産
+                /// </summary>
+                Property = 3,
+
+                /// <summary>
+                /// モンスター属性
+                /// </summary>
+                MonsterAttribute = 4,
             }
         }
 
@@ -182,6 +203,19 @@ namespace PM
                 /// モンスター経験値
                 /// </summary>
                 MonsterExp = 2,
+            }
+
+            /// <summary>
+            /// アイコン色タイプ
+            /// </summary>
+            public enum IconColorType
+            {
+                None = 0,
+                Red = 1,
+                Blue = 2,
+                Green = 3,
+                Yellow = 4,
+                Purple = 5,
             }
         }
 
