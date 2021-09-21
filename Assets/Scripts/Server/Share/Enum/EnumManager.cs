@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace PM
 {
@@ -216,6 +217,34 @@ namespace PM
                 Green = 3,
                 Yellow = 4,
                 Purple = 5,
+            }
+
+            /// <summary>
+            /// テキスト色タイプ
+            /// </summary>
+            public enum TextColorType
+            {
+                White = 0,
+                Focus = 1,
+            }
+
+            /// <summary>
+            /// テキストカラー拡張
+            /// </summary>
+            public static class TextColorTypeExtends
+            {
+                private static readonly Dictionary<TextColorType, string> ColorDictionary = new Dictionary<TextColorType, string>() {
+                    { TextColorType.White, "#FFFFFF" },
+                    { TextColorType.Focus, "#F6E19C" },
+                };
+
+                /// <summary>
+                /// テキストカラーを取得
+                /// </summary>
+                public static string Color(this TextColorType textColorType)
+                {
+                    return ColorDictionary.ContainsKey(textColorType) ? ColorDictionary[textColorType] : "#FFFFFF";
+                }
             }
         }
 
