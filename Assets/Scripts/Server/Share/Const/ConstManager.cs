@@ -42,12 +42,12 @@ public class ConstManager
         /// <summary>
         /// 最大パーティーメンバー数
         /// </summary>
-        public static int MAX_PARTY_MEMBER_NUM = 6;
+        public static int MAX_PARTY_MEMBER_NUM = 5;
 
         /// <summary>
         /// 最大パーティ数
         /// </summary>
-        public static int MAX_PARTY_NUM = 12;
+        public static int MAX_PARTY_NUM = 5;
 
         /// <summary>
         /// 盤面の横のピース数

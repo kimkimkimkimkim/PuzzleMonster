@@ -2,11 +2,14 @@ using GameBase;
 using PM.Enum.Item;
 using System.Collections.Generic;
 using System.Linq;
+using UniRx;
 using UnityEngine;
+using UnityEngine.UI;
 
 [ResourcePath("UI/Window/Window-QuestDetail")]
 public class QuestDetailWindowUIScript : WindowBase
 {
+    [SerializeField] protected Button _okButton;
     [SerializeField] protected InfiniteScroll _monsterInfiniteScroll;
     [SerializeField] protected InfiniteScroll _normalRewardInfiniteScroll;
     [SerializeField] protected InfiniteScroll _dropRewardInfiniteScroll;
@@ -24,6 +27,16 @@ public class QuestDetailWindowUIScript : WindowBase
 
         var questId = (long)info.param["questId"];
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
+
+        _okButton.OnClickIntentAsObservable()
+            .SelectMany(_ =>
+            {
+                return QuestSelectPartyWindowFactory.Create(new QuestSelectPartyWindowRequest()
+                {
+                    questId = questId,
+                });
+            })
+            .Subscribe();
 
         RefreshMonsterInfiniteScroll();
         RefreshNormalRewardInfiniteScroll();
