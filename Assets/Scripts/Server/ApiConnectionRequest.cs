@@ -187,10 +187,10 @@ public partial class ApiConnection
     /// <summary>
     /// パーティの編成情報更新
     /// </summary>
-    public static IObservable<UpdateUserMonsterFormationApiResponse> UpdateUserMosnterFormation(int partyId, List<string> userMosnterIdList) {
+    public static IObservable<UpdateUserMonsterFormationApiResponse> UpdateUserMosnterFormation(int partyIndex, List<string> userMosnterIdList) {
         return SendRequest<UpdateUserMonsterFormationApiRequest, UpdateUserMonsterFormationApiResponse>(UpdateUserMonsterFormationApiInterface.functionName, new UpdateUserMonsterFormationApiRequest()
         {
-            partyId = partyId,
+            partyIndex = partyIndex,
             userMonsterIdList = userMosnterIdList,
         });
     }

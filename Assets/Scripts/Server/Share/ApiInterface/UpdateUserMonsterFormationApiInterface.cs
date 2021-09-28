@@ -9,9 +9,9 @@ public class UpdateUserMonsterFormationApiInterface
 public class UpdateUserMonsterFormationApiRequest : PMApiRequestBase
 {
     /// <summary>
-    /// パーティID
+    /// パーティインデックス
     /// </summary>
-    public int partyId;
+    public int partyIndex;
 
     /// <summary>
     /// ユーザーモンスターIDリスト
