@@ -174,6 +174,7 @@ public partial class ApiConnection
 
     /// <summary>
     /// インベントリのアイテムをユーザーに付与する
+    /// バンドルでもドロップテーブルでもOK
     /// </summary>
     public static IObservable<GrantItemsToUserApiResponse> GrantItemsToUser(List<string> itemIdList)
     {

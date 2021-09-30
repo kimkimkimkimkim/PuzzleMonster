@@ -72,13 +72,7 @@ public class GachaWindowUIScript : WindowBase
     {
         var itemId = ItemUtil.GetItemId(ItemType.Bundle, gachaBoxDetail.bundleId);
         var itemIdList = new List<string>() { itemId };
-        return ApiConnection.GrantItemsToUser(itemIdList)
-            .Select(res =>
-            {
-                // バンドルが含まれているので外す
-                res.itemInstanceList = res.itemInstanceList.Where(i => ItemUtil.GetItemMI(i).itemType != ItemType.Bundle).ToList();
-                return res;
-            });
+        return ApiConnection.GrantItemsToUser(itemIdList);
     }
 
     public override void Open(WindowInfo info)
