@@ -140,6 +140,17 @@ public partial class ApiConnection
 
     #region CloudFunction
     /// <summary>
+    /// 初回ログイン時に行いたいことを実行する
+    /// </summary>
+    public static IObservable<FirstLoginApiResponse> FirstLogin()
+    {
+        return SendRequest<FirstLoginApiRequest, FirstLoginApiResponse>(FirstLoginApiInterface.functionName, new FirstLoginApiRequest()
+        {
+
+        });
+    }
+
+    /// <summary>
     /// ログイン時に行いたいことを実行する
     /// </summary>
     public static IObservable<LoginApiResponse> Login()

@@ -16,6 +16,18 @@ public static class ApplicationContext
     public static IObservable<Unit> EstablishSession()
     {
         return ApiConnection.LoginWithCustomID()
+            .SelectMany(res =>
+            {
+                if (res.NewlyCreated)
+                {
+                    // アカウントを新規作成した場合は初回ログイン処理を実行
+                    return ApiConnection.FirstLogin().AsUnitObservable();
+                }
+                else
+                {
+                    return Observable.ReturnUnit();
+                }
+            })
             .SelectMany(_ => ApiConnection.Login())
             .SelectMany(_ => ApiConnection.GetTitleData().Do(res =>
             {
