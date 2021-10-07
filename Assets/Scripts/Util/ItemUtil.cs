@@ -48,6 +48,19 @@ public static class ItemUtil
     /// <summary>
     /// ItemInstanceからItemMIを返す
     /// </summary>
+    public static ItemMI GetItemMI(UserMonsterInfo userMonster)
+    {
+        return new ItemMI()
+        {
+            itemType = ItemType.Monster,
+            itemId = userMonster.monsterId,
+            num = 1,
+        };
+    }
+
+    /// <summary>
+    /// ItemInstanceからItemMIを返す
+    /// </summary>
     public static List<ItemMI> GetItemMI(List<ItemInstance> itemInstanceList)
     {
         return itemInstanceList.Select(i => GetItemMI(i)).ToList();

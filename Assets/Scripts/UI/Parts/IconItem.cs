@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using PM.Enum.Item;
 using PM.Enum.UI;
 using UniRx;
+using System;
 
 [ResourcePath("UI/Parts/Parts-IconItem")]
 public class IconItem : MonoBehaviour
@@ -18,6 +19,10 @@ public class IconItem : MonoBehaviour
     [SerializeField] protected TextMeshProUGUI _numText;
     [SerializeField] protected List<Sprite> _frameSpriteList;
     [SerializeField] protected List<Color> _backgroundColorList;
+    [SerializeField] protected Toggle _toggle;
+    [SerializeField] protected Button _button;
+
+    private IDisposable onClickButtonObservable;
 
     public void SetIcon(ItemMI item)
     {
@@ -30,14 +35,14 @@ public class IconItem : MonoBehaviour
         SetNumText(numText);
     }
 
-    public void SetFrameImage(IconColorType iconColor)
+    private void SetFrameImage(IconColorType iconColor)
     {
         var index = (int)iconColor;
         _frameImage.sprite = _frameSpriteList[index];
         _backgroundImage.color = _backgroundColorList[index];
     }
 
-    public void SetIconImage(IconImageType iconImageType, long itemId)
+    private void SetIconImage(IconImageType iconImageType, long itemId)
     {
         PMAddressableAssetUtil.GetIconImageSpriteObservable(iconImageType, itemId)
             .Do(sprite =>
@@ -48,13 +53,28 @@ public class IconItem : MonoBehaviour
             .AddTo(this);
     }
 
-    public void SetNumText(string text)
+    private void SetNumText(string text)
     {
         _numText.text = text;
     }
 
-    public void ShowFocusImage(bool isShow)
+    public void SetToggleGroup(ToggleGroup toggleGroup)
     {
-        _focusPanel.SetActive(isShow);
+        _toggle.group = toggleGroup;
+    }
+
+    public void SetOnClickAction(Action action)
+    {
+        if (action == null) return;
+
+        if (onClickButtonObservable != null)
+        {
+            onClickButtonObservable.Dispose();
+            onClickButtonObservable = null;
+        }
+
+        onClickButtonObservable = _button.OnClickIntentAsObservable()
+            .Do(_ => action())
+            .Subscribe();
     }
 }

@@ -24,7 +24,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 初期化処理
     /// </summary>
-    private void Init(long questId, long userMonsterPartyId)
+    private void Init(long questId, string userMonsterPartyId)
     {
         this.questId = questId;
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
@@ -38,7 +38,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// バトルを開始する
     /// </summary>
-    public IObservable<BattleResult> BattleStartObservable(long questId, long userMonsterPartyId)
+    public IObservable<BattleResult> BattleStartObservable(long questId, string userMonsterPartyId)
     {
         // 初期化
         Init(questId, userMonsterPartyId);
