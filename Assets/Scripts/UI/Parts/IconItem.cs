@@ -16,11 +16,16 @@ public class IconItem : MonoBehaviour
     [SerializeField] protected Image _iconImage;
     [SerializeField] protected GameObject _notifyPanel;
     [SerializeField] protected GameObject _focusPanel;
+    [SerializeField] protected GameObject _grayoutPanel;
     [SerializeField] protected TextMeshProUGUI _numText;
+    [SerializeField] protected TextMeshProUGUI _grayoutText;
     [SerializeField] protected List<Sprite> _frameSpriteList;
     [SerializeField] protected List<Color> _backgroundColorList;
     [SerializeField] protected Toggle _toggle;
     [SerializeField] protected Button _button;
+    [SerializeField] protected CanvasGroup _canvasGroup;
+
+    public Toggle toggle { get { return _toggle; } private set { _toggle = value; } }
 
     private IDisposable onClickButtonObservable;
 
@@ -76,5 +81,21 @@ public class IconItem : MonoBehaviour
         onClickButtonObservable = _button.OnClickIntentAsObservable()
             .Do(_ => action())
             .Subscribe();
+    }
+
+    public void SetRaycastTarget(bool isOn)
+    {
+        _canvasGroup.blocksRaycasts = isOn;
+    }
+
+    public void ShowGrayoutPanel(bool isShow)
+    {
+        _grayoutPanel.SetActive(isShow);
+    }
+
+    public void ShowGrayoutText(bool isShow,string text = "")
+    {
+        _grayoutText.gameObject.SetActive(isShow);
+        _grayoutText.text = text;
     }
 }
