@@ -27,6 +27,18 @@ public class QuestSelectPartyWindowUIScript : WindowBase
     {
         get
         {
+            // パーティ情報が無ければダミーデータを作成
+            if (_currentUserMonsterParty == null)
+            {
+                _currentUserMonsterParty = new UserMonsterPartyInfo()
+                {
+                    id = UserDataUtil.CreateUserDataId(),
+                    partyIndex = currentPartyIndex,
+                    userMonsterIdList = new List<string>(),
+                };
+            };
+
+            // パーティメンバー数に達していなければダミーデータを追加
             while(_currentUserMonsterParty.userMonsterIdList.Count < ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
             {
                 _currentUserMonsterParty.userMonsterIdList.Add(null);
@@ -45,7 +57,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
 
         var questId = (long)info.param["questId"];
         var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
-        currentUserMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == currentPartyIndex);
+        currentUserMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == currentPartyIndex)?.Clone();
         userMonsterList = ApplicationContext.userInventory.userMonsterList;
 
         _titleText.text = quest.name;
@@ -73,7 +85,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 {
                     var partyIndex = tab.value; // ここではタブの値がパーティインデックスに対応する
                     currentPartyIndex = partyIndex;
-                    currentUserMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == currentPartyIndex);
+                    currentUserMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == currentPartyIndex)?.Clone();
                     _toggleGroup.SetAllTogglesOff();
                     RefreshPartyUI();
                     RefreshScroll();
