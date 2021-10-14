@@ -42,10 +42,13 @@ public class HomeWindowUIScript : WindowBase
             userMonsterParty.userMonsterIdList.ForEach((userMonsterId, index) =>
             {
                 var parent = monsterAreaParentList[index];
-                var userMonster = ApplicationContext.userInventory.userMonsterList.First(u => u.id == userMonsterId);
-                var homeMonsterItem = UIManager.Instance.CreateContent<HomeMonsterItem>(parent);
-                var rectTransform = homeMonsterItem.GetComponent<RectTransform>();
-                homeMonsterItem.SetMonsterImage(userMonster.monsterId);
+                var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
+                if (userMonster != null)
+                {
+                    var homeMonsterItem = UIManager.Instance.CreateContent<HomeMonsterItem>(parent);
+                    var rectTransform = homeMonsterItem.GetComponent<RectTransform>();
+                    homeMonsterItem.SetMonsterImage(userMonster.monsterId);
+                }
             });
         }
     }

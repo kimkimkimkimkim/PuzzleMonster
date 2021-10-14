@@ -32,7 +32,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             {
                 _currentUserMonsterParty = new UserMonsterPartyInfo()
                 {
-                    id = UserDataUtil.CreateUserDataId(),
+                    id = null, 
                     partyIndex = currentPartyIndex,
                     userMonsterIdList = new List<string>(),
                 };
@@ -63,6 +63,22 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         _titleText.text = quest.name;
 
         _okButton.OnClickIntentAsObservable()
+            .SelectMany(_ =>
+            {
+                var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.id == currentUserMonsterParty.id);
+                if(userMonsterParty != null && userMonsterParty.IsSame(currentUserMonsterParty))
+                {
+                    // 現在選択中のパーティ情報が存在し何も変更がなければそのまま進む
+                    return Observable.ReturnUnit();
+                }
+                else
+                {
+                    // 変更が加えられていた場合はユーザーデータを更新する
+                    return ApiConnection.UpdateUserMosnterFormation(currentPartyIndex, currentUserMonsterParty.userMonsterIdList)
+                        .Do(res => currentUserMonsterParty = res.userMonsterParty)
+                        .AsUnitObservable();
+                }
+            })
             .SelectMany(_ =>
             {
                 return BattleManager.Instance.BattleStartObservable(questId, currentUserMonsterParty.id);
