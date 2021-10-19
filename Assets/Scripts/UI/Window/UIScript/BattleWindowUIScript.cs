@@ -1,4 +1,5 @@
 ﻿using GameBase;
+using PM.Enum.Monster;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -29,7 +30,8 @@ public class BattleWindowUIScript : DummyWindowBase
             if (userMonster != null) {
                 var parent = _playerMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
-                item.SetMonsterImage(userMonster.monsterId);
+
+                item.Init(userMonster.monsterId, userMonster.customData.level);
             }
         });
     }
@@ -47,7 +49,8 @@ public class BattleWindowUIScript : DummyWindowBase
             {
                 var parent = _enemyMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
-                item.SetMonsterImage(questMonster.monsterId);
+
+                item.Init(questMonster.monsterId, questMonster.level);
             }
         });
     }
