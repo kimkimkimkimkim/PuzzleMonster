@@ -14,25 +14,25 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     private IObserver<Unit> battleTurnObserver;
     private BattleWindowUIScript battleWindow;
     private BattleResult battleResult;
-    private long questId;
     private QuestMB quest;
     private int currentTurnCount;
     private int currentTurnCountInWave;
     private int currentWaveCount;
     private int maxWaveCount;
+    private string userMonsterPartyId;
 
     /// <summary>
     /// 初期化処理
     /// </summary>
     private void Init(long questId, string userMonsterPartyId)
     {
-        this.questId = questId;
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
         currentTurnCount = 0;
         currentTurnCountInWave = 0;
         currentWaveCount = 0;
         maxWaveCount = 3;
         battleResult = new BattleResult() { wol = WinOrLose.Continue };
+        this.userMonsterPartyId = userMonsterPartyId;
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             .SelectMany(res =>
             {
                 battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
-                battleWindow.Init();
+                battleWindow.Init(userMonsterPartyId, quest.id);
                 HeaderFooterManager.Instance.Show(false);
                 return Observable.ReturnUnit();
             })
