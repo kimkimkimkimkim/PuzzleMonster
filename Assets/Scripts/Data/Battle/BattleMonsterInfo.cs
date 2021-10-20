@@ -26,7 +26,17 @@ public class BattleMonsterInfo
     /// 現在の攻撃力
     /// </summary>
     public float currentAttack;
-     
+
+    /// <summary>
+    /// 基準防御力
+    /// </summary>
+    public int baseDefense;
+
+    /// <summary>
+    /// 現在の防御力
+    /// </summary>
+    public float currentDefense;
+
     /// <summary>
     /// 基準スピード
     /// </summary>
