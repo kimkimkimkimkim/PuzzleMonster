@@ -34,14 +34,14 @@ public class BattleHistoryInfo
     public List<BattleMonsterInfo> afterEnemyBattleMonsterList { get; set; }
     
     /// <summary>
-    /// 攻撃モンスターのインデックス
+    /// する側のモンスターのインデックス
     /// </summary>
-    public int attackMonsterIndex { get; set; }
+    public int doMonsterIndex { get; set; }
     
     /// <summary>
-    /// 被攻撃モンスターのインデックス
+    /// される側のモンスターのインデックス
     /// </summary>
-    public int attackedMonsterIndex { get; set; }
+    public int beDoneMonsterIndex { get; set; }
     
     /// <summary>
     /// 処理前ウェーブ数
