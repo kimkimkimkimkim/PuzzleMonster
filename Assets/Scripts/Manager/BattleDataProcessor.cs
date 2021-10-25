@@ -1,12 +1,14 @@
 ﻿using GameBase;
 using System.Collections.Generic;
 using System.Linq;
+using PM.Enum.Battle;
 
 public class BattleDataProcessor
 {
     private QuestMB quest;
     private List<BattleMonsterInfo> playerBattleMonsterList;
     private List<BattleMonsterInfo> enemyBattleMonsterList;
+    private bool isBattleFinished = false;
 
     public void Init(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
     {
@@ -14,6 +16,28 @@ public class BattleDataProcessor
 
         SetPlayerBattleMonsterList(userMonsterParty);
         RefreshEnemyBattleMonsterList(1); // 初期化時はwave=1
+    }
+    
+    public List<BattleLogInfo> GetBattleLogList(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
+    {
+        this.quest = quest;
+
+        SetPlayerBattleMonsterList(userMonsterParty);
+        RefreshEnemyBattleMonsterList(1); // 初期化時はwave=1
+        
+        var battleLogList = new List<BattleLogInfo>();
+        while(!isBattleFinished){
+            var battleLog = CalculateBattleLog();
+            battleLogList.Add(battleLog);
+        }
+        
+        return battleLogList;
+    }
+    
+    public BattleLogInfo CalculateBattleLog(){
+        var random = UnityEngine.Random.Range(0, 10);
+        isBattleFinished = random == 0;
+        return new BattleLogInfo();
     }
 
     private void SetPlayerBattleMonsterList(UserMonsterPartyInfo userMonsterParty)
