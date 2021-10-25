@@ -56,6 +56,11 @@ public class BattleMonsterInfo
     /// 現在の回復力
     /// </summary>
     public float currentHeal;
+    
+    /// <summary>
+    /// 最大のクールタイム
+    /// </summary>
+    public float maxCt;
      
     /// <summary>
     /// 現在のクールタイム
@@ -66,4 +71,9 @@ public class BattleMonsterInfo
     /// 状態異常リスト
     /// </summary>
     public List<BattleConditionInfo> battleConditionList;
+    
+    /// <summary>
+    /// このターンすでに行動しているか否か
+    /// </summary>
+    public bool isActed;
 }
