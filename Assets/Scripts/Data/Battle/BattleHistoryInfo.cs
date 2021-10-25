@@ -36,12 +36,12 @@ public class BattleHistoryInfo
     /// <summary>
     /// する側のモンスターのインデックス
     /// </summary>
-    public int doMonsterIndex { get; set; }
+    public BattleMonsterIndex doBattleMonsterIndex { get; set; }
     
     /// <summary>
     /// される側のモンスターのインデックス
     /// </summary>
-    public int beDoneMonsterIndex { get; set; }
+    public BattleMonsterIndex beDoneBattleMonsterIndex { get; set; }
     
     /// <summary>
     /// 処理前ウェーブ数
