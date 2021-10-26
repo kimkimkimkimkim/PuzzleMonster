@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public static class BattleUtil
 {
-    public static BattleMonsterInfo GetBattleMonster(UserMonsterInfo userMonster)
+    public static BattleMonsterInfo GetBattleMonster(UserMonsterInfo userMonster, bool isPlayer, int index)
     {
         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
         var status = MonsterUtil.GetMonsterStatus(monster, userMonster.customData.level);
@@ -21,12 +21,15 @@ public static class BattleUtil
             currentSpeed = status.speed,
             baseHeal = status.heal,
             currentHeal = status.heal,
+            maxCt = ConstManager.Battle.MAX_CT_VALUE,
             currentCt = 0,
             battleConditionList = new List<BattleConditionInfo>(),
+            isActed = false,
+            index = new BattleMonsterIndex() { isPlayer = isPlayer, index = index},
         };
     }
 
-    public static BattleMonsterInfo GetBattleMonster(QuestMonsterMB questMonster)
+    public static BattleMonsterInfo GetBattleMonster(QuestMonsterMB questMonster, bool isPlayer, int index)
     {
         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(questMonster.monsterId);
         var status = MonsterUtil.GetMonsterStatus(monster, questMonster.level);
@@ -44,8 +47,11 @@ public static class BattleUtil
             currentSpeed = status.speed,
             baseHeal = status.heal,
             currentHeal = status.heal,
+            maxCt = ConstManager.Battle.MAX_CT_VALUE,
             currentCt = 0,
             battleConditionList = new List<BattleConditionInfo>(),
+            isActed = false,
+            index = new BattleMonsterIndex() { isPlayer = isPlayer, index = index },
         };
     }
 }
