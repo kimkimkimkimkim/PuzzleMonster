@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PM.Enum.Battle;
 
+
 public class BattleDataProcessor
 {
     private int currentWaveCount;
@@ -93,18 +94,15 @@ public class BattleDataProcessor
     private BattleMonsterInfo GetBattleMonster(BattleMonsterIndex battleMonsterIndex)
     {
         var battleMonsterList = battleMonsterIndex.isPlayer ? playerBattleMonsterList : enemyBattleMonsterList;
-        return battleMonsterList[battleMonsterIndex.index];
+        return battleMonsterList.First(m => m.index.index == battleMonsterIndex.index);
     }
-
+    
     private BattleMonsterIndex GetAttackTargetBattleMonsterIndex(BattleMonsterIndex doBattleMonsterIndex)
     {
-        BattleMonsterIndex targetBattleMonsterIndex = null;
-        while(targetBattleMonsterIndex == null || targetBattleMonsterIndex.isPlayer == doBattleMonsterIndex.isPlayer)
-        {
-            targetBattleMonsterIndex = GetNextActBattleMonsterIndexOrDefault();
-        }
+        var battleMonsterList = doBattleMonsterIndex.isPlayer ? enemyBattleMonsterList : playerBattleMonsterList;
+        var targetBattleMonsterInfo = battleMonsterList.Where(m => m.currentHp > 0).Shuffle().FirstOrDefault();
 
-        return targetBattleMonsterIndex;
+        return targetBattleMonsterInfo != null ? targetBattleMonsterInfo.index : null;
     }
 
     /// <summary>
@@ -138,8 +136,11 @@ public class BattleDataProcessor
 
         var doBattleMonster = GetBattleMonster(doBattleMonsterIndex);
         var beDoneBattleMonster = GetBattleMonster(beDoneBattleMonsterIndex);
-        var damage = doBattleMonster.currentAttack;
+        var random = new Random();
+        var coefficient = 1.0f - (((float)random.NextDouble() * 0.15f) - 0.075f);
+        var damage = doBattleMonster.currentAttack * coefficient;
         beDoneBattleMonster.currentHp -= (int)damage;
+        doBattleMonster.isActed = true;
         return (int)damage;
     }
 
@@ -179,10 +180,10 @@ public class BattleDataProcessor
         return new BattleLogInfo()
         {
             type = type,
-            playerBattleMonsterList = new List<BattleMonsterInfo>(playerBattleMonsterList),
-            enemyBattleMonsterList = new List<BattleMonsterInfo>(enemyBattleMonsterList),
-            doBattleMonsterIndex = new BattleMonsterIndex(doBattleMonsterIndex),
-            beDoneBattleMonsterIndex = new BattleMonsterIndex(beDoneBattleMonsterIndex),
+            playerBattleMonsterList = playerBattleMonsterList.Clone(),
+            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
+            doBattleMonsterIndex = doBattleMonsterIndex != null ? new BattleMonsterIndex(doBattleMonsterIndex) : null,
+            beDoneBattleMonsterIndex = beDoneBattleMonsterIndex != null ? new BattleMonsterIndex(beDoneBattleMonsterIndex) : null,
             waveCount = currentWaveCount,
             turnCount = currentTurnCount,
             winOrLose = currentWinOrLose,
@@ -229,10 +230,6 @@ public class BattleDataProcessor
                 var battleMonster = BattleUtil.GetBattleMonster(userMonster, true, index);
                 playerBattleMonsterList.Add(battleMonster);
             }
-            else
-            {
-                playerBattleMonsterList.Add(null);
-            }
         });
     }
 
@@ -241,7 +238,8 @@ public class BattleDataProcessor
         var waveIndex = waveCount - 1;
         var questWaveId = quest.questWaveIdList[waveIndex];
         var questWave = MasterRecord.GetMasterOf<QuestWaveMB>().Get(questWaveId);
-
+        
+        enemyBattleMonsterList.Clear();
         questWave.questMonsterIdList.ForEach((questMonsterId, index) =>
         {
             var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().GetAll().FirstOrDefault(m => m.id == questMonsterId);
@@ -249,10 +247,6 @@ public class BattleDataProcessor
             {
                 var battleMonster = BattleUtil.GetBattleMonster(questMonster, false, index);
                 enemyBattleMonsterList.Add(battleMonster);
-            }
-            else
-            {
-                enemyBattleMonsterList.Add(null);
             }
         });
     }
