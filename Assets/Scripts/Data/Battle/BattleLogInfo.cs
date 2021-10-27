@@ -50,4 +50,9 @@ public class BattleLogInfo
     /// ログ文字列
     /// </summary>
     public string log { get; set; }
+
+    /// <summary>
+    /// 発生したダメージ
+    /// </summary>
+    public int damage { get; set; }
 }

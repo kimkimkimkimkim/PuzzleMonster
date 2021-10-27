@@ -8,8 +8,8 @@ public class BattleDataProcessor
     private int currentWaveCount;
     private int currentTurnCount;
     private QuestMB quest;
-    private List<BattleMonsterInfo> playerBattleMonsterList;
-    private List<BattleMonsterInfo> enemyBattleMonsterList;
+    private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>();
+    private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>();
     private BattleMonsterIndex doBattleMonsterIndex;
     private BattleMonsterIndex beDoneBattleMonsterIndex;
     private WinOrLose currentWinOrLose;
@@ -51,47 +51,60 @@ public class BattleDataProcessor
             return new List<BattleLogInfo>() { GetCurrentBattleLogInfo(BattleLogType.Result) };
         }
 
+        // 勝敗が決まっていないかつ敵が全滅していたら次のウェーブへ
+        if (enemyBattleMonsterList.All(m => m.currentHp <= 0))
+        {
+            MoveNextWave();
+            return new List<BattleLogInfo>() { GetCurrentBattleLogInfo(BattleLogType.MoveWave) };
+        }
+
+        // 勝敗が決まっていないかつ敵が全滅していないかつ次行動できるモンスターがいない場合は次のターンへ
         var nextActIndex = GetNextActBattleMonsterIndexOrDefault();
         if(nextActIndex == null)
         {
-            if (enemyBattleMonsterList.Any(m => m.currentHp > 0))
-            {
-                // 次のターンへ
-                MoveNextTurn();
-                return new List<BattleLogInfo>() { GetCurrentBattleLogInfo(BattleLogType.MoveTurn) };
-            }
-            else
-            {
-                // 次のウェーブへ
-                MoveNextWave();
-                return new List<BattleLogInfo>() { GetCurrentBattleLogInfo(BattleLogType.MoveWave) };
-            }
+            MoveNextTurn();
+            return new List<BattleLogInfo>() { GetCurrentBattleLogInfo(BattleLogType.MoveTurn) };
         }
-        else
+
+        // それ以外の場合は、どのモンスターかが行動する
+        var actionLogList = new List<BattleLogInfo>();
+
+        // 攻撃開始ログ
+        doBattleMonsterIndex = nextActIndex;
+        var startAttackLog = GetCurrentBattleLogInfo(BattleLogType.StartAttack);
+        actionLogList.Add(startAttackLog);
+
+        // 被ダメージログ
+        beDoneBattleMonsterIndex = GetAttackTargetBattleMonsterIndex(doBattleMonsterIndex); // TODO: 攻撃対象取得処理の実装
+        var takeDamageLog = GetCurrentBattleLogInfo(BattleLogType.TakeDamage);
+        actionLogList.Add(takeDamageLog);
+
+        // 死亡ログ
+        var takeDamageBattleMonster = GetBattleMonster(beDoneBattleMonsterIndex);
+        if(takeDamageBattleMonster.currentHp <= 0)
         {
-            // 攻撃
-            doBattleMonsterIndex = nextActIndex;
-
+            var dieLog = GetCurrentBattleLogInfo(BattleLogType.Die);
+            actionLogList.Add(dieLog);
         }
 
-        return new List<BattleLogInfo>();
+        return actionLogList;
     }
 
-    /// <summary>
-    /// 次のログタイプを計算する
-    /// </summary>
-    private BattleLogType CalculateBattleLogType()
+    private BattleMonsterInfo GetBattleMonster(BattleMonsterIndex battleMonsterIndex)
     {
-        currentWinOrLose = GetWinOrLose();
+        var battleMonsterList = battleMonsterIndex.isPlayer ? playerBattleMonsterList : enemyBattleMonsterList;
+        return battleMonsterList[battleMonsterIndex.index];
+    }
 
-        // 勝敗が決まっていたら結果ログ
-        if (currentWinOrLose != WinOrLose.Continue) return BattleLogType.Result;
+    private BattleMonsterIndex GetAttackTargetBattleMonsterIndex(BattleMonsterIndex doBattleMonsterIndex)
+    {
+        BattleMonsterIndex targetBattleMonsterIndex = null;
+        while(targetBattleMonsterIndex == null || targetBattleMonsterIndex.isPlayer == doBattleMonsterIndex.isPlayer)
+        {
+            targetBattleMonsterIndex = GetNextActBattleMonsterIndexOrDefault();
+        }
 
-        // 敵が全滅していたら次のウェーブ
-        if (enemyBattleMonsterList.All(m => m.currentHp <= 0)) return BattleLogType.MoveWave;
-
-        // それ以外は攻撃
-        return BattleLogType.Attack;
+        return targetBattleMonsterIndex;
     }
 
     /// <summary>
@@ -116,21 +129,65 @@ public class BattleDataProcessor
     }
 
     /// <summary>
+    /// 攻撃処理
+    /// </summary>
+    /// <returns>ダメージ</returns>
+    private int Attack()
+    {
+        if (doBattleMonsterIndex == null || beDoneBattleMonsterIndex == null) return 0;
+
+        var doBattleMonster = GetBattleMonster(doBattleMonsterIndex);
+        var beDoneBattleMonster = GetBattleMonster(beDoneBattleMonsterIndex);
+        var damage = doBattleMonster.currentAttack;
+        beDoneBattleMonster.currentHp -= (int)damage;
+        return (int)damage;
+    }
+
+    /// <summary>
     /// 指定したログタイプと現在のメンバ変数の値をもとにバトルログ情報を取得
     /// </summary>
     /// <returns></returns>
     private BattleLogInfo GetCurrentBattleLogInfo(BattleLogType type)
     {
+        var log = "";
+        var damage = 0;
+
+        switch (type) {
+            case BattleLogType.StartAttack:
+                log = $"{{do}}の「こうげき」";
+                break;
+            case BattleLogType.TakeDamage:
+                damage = Attack();
+                log = $"{{beDone}}に{damage}のダメージ";
+                break;
+            case BattleLogType.Die:
+                log = $"{{beDone}}はたおれた";
+                break;
+            case BattleLogType.MoveWave:
+                log = $"Wave{currentWaveCount} スタート";
+                break;
+            case BattleLogType.MoveTurn:
+                log = $"Turn{currentTurnCount} スタート";
+                break;
+            case BattleLogType.Result:
+                log = currentWinOrLose == WinOrLose.Win ? "WIN" : "LOSE";
+                break;
+            default:
+                break;
+        }
+
         return new BattleLogInfo()
         {
             type = type,
-            playerBattleMonsterList = playerBattleMonsterList,
-            enemyBattleMonsterList = enemyBattleMonsterList,
-            doBattleMonsterIndex = doBattleMonsterIndex,
-            beDoneBattleMonsterIndex = beDoneBattleMonsterIndex,
+            playerBattleMonsterList = new List<BattleMonsterInfo>(playerBattleMonsterList),
+            enemyBattleMonsterList = new List<BattleMonsterInfo>(enemyBattleMonsterList),
+            doBattleMonsterIndex = new BattleMonsterIndex(doBattleMonsterIndex),
+            beDoneBattleMonsterIndex = new BattleMonsterIndex(beDoneBattleMonsterIndex),
             waveCount = currentWaveCount,
             turnCount = currentTurnCount,
             winOrLose = currentWinOrLose,
+            log = log,
+            damage = damage,
         };
     }
 
