@@ -34,16 +34,6 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         maxWaveCount = 3;
         battleResult = new BattleResult() { wol = WinOrLose.Continue };
         this.userMonsterPartyId = userMonsterPartyId;
-
-        var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
-        var battleDataProcessor = new BattleDataProcessor();
-        battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
-        battleLogList.ForEach(l =>
-        {
-            Debug.Log("------------------");
-            Debug.Log(GetLogText(l));
-            Debug.Log($"{string.Join(" ", l.playerBattleMonsterList.Select(m => m.currentHp))} vs {string.Join(" ", l.enemyBattleMonsterList.Select(m => m.currentHp))}");
-        });
     }
 
     public static string GetLogText(BattleLogInfo battleLog)
@@ -88,20 +78,29 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
 
             Observable.ReturnUnit()
                 .SelectMany(_ => FadeInObservable())
-                .SelectMany(_ => (
-                    // バトルのターン進行開始
-                    Observable.Create<Unit>(battleTurnObserver => {
-                        this.battleTurnObserver = battleTurnObserver;
-                        StartTurnProgress();
-                        return Disposable.Empty;
-                    })
-                ))
-                .SelectMany(_ => ShowResultDialogObservable())
+                .SelectMany(_ =>{
+                    // バトルアニメーションの再生
+                    var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
+                    var battleDataProcessor = new BattleDataProcessor();
+                    battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
+                    var observableList = battleLogList.SelectMany(battleLog => PlayAnimationObservable(battleLog)).ToList();
+                    return Observable.ReturnUnit().Concat(observableList.ToArray());
+                })
                 .SelectMany(_ => FadeOutObservable())
                 .Subscribe();
 
             return Disposable.Empty;
         });
+    }
+    
+    /// <summary>
+    /// バトルログ情報に応じたアニメーションを再生する
+    /// </summary>
+    private IObservable<Unit> PlayAnimationObservable(BattleLogInfo battleLog){
+        Debug.Log("------------------");
+        Debug.Log(GetLogText(battleLog));
+        Debug.Log($"{string.Join(" ", battleLog.playerBattleMonsterList.Select(m => m.currentHp))} vs {string.Join(" ", battleLog.enemyBattleMonsterList.Select(m => m.currentHp))}");
+        return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();
     }
 
     /// <summary>
