@@ -20,6 +20,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     private int currentWaveCount;
     private int maxWaveCount;
     private string userMonsterPartyId;
+    private List<BattleLogInfo> battleLogList;
 
     /// <summary>
     /// 初期化処理
@@ -33,6 +34,45 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         maxWaveCount = 3;
         battleResult = new BattleResult() { wol = WinOrLose.Continue };
         this.userMonsterPartyId = userMonsterPartyId;
+
+        var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
+        var battleDataProcessor = new BattleDataProcessor();
+        battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
+        battleLogList.ForEach(l =>
+        {
+            Debug.Log("------------------");
+            Debug.Log(GetLogText(l));
+            Debug.Log($"{string.Join(" ", l.playerBattleMonsterList.Select(m => m.currentHp))} vs {string.Join(" ", l.enemyBattleMonsterList.Select(m => m.currentHp))}");
+        });
+    }
+
+    public static string GetLogText(BattleLogInfo battleLog)
+    {
+        var log = battleLog.log;
+
+        if (battleLog.log.Contains("{do}"))
+        {
+            if (battleLog.doBattleMonsterIndex == null) return log;
+
+            var battleMonsterList = battleLog.doBattleMonsterIndex.isPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
+            var doBattleMonster = battleMonsterList.First(m => m.index.index == battleLog.doBattleMonsterIndex.index);
+            // TODO: 実際のモンスターを取得
+            var monsterName = $"{(battleLog.doBattleMonsterIndex.isPlayer ? "" : "あいての")}モンスター{battleLog.doBattleMonsterIndex.index + 1}";
+            log = log.Replace("{do}", monsterName);
+        }
+
+        if (battleLog.log.Contains("{beDone}"))
+        {
+            if (battleLog.beDoneBattleMonsterIndex == null) return log;
+
+            var battleMonsterList = battleLog.beDoneBattleMonsterIndex.isPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
+            var beDoneBattleMonster = battleMonsterList.First(m => m.index.index == battleLog.beDoneBattleMonsterIndex.index);
+            // TODO: 実際のモンスターを取得
+            var monsterName = $"{(battleLog.beDoneBattleMonsterIndex.isPlayer ? "" : "あいての")}モンスター{battleLog.beDoneBattleMonsterIndex.index + 1}";
+            log = log.Replace("{beDone}", monsterName);
+        }
+
+        return log;
     }
 
     /// <summary>
