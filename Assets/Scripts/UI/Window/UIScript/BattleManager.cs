@@ -31,7 +31,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         currentTurnCount = 0;
         currentTurnCountInWave = 0;
         currentWaveCount = 0;
-        maxWaveCount = 3;
+        maxWaveCount = quest.questWaveIdList.Count;
         battleResult = new BattleResult() { wol = WinOrLose.Continue };
         this.userMonsterPartyId = userMonsterPartyId;
     }
@@ -100,7 +100,13 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         Debug.Log("------------------");
         Debug.Log(GetLogText(battleLog));
         Debug.Log($"{string.Join(" ", battleLog.playerBattleMonsterList.Select(m => m.currentHp))} vs {string.Join(" ", battleLog.enemyBattleMonsterList.Select(m => m.currentHp))}");
-        return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();
+        
+        switch(battleLog.type){
+            case BattleLogType.MoveWave:
+                return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
+            default:
+                return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();
+        }
     }
 
     /// <summary>
