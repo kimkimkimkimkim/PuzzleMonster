@@ -83,8 +83,8 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
                     var battleDataProcessor = new BattleDataProcessor();
                     battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
-                    var observableList = battleLogList.SelectMany(battleLog => PlayAnimationObservable(battleLog)).ToList();
-                    return Observable.ReturnUnit().Concat(observableList.ToArray());
+                    var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
+                    return Observable.ReturnUnit().Connect(observableList.ToArray());
                 })
                 .SelectMany(_ => FadeOutObservable())
                 .Subscribe();
@@ -97,16 +97,24 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// バトルログ情報に応じたアニメーションを再生する
     /// </summary>
     private IObservable<Unit> PlayAnimationObservable(BattleLogInfo battleLog){
-        Debug.Log("------------------");
-        Debug.Log(GetLogText(battleLog));
-        Debug.Log($"{string.Join(" ", battleLog.playerBattleMonsterList.Select(m => m.currentHp))} vs {string.Join(" ", battleLog.enemyBattleMonsterList.Select(m => m.currentHp))}");
-        
-        switch(battleLog.type){
-            case BattleLogType.MoveWave:
-                return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
-            default:
-                return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();
-        }
+
+        return Observable.ReturnUnit()
+            .Do(_ =>
+            {
+                Debug.Log("------------------");
+                Debug.Log(GetLogText(battleLog));
+                Debug.Log($"{string.Join(" ", battleLog.playerBattleMonsterList.Select(m => m.currentHp))} vs {string.Join(" ", battleLog.enemyBattleMonsterList.Select(m => m.currentHp))}");
+            })
+            .SelectMany(_ =>
+            {
+                switch (battleLog.type)
+                {
+                    case BattleLogType.MoveWave:
+                        return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
+                    default:
+                        return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();
+                }
+            });
     }
 
     /// <summary>
