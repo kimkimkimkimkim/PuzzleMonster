@@ -107,10 +107,20 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             })
             .SelectMany(_ =>
             {
+                var isBeDoneMonsterPlayer = battleLog.beDoneBattleMonsterIndex.isPlayer;
+                var beDoneMonsterList = isBeDoneMonsterPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
+                var beDoneMonster = beDoneMonsterList.First(m => m.index.index == battleLog.beDoneBattleMonsterIndex.index);
+
                 switch (battleLog.type)
                 {
                     case BattleLogType.MoveWave:
                         return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
+                    case BattleLogType.StartAttack:
+                        return battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex, battleLog.beDoneBattleMonsterIndex);
+                    case BattleLogType.TakeDamage:
+                        return battleWindow.PlayTakeDamageAnimationObservable(battleLog.beDoneBattleMonsterIndex, battleLog.damage, beDoneMonster.currentHp);
+                    case BattleLogType.Die:
+                        return battleWindow.PlayDieAnimationObservable(battleLog.beDoneBattleMonsterIndex);
                     default:
                         return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();
                 }

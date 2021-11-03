@@ -8,8 +8,8 @@ using UnityEngine;
 [ResourcePath("UI/Window/Window-Battle")]
 public class BattleWindowUIScript : DummyWindowBase
 {
-    [SerializeField] protected List<GameObject> _playerMonsterBaseList;
-    [SerializeField] protected List<GameObject> _enemyMonsterBaseList;
+    [SerializeField] protected List<BattleMonsterBase> _playerMonsterBaseList;
+    [SerializeField] protected List<BattleMonsterBase> _enemyMonsterBaseList;
     [SerializeField] protected Transform _waveFxParent;
 
     private UserMonsterPartyInfo userMonsterParty;
@@ -33,6 +33,7 @@ public class BattleWindowUIScript : DummyWindowBase
                 var parent = _playerMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
 
+                parent.SetBattleMonsterItem(item);
                 item.Init(userMonster.monsterId, userMonster.customData.level);
             }
         });
@@ -40,6 +41,14 @@ public class BattleWindowUIScript : DummyWindowBase
 
     public void SetEnemyMonsterImage(int waveCount)
     {
+        _enemyMonsterBaseList.ForEach(monsterBase =>
+        {
+            foreach (GameObject child in monsterBase.transform)
+            {
+                Destroy(child);
+            }
+        });
+
         var waveIndex = waveCount - 1;
         var questWaveId = quest.questWaveIdList[waveIndex];
         var questWave = MasterRecord.GetMasterOf<QuestWaveMB>().Get(questWaveId);
@@ -52,9 +61,40 @@ public class BattleWindowUIScript : DummyWindowBase
                 var parent = _enemyMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
 
+                parent.SetBattleMonsterItem(item);
                 item.Init(questMonster.monsterId, questMonster.level);
             }
         });
+    }
+
+    public IObservable<Unit> PlayAttackAnimationObservable(BattleMonsterIndex doBattleMonsterIndex, BattleMonsterIndex beDoneBattleMonsterIndex)
+    {
+        var isPlayer = doBattleMonsterIndex.isPlayer;
+        var doMonsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
+        var beDoneMonsterBaseList = isPlayer ? _enemyMonsterBaseList : _playerMonsterBaseList;
+        var doMonsterRT = doMonsterBaseList[doBattleMonsterIndex.index].battleMonsterItem.GetComponent<RectTransform>();
+        var beDoneMonsterBase = beDoneMonsterBaseList[beDoneBattleMonsterIndex.index];
+
+        return VisualFxManager.Instance.PlayNormalAttackFxObservable(doMonsterRT, beDoneMonsterBase.transform, isPlayer);
+    }
+
+    public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleMonsterIndex beDoneBattleMonsterIndex, int damage, int currentHp)
+    {
+        var isPlayer = beDoneBattleMonsterIndex.isPlayer;
+        var monsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
+        var monsterBase = monsterBaseList[beDoneBattleMonsterIndex.index];
+        var slider = monsterBase.battleMonsterItem.GetComponent<BattleMonsterItem>().hpSlider;
+
+        return VisualFxManager.Instance.PlayTakeDamageFxObservable(slider, monsterBase.transform, damage, currentHp);
+    }
+
+    public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterIndex battleMonsterIndex)
+    {
+        var isPlayer = battleMonsterIndex.isPlayer;
+        var monsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
+        var monster = monsterBaseList[battleMonsterIndex.index].battleMonsterItem.gameObject;
+        monster.SetActive(false);
+        return Observable.ReturnUnit();
     }
     
     public IObservable<Unit> PlayWaveTitleFxObservable(int currentWaveCount, int maxWaveCount){

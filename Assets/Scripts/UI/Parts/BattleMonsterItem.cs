@@ -15,6 +15,8 @@ public class BattleMonsterItem : MonoBehaviour
     [SerializeField] protected Slider _ctSlider;
     [SerializeField] protected TextMeshProUGUI _levelText;
 
+    public Slider hpSlider { get { return _hpSlider; } }
+
     public void Init(long monsterId, int level)
     {
         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(monsterId);

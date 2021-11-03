@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1399985937879775868}
+  - component: {fileID: 9184753656670367273}
   m_Layer: 5
   m_Name: EnemeyMonsterBase
   m_TagString: Untagged
@@ -35,6 +36,18 @@ RectTransform:
   m_AnchoredPosition: {x: 123, y: 96}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &9184753656670367273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1765632346362857480}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcb6c4eb2067254cb1aec8051493b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1896734855961016788
 GameObject:
   m_ObjectHideFlags: 0
@@ -44,6 +57,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9130935149245015031}
+  - component: {fileID: 5955615153499888780}
   m_Layer: 5
   m_Name: PlayerMonsterBase
   m_TagString: Untagged
@@ -70,6 +84,18 @@ RectTransform:
   m_AnchoredPosition: {x: 39, y: 424}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5955615153499888780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896734855961016788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcb6c4eb2067254cb1aec8051493b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1984294497775427492
 GameObject:
   m_ObjectHideFlags: 0
@@ -79,6 +105,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7153941884134600819}
+  - component: {fileID: 5591499672085863375}
   m_Layer: 5
   m_Name: EnemeyMonsterBase
   m_TagString: Untagged
@@ -105,6 +132,18 @@ RectTransform:
   m_AnchoredPosition: {x: 123, y: -593}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5591499672085863375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984294497775427492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcb6c4eb2067254cb1aec8051493b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2351351459284379175
 GameObject:
   m_ObjectHideFlags: 0
@@ -154,6 +193,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7288735775292821154}
+  - component: {fileID: 7987534059362837891}
   m_Layer: 5
   m_Name: PlayerMonsterBase
   m_TagString: Untagged
@@ -180,6 +220,18 @@ RectTransform:
   m_AnchoredPosition: {x: -129, y: 692}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &7987534059362837891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2515800764946972564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcb6c4eb2067254cb1aec8051493b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4121902857772705484
 GameObject:
   m_ObjectHideFlags: 0
@@ -189,6 +241,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 517870594312339840}
+  - component: {fileID: 2537093813638198137}
   m_Layer: 5
   m_Name: PlayerMonsterBase
   m_TagString: Untagged
@@ -215,6 +268,18 @@ RectTransform:
   m_AnchoredPosition: {x: -129, y: -593}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2537093813638198137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4121902857772705484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcb6c4eb2067254cb1aec8051493b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4157546103452131133
 GameObject:
   m_ObjectHideFlags: 0
@@ -262,6 +327,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5659398550505735567}
+  - component: {fileID: 176153957624761627}
   m_Layer: 5
   m_Name: EnemeyMonsterBase
   m_TagString: Untagged
@@ -288,6 +354,18 @@ RectTransform:
   m_AnchoredPosition: {x: -39, y: -186}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &176153957624761627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4639738736526722140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcb6c4eb2067254cb1aec8051493b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4662448631914266761
 GameObject:
   m_ObjectHideFlags: 0
@@ -297,6 +375,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8956346446023311429}
+  - component: {fileID: 6442409903550508144}
   m_Layer: 5
   m_Name: PlayerMonsterBase
   m_TagString: Untagged
@@ -323,6 +402,18 @@ RectTransform:
   m_AnchoredPosition: {x: -129, y: 96}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6442409903550508144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4662448631914266761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcb6c4eb2067254cb1aec8051493b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5055906920297375120
 GameObject:
   m_ObjectHideFlags: 0
@@ -446,6 +537,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7068610574905764965}
+  - component: {fileID: 4180092292750701911}
   m_Layer: 5
   m_Name: EnemeyMonsterBase
   m_TagString: Untagged
@@ -472,6 +564,18 @@ RectTransform:
   m_AnchoredPosition: {x: -39, y: 424}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &4180092292750701911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6485110337537631416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcb6c4eb2067254cb1aec8051493b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7507965819841521436
 GameObject:
   m_ObjectHideFlags: 0
@@ -481,6 +585,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4773571025909414267}
+  - component: {fileID: 8751453827008512215}
   m_Layer: 5
   m_Name: EnemeyMonsterBase
   m_TagString: Untagged
@@ -507,6 +612,18 @@ RectTransform:
   m_AnchoredPosition: {x: 123, y: 692}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &8751453827008512215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7507965819841521436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcb6c4eb2067254cb1aec8051493b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7512430614011470460
 GameObject:
   m_ObjectHideFlags: 0
@@ -516,6 +633,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7449178710160662749}
+  - component: {fileID: 3348718902713184110}
   m_Layer: 5
   m_Name: PlayerMonsterBase
   m_TagString: Untagged
@@ -542,6 +660,18 @@ RectTransform:
   m_AnchoredPosition: {x: 39, y: -186}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &3348718902713184110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7512430614011470460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcb6c4eb2067254cb1aec8051493b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8327287749294248292
 GameObject:
   m_ObjectHideFlags: 0
@@ -605,17 +735,17 @@ MonoBehaviour:
   _windowFrameRT: {fileID: 5547545030325059899}
   _fullScreenBaseRT: {fileID: 1496277268329161562}
   _playerMonsterBaseList:
-  - {fileID: 1896734855961016788}
-  - {fileID: 7512430614011470460}
-  - {fileID: 2515800764946972564}
-  - {fileID: 4662448631914266761}
-  - {fileID: 4121902857772705484}
+  - {fileID: 5955615153499888780}
+  - {fileID: 3348718902713184110}
+  - {fileID: 7987534059362837891}
+  - {fileID: 6442409903550508144}
+  - {fileID: 2537093813638198137}
   _enemyMonsterBaseList:
-  - {fileID: 6485110337537631416}
-  - {fileID: 4639738736526722140}
-  - {fileID: 7507965819841521436}
-  - {fileID: 1765632346362857480}
-  - {fileID: 1984294497775427492}
+  - {fileID: 4180092292750701911}
+  - {fileID: 176153957624761627}
+  - {fileID: 8751453827008512215}
+  - {fileID: 9184753656670367273}
+  - {fileID: 5591499672085863375}
   _waveFxParent: {fileID: 8148756855591634599}
 --- !u!1 &8496932333610989449
 GameObject:

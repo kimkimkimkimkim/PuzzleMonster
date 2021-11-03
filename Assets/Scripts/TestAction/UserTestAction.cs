@@ -135,6 +135,22 @@ public class UserTestAction : ITestAction
             })
         });
 
+        testActionDataList.Add(new TestActionData()
+        {
+            title = "ObservableText",
+            action = new Action(() =>
+            {
+                var observableList = new List<string>() { "a", "b", "c", "d", "e" }.Select(s =>
+                {
+                    return Observable.Timer(TimeSpan.FromSeconds(1)).Do(_ => Debug.Log(s)).AsUnitObservable();
+                });
+
+                Observable.WhenAll(Observable.ReturnUnit().Concat(observableList.ToArray()))
+                    .Do(_ => Debug.Log("=================== end =================="))
+                    .Subscribe();
+            })
+        });
+
         return testActionDataList;
 
     }

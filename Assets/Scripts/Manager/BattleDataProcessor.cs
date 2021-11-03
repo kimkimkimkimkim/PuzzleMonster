@@ -72,11 +72,11 @@ public class BattleDataProcessor
 
         // 攻撃開始ログ
         doBattleMonsterIndex = nextActIndex;
+        beDoneBattleMonsterIndex = GetAttackTargetBattleMonsterIndex(doBattleMonsterIndex); // TODO: 攻撃対象取得処理の実装
         var startAttackLog = GetCurrentBattleLogInfo(BattleLogType.StartAttack);
         actionLogList.Add(startAttackLog);
 
         // 被ダメージログ
-        beDoneBattleMonsterIndex = GetAttackTargetBattleMonsterIndex(doBattleMonsterIndex); // TODO: 攻撃対象取得処理の実装
         var takeDamageLog = GetCurrentBattleLogInfo(BattleLogType.TakeDamage);
         actionLogList.Add(takeDamageLog);
 

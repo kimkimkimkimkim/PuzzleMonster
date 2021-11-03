@@ -47,4 +47,13 @@ public class PMAddressableAssetUtil
         var address = $"{ASSET_PATH_PREFIX}/NormalAttackEffect/Prefab/{attackId}.prefab";
         return AddressableAssetController.InstantiateAsObservable<ParticleSystem>(address, parent);
     }
+
+    /// <summary>
+    /// 通常攻撃演出Prefabを取得する
+    /// </summary>
+    public static IObservable<ParticleSystem> InstantiateNormalAttackFxObservable(Transform parent)
+    {
+        var address = $"{ASSET_PATH_PREFIX}/NormalAttackEffect/Prefab/1.prefab";
+        return AddressableAssetController.InstantiateAsObservable<ParticleSystem>(address, parent);
+    }
 }
