@@ -20,6 +20,10 @@ public class BattleDataProcessor
         Init(userMonsterParty, quest);
         
         var battleLogList = new List<BattleLogInfo>();
+
+        // 最初にWave1開始のログを追加する
+        battleLogList.Add(GetCurrentBattleLogInfo(BattleLogType.MoveWave)); 
+
         while(currentWinOrLose == WinOrLose.Continue){
             battleLogList.AddRange(CalculateBattleLogList());
         }

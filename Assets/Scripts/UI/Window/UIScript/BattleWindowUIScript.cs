@@ -10,7 +10,7 @@ public class BattleWindowUIScript : DummyWindowBase
 {
     [SerializeField] protected List<BattleMonsterBase> _playerMonsterBaseList;
     [SerializeField] protected List<BattleMonsterBase> _enemyMonsterBaseList;
-    [SerializeField] protected Transform _waveFxParent;
+    [SerializeField] protected Transform _fxParent;
 
     private UserMonsterPartyInfo userMonsterParty;
     private QuestMB quest;
@@ -98,6 +98,11 @@ public class BattleWindowUIScript : DummyWindowBase
     }
     
     public IObservable<Unit> PlayWaveTitleFxObservable(int currentWaveCount, int maxWaveCount){
-        return VisualFxManager.Instance.PlayWaveTitleFxObservable(_waveFxParent, currentWaveCount, maxWaveCount);
+        return VisualFxManager.Instance.PlayWaveTitleFxObservable(_fxParent, currentWaveCount, maxWaveCount);
+    }
+
+    public IObservable<Unit> PlayWinAnimationObservable()
+    {
+        return VisualFxManager.Instance.PlayWinBattleFxObservable(_fxParent);
     }
 }

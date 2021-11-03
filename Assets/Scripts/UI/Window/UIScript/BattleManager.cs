@@ -107,9 +107,9 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             })
             .SelectMany(_ =>
             {
-                var isBeDoneMonsterPlayer = battleLog.beDoneBattleMonsterIndex.isPlayer;
+                var isBeDoneMonsterPlayer = battleLog.beDoneBattleMonsterIndex?.isPlayer ?? false;
                 var beDoneMonsterList = isBeDoneMonsterPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
-                var beDoneMonster = beDoneMonsterList.First(m => m.index.index == battleLog.beDoneBattleMonsterIndex.index);
+                var beDoneMonster = beDoneMonsterList.FirstOrDefault(m => m.index.index == battleLog.beDoneBattleMonsterIndex?.index);
 
                 switch (battleLog.type)
                 {
@@ -121,6 +121,15 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                         return battleWindow.PlayTakeDamageAnimationObservable(battleLog.beDoneBattleMonsterIndex, battleLog.damage, beDoneMonster.currentHp);
                     case BattleLogType.Die:
                         return battleWindow.PlayDieAnimationObservable(battleLog.beDoneBattleMonsterIndex);
+                    case BattleLogType.Result:
+                        if (battleLog.winOrLose == WinOrLose.Win)
+                        {
+                            return battleWindow.PlayWinAnimationObservable();
+                        }
+                        else
+                        {
+                            return Observable.ReturnUnit();
+                        }
                     default:
                         return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();
                 }
