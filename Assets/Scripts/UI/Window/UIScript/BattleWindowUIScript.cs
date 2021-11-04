@@ -21,7 +21,6 @@ public class BattleWindowUIScript : DummyWindowBase
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
 
         SetPlayerMonsterImage();
-        SetEnemyMonsterImage(1);
     }
 
     private void SetPlayerMonsterImage()
@@ -43,9 +42,9 @@ public class BattleWindowUIScript : DummyWindowBase
     {
         _enemyMonsterBaseList.ForEach(monsterBase =>
         {
-            foreach (GameObject child in monsterBase.transform)
+            foreach (Transform child in monsterBase.transform)
             {
-                Destroy(child);
+                Destroy(child.gameObject);
             }
         });
 
@@ -98,6 +97,7 @@ public class BattleWindowUIScript : DummyWindowBase
     }
     
     public IObservable<Unit> PlayWaveTitleFxObservable(int currentWaveCount, int maxWaveCount){
+        SetEnemyMonsterImage(currentWaveCount);
         return VisualFxManager.Instance.PlayWaveTitleFxObservable(_fxParent, currentWaveCount, maxWaveCount);
     }
 
