@@ -128,7 +128,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                         }
                         else
                         {
-                            return Observable.ReturnUnit();
+                            return battleWindow.PlayLoseAnimationObservable();
                         }
                     default:
                         return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();

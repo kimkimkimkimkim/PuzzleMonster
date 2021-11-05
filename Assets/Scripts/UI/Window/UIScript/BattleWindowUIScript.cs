@@ -103,6 +103,11 @@ public class BattleWindowUIScript : DummyWindowBase
 
     public IObservable<Unit> PlayWinAnimationObservable()
     {
-        return VisualFxManager.Instance.PlayWinBattleFxObservable(_fxParent);
+        return VisualFxManager.Instance.PlayWinBattleFxObservable(_fxParent).Delay(TimeSpan.FromSeconds(1));
+    }
+
+    public IObservable<Unit> PlayLoseAnimationObservable()
+    {
+        return VisualFxManager.Instance.PlayLoseBattleFxObservable(_fxParent).Delay(TimeSpan.FromSeconds(1)); ;
     }
 }

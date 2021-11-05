@@ -110,6 +110,16 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             .Do(_ => UIManager.Instance.TryHideTapBlocker());
     }
 
+    public IObservable<Unit> PlayLoseBattleFxObservable(Transform parent)
+    {
+        UIManager.Instance.ShowTapBlocker();
+        return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<LoseBattleFx>(parent)
+            .SelectMany(fx => {
+                return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();
+            })
+            .Do(_ => UIManager.Instance.TryHideTapBlocker());
+    }
+
     /// <summary>
     /// 被ダメージ演出の再生
     /// </summary>
