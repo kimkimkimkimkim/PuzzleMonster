@@ -86,6 +86,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
                     return Observable.ReturnUnit().Connect(observableList.ToArray());
                 })
+                .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest()))
                 .SelectMany(_ => FadeOutObservable())
                 .Subscribe();
 

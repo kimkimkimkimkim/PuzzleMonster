@@ -115,7 +115,12 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         UIManager.Instance.ShowTapBlocker();
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<LoseBattleFx>(parent)
             .SelectMany(fx => {
-                return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();
+                return Observable.Timer(TimeSpan.FromSeconds(1))
+                    .Do(_ =>
+                    {
+                        if (fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
+                    })
+                    .AsUnitObservable();
             })
             .Do(_ => UIManager.Instance.TryHideTapBlocker());
     }
