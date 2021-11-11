@@ -231,7 +231,8 @@ public class BattleDataProcessor
             var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
             if (userMonster != null)
             {
-                var battleMonster = BattleUtil.GetBattleMonster(userMonster, true, index);
+                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
+                var battleMonster = BattleUtil.GetBattleMonster(monster, userMonster.customData.level, true, index);
                 playerBattleMonsterList.Add(battleMonster);
             }
         });
@@ -249,7 +250,8 @@ public class BattleDataProcessor
             var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().GetAll().FirstOrDefault(m => m.id == questMonsterId);
             if (questMonster != null)
             {
-                var battleMonster = BattleUtil.GetBattleMonster(questMonster, false, index);
+                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(questMonster.monsterId);
+                var battleMonster = BattleUtil.GetBattleMonster(monster,questMonster.level, false, index);
                 enemyBattleMonsterList.Add(battleMonster);
             }
         });
