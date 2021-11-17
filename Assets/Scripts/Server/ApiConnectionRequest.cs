@@ -229,5 +229,17 @@ public partial class ApiConnection
             consumeStamina = consumeStamina,
         });
     }
+
+    /// <summary>
+    /// バトル結果情報を取得する
+    /// </summary>
+    public static IObservable<GetBattleResultApiResponse> GetBattleResult(string userMonsterPartyId, long questId)
+    {
+        return SendRequest<GetBattleResultApiRequest, GetBattleResultApiResponse>(GetBattleResultApiInterface.functionName, new GetBattleResultApiRequest()
+        {
+            userMonsterPartyId = userMonsterPartyId,
+            questId = questId,
+        });
+    }
     #endregion
 }

@@ -119,7 +119,7 @@ public class HeaderFooterWindowUIScript : WindowBase
             staminaCountDownObservable = null;
         }
 
-        var span = DateTimeUtil.Now() - ApplicationContext.userData.lastCalculatedStaminaDateTime;
+        var span = DateTimeUtil.Now - ApplicationContext.userData.lastCalculatedStaminaDateTime;
         elapsedTimeMilliSeconds = span.TotalMilliseconds;
 
         var initialMinutes = (int)((ConstManager.User.millSecondsPerStamina - elapsedTimeMilliSeconds) / 60);

@@ -11,13 +11,9 @@ using PM.Enum.Monster;
 public class BattleManager : SingletonMonoBehaviour<BattleManager>
 {
     private IObserver<BattleResult> battleObserver;
-    private IObserver<Unit> battleTurnObserver;
     private BattleWindowUIScript battleWindow;
     private BattleResult battleResult;
     private QuestMB quest;
-    private int currentTurnCount;
-    private int currentTurnCountInWave;
-    private int currentWaveCount;
     private int maxWaveCount;
     private string userMonsterPartyId;
     private List<BattleLogInfo> battleLogList;
@@ -28,9 +24,6 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     private void Init(long questId, string userMonsterPartyId)
     {
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
-        currentTurnCount = 0;
-        currentTurnCountInWave = 0;
-        currentWaveCount = 0;
         maxWaveCount = quest.questWaveIdList.Count;
         battleResult = new BattleResult() { wol = WinOrLose.Continue };
         this.userMonsterPartyId = userMonsterPartyId;
@@ -76,13 +69,15 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         return Observable.Create<BattleResult>(battleObserver => {
             this.battleObserver = battleObserver;
 
-            Observable.ReturnUnit()
-                .SelectMany(_ => FadeInObservable())
+            GetBattleResultApiResponse response = null;
+            Observable.WhenAll(
+                FadeInObservable(),
+                ApiConnection.GetBattleResult(userMonsterPartyId, questId).Do(res => response = res).AsUnitObservable()
+            )
                 .SelectMany(_ =>{
                     // バトルアニメーションの再生
                     var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
-                    var battleDataProcessor = new BattleDataProcessor();
-                    battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
+                    battleLogList = response.userBattleResult.battleLogList;
                     var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
                     return Observable.ReturnUnit().Connect(observableList.ToArray());
                 })
@@ -183,150 +178,5 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     battleObserver = null;
                 }
             });
-    }
-
-    /// <summary>
-    /// バトルのターン進行を開始する
-    /// </summary>
-    private void StartTurnProgress()
-    {
-        Observable.ReturnUnit()
-            .Do(_ => Debug.Log($"ターン{currentTurnCount}開始"))
-            .SelectMany(_ => CountUpTurnObservable())
-            .SelectMany(isMoveNextWave => MoveNextWaveObservable(isMoveNextWave))
-            .SelectMany(_ => CreateEnemyObservable())
-            .SelectMany(_ => StartPlayerAttackObservable())
-            .SelectMany(_ => StartEnemyAttackObservable())
-            .SelectMany(_ => JudgeContinueBattleObservable())
-            .Where(isContinue => isContinue)
-            .RepeatSafe()
-            .Subscribe();
-    }
-
-    /// <summary>
-    /// 各種ターンの計算を行う
-    /// </summary>
-    private IObservable<bool> CountUpTurnObservable()
-    {
-        // 勝敗がついていれば何もしない
-        if (battleResult.wol != WinOrLose.Continue) return Observable.Return(false);
-
-        var isNoEnemy = true;
-        var isMaxWave = currentWaveCount == maxWaveCount;
-        var isMoveNextWave = isNoEnemy && !isMaxWave;
-
-        // 敵が全滅かつ最終Waveではないなら次のWaveに移動
-        if (isMoveNextWave)
-        {
-            currentWaveCount++;
-            currentTurnCountInWave = 0;
-        }
-
-        currentTurnCount++;
-        currentTurnCountInWave++;
-
-        return Observable.Return(isMoveNextWave);
-    }
-
-    /// <summary>
-    /// 次のウェーブに移動する
-    /// </summary>
-    private IObservable<Unit> MoveNextWaveObservable(bool isMoveNextWave)
-    {
-        // 勝敗がついていれば何もしない
-        if (battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
-
-        if (isMoveNextWave)
-        {
-            return VisualFxManager.Instance.PlayWaveTitleFxObservable(battleWindow._windowFrameRT, currentWaveCount, maxWaveCount);
-        }
-
-        return Observable.ReturnUnit();
-    }
-
-    /// <summary>
-    /// 敵を生成する
-    /// </summary>
-    private IObservable<Unit> CreateEnemyObservable()
-    {
-        // 勝敗がついていれば何もしない
-        if (battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
-
-        // Waveの最初のターンでなければ何もしない
-        if (currentTurnCountInWave != 1) return Observable.ReturnUnit();
-
-        var questWaveId = quest.questWaveIdList[currentWaveCount - 1];
-        var questWave = MasterRecord.GetMasterOf<QuestWaveMB>().Get(questWaveId);
-        var questMonsterList = questWave.questMonsterIdList.Select(id => MasterRecord.GetMasterOf<QuestMonsterMB>().Get(id)).ToList();
-
-        return Observable.ReturnUnit();
-    }
-
-    /// <summary>
-    /// プレイヤーの攻撃フェイズを開始する
-    /// </summary>
-    private IObservable<Unit> StartPlayerAttackObservable()
-    {
-        // 勝敗がついていれば何もしない
-        if (battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
-
-        JudgeWinOrLose();
-
-        return Observable.ReturnUnit();
-    }
-
-    /// <summary>
-    /// 敵の攻撃フェイズを開始する
-    /// </summary>
-    private IObservable<Unit> StartEnemyAttackObservable()
-    {
-        // 勝敗がついていれば何もしない
-        if (battleResult.wol != WinOrLose.Continue) return Observable.ReturnUnit();
-
-        JudgeWinOrLose();
-
-        return Observable.ReturnUnit();
-    }
-
-    /// <summary>
-    /// バトルを続行するか（勝敗がついたか）否かを判定する
-    /// </summary>
-    private IObservable<bool> JudgeContinueBattleObservable()
-    {
-        if (battleResult.wol == WinOrLose.Win || battleResult.wol == WinOrLose.Lose)
-        {
-            // 勝敗がついたのでバトルを終了
-            if (battleTurnObserver != null)
-            {
-                Observable.NextFrame()
-                    .Do(_ => {
-                        battleTurnObserver.OnNext(Unit.Default);
-                        battleTurnObserver.OnCompleted();
-                        battleTurnObserver = null;
-                    })
-                    .Subscribe();
-            }
-            return Observable.NextFrame().Select(_ => false);
-        }
-        else
-        {
-            // まだ続行
-            return Observable.NextFrame().Select(_ => true);
-        }
-    }
-
-    /// <summary>
-    /// 勝敗を判定する
-    /// </summary>
-    private void JudgeWinOrLose()
-    {
-        if(currentWaveCount == maxWaveCount)
-        {
-            battleResult.wol = WinOrLose.Win;
-        }
-        else
-        {
-            battleResult.wol = WinOrLose.Continue;
-        }
     }
 }
