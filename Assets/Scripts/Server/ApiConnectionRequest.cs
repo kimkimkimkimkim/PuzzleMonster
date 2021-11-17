@@ -231,11 +231,11 @@ public partial class ApiConnection
     }
 
     /// <summary>
-    /// バトル結果情報を取得する
+    /// バトルを実行する
     /// </summary>
-    public static IObservable<GetBattleResultApiResponse> GetBattleResult(string userMonsterPartyId, long questId)
+    public static IObservable<ExecuteBattleApiResponse> ExecuteBattle(string userMonsterPartyId, long questId)
     {
-        return SendRequest<GetBattleResultApiRequest, GetBattleResultApiResponse>(GetBattleResultApiInterface.functionName, new GetBattleResultApiRequest()
+        return SendRequest<ExecuteBattleApiRequest, ExecuteBattleApiResponse>(ExecuteBattleApiInterface.functionName, new ExecuteBattleApiRequest()
         {
             userMonsterPartyId = userMonsterPartyId,
             questId = questId,

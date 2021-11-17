@@ -69,15 +69,15 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         return Observable.Create<BattleResult>(battleObserver => {
             this.battleObserver = battleObserver;
 
-            GetBattleResultApiResponse response = null;
+            ExecuteBattleApiResponse response = null;
             Observable.WhenAll(
                 FadeInObservable(),
-                ApiConnection.GetBattleResult(userMonsterPartyId, questId).Do(res => response = res).AsUnitObservable()
+                ApiConnection.ExecuteBattle(userMonsterPartyId, questId).Do(res => response = res).AsUnitObservable()
             )
                 .SelectMany(_ =>{
                     // バトルアニメーションの再生
                     var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
-                    battleLogList = response.userBattleResult.battleLogList;
+                    battleLogList = response.userBattle.battleLogList;
                     var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
                     return Observable.ReturnUnit().Connect(observableList.ToArray());
                 })
