@@ -15,7 +15,14 @@ public class QuestCategoryWindowUIScript : WindowBase
     {
         base.Init(info);
 
-        questCategoryList = MasterRecord.GetMasterOf<QuestCategoryMB>().GetAll().ToList();
+        // カテゴリに含まれるクエストのうち一つでも表示条件を満たしているものがあれば表示する
+        questCategoryList = MasterRecord.GetMasterOf<QuestCategoryMB>().GetAll()
+            .Where(questCategory =>
+            {
+                var questList = MasterRecord.GetMasterOf<QuestMB>().GetAll().Where(quest => quest.questCategoryId == questCategory.id).ToList();
+                return questList.Any(quest => ConditionUtil.IsValid(ApplicationContext.userData,quest.displayConditionList));
+            })
+            .ToList();
 
         RefreshScroll();
     }

@@ -15,8 +15,12 @@ public class QuestListWindowUIScript : WindowBase
     {
         base.Init(info);
 
+        // ï\é¶èåèÇñûÇΩÇµÇΩÇ‡ÇÃÇæÇØï\é¶Ç∑ÇÈ
         var questCategoryId = (long)info.param["questCategoryId"];
-        questList = MasterRecord.GetMasterOf<QuestMB>().GetAll().Where(m => m.questCategoryId == questCategoryId).ToList();
+        questList = MasterRecord.GetMasterOf<QuestMB>().GetAll()
+            .Where(m => m.questCategoryId == questCategoryId)
+            .Where(m => ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList))
+            .ToList();
 
         RefreshScroll();
     }
@@ -34,8 +38,10 @@ public class QuestListWindowUIScript : WindowBase
 
         var scrollItem = item.GetComponent<QuestCategoryScrollItem>();
         var quest = questList[index];
+        var canExecute = ConditionUtil.IsValid(ApplicationContext.userData, quest.canExecuteConditionList);
 
         scrollItem.SetText(quest.name);
+        scrollItem.ShowGrayOutPanel(!canExecute);
         scrollItem.SetOnClickAction(() =>
         {
             QuestDetailWindowFactory.Create(new QuestDetailWindowRequest() { questId = quest.id })
