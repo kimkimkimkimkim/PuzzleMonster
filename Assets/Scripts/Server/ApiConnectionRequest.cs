@@ -241,5 +241,17 @@ public partial class ApiConnection
             questId = questId,
         });
     }
+
+    /// <summary>
+    /// 指定したバトルの報酬を受け取る
+    /// 勝っても負けても実行
+    /// </summary>
+    public static IObservable<ReceiveBattleRewardApiResponse> ReceiveBattleReward(UserBattleInfo userBattle)
+    {
+        return SendRequest<ReceiveBattleRewardApiRequest, ReceiveBattleRewardApiResponse>(ReceiveBattleRewardApiInterface.functionName, new ReceiveBattleRewardApiRequest()
+        {
+            userBattle = userBattle,
+        });
+    }
     #endregion
 }
