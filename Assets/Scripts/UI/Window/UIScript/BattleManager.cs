@@ -10,7 +10,6 @@ using PM.Enum.Monster;
 
 public class BattleManager : SingletonMonoBehaviour<BattleManager>
 {
-    private IObserver<BattleResult> battleObserver;
     private BattleWindowUIScript battleWindow;
     private BattleResult battleResult;
     private QuestMB quest;
@@ -60,33 +59,47 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
 
     /// <summary>
     /// バトルを開始する
+    /// フェードインまではする
     /// </summary>
     public IObservable<BattleResult> BattleStartObservable(long questId, string userMonsterPartyId)
     {
         // 初期化
         Init(questId, userMonsterPartyId);
-
-        return Observable.Create<BattleResult>(battleObserver => {
-            this.battleObserver = battleObserver;
-
-            ExecuteBattleApiResponse response = null;
-            Observable.WhenAll(
-                FadeInObservable(),
-                ApiConnection.ExecuteBattle(userMonsterPartyId, questId).Do(res => response = res).AsUnitObservable()
-            )
-                .SelectMany(_ =>{
-                    // バトルアニメーションの再生
-                    var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
-                    battleLogList = response.userBattle.battleLogList;
-                    var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
-                    return Observable.ReturnUnit().Connect(observableList.ToArray());
-                })
-                .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest()))
-                .SelectMany(_ => FadeOutObservable())
-                .Subscribe();
-
-            return Disposable.Empty;
-        });
+        
+        ExecuteBattleApiResponse response = null;
+        return Observable.WhenAll(
+            FadeInObservable(),
+            ApiConnection.ExecuteBattle(userMonsterPartyId, questId).Do(res => response = res).AsUnitObservable()
+        ).SelectMany(_ => BattleStartObservable(response.userBattle));
+    }
+    
+    /// <summary>
+    /// 既存のバトルを途中から再開する
+    /// フェードインまではする
+    /// </summary>
+    public IObservable<BattleResult> BattleResumeObservable(UserBattleInfo userBattle)
+    {
+        // 初期化
+        Init(userBattle.questId, userBattle.userMonsterPartyId);
+        
+        return FadeInObservable().SelectMany(_ => BattleStartObservable(userBattle));
+    }
+    
+    /// <summary>
+    /// バトルを開始する
+    /// アニメーション再生とフェードアウトまでする
+    /// </summary>
+    private IObservable<BattleResult> BattleStartObservable(UserBattleInfo uesrBattle)
+    {
+        // アニメーションリストを作成
+        battleLogList = userBattle.battleLogList;
+        var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
+        
+        return Observable.ReturnUnit().Connect(observableList.ToArray())
+            .SelectMany(_ => ApiConnection.ReceiveBattleReward(userBattle))
+            .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest()))
+            .SelectMany(_ => FadeOutObservable())
+            .Subscribe();
     }
     
     /// <summary>
@@ -141,7 +154,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             .SelectMany(res =>
             {
                 battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
-                battleWindow.Init(userMonsterPartyId, quest.id);
+                battleWindow.Init(userMonsterPartyId, quest.id); // TODO: 途中からの再生に対応できるように
                 HeaderFooterManager.Instance.Show(false);
                 return Observable.ReturnUnit();
             })
@@ -168,15 +181,6 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                 Destroy(battleWindow.gameObject);
                 HeaderFooterManager.Instance.Show(true);
             })
-            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0))
-            .Do(res =>
-            {
-                if (battleObserver != null)
-                {
-                    battleObserver.OnNext(battleResult);
-                    battleObserver.OnCompleted();
-                    battleObserver = null;
-                }
-            });
+            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0));
     }
 }
