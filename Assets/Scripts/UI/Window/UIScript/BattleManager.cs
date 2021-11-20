@@ -89,7 +89,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// バトルを開始する
     /// アニメーション再生とフェードアウトまでする
     /// </summary>
-    private IObservable<BattleResult> BattleStartObservable(UserBattleInfo uesrBattle)
+    private IObservable<BattleResult> BattleStartObservable(UserBattleInfo userBattle)
     {
         // アニメーションリストを作成
         battleLogList = userBattle.battleLogList;
@@ -99,7 +99,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             .SelectMany(_ => ApiConnection.ReceiveBattleReward(userBattle))
             .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest()))
             .SelectMany(_ => FadeOutObservable())
-            .Subscribe();
+            .Select(_ => new BattleResult() { wol = userBattle.winOrLose});
     }
     
     /// <summary>
