@@ -157,9 +157,10 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         _healSliderBack.value = monster.level100Heal;
 
         // モンスターの現在値
-        _hpSliderFront.value = userMonster.customData.hp;
-        _attackSliderFront.value = userMonster.customData.attack;
-        _healSliderFront.value = userMonster.customData.heal;
+        var status = MonsterUtil.GetMonsterStatus(monster, userMonster.customData.level);
+        _hpSliderFront.value = status.hp;
+        _attackSliderFront.value = status.attack;
+        _healSliderFront.value = status.heal;
 
         // レベルスライダー
         _levelSlider.minValue = minAfterLevel;
@@ -173,10 +174,11 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     private void RefreshUI()
     {
         // ステータステキスト
+        var currentStatus = MonsterUtil.GetMonsterStatus(monster, userMonster.customData.level);
         var afterStatus = MonsterUtil.GetMonsterStatus(monster, afterLevel);
-        _hpValueText.text = GetStatusValueText(afterStatus.hp, afterStatus.hp - userMonster.customData.hp);
-        _attackValueText.text = GetStatusValueText(afterStatus.attack, afterStatus.attack - userMonster.customData.attack);
-        _healValueText.text = GetStatusValueText(afterStatus.heal, afterStatus.heal - userMonster.customData.heal);
+        _hpValueText.text = GetStatusValueText(afterStatus.hp, afterStatus.hp - currentStatus.hp);
+        _attackValueText.text = GetStatusValueText(afterStatus.attack, afterStatus.attack - currentStatus.attack);
+        _healValueText.text = GetStatusValueText(afterStatus.heal, afterStatus.heal - currentStatus.heal);
 
         // ステータススライダー
         _hpSliderAfterValue.value = afterStatus.hp;

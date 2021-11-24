@@ -79,18 +79,19 @@ public class MonsterDetailDialogUIScript : DialogBase
         _monsterGradeParts.SetGradeImage(userMonster.customData.grade);
 
         // ステータス
+        var status = MonsterUtil.GetMonsterStatus(monster, userMonster.customData.level);
         _levelText.text = GetLevelText(userMonster.customData.level);
-        _hpText.text = userMonster.customData.hp.ToString();
-        _attackText.text = userMonster.customData.attack.ToString();
-        _healText.text = userMonster.customData.heal.ToString();
+        _hpText.text = status.hp.ToString();
+        _attackText.text = status.attack.ToString();
+        _healText.text = status.heal.ToString();
 
         // ゲージ
         _hpSliderBack.value = monster.level100Hp;
-        _hpSliderFront.value = userMonster.customData.hp;
+        _hpSliderFront.value = status.hp;
         _attackSliderBack.value = monster.level100Attack;
-        _attackSliderFront.value = userMonster.customData.attack;
+        _attackSliderFront.value = status.attack;
         _healSliderBack.value = monster.level100Heal;
-        _healSliderFront.value = userMonster.customData.heal;
+        _healSliderFront.value = status.heal;
 
         // モンスター画像、属性画像の設定
         return Observable.WhenAll(

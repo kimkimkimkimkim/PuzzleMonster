@@ -121,8 +121,8 @@ public static class GameUtil
     {
         return new BattleMonsterInfo()
         {
-            currentHp = userMonster.customData.hp,
-            baseAttack = userMonster.customData.attack,
+            //currentHp = userMonster.customData.hp,
+            //baseAttack = userMonster.customData.attack,
         };
     }
 

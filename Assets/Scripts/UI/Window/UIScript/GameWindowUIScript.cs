@@ -59,8 +59,8 @@ public class GameWindowUIScript : WindowBase
             new UserMonsterInfo()
             {
                 customData = new UserMonsterCustomData(){
-                    hp = 1000,
-                    attack = 100,
+                    //hp = 1000,
+                    //attack = 100,
                 }
             },
         };
@@ -69,43 +69,43 @@ public class GameWindowUIScript : WindowBase
             new UserMonsterInfo()
             {
                 customData = new UserMonsterCustomData(){
-                    hp = 100,
-                    attack = 100,
+                    //hp = 100,
+                    //attack = 100,
                 }
             },
             new UserMonsterInfo()
             {
                 customData = new UserMonsterCustomData(){
-                    hp = 100,
-                    attack = 100,
+                    //hp = 100,
+                    //attack = 100,
                 }
             },
             new UserMonsterInfo()
             {
                 customData = new UserMonsterCustomData(){
-                    hp = 100,
-                    attack = 100,
+                    //hp = 100,
+                    //attack = 100,
                 }
             },
             new UserMonsterInfo()
             {
                 customData = new UserMonsterCustomData(){
-                    hp = 100,
-                    attack = 100,
+                    //hp = 100,
+                    //attack = 100,
                 }
             },
             new UserMonsterInfo()
             {
                 customData = new UserMonsterCustomData(){
-                    hp = 100,
-                    attack = 100,
+                    //hp = 100,
+                    //attack = 100,
                 }
             },
             new UserMonsterInfo()
             {
                 customData = new UserMonsterCustomData(){
-                    hp = 100,
-                    attack = 100,
+                    //hp = 100,
+                    //attack = 100,
                 }
             },
         };
