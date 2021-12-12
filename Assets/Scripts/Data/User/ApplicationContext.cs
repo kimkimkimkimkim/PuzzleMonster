@@ -63,6 +63,7 @@ public static class ApplicationContext
         return ApiConnection.GetUserData()
             .Do(res =>
             {
+                var r = res;
                 // ユーザーデータの更新
                 UpdateUserData(res);
             })

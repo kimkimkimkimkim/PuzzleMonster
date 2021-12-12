@@ -8,6 +8,7 @@ using UniRx;
 using PM.Enum.Data;
 using System.Linq;
 using Newtonsoft.Json;
+using PM.Enum.Battle;
 
 public partial class ApiConnection
 {
@@ -251,6 +252,19 @@ public partial class ApiConnection
         return SendRequest<ReceiveBattleRewardApiRequest, ReceiveBattleRewardApiResponse>(ReceiveBattleRewardApiInterface.functionName, new ReceiveBattleRewardApiRequest()
         {
             userBattle = userBattle,
+        });
+    }
+
+    /// <summary>
+    /// バトル終了時に実行
+    /// </summary>
+    public static IObservable<EndBattleApiResponse> EndBattle(string userMonsterPartyId, long questId, WinOrLose winOrLose)
+    {
+        return SendRequest<EndBattleApiRequest, EndBattleApiResponse>(EndBattleApiInterface.functionName, new EndBattleApiRequest()
+        {
+            userMonsterPartyId = userMonsterPartyId, 
+            questId = questId,
+            winOrLose = winOrLose,
         });
     }
     #endregion

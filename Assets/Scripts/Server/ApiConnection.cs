@@ -96,7 +96,7 @@ public partial class ApiConnection
             {
                 var response = DataProcessUtil.GetResponse<TResp>(result.FunctionResult.ToString());
 
-                if(response.errorCode == PMErrorCode.Success)
+                if(response.status == PMApiStatus.OK)
                 {
                     // サーバーAPIを実行したら確定でユーザーデータを更新している
                     // TODO : いずれは適切に差分更新とかするべきかも
@@ -114,7 +114,7 @@ public partial class ApiConnection
                 {
                     // エラーが返ってきた
                     UIManager.Instance.TryHideTapBlocker();
-                    OnErrorAction(response.errorCode,response.message);
+                    OnErrorAction(response.exception);
                     o.OnCompleted();
                 }
 
@@ -143,7 +143,7 @@ public partial class ApiConnection
             },
             FunctionName = functionName,
             FunctionParameter = DataProcessUtil.GetRequest<TReq>(request),
-            GeneratePlayStreamEvent = true
+            GeneratePlayStreamEvent = false,
         }, res => callback(res), error => onErrorAction(error));
 
     }
@@ -154,7 +154,7 @@ public partial class ApiConnection
     /// </summary>
     private static void OnErrorAction(PlayFabError error)
     {
-        Debug.LogError(error.ErrorMessage);
+        Debug.LogError(error.ToString());
         CommonDialogFactory.Create(new CommonDialogRequest()
         {
             commonDialogType = CommonDialogType.YesOnly,
@@ -166,9 +166,10 @@ public partial class ApiConnection
     /// <summary>
     /// CloudScriptでのエラーアクション
     /// </summary>
-    private static void OnErrorAction(PMErrorCode errorCode,string message)
+    private static void OnErrorAction(PMApiException exception)
     {
-        Debug.LogError(message);
+        Debug.LogError(exception.message);
+        Debug.LogError(exception.StackTrace);
         CommonDialogFactory.Create(new CommonDialogRequest()
         {
             commonDialogType = CommonDialogType.YesOnly,

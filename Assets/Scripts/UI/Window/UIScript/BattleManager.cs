@@ -12,6 +12,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
 {
     private BattleWindowUIScript battleWindow;
     private BattleResult battleResult;
+    private long questId;
     private QuestMB quest;
     private int maxWaveCount;
     private string userMonsterPartyId;
@@ -22,6 +23,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// </summary>
     private void Init(long questId, string userMonsterPartyId)
     {
+        this.questId = questId;
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
         maxWaveCount = quest.questWaveIdList.Count;
         battleResult = new BattleResult() { wol = WinOrLose.Continue };
@@ -61,22 +63,28 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// バトルを開始する
     /// フェードインまではする
     /// </summary>
-    public IObservable<BattleResult> BattleStartObservable(long questId, string userMonsterPartyId)
+    public IObservable<Unit> BattleStartObservable(long questId, string userMonsterPartyId)
     {
         // 初期化
         Init(questId, userMonsterPartyId);
         
-        ExecuteBattleApiResponse response = null;
-        return Observable.WhenAll(
-            FadeInObservable(),
-            ApiConnection.ExecuteBattle(userMonsterPartyId, questId).Do(res => response = res).AsUnitObservable()
-        ).SelectMany(_ => BattleStartObservable(response.userBattle));
+        return FadeInObservable()
+            .SelectMany(_ =>
+            {
+                var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
+                var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
+
+                var battleDataProcessor = new BattleDataProcessor();
+                var battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
+                return BattleStartObservable(battleLogList);
+            });
     }
     
     /// <summary>
     /// 既存のバトルを途中から再開する
     /// フェードインまではする
     /// </summary>
+    /*
     public IObservable<BattleResult> BattleResumeObservable(UserBattleInfo userBattle)
     {
         // 初期化
@@ -84,22 +92,23 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         
         return FadeInObservable().SelectMany(_ => BattleStartObservable(userBattle));
     }
+    */
     
     /// <summary>
     /// バトルを開始する
     /// アニメーション再生とフェードアウトまでする
     /// </summary>
-    private IObservable<BattleResult> BattleStartObservable(UserBattleInfo userBattle)
+    private IObservable<Unit> BattleStartObservable(List<BattleLogInfo> battleLogList)
     {
         // アニメーションリストを作成
-        battleLogList = userBattle.battleLogList;
+        this.battleLogList = battleLogList;
         var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
-        
+        var winOrLose = battleLogList.First(log => log.type == BattleLogType.Result).winOrLose;
+
         return Observable.ReturnUnit().Connect(observableList.ToArray())
-            .SelectMany(_ => ApiConnection.ReceiveBattleReward(userBattle))
+            .SelectMany(_ => ApiConnection.EndBattle(userMonsterPartyId, questId, winOrLose))
             .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest()))
-            .SelectMany(_ => FadeOutObservable())
-            .Select(_ => new BattleResult() { wol = userBattle.winOrLose});
+            .SelectMany(_ => FadeOutObservable());
     }
     
     /// <summary>
