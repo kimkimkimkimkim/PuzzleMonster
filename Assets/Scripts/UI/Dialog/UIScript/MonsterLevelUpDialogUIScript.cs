@@ -66,6 +66,13 @@ public class MonsterLevelUpDialogUIScript : DialogBase
                 var consumedExp = Math.Max(targetLevelUpTable.totalRequiredExp - userMonster.customData.exp, 0);
                 return ApiConnection.MonsterLevelUp(userMonster.id, consumedExp);
             })
+            .Do(_ =>
+            {
+                userMonster = ApplicationContext.userInventory.userMonsterList.First(u => u.id == userMonster.id);
+                SetAfterLevel();
+                SetSliderValue();
+                RefreshUI();
+            })
             .SelectMany(res => CommonDialogFactory.Create(new CommonDialogRequest()
             {
                 commonDialogType = CommonDialogType.YesOnly,
@@ -122,10 +129,10 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         // 最小強化後レベルは現在レベル
         minAfterLevel = userMonster.customData.level;
 
-        var monsterExpNum = ApplicationContext.userInventory.userPropertyList.GetNum(PropertyType.MonsterExp);
+        var monsterExp = ApplicationContext.userVirtualCurrency.monsterExp;
 
         // 所持している経験値を全て使用した際のモンスター総経験値量
-        var maxExp = userMonster.customData.exp + monsterExpNum;
+        var maxExp = userMonster.customData.exp + monsterExp;
 
         // maxExpで到達可能なレベルのレベルアップテーブルマスタ
         var targetLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll()
@@ -191,8 +198,8 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         // 経験値
         var targetLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll().FirstOrDefault(m => m.level == afterLevel);
         var consumedExp = targetLevelUpTable == null ? 0 : Math.Max(targetLevelUpTable.totalRequiredExp - userMonster.customData.exp,0);
-        var monsterExpNum = ApplicationContext.userInventory.userPropertyList.GetNum(PropertyType.MonsterExp);
-        _possessionExpNumText.text = GetPossessionExpNumText(monsterExpNum, monsterExpNum - consumedExp);
+        var monsterExp = ApplicationContext.userVirtualCurrency.monsterExp;
+        _possessionExpNumText.text = GetPossessionExpNumText(monsterExp, monsterExp - consumedExp);
         _consumedExpNumText.text = consumedExp.ToString();
 
         // グレーアウトパネル

@@ -186,6 +186,16 @@ public partial class ApiConnection
     }
 
     /// <summary>
+    /// インベントリのアイテムをユーザーに付与する
+    /// バンドルでもドロップテーブルでもOK
+    /// </summary>
+    public static IObservable<GrantItemsToUserApiResponse> GrantItemsToUser(string itemId)
+    {
+        var itemIdList = new List<string>() { itemId };
+        return GrantItemsToUser(itemIdList);
+    }
+
+    /// <summary>
     /// モンスター強化
     /// </summary>
     public static IObservable<MonsterLevelUpApiResponse> MonsterLevelUp(string userMonsterId, int exp)

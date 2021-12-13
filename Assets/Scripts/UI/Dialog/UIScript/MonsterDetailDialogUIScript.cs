@@ -54,10 +54,15 @@ public class MonsterDetailDialogUIScript : DialogBase
             {
                 userMonster = userMonster,
             }))
+            .SelectMany(_ =>
+            {
+                userMonster = ApplicationContext.userInventory.userMonsterList.First(u => u.id == userMonster.id);
+                return RefreshUIObservable();
+            })
             .Subscribe();
 
         SetSliderMaxValue();
-        RefreshUI().Subscribe();
+        RefreshUIObservable().Subscribe();
     }
 
     private void SetSliderMaxValue()
@@ -70,7 +75,7 @@ public class MonsterDetailDialogUIScript : DialogBase
         _healSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
     }
 
-    private IObservable<Unit> RefreshUI()
+    private IObservable<Unit> RefreshUIObservable()
     {
         // 名前
         _nameText.text = monster.name;

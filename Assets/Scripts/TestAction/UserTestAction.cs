@@ -25,17 +25,19 @@ public class UserTestAction : ITestAction
 
         testActionDataList.Add(new TestActionData()
         {
-            title = "オーブ追加(1000個)",
+            title = "オーブ追加",
             action = new Action(() =>
             {
+                const long debugOrbBundleId = 9001001;
+                var itemId = ItemUtil.GetItemId(ItemType.Bundle, debugOrbBundleId);
                 CommonDialogFactory.Create(new CommonDialogRequest()
                 {
                     commonDialogType = CommonDialogType.NoAndYes,
                     title = "確認",
-                    content = "オーブを追加します(1000個)"
+                    content = "オーブを追加します"
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-                    .SelectMany(_ => ApiConnection.AddUserVirtualCurrency(VirtualCurrencyType.OB,1000))
+                    .SelectMany(_ => ApiConnection.GrantItemsToUser(itemId))
                     .Do(res => HeaderFooterManager.Instance.UpdateVirutalCurrencyText())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
@@ -49,28 +51,77 @@ public class UserTestAction : ITestAction
 
         testActionDataList.Add(new TestActionData()
         {
-            title = "モンスター経験値付与(100exp)",
+            title = "コイン追加",
             action = new Action(() =>
             {
+                const long debugCoinBundleId = 9001002;
+                var itemId = ItemUtil.GetItemId(ItemType.Bundle, debugCoinBundleId);
                 CommonDialogFactory.Create(new CommonDialogRequest()
                 {
                     commonDialogType = CommonDialogType.NoAndYes,
                     title = "確認",
-                    content = "モンスター経験値を付与します(100exp)"
+                    content = "コインを追加します"
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-                    .SelectMany(_ => {
-                        // 付与するアイテムの作成
-                        var propertyId = (long)PropertyType.MonsterExp;
-                        var itemId = ItemUtil.GetItemId(ItemType.Property,propertyId);
-                        var itemIdList = Enumerable.Repeat(itemId, 100).ToList();
-                        return ApiConnection.GrantItemsToUser(itemIdList);
-                    })
+                    .SelectMany(_ => ApiConnection.GrantItemsToUser(itemId))
+                    .Do(res => HeaderFooterManager.Instance.UpdateVirutalCurrencyText())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
                         title = "お知らせ",
-                        content = "モンスター経験値の付与が完了しました",
+                        content = "コインの追加が完了しました",
+                    }))
+                    .Subscribe();
+            }),
+        });
+
+        testActionDataList.Add(new TestActionData()
+        {
+            title = "プレイヤー経験値追加",
+            action = new Action(() =>
+            {
+                const long debugPlayerExpBundleId = 9001003;
+                var itemId = ItemUtil.GetItemId(ItemType.Bundle, debugPlayerExpBundleId);
+                CommonDialogFactory.Create(new CommonDialogRequest()
+                {
+                    commonDialogType = CommonDialogType.NoAndYes,
+                    title = "確認",
+                    content = "プレイヤー経験値を追加します"
+                })
+                    .Where(res => res.dialogResponseType == DialogResponseType.Yes)
+                    .SelectMany(_ => ApiConnection.GrantItemsToUser(itemId))
+                    .Do(res => HeaderFooterManager.Instance.UpdateVirutalCurrencyText())
+                    .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
+                        commonDialogType = CommonDialogType.YesOnly,
+                        title = "お知らせ",
+                        content = "プレイヤー経験値の追加が完了しました",
+                    }))
+                    .Subscribe();
+            }),
+        });
+
+        testActionDataList.Add(new TestActionData()
+        {
+            title = "モンスター経験値追加",
+            action = new Action(() =>
+            {
+                const long debugMonsterExpBundleId = 9001004;
+                var itemId = ItemUtil.GetItemId(ItemType.Bundle, debugMonsterExpBundleId);
+                CommonDialogFactory.Create(new CommonDialogRequest()
+                {
+                    commonDialogType = CommonDialogType.NoAndYes,
+                    title = "確認",
+                    content = "モンスター経験値を追加します"
+                })
+                    .Where(res => res.dialogResponseType == DialogResponseType.Yes)
+                    .SelectMany(_ => ApiConnection.GrantItemsToUser(itemId))
+                    .Do(res => HeaderFooterManager.Instance.UpdateVirutalCurrencyText())
+                    .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
+                        commonDialogType = CommonDialogType.YesOnly,
+                        title = "お知らせ",
+                        content = "モンスター経験値の追加が完了しました",
                     }))
                     .Subscribe();
             }),
