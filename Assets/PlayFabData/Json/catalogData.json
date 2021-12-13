@@ -530,7 +530,7 @@
       "ItemId": "Property1",
       "ItemClass": "Property",
       "CatalogVersion": "1.0.0",
-      "DisplayName": "プレイヤー経験値",
+      "DisplayName": "サンプルプロパティ",
       "Description": null,
       "VirtualCurrencyPrices": {},
       "RealCurrencyPrices": {},
@@ -552,35 +552,10 @@
       "ActivatedMembership": null
     },
     {
-      "ItemId": "Property2",
-      "ItemClass": "Property",
-      "CatalogVersion": "1.0.0",
-      "DisplayName": "モンスター経験値",
-      "Description": null,
-      "VirtualCurrencyPrices": {},
-      "RealCurrencyPrices": {},
-      "Tags": [],
-      "CustomData": null,
-      "Consumable": {
-        "UsageCount": 1,
-        "UsagePeriod": null,
-        "UsagePeriodGroup": null
-      },
-      "Container": null,
-      "Bundle": null,
-      "CanBecomeCharacter": false,
-      "IsStackable": true,
-      "IsTradable": false,
-      "ItemImageUrl": null,
-      "IsLimitedEdition": false,
-      "InitialLimitedEditionCount": 0,
-      "ActivatedMembership": null
-    },
-    {
-      "ItemId": "Bundle100001001",
+      "ItemId": "Bundle1001001",
       "ItemClass": "Bundle",
       "CatalogVersion": "1.0.0",
-      "DisplayName": "クエスト1-1のドロップ報酬",
+      "DisplayName": "【クエストドロップ報酬】クエスト1-1のドロップ報酬",
       "Description": null,
       "VirtualCurrencyPrices": {},
       "RealCurrencyPrices": {},
@@ -595,7 +570,7 @@
       "Bundle": {
         "BundledItems": [],
         "BundledResultTables": [
-          "DropTable100001001"
+          "DropTable1001001"
         ],
         "BundledVirtualCurrencies": {
           "CN": 100
@@ -610,10 +585,10 @@
       "ActivatedMembership": null
     },
     {
-      "ItemId": "Bundle100002001",
+      "ItemId": "Bundle1002001",
       "ItemClass": "Bundle",
       "CatalogVersion": "1.0.0",
-      "DisplayName": "クエスト2-1のドロップ報酬",
+      "DisplayName": "【クエストドロップ報酬】クエスト2-1のドロップ報酬",
       "Description": null,
       "VirtualCurrencyPrices": {},
       "RealCurrencyPrices": {},
@@ -630,7 +605,7 @@
           "Monster1"
         ],
         "BundledResultTables": [
-          "DropTable100002001"
+          "DropTable1002001"
         ],
         "BundledVirtualCurrencies": null
       },
@@ -643,10 +618,10 @@
       "ActivatedMembership": null
     },
     {
-      "ItemId": "Bundle100002002",
+      "ItemId": "Bundle1002002",
       "ItemClass": "Bundle",
       "CatalogVersion": "1.0.0",
-      "DisplayName": "クエスト2-2のドロップ報酬",
+      "DisplayName": "【クエストドロップ報酬】クエスト2-2のドロップ報酬",
       "Description": null,
       "VirtualCurrencyPrices": {},
       "RealCurrencyPrices": {},
@@ -663,7 +638,7 @@
           "Monster1"
         ],
         "BundledResultTables": [
-          "DropTable100002002"
+          "DropTable1002002"
         ],
         "BundledVirtualCurrencies": {
           "CN": 100
@@ -678,10 +653,10 @@
       "ActivatedMembership": null
     },
     {
-      "ItemId": "Bundle200001001",
+      "ItemId": "Bundle2001001",
       "ItemClass": "Bundle",
       "CatalogVersion": "1.0.0",
-      "DisplayName": "クエスト1-1の初回クリア報酬",
+      "DisplayName": "【クエスト初回クリア報酬】クエスト1-1の初回クリア報酬",
       "Description": null,
       "VirtualCurrencyPrices": {},
       "RealCurrencyPrices": {},
@@ -709,10 +684,10 @@
       "ActivatedMembership": null
     },
     {
-      "ItemId": "Bundle200002001",
+      "ItemId": "Bundle2002001",
       "ItemClass": "Bundle",
       "CatalogVersion": "1.0.0",
-      "DisplayName": "クエスト2-1の初回クリア報酬",
+      "DisplayName": "【クエスト初回クリア報酬】クエスト2-1の初回クリア報酬",
       "Description": null,
       "VirtualCurrencyPrices": {},
       "RealCurrencyPrices": {},
@@ -740,10 +715,10 @@
       "ActivatedMembership": null
     },
     {
-      "ItemId": "Bundle200002002",
+      "ItemId": "Bundle2002002",
       "ItemClass": "Bundle",
       "CatalogVersion": "1.0.0",
-      "DisplayName": "クエスト2-2の初回クリア報酬",
+      "DisplayName": "【クエスト初回クリア報酬】クエスト2-2の初回クリア報酬",
       "Description": null,
       "VirtualCurrencyPrices": {},
       "RealCurrencyPrices": {},
@@ -769,11 +744,277 @@
       "IsLimitedEdition": false,
       "InitialLimitedEditionCount": 0,
       "ActivatedMembership": null
+    },
+    {
+      "ItemId": "Bundle3001001",
+      "ItemClass": "Bundle",
+      "CatalogVersion": "1.0.0",
+      "DisplayName": "【ガチャ】恒常ガチャ 単発",
+      "Description": null,
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": 3,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [
+          "DropTable3001001"
+        ],
+        "BundledVirtualCurrencies": null
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "Bundle3001002",
+      "ItemClass": "Bundle",
+      "CatalogVersion": "1.0.0",
+      "DisplayName": "【ガチャ】恒常ガチャ 10連",
+      "Description": null,
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": 3,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [
+          "DropTable3001001",
+          "DropTable3001001",
+          "DropTable3001001",
+          "DropTable3001001",
+          "DropTable3001001",
+          "DropTable3001001",
+          "DropTable3001001",
+          "DropTable3001001",
+          "DropTable3001001",
+          "DropTable3001001"
+        ],
+        "BundledVirtualCurrencies": null
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "Bundle3002001",
+      "ItemClass": "Bundle",
+      "CatalogVersion": "1.0.0",
+      "DisplayName": "【ガチャ】限定ガチャ 単発",
+      "Description": null,
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": 3,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [
+          "DropTable3002001"
+        ],
+        "BundledVirtualCurrencies": null
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "Bundle3002002",
+      "ItemClass": "Bundle",
+      "CatalogVersion": "1.0.0",
+      "DisplayName": "【ガチャ】限定ガチャ 10連",
+      "Description": null,
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": 3,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [
+          "DropTable3002001",
+          "DropTable3002001",
+          "DropTable3002001",
+          "DropTable3002001",
+          "DropTable3002001",
+          "DropTable3002001",
+          "DropTable3002001",
+          "DropTable3002001",
+          "DropTable3002001",
+          "DropTable3002001"
+        ],
+        "BundledVirtualCurrencies": null
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "Bundle9001001",
+      "ItemClass": "Bundle",
+      "CatalogVersion": "1.0.0",
+      "DisplayName": "【デバッグ用】オーブ付与",
+      "Description": null,
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": 3,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": {
+          "OB": 999999
+        }
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "Bundle9001002",
+      "ItemClass": "Bundle",
+      "CatalogVersion": "1.0.0",
+      "DisplayName": "【デバッグ用】コイン付与",
+      "Description": null,
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": 3,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": {
+          "CN": 9999999
+        }
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "Bundle9001003",
+      "ItemClass": "Bundle",
+      "CatalogVersion": "1.0.0",
+      "DisplayName": "【デバッグ用】プレイヤー経験値付与",
+      "Description": null,
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": 3,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": {
+          "PE": 9999999
+        }
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "Bundle9001004",
+      "ItemClass": "Bundle",
+      "CatalogVersion": "1.0.0",
+      "DisplayName": "【デバッグ用】モンスター経験値付与",
+      "Description": null,
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": null,
+        "UsagePeriod": 3,
+        "UsagePeriodGroup": null
+      },
+      "Container": null,
+      "Bundle": {
+        "BundledItems": [],
+        "BundledResultTables": [],
+        "BundledVirtualCurrencies": {
+          "ME": 9999999
+        }
+      },
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
     }
   ],
   "DropTables": [
     {
-      "TableId": "DropTable100001001",
+      "TableId": "DropTable1001001",
       "Nodes": [
         {
           "ResultItemType": "ItemId",
@@ -788,7 +1029,7 @@
       ]
     },
     {
-      "TableId": "DropTable100002001",
+      "TableId": "DropTable1002001",
       "Nodes": [
         {
           "ResultItemType": "ItemId",
@@ -803,7 +1044,7 @@
       ]
     },
     {
-      "TableId": "DropTable100002002",
+      "TableId": "DropTable1002002",
       "Nodes": [
         {
           "ResultItemType": "ItemId",
@@ -818,6 +1059,166 @@
         {
           "ResultItemType": "ItemId",
           "ResultItem": "Monster3",
+          "Weight": 1
+        }
+      ]
+    },
+    {
+      "TableId": "DropTable2001001",
+      "Nodes": [
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster1",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster2",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster3",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster4",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster5",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster6",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster7",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster8",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster9",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster10",
+          "Weight": 1
+        }
+      ]
+    },
+    {
+      "TableId": "DropTable2001002",
+      "Nodes": [
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster11",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster12",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster13",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster14",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster15",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster16",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster17",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster18",
+          "Weight": 1
+        }
+      ]
+    },
+    {
+      "TableId": "DropTable2002001",
+      "Nodes": [
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster19",
+          "Weight": 1
+        },
+        {
+          "ResultItemType": "ItemId",
+          "ResultItem": "Monster20",
+          "Weight": 1
+        }
+      ]
+    },
+    {
+      "TableId": "DropTable2002002",
+      "Nodes": [
+        {
+          "ResultItemType": "TableId",
+          "ResultItem": "DropTable2001002",
+          "Weight": 9
+        },
+        {
+          "ResultItemType": "TableId",
+          "ResultItem": "DropTable2002001",
+          "Weight": 1
+        }
+      ]
+    },
+    {
+      "TableId": "DropTable3001001",
+      "Nodes": [
+        {
+          "ResultItemType": "TableId",
+          "ResultItem": "DropTable2001001",
+          "Weight": 9
+        },
+        {
+          "ResultItemType": "TableId",
+          "ResultItem": "DropTable2001002",
+          "Weight": 1
+        }
+      ]
+    },
+    {
+      "TableId": "DropTable3002001",
+      "Nodes": [
+        {
+          "ResultItemType": "TableId",
+          "ResultItem": "DropTable2001001",
+          "Weight": 9
+        },
+        {
+          "ResultItemType": "TableId",
+          "ResultItem": "DropTable2002002",
           "Weight": 1
         }
       ]

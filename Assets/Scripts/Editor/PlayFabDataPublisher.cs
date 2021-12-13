@@ -20,7 +20,7 @@ public partial class PlayFabDataPublisher : EditorWindow
 
     private DateTime date;
     private string excelFilePath = $"Assets/PlayFabData/Excel/Data.xlsm";
-    private string outputDirectoryPath(DateTime date) => $"Assets/PlayFabData/Json/{date.ToString("yyyyMMdd_HHmmss")}";
+    private string outputDirectoryPath(DateTime date) => $"Assets/PlayFabData/Json";
     private string storeDataFileName = "storeData.json";
 
     [MenuItem("Tools/PlayFabDataPublisher")]
