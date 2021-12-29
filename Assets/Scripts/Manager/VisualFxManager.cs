@@ -133,25 +133,34 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     public IObservable<Unit> PlayTakeDamageFxObservable(Slider slider, Transform effectBase,int damage, int toHp)
     {
         const float SLIDER_ANIMATION_TIME = 0.5f;
-        var DAMAGE_FX_OFFSET = new Vector3(0,50,0);
+        const float DAMAGE_EFFECT_DELAY_TIME = 0.5f;
+        var DAMAGE_FX_OFFSET = new Vector3(0, 50, 0);
+
+        ParticleSystem skillEffectPS = null;
+        DamageFx damageFX = null;
 
         UIManager.Instance.ShowTapBlocker();
-        return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<DamageFx>(effectBase)
-            .SelectMany(fx =>
+        return Observable.WhenAll(
+                PMAddressableAssetUtil.InstantiateVisualFxItemObservable<DamageFx>(effectBase).Do(fx => damageFX =fx).AsUnitObservable(),
+                PMAddressableAssetUtil.InstantiateNormalAttackFxObservable(effectBase).Do(ps => skillEffectPS = ps).AsUnitObservable()
+        )
+            .Do(_ => skillEffectPS.PlayWithRelease())
+            .Delay(TimeSpan.FromSeconds(DAMAGE_EFFECT_DELAY_TIME))
+            .SelectMany(res =>
             {
                 var damageAnimationObservable = Observable.ReturnUnit()
                     .Do(_ =>
                     {
-                        fx.text.text = damage.ToString();
-                        fx.gameObject.SetActive(true);
+                        damageFX.text.text = damage.ToString();
+                        damageFX.gameObject.SetActive(true);
 
-                        var position = fx.transform.localPosition;
-                        fx.transform.localPosition = new Vector3(position.x + DAMAGE_FX_OFFSET.x, position.y + DAMAGE_FX_OFFSET.y, position.z + DAMAGE_FX_OFFSET.z);
+                        var position = damageFX.transform.localPosition;
+                        damageFX.transform.localPosition = new Vector3(position.x + DAMAGE_FX_OFFSET.x, position.y + DAMAGE_FX_OFFSET.y, position.z + DAMAGE_FX_OFFSET.z);
                     })
                     .Delay(TimeSpan.FromSeconds(0.5f))
                     .Do(_ =>
                     {
-                        if (fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
+                        if (damageFX.gameObject != null) Addressables.ReleaseInstance(damageFX.gameObject);
                     })
                     .AsUnitObservable();
 
@@ -233,7 +242,11 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             });
     }
 
-    public IObservable<Unit> PlayNormalAttackFxObservable(RectTransform doMonsterRT, Transform beDoneEffectBase, bool isPlayer)
+    /// <summary>
+    /// 攻撃開始アニメーションの再生
+    /// 攻撃するモンスターが前に出て戻るアニメーション
+    /// </summary>
+    public IObservable<Unit> PlayStartAttackFxObservable(RectTransform doMonsterRT, bool isPlayer)
     {
         const float SCALE_ANIMATION_TIME = 0.15f;
         const float GO_ANIMATION_TIME = 0.5f;
@@ -241,13 +254,59 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         const float MOVE_X_DISTANCE = 20.0f;
         const float MOVE_Y_DISTANCE = 10.0f;
 
-        ParticleSystem fxPS = null;
         var defaultPosition = doMonsterRT.localPosition;
         var defaultPivot = doMonsterRT.pivot;
 
         UIManager.Instance.ShowTapBlocker();
         return Observable.ReturnUnit()
-            .SelectMany(_ => PMAddressableAssetUtil.InstantiateNormalAttackFxObservable(beDoneEffectBase).Do(ps => fxPS = ps))
+            .SelectMany(_ => {
+                return DOTween.Sequence()
+                    .AppendCallback(() => doMonsterRT.SetPivot(new Vector2(0.5f, 0.0f)))
+                    .Append(doMonsterRT.DOScaleY(0.8f, SCALE_ANIMATION_TIME))
+                    .AppendCallback(() =>
+                    {
+                        doMonsterRT.localScale = new Vector3(1, 1, 1);
+                        doMonsterRT.SetPivot(defaultPivot);
+                    })
+                    .Append(doMonsterRT.DOLocalMoveX(isPlayer ? defaultPosition.x + MOVE_X_DISTANCE : defaultPosition.x - MOVE_X_DISTANCE, GO_ANIMATION_TIME))
+                    .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y + MOVE_Y_DISTANCE, GO_ANIMATION_TIME / 2).SetEase(Ease.OutSine))
+                    .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y, GO_ANIMATION_TIME / 2).SetEase(Ease.OutSine).SetDelay(GO_ANIMATION_TIME / 2))
+                    .OnCompleteAsObservable()
+                    .AsUnitObservable();
+            })
+            .Do(_ =>
+            {
+                // もとに戻るアニメーションは別のストリームで行う
+                doMonsterRT.DOLocalMoveX(defaultPosition.x, BACK_ANIMATION_TIME);
+                UIManager.Instance.TryHideTapBlocker();
+            })
+            .AsUnitObservable();
+    }
+
+
+
+    public IObservable<Unit> PlayNormalAttackFxObservable(RectTransform doMonsterRT, List<Transform> beDoneEffectBaseList, bool isPlayer)
+    {
+        const float SCALE_ANIMATION_TIME = 0.15f;
+        const float GO_ANIMATION_TIME = 0.5f;
+        const float BACK_ANIMATION_TIME = 0.5f;
+        const float MOVE_X_DISTANCE = 20.0f;
+        const float MOVE_Y_DISTANCE = 10.0f;
+
+        var psList = new List<ParticleSystem>();
+        var defaultPosition = doMonsterRT.localPosition;
+        var defaultPivot = doMonsterRT.pivot;
+
+        UIManager.Instance.ShowTapBlocker();
+        return Observable.ReturnUnit()
+            .SelectMany(_ =>
+            {
+                var observableList = beDoneEffectBaseList.Select(beDoneEffectBase =>
+                {
+                    return PMAddressableAssetUtil.InstantiateNormalAttackFxObservable(beDoneEffectBase).Do(ps => psList.Add(ps));
+                }).ToList();
+                return Observable.WhenAll(observableList);
+            })
             .SelectMany(_ => {
                 return DOTween.Sequence()
                     .AppendCallback(() => doMonsterRT.SetPivot(new Vector2(0.5f, 0.0f)))
@@ -260,7 +319,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .Append(doMonsterRT.DOLocalMoveX(isPlayer ? defaultPosition.x + MOVE_X_DISTANCE : defaultPosition.x - MOVE_X_DISTANCE, GO_ANIMATION_TIME))
                     .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y + MOVE_Y_DISTANCE,GO_ANIMATION_TIME/2).SetEase(Ease.OutSine))
                     .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y, GO_ANIMATION_TIME/2).SetEase(Ease.OutSine).SetDelay(GO_ANIMATION_TIME/2))
-                    .AppendCallback(() => fxPS.PlayWithRelease(0.5f))
+                    .AppendCallback(() => psList.ForEach(ps => ps.PlayWithRelease(0.5f)))
                     .Append(doMonsterRT.DOLocalMoveX(defaultPosition.x, BACK_ANIMATION_TIME))
                     .OnCompleteAsObservable()
                     .AsUnitObservable();

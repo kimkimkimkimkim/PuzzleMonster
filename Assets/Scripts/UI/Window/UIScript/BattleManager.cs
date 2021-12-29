@@ -30,35 +30,6 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         this.userMonsterPartyId = userMonsterPartyId;
     }
 
-    public static string GetLogText(BattleLogInfo battleLog)
-    {
-        var log = battleLog.log;
-
-        if (battleLog.log.Contains("{do}"))
-        {
-            if (battleLog.doBattleMonsterIndex == null) return log;
-
-            var battleMonsterList = battleLog.doBattleMonsterIndex.isPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
-            var doBattleMonster = battleMonsterList.First(m => m.index.index == battleLog.doBattleMonsterIndex.index);
-            // TODO: 実際のモンスターを取得
-            var monsterName = $"{(battleLog.doBattleMonsterIndex.isPlayer ? "" : "あいての")}モンスター{battleLog.doBattleMonsterIndex.index + 1}";
-            log = log.Replace("{do}", monsterName);
-        }
-
-        if (battleLog.log.Contains("{beDone}"))
-        {
-            if (battleLog.beDoneBattleMonsterIndex == null) return log;
-
-            var battleMonsterList = battleLog.beDoneBattleMonsterIndex.isPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
-            var beDoneBattleMonster = battleMonsterList.First(m => m.index.index == battleLog.beDoneBattleMonsterIndex.index);
-            // TODO: 実際のモンスターを取得
-            var monsterName = $"{(battleLog.beDoneBattleMonsterIndex.isPlayer ? "" : "あいての")}モンスター{battleLog.beDoneBattleMonsterIndex.index + 1}";
-            log = log.Replace("{beDone}", monsterName);
-        }
-
-        return log;
-    }
-
     /// <summary>
     /// バトルを開始する
     /// フェードインまではする
@@ -119,26 +90,33 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         return Observable.ReturnUnit()
             .Do(_ =>
             {
-                Debug.Log("------------------");
-                Debug.Log(GetLogText(battleLog));
+                Debug.Log($"--------- {battleLog.type} ---------");
+                Debug.Log(battleLog.log);
                 Debug.Log($"{string.Join(" ", battleLog.playerBattleMonsterList.Select(m => m.currentHp))} vs {string.Join(" ", battleLog.enemyBattleMonsterList.Select(m => m.currentHp))}");
             })
             .SelectMany(_ =>
             {
-                var isBeDoneMonsterPlayer = battleLog.beDoneBattleMonsterIndex?.isPlayer ?? false;
-                var beDoneMonsterList = isBeDoneMonsterPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
-                var beDoneMonster = beDoneMonsterList.FirstOrDefault(m => m.index.index == battleLog.beDoneBattleMonsterIndex?.index);
-
                 switch (battleLog.type)
                 {
                     case BattleLogType.MoveWave:
                         return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
                     case BattleLogType.StartAttack:
-                        return battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex, battleLog.beDoneBattleMonsterIndex);
+                        return battleWindow.PlayStartAttackAnimationObservable(battleLog.doBattleMonsterIndex);
                     case BattleLogType.TakeDamage:
-                        return battleWindow.PlayTakeDamageAnimationObservable(battleLog.beDoneBattleMonsterIndex, battleLog.damage, beDoneMonster.currentHp);
+                        var takeDamageObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
+                        {
+                            var isPlayer = d.battleMonsterIndex.isPlayer;
+                            var battleMonsterList = isPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
+                            var beDoneMonster = battleMonsterList.FirstOrDefault(b => b.index.index == d.battleMonsterIndex.index);
+                            return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex, d.hpChanges, beDoneMonster.currentHp);
+                        });
+                        return Observable.WhenAll(takeDamageObservableList);
                     case BattleLogType.Die:
-                        return battleWindow.PlayDieAnimationObservable(battleLog.beDoneBattleMonsterIndex);
+                        var dieObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
+                        {
+                            return battleWindow.PlayDieAnimationObservable(d.battleMonsterIndex);
+                        });
+                        return Observable.WhenAll(dieObservableList);
                     case BattleLogType.Result:
                         if (battleLog.winOrLose == WinOrLose.Win)
                         {
@@ -149,7 +127,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             return battleWindow.PlayLoseAnimationObservable();
                         }
                     default:
-                        return Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable();
+                        return Observable.ReturnUnit();
                 }
             });
     }

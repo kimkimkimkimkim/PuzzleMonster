@@ -10,7 +10,7 @@ namespace GameBase
         /// <summary>
         /// アニメーションを再生し、指定時間後にメモリ解放
         /// </summary>
-        public static void PlayWithRelease(this ParticleSystem ps, float time)
+        public static void PlayWithRelease(this ParticleSystem ps, float time = 5)
         {
             ps.Play();
             Observable.Timer(TimeSpan.FromSeconds(time))

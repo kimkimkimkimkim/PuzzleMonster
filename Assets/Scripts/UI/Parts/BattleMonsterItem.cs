@@ -43,7 +43,7 @@ public class BattleMonsterItem : MonoBehaviour
         _hpSlider.maxValue = status.hp;
         _hpSlider.value = status.hp;
 
-        _ctSlider.maxValue = ConstManager.Battle.MAX_CT_VALUE;
+        _ctSlider.maxValue = ConstManager.Battle.MAX_ENERGY_VALUE;
         _ctSlider.value = 0.0f;
     }
 }
