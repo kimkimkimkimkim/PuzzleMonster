@@ -36,6 +36,8 @@ public class BattleDataProcessor
     {
         Init(userMonsterParty, quest);
 
+        ActivatePassiveSkillIfNeeded(SkillTriggerType.OnBattleStart);
+
         // 最初にウェーブ移動とターン移動のログを入れておく
         AddBattleLog(BattleLogType.MoveWave);
         AddBattleLog(BattleLogType.MoveTurn);
@@ -224,6 +226,7 @@ public class BattleDataProcessor
 
             // ログを追加
             AddBattleLog(BattleLogType.TakeDamage);
+            ActivatePassiveSkillIfNeeded(SkillTriggerType.OnMeTakeDamageEnd);
 
             var dieBattleMonsterIndexList = beDoneBattleMonsterDataList
                 .Where(d =>
@@ -233,8 +236,24 @@ public class BattleDataProcessor
                 })
                 .Select(d => d.battleMonsterIndex)
                 .ToList();
-            if(dieBattleMonsterIndexList.Any()) AddDieBattleLog(dieBattleMonsterIndexList);
+            if (dieBattleMonsterIndexList.Any())
+            {
+                AddDieBattleLog(dieBattleMonsterIndexList);
+                ActivatePassiveSkillIfNeeded(SkillTriggerType.OnMeDeadEnd);
+            }
         });
+
+        // パッシブスキル発動
+        ActivatePassiveSkillIfNeeded(SkillTriggerType.OnMeTurnEnd);
+        switch (doBattleMonsterActType)
+        {
+            case BattleMonsterActType.NormalSkill:
+                ActivatePassiveSkillIfNeeded(SkillTriggerType.OnMeNormalSkillEnd);
+                break;
+            case BattleMonsterActType.UltimateSkill:
+                ActivatePassiveSkillIfNeeded(SkillTriggerType.OnMeUltimateSkillEnd);
+                break;
+        }
     }
 
     /// <summary>
@@ -515,6 +534,35 @@ public class BattleDataProcessor
         }
     }
 
+    /// <summary>
+    /// 指定したモンスターとトリガータイプをもとにパッシブスキルを発動できるか否かを返す
+    /// トリガーは正しいタイミングで呼ばれるので主語が正しいか判定
+    /// </summary>
+    private bool IsValid(BattleMonsterInfo battleMonster, SkillTriggerType skillTriggerType)
+    {
+        var doBattleMonster = GetBattleMonster(doBattleMonsterIndex);
+
+        switch (skillTriggerType) {
+            case SkillTriggerType.EveryTimeEnd:
+                return true;
+            case SkillTriggerType.OnBattleStart:
+                return true;
+            case SkillTriggerType.OnMeTurnEnd:
+                return doBattleMonster.index.index == battleMonster.index.index;
+            case SkillTriggerType.OnMeNormalSkillEnd:
+                return doBattleMonster.index.index == battleMonster.index.index;
+            case SkillTriggerType.OnMeUltimateSkillEnd:
+                return doBattleMonster.index.index == battleMonster.index.index;
+            case SkillTriggerType.OnMeTakeDamageEnd:
+                return beDoneBattleMonsterDataList.Any(d => d.battleMonsterIndex.index == battleMonster.index.index);
+            case SkillTriggerType.OnMeDeadEnd:
+                return beDoneBattleMonsterDataList.Any(d => d.battleMonsterIndex.index == battleMonster.index.index);
+            case SkillTriggerType.None:
+            default:
+                return false;
+        }
+    }
+
     private bool IsFront(BattleMonsterIndex battleMonsterIndex)
     {
         return ConstManager.Battle.FRONT_INDEX_LIST.Contains(battleMonsterIndex.index);
@@ -563,6 +611,88 @@ public class BattleDataProcessor
     {
         var battleMonsterList = battleMonsterIndex.isPlayer ? playerBattleMonsterList : enemyBattleMonsterList;
         return battleMonsterList.FirstOrDefault(b => b.index.index == battleMonsterIndex.index);
+    }
+
+    /// <summary>
+    /// 指定したトリガータイプであり発動可能なパッシブスキルがある場合は発動する
+    /// </summary>
+    private void ActivatePassiveSkillIfNeeded(SkillTriggerType triggerType)
+    {
+        var beforeDoBattleMonsterIndex = doBattleMonsterIndex;
+        var beforeBeDoneBattleMonsterDataList = beDoneBattleMonsterDataList;
+
+        // 敵味方合わせたモンスターリストを取得
+        var battleMonsterList = new List<BattleMonsterInfo>(playerBattleMonsterList);
+        battleMonsterList.AddRange(enemyBattleMonsterList);
+
+        // 発動するパッシブスキルを取得
+        var battleMonsterAndSkillEffectListSetList = battleMonsterList
+            .Select(b =>
+            {
+                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(b.monsterId);
+                var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(monster.passiveSkillId);
+                var activateSkillEffectList = passiveSkill.effectList.Where(effect => effect.triggerType == triggerType && IsValid(b, triggerType)).Select(effect => (SkillEffectMI)effect).ToList();
+                return new BattleMonsterAndSkillEffectListSet()
+                {
+                    battleMonster = b,
+                    skillEffectList = activateSkillEffectList,
+                };
+            })
+            .Where(set => set.skillEffectList.Any())
+            .ToList();
+
+        // 発動
+        battleMonsterAndSkillEffectListSetList.ForEach(set =>
+        {
+            doBattleMonsterIndex = set.battleMonster.index;
+            AddBattleLog(BattleLogType.StartAttack);
+
+            var doBattleMonster = GetBattleMonster(doBattleMonsterIndex);
+            set.skillEffectList.ForEach(skillEffect =>
+            {
+                var skillType = skillEffect.type;
+
+                // TODO: 状態異常の実装
+                if (skillType == SkillType.Condition) return;
+
+                // 乱数
+                var random = new Random();
+                var coefficient = 1.0f - (((float)random.NextDouble() * 0.15f) - 0.075f);
+
+                // 攻撃実数値
+                var baseValue = GetBaseValue(doBattleMonster, skillEffect.valueTargetType);
+                var value = (int)(baseValue * coefficient);
+
+                // ダメージスキルなのであればマイナスにする
+                if (skillType == SkillType.Damage) value = -1 * value;
+
+                beDoneBattleMonsterDataList = GetBeDoneBattleMonsterDataList(skillEffect);
+                beDoneBattleMonsterDataList.ForEach(beDoneBattleMonsterData =>
+                {
+                    // TODO: 防御力計算
+                    var beDoneBattleMonster = GetBattleMonster(beDoneBattleMonsterData.battleMonsterIndex);
+                    beDoneBattleMonster.currentHp += value;
+                    beDoneBattleMonsterData.hpChanges = value;
+                });
+
+                // ログを追加
+                AddBattleLog(BattleLogType.TakeDamage);
+
+                var dieBattleMonsterIndexList = beDoneBattleMonsterDataList
+                    .Where(d =>
+                    {
+                        var battleMonster = GetBattleMonster(d.battleMonsterIndex);
+                        return battleMonster.currentHp <= 0;
+                    })
+                    .Select(d => d.battleMonsterIndex)
+                    .ToList();
+                if (dieBattleMonsterIndexList.Any()) AddDieBattleLog(dieBattleMonsterIndexList);
+            });
+        });
+
+        // パッシブスキル実行後は元に戻す
+        doBattleMonsterIndex = beforeDoBattleMonsterIndex;
+        beDoneBattleMonsterDataList = beforeBeDoneBattleMonsterDataList;
     }
 
     private BattlePhase GetNextBattlePhase(BattlePhase currentBattlePhase)
@@ -617,4 +747,10 @@ public class BattleDataProcessor
         NormalSkill,
         UltimateSkill,
     }
+}
+
+public class BattleMonsterAndSkillEffectListSet
+{
+    public BattleMonsterInfo battleMonster { get; set; }
+    public List<SkillEffectMI> skillEffectList { get; set; }
 }
