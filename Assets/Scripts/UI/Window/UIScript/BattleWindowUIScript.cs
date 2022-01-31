@@ -89,14 +89,14 @@ public class BattleWindowUIScript : DummyWindowBase
         return VisualFxManager.Instance.PlayNormalAttackFxObservable(doMonsterRT, beDoneMonsterBaseTransformList, isPlayer);
     }
 
-    public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleMonsterIndex beDoneBattleMonsterIndex, int damage, int currentHp)
+    public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleMonsterIndex beDoneBattleMonsterIndex,long skillFxId, int damage, int currentHp)
     {
         var isPlayer = beDoneBattleMonsterIndex.isPlayer;
         var monsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
         var monsterBase = monsterBaseList[beDoneBattleMonsterIndex.index];
         var slider = monsterBase.battleMonsterItem.GetComponent<BattleMonsterItem>().hpSlider;
 
-        return VisualFxManager.Instance.PlayTakeDamageFxObservable(slider, monsterBase.transform, damage, currentHp);
+        return VisualFxManager.Instance.PlayTakeDamageFxObservable(slider, monsterBase.transform,skillFxId, damage, currentHp);
     }
 
     public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterIndex battleMonsterIndex)

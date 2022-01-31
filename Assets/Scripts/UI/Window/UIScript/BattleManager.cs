@@ -108,7 +108,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             var isPlayer = d.battleMonsterIndex.isPlayer;
                             var battleMonsterList = isPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
                             var beDoneMonster = battleMonsterList.FirstOrDefault(b => b.index.index == d.battleMonsterIndex.index);
-                            return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex, d.hpChanges, beDoneMonster.currentHp);
+                            return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex,battleLog.skillFxId, d.hpChanges, beDoneMonster.currentHp);
                         });
                         return Observable.WhenAll(takeDamageObservableList);
                     case BattleLogType.Die:

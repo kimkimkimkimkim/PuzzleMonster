@@ -56,4 +56,14 @@ public class PMAddressableAssetUtil
         var address = $"{ASSET_PATH_PREFIX}/NormalAttackEffect/Prefab/1.prefab";
         return AddressableAssetController.InstantiateAsObservable<ParticleSystem>(address, parent);
     }
+
+    /// <summary>
+    /// 指定したスキル演出Prefabを取得する
+    /// Normal,Passive,Ultimate共通
+    /// </summary>
+    public static IObservable<ParticleSystem> InstantiateSkillFxObservable(Transform parent, long skillFxId)
+    {
+        var address = $"{ASSET_PATH_PREFIX}/SkillAttackEffect/Prefab/{skillFxId}.prefab";
+        return AddressableAssetController.InstantiateAsObservable<ParticleSystem>(address, parent);
+    }
 }

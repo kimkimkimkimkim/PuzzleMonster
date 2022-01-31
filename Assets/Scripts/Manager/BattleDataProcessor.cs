@@ -17,11 +17,13 @@ public class BattleDataProcessor
     private BattleMonsterActType doBattleMonsterActType;
     private WinOrLose currentWinOrLose;
     private BattlePhase currentBattlePhase;
+    private long skillFxId;
 
     private void Init(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
     {
         this.quest = quest;
 
+        skillFxId = 0;
         currentWaveCount = 1;
         currentTurnCount = 1;
         currentWinOrLose = WinOrLose.Continue;
@@ -370,6 +372,7 @@ public class BattleDataProcessor
             turnCount = currentTurnCount,
             winOrLose = currentWinOrLose,
             log = log,
+            skillFxId = skillFxId,
         };
     }
 
