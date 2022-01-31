@@ -142,7 +142,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         UIManager.Instance.ShowTapBlocker();
         return Observable.WhenAll(
                 PMAddressableAssetUtil.InstantiateVisualFxItemObservable<DamageFx>(effectBase).Do(fx => damageFX =fx).AsUnitObservable(),
-                PMAddressableAssetUtil.InstantiateNormalAttackFxObservable(effectBase).Do(ps => skillEffectPS = ps).AsUnitObservable()
+                PMAddressableAssetUtil.InstantiateSkillFxObservable(effectBase, skillFxId).Do(ps => skillEffectPS = ps).AsUnitObservable()
         )
             .Do(_ => skillEffectPS.PlayWithRelease())
             .Delay(TimeSpan.FromSeconds(DAMAGE_EFFECT_DELAY_TIME))

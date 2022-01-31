@@ -653,6 +653,7 @@ public class BattleDataProcessor
             var doBattleMonster = GetBattleMonster(doBattleMonsterIndex);
             set.skillEffectList.ForEach(skillEffect =>
             {
+                skillFxId = skillEffect.skillFxId;
                 var skillType = skillEffect.type;
 
                 // TODO: 状態異常の実装
