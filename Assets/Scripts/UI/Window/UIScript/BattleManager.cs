@@ -36,6 +36,26 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// </summary>
     public IObservable<Unit> BattleStartObservable(long questId, string userMonsterPartyId)
     {
+        Init(questId, userMonsterPartyId);
+
+        return FadeInObservable()
+            .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
+            {
+                commonDialogType = CommonDialogType.NoAndYes,
+                title = "確認",
+                content = "バトルを勝ったことにしますか？\n（いいえを選んだら負けたことになります）",
+            }))
+            .SelectMany(res =>
+            {
+                var winOrLose = res.dialogResponseType == DialogResponseType.Yes ? WinOrLose.Win : WinOrLose.Lose;
+                return ApiConnection.EndBattle(userMonsterPartyId, questId, winOrLose);
+            })
+            .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest()))
+            .SelectMany(_ => FadeOutObservable())
+            .AsUnitObservable();
+
+        // TODO: バトル機能の実装
+        /*
         // 初期化
         Init(questId, userMonsterPartyId);
         
@@ -49,6 +69,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                 var battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
                 return BattleStartObservable(battleLogList);
             });
+        */
     }
     
     /// <summary>
@@ -138,6 +159,29 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     private IObservable<Unit> FadeInObservable()
     {
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
+            .Do(_ =>
+            {
+                // クエストリスト画面が表示されるまで現在の画面を閉じる
+                var currentWindowInfo = UIManager.Instance.currentWindowInfo;
+                var windowNameList = new List<string>();
+                while(currentWindowInfo != null)
+                {
+                    windowNameList.Add(currentWindowInfo.component.name);
+                    currentWindowInfo = currentWindowInfo.parent;
+                }
+                var questListWindowName = UIManager.Instance.GetUIName<QuestListWindowUIScript>();
+                var existsQuestListWindow = windowNameList.Any(name => name == questListWindowName);
+
+                if (existsQuestListWindow)
+                {
+                    currentWindowInfo = UIManager.Instance.currentWindowInfo;
+                    while (currentWindowInfo.component.name != questListWindowName)
+                    {
+                        UIManager.Instance.CloseWindow();
+                        currentWindowInfo = UIManager.Instance.currentWindowInfo;
+                    }
+                }
+            })
             .SelectMany(res =>
             {
                 battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 
@@ -722,6 +723,14 @@ namespace GameBase
                     canvasGroup.blocksRaycasts = isOn;
                 }
             }
+        }
+
+        public string GetUIName<T>()
+        {
+            var attr = (ResourcePathAttribute)Attribute.GetCustomAttribute(typeof(T), typeof(ResourcePathAttribute));
+            var path = attr.resourcePath;
+            var name = path.Split('/').LastOrDefault();
+            return name;
         }
     }
 
