@@ -32,6 +32,7 @@ public class HeaderFooterManager : SingletonMonoBehaviour<HeaderFooterManager>
     /// 表示制御
     /// </summary>
     public void Show(bool isShow){
+        if (uiScript == null) return;
         uiScript.headerPanel.SetActive(isShow);
         uiScript.footerPanel.SetActive(isShow);
     }
