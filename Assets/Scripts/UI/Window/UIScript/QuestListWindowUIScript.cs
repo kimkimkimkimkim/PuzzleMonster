@@ -9,25 +9,26 @@ public class QuestListWindowUIScript : WindowBase
 {
     [SerializeField] protected InfiniteScroll _infiniteScroll;
 
+    private long questCategoryId;
     private List<QuestMB> questList;
 
     public override void Init(WindowInfo info)
     {
         base.Init(info);
 
-        // 表示条件を満たしたものだけ表示する
-        var questCategoryId = (long)info.param["questCategoryId"];
-        questList = MasterRecord.GetMasterOf<QuestMB>().GetAll()
-            .Where(m => m.questCategoryId == questCategoryId)
-            .Where(m => ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList))
-            .ToList();
-
-        RefreshScroll();
+        questCategoryId = (long)info.param["questCategoryId"];
     }
 
     private void RefreshScroll()
     {
         _infiniteScroll.Clear();
+
+        // 表示条件を満たしたものだけ表示する
+        questList = MasterRecord.GetMasterOf<QuestMB>().GetAll()
+            .Where(m => m.questCategoryId == questCategoryId)
+            .Where(m => ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList))
+            .OrderByDescending(m => m.id)
+            .ToList();
 
         if (questList.Any()) _infiniteScroll.Init(questList.Count, OnUpdateItem);
     }
@@ -52,6 +53,8 @@ public class QuestListWindowUIScript : WindowBase
 
     public override void Open(WindowInfo info)
     {
+        // 表示されるたびに更新したいのでここで実行する
+        RefreshScroll();
     }
 
     public override void Back(WindowInfo info)

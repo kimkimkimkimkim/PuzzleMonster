@@ -14,22 +14,21 @@ public class QuestCategoryWindowUIScript : WindowBase
     public override void Init(WindowInfo info)
     {
         base.Init(info);
+    }
+
+    private void RefreshScroll()
+    {
+        _infiniteScroll.Clear();
 
         // カテゴリに含まれるクエストのうち一つでも表示条件を満たしているものがあれば表示する
         questCategoryList = MasterRecord.GetMasterOf<QuestCategoryMB>().GetAll()
             .Where(questCategory =>
             {
                 var questList = MasterRecord.GetMasterOf<QuestMB>().GetAll().Where(quest => quest.questCategoryId == questCategory.id).ToList();
-                return questList.Any(quest => ConditionUtil.IsValid(ApplicationContext.userData,quest.displayConditionList));
+                return questList.Any(quest => ConditionUtil.IsValid(ApplicationContext.userData, quest.displayConditionList));
             })
+            .OrderByDescending(m => m.id)
             .ToList();
-
-        RefreshScroll();
-    }
-
-    private void RefreshScroll()
-    {
-        _infiniteScroll.Clear();
 
         if (questCategoryList.Any()) _infiniteScroll.Init(questCategoryList.Count, OnUpdateItem);
     }
@@ -50,6 +49,8 @@ public class QuestCategoryWindowUIScript : WindowBase
 
     public override void Open(WindowInfo info)
     {
+        // 表示されるたびに更新したいのでここで実行する
+        RefreshScroll();
     }
 
     public override void Back(WindowInfo info)

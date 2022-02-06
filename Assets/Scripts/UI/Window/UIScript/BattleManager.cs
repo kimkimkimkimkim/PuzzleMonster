@@ -159,29 +159,6 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     private IObservable<Unit> FadeInObservable()
     {
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
-            .Do(_ =>
-            {
-                // クエストリスト画面が表示されるまで現在の画面を閉じる
-                var currentWindowInfo = UIManager.Instance.currentWindowInfo;
-                var windowNameList = new List<string>();
-                while(currentWindowInfo != null)
-                {
-                    windowNameList.Add(currentWindowInfo.component.name);
-                    currentWindowInfo = currentWindowInfo.parent;
-                }
-                var questListWindowName = UIManager.Instance.GetUIName<QuestListWindowUIScript>();
-                var existsQuestListWindow = windowNameList.Any(name => name == questListWindowName);
-
-                if (existsQuestListWindow)
-                {
-                    currentWindowInfo = UIManager.Instance.currentWindowInfo;
-                    while (currentWindowInfo.component.name != questListWindowName)
-                    {
-                        UIManager.Instance.CloseWindow();
-                        currentWindowInfo = UIManager.Instance.currentWindowInfo;
-                    }
-                }
-            })
             .SelectMany(res =>
             {
                 battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
@@ -207,6 +184,29 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     private IObservable<Unit> FadeOutObservable()
     {
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
+            .Do(_ =>
+            {
+                // クエストリスト画面が表示されるまで現在の画面を閉じる
+                var currentWindowInfo = UIManager.Instance.currentWindowInfo;
+                var windowNameList = new List<string>();
+                while (currentWindowInfo != null)
+                {
+                    windowNameList.Add(currentWindowInfo.component.name);
+                    currentWindowInfo = currentWindowInfo.parent;
+                }
+                var questListWindowName = UIManager.Instance.GetUIName<QuestListWindowUIScript>();
+                var existsQuestListWindow = windowNameList.Any(name => name == questListWindowName);
+
+                if (existsQuestListWindow)
+                {
+                    currentWindowInfo = UIManager.Instance.currentWindowInfo;
+                    while (currentWindowInfo.component.name != questListWindowName)
+                    {
+                        UIManager.Instance.CloseWindow();
+                        currentWindowInfo = UIManager.Instance.currentWindowInfo;
+                    }
+                }
+            })
             .Do(_ =>
             {
                 Destroy(battleWindow.gameObject);
