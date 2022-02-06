@@ -8,10 +8,9 @@ using PM.Enum.UI;
 using UniRx;
 using System;
 
-[ResourcePath("UI/Parts/Parts-IconItem")]
-public class IconItem : MonoBehaviour
+[ResourcePath("UI/Parts/Parts-IconItemRounded")]
+public class IconItemRounded : MonoBehaviour
 {
-    [SerializeField] protected Image _backgroundImage;
     [SerializeField] protected Image _frameImage;
     [SerializeField] protected Image _iconImage;
     [SerializeField] protected GameObject _notifyPanel;
@@ -46,7 +45,6 @@ public class IconItem : MonoBehaviour
     {
         var index = (int)iconColor;
         _frameImage.sprite = _frameSpriteList[index];
-        _backgroundImage.color = _backgroundColorList[index];
     }
 
     private void SetIconImage(IconImageType iconImageType, long itemId)
@@ -54,7 +52,7 @@ public class IconItem : MonoBehaviour
         PMAddressableAssetUtil.GetIconImageSpriteObservable(iconImageType, itemId)
             .Do(sprite =>
             {
-                if(sprite != null)_iconImage.sprite = sprite;
+                if (sprite != null) _iconImage.sprite = sprite;
             })
             .Subscribe()
             .AddTo(this);

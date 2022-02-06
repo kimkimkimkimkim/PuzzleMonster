@@ -50,7 +50,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                 var winOrLose = res.dialogResponseType == DialogResponseType.Yes ? WinOrLose.Win : WinOrLose.Lose;
                 return ApiConnection.EndBattle(userMonsterPartyId, questId, winOrLose);
             })
-            .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest()))
+            .SelectMany(res => BattleResultDialogFactory.Create(new BattleResultDialogRequest() { userBattle = res.userBattle }))
             .SelectMany(_ => FadeOutObservable())
             .AsUnitObservable();
 

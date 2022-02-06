@@ -198,8 +198,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
 
         scrollItem.SetIcon(itemMI);
         scrollItem.SetToggleGroup(_toggleGroup);
-        scrollItem.ShowGrayoutPanel(isIncludedParty);
-        scrollItem.ShowGrayoutText(isIncludedParty, "•Ò¬’†");
+        scrollItem.ShowGrayoutPanel(isIncludedParty, "•Ò¬’†");
         scrollItem.SetOnClickAction(() =>
         { 
             if(selectedPartyMonsterIndex != -1)
