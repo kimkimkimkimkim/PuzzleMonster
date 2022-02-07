@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GameBase;
+using PM.Enum.Battle;
 using UniRx;
 using UnityEngine;
 
@@ -27,7 +28,7 @@ public class QuestListWindowUIScript : WindowBase
         questList = MasterRecord.GetMasterOf<QuestMB>().GetAll()
             .Where(m => m.questCategoryId == questCategoryId)
             .Where(m => ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList))
-            .OrderByDescending(m => m.id)
+            .OrderBy(m => m.id)
             .ToList();
 
         if (questList.Any()) _infiniteScroll.Init(questList.Count, OnUpdateItem);
@@ -39,10 +40,15 @@ public class QuestListWindowUIScript : WindowBase
 
         var scrollItem = item.GetComponent<QuestCategoryScrollItem>();
         var quest = questList[index];
+        var userBattleList = ApplicationContext.userData.userBattleList;
         var canExecute = ConditionUtil.IsValid(ApplicationContext.userData, quest.canExecuteConditionList);
+        var isCleared = userBattleList.Any(u => u.questId == quest.id && u.winOrLose == WinOrLose.Win && u.completedDate > DateTimeUtil.Epoch);
+        var isNew = !userBattleList.Any(u => u.questId == quest.id) && canExecute;
 
         scrollItem.SetText(quest.name);
         scrollItem.ShowGrayOutPanel(!canExecute);
+        scrollItem.ShowClearImagePanel(isCleared);
+        scrollItem.ShowNewImagePanel(isNew);
         scrollItem.SetOnClickAction(() =>
         {
             QuestDetailWindowFactory.Create(new QuestDetailWindowRequest() { questId = quest.id })

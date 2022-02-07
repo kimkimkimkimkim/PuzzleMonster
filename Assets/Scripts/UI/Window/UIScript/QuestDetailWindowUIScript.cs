@@ -2,6 +2,7 @@ using GameBase;
 using PM.Enum.Item;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +11,7 @@ using UnityEngine.UI;
 public class QuestDetailWindowUIScript : WindowBase
 {
     [SerializeField] protected Button _okButton;
+    [SerializeField] protected TextMeshProUGUI _questNameText;
     [SerializeField] protected InfiniteScroll _monsterInfiniteScroll;
     [SerializeField] protected InfiniteScroll _normalRewardInfiniteScroll;
     [SerializeField] protected InfiniteScroll _dropRewardInfiniteScroll;
@@ -27,6 +29,8 @@ public class QuestDetailWindowUIScript : WindowBase
 
         var questId = (long)info.param["questId"];
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
+
+        _questNameText.text = quest.name;
 
         _okButton.OnClickIntentAsObservable()
             .SelectMany(_ =>
