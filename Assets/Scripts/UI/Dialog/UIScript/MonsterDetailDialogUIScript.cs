@@ -28,12 +28,13 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Slider _healSliderBack;
     [SerializeField] protected Slider _healSliderFront;
 
+    private bool isNeedRefresh;
     private MonsterMB monster;
     private UserMonsterInfo userMonster;
 
     public override void Init(DialogInfo info)
     {
-        var onClickClose = (Action)info.param["onClickClose"];
+        var onClickClose = (Action<bool>)info.param["onClickClose"];
         userMonster = (UserMonsterInfo)info.param["userMonster"];
 
         monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
@@ -43,7 +44,7 @@ public class MonsterDetailDialogUIScript : DialogBase
             .Do(_ => {
                 if (onClickClose != null)
                 {
-                    onClickClose();
+                    onClickClose(isNeedRefresh);
                     onClickClose = null;
                 }
             })
@@ -54,8 +55,10 @@ public class MonsterDetailDialogUIScript : DialogBase
             {
                 userMonster = userMonster,
             }))
+            .Where(res => res.isNeedRefresh)
             .SelectMany(_ =>
             {
+                isNeedRefresh = true;
                 userMonster = ApplicationContext.userInventory.userMonsterList.First(u => u.id == userMonster.id);
                 return RefreshUIObservable();
             })

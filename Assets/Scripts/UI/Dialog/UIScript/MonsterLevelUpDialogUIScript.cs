@@ -34,6 +34,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     [SerializeField] protected Slider _levelSlider;
     [SerializeField] protected GameObject _levelUpButtonGrayoutPanel;
 
+    private bool isNeedRefresh;
     private UserMonsterInfo userMonster;
     private MonsterMB monster;
     private int afterLevel;
@@ -42,7 +43,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
 
     public override void Init(DialogInfo info)
     {
-        var onClickClose = (Action)info.param["onClickClose"];
+        var onClickClose = (Action<bool>)info.param["onClickClose"];
         userMonster = (UserMonsterInfo)info.param["userMonster"];
 
         monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
@@ -52,7 +53,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
             .Do(_ => {
                 if (onClickClose != null)
                 {
-                    onClickClose();
+                    onClickClose(isNeedRefresh);
                     onClickClose = null;
                 }
             })
@@ -68,6 +69,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
             })
             .Do(_ =>
             {
+                isNeedRefresh = true;
                 userMonster = ApplicationContext.userInventory.userMonsterList.First(u => u.id == userMonster.id);
                 SetAfterLevel();
                 SetSliderValue();

@@ -39,10 +39,14 @@ public class MonsterBoxWindowUIScript : WindowBase
         scrollItem.SetMonsterImage(userMonster.monsterId);
         scrollItem.SetOnClickAction(() =>
         {
-            MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest()
-            {
-                userMonster = userMonster,
-            }).Subscribe();
+            MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest(){ userMonster = userMonster })
+                .Where(res => res.isNeedRefresh)
+                .Do(_ =>
+                {
+                    userMonsterList = ApplicationContext.userInventory.userMonsterList;
+                    RefreshScroll();
+                })
+                .Subscribe();
         });
     }
 

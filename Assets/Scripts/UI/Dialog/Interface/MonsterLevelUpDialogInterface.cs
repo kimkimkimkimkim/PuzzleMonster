@@ -8,4 +8,8 @@ public class MonsterLevelUpDialogRequest
 
 public class MonsterLevelUpDialogResponse
 {
+    /// <summary>
+    /// 更新が必要か否か
+    /// </summary>
+    public bool isNeedRefresh { get; set; }
 }

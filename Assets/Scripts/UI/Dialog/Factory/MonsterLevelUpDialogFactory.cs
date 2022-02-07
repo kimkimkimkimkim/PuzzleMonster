@@ -11,8 +11,8 @@ public class MonsterLevelUpDialogFactory
         return Observable.Create<MonsterLevelUpDialogResponse>(observer => {
             var param = new Dictionary<string, object>();
             param.Add("userMonster", request.userMonster);
-            param.Add("onClickClose", new Action(() => {
-                observer.OnNext(new MonsterLevelUpDialogResponse());
+            param.Add("onClickClose", new Action<bool>((isNeedRefresh) => {
+                observer.OnNext(new MonsterLevelUpDialogResponse() { isNeedRefresh = isNeedRefresh });
                 observer.OnCompleted();
             }));
             UIManager.Instance.OpenDialog<MonsterLevelUpDialogUIScript>(param, true);
