@@ -227,6 +227,7 @@ namespace GameBase
                 var item = Instantiate(itemPrototype, transform, false) as RectTransform;
                 item.anchorMin = anchor;
                 item.anchorMax = anchor;
+                item.pivot = direction == Direction.Vertical ? new Vector2(0.5f, 1.0f) : new Vector2(0.0f, 1.0f);
                 item.name = i.ToString();
 
                 item.anchoredPosition = CalcItemPosition(i, i);
