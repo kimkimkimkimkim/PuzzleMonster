@@ -1,4 +1,5 @@
 using GameBase;
+using PM.Enum.Battle;
 using PM.Enum.Item;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ public class QuestDetailWindowUIScript : WindowBase
     [SerializeField] protected InfiniteScroll _dropRewardInfiniteScroll;
     [SerializeField] protected InfiniteScroll _firstRewardInfiniteScroll;
 
+    private bool isCleared;
     private QuestMB quest;
     private List<ItemMI> monsterItemList;
     private List<ItemMI> normalRewardItemList;
@@ -31,6 +33,7 @@ public class QuestDetailWindowUIScript : WindowBase
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
 
         _questNameText.text = quest.name;
+        isCleared = ApplicationContext.userData.userBattleList.Any(u => u.questId == quest.id && u.winOrLose == WinOrLose.Win && u.completedDate > DateTimeUtil.Epoch);
 
         _okButton.OnClickIntentAsObservable()
             .SelectMany(_ =>
@@ -80,7 +83,7 @@ public class QuestDetailWindowUIScript : WindowBase
     {
         if ((monsterItemList.Count <= index) || (index < 0)) return;
 
-        var scrollItem = item.GetComponent<IconItemHorizontal>();
+        var scrollItem = item.GetComponent<IconItem>();
         var monsterItem = monsterItemList[index];
 
         scrollItem.SetIcon(monsterItem);
@@ -100,7 +103,7 @@ public class QuestDetailWindowUIScript : WindowBase
     {
         if ((normalRewardItemList.Count <= index) || (index < 0)) return;
 
-        var scrollItem = item.GetComponent<IconItemHorizontal>();
+        var scrollItem = item.GetComponent<IconItem>();
         var normalRewardItem = normalRewardItemList[index];
 
         scrollItem.SetIcon(normalRewardItem);
@@ -136,7 +139,7 @@ public class QuestDetailWindowUIScript : WindowBase
     {
         if ((dropRewardItemList.Count <= index) || (index < 0)) return;
 
-        var scrollItem = item.GetComponent<IconItemHorizontal>();
+        var scrollItem = item.GetComponent<IconItem>();
         var dropRewardItem = dropRewardItemList[index];
 
         scrollItem.SetIcon(dropRewardItem);
@@ -156,10 +159,12 @@ public class QuestDetailWindowUIScript : WindowBase
     {
         if ((firstRewardItemList.Count <= index) || (index < 0)) return;
 
-        var scrollItem = item.GetComponent<IconItemHorizontal>();
+        var scrollItem = item.GetComponent<IconItem>();
         var firstRewardItem = firstRewardItemList[index];
 
         scrollItem.SetIcon(firstRewardItem);
+        scrollItem.ShowGrayoutPanel(isCleared);
+        scrollItem.ShowCheckImage(isCleared);
     }
 
     public override void Open(WindowInfo info)

@@ -14,6 +14,7 @@ public class IconItem : MonoBehaviour
     [SerializeField] protected Image _backgroundImage;
     [SerializeField] protected Image _frameImage;
     [SerializeField] protected Image _iconImage;
+    [SerializeField] protected Image _checkImage;
     [SerializeField] protected GameObject _notifyPanel;
     [SerializeField] protected GameObject _focusPanel;
     [SerializeField] protected GameObject _grayoutPanel;
@@ -102,5 +103,10 @@ public class IconItem : MonoBehaviour
         _labelPanel.SetActive(isShow);
         _labelText.gameObject.SetActive(!string.IsNullOrWhiteSpace(text));
         _labelText.text = text;
+    }
+
+    public void ShowCheckImage(bool isShow)
+    {
+        _checkImage.gameObject.SetActive(isShow);
     }
 }
