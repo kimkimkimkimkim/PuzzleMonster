@@ -11,6 +11,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
 {
     [SerializeField] protected TextMeshProUGUI _titleText;
     [SerializeField] protected Button _okButton;
+    [SerializeField] protected GameObject _okButtonGrayoutPanel;
     [SerializeField] protected TabAnimationController _tabAnimationController;
     [SerializeField] protected List<ToggleWithValue> _tabList;
     [SerializeField] protected List<PartyMonsterIconItem> _partyMonsterIconList;
@@ -89,6 +90,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         SetTabChangeAction();
         RefreshPartyUI();
         RefreshScroll();
+        RefreshGrayoutPanel();
     }
 
     private void SetTabChangeAction()
@@ -105,6 +107,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                     _toggleGroup.SetAllTogglesOff();
                     RefreshPartyUI();
                     RefreshScroll();
+                    RefreshGrayoutPanel();
                 })
                 .Subscribe();
         });
@@ -148,6 +151,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                     selectedUserMonsterId = null;
                     RefreshPartyUI();
                     RefreshScroll(); // TODO: 初期化せずに表示中のアイテムだけ更新したい
+                    RefreshGrayoutPanel();
                 }
                 else if(selectedUserMonsterId != null)
                 {
@@ -159,6 +163,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                     selectedUserMonsterId = null;
                     RefreshPartyUI();
                     RefreshScroll(); // TODO: 初期化せずに表示中のアイテムだけ更新したい
+                    RefreshGrayoutPanel();
                 }
                 else
                 {
@@ -211,6 +216,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 selectedUserMonsterId = null;
                 RefreshPartyUI();
                 RefreshScroll(); // TODO: 初期化せずに表示中のアイテムだけ更新したい
+                RefreshGrayoutPanel();
             }
             else
             {
@@ -229,6 +235,12 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 }
             }
         });
+    }
+
+    private void RefreshGrayoutPanel()
+    {
+        var existsMonster = currentUserMonsterParty.userMonsterIdList.Any(id => id != null);
+        _okButtonGrayoutPanel.SetActive(!existsMonster);
     }
 
     public override void Open(WindowInfo info)
