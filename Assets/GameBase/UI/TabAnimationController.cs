@@ -19,10 +19,15 @@ namespace GameBase
         private string ON_COLOR_CODE = TextColorType.Focus.Color();
         private string OFF_COLOR_CODE = TextColorType.White.Color();
 
+        private void Start()
+        {
+            SetTabChangeAnimation();
+        }
+
         /// <summary>
         /// 文字色の制御と選択バーの制御
         /// </summary>
-        public void SetTabChangeAnimation()
+        private void SetTabChangeAnimation()
         {
             var onColor = Color.white;
             var offColor = Color.white;

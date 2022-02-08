@@ -12,7 +12,6 @@ public class QuestSelectPartyWindowUIScript : WindowBase
     [SerializeField] protected TextMeshProUGUI _titleText;
     [SerializeField] protected Button _okButton;
     [SerializeField] protected GameObject _okButtonGrayoutPanel;
-    [SerializeField] protected TabAnimationController _tabAnimationController;
     [SerializeField] protected List<ToggleWithValue> _tabList;
     [SerializeField] protected List<PartyMonsterIconItem> _partyMonsterIconList;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
@@ -86,7 +85,6 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             })
             .Subscribe();
 
-        _tabAnimationController.SetTabChangeAnimation();
         SetTabChangeAction();
         RefreshPartyUI();
         RefreshScroll();
