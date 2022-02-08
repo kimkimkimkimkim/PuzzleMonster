@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GameBase;
 using PM.Enum.Battle;
+using PM.Enum.Quest;
 using UniRx;
 using UnityEngine;
 
@@ -9,12 +10,34 @@ using UnityEngine;
 public class QuestCategoryWindowUIScript : WindowBase
 {
     [SerializeField] protected InfiniteScroll _infiniteScroll;
+    [SerializeField] protected List<ToggleWithValue> _tabList;
 
-    private List<QuestCategoryMB> questCategoryList;
+    private const int NORMAL_QUEST_TAB_VALUE = 0;
+    private const int EVENT_QUEST_TAB_VALUE = 1;
+
+    private int currentTabValue = NORMAL_QUEST_TAB_VALUE;
+    private List<QuestCategoryMB> targetQuestCategoryList;
 
     public override void Init(WindowInfo info)
     {
         base.Init(info);
+
+        SetTabChangeAction();
+    }
+
+    private void SetTabChangeAction()
+    {
+        _tabList.ForEach(tab =>
+        {
+            tab.OnValueChangedIntentAsObservable()
+                .Where(isOn => isOn)
+                .Do(_ =>
+                {
+                    currentTabValue = tab.value;
+                    RefreshScroll();
+                })
+                .Subscribe();
+        });
     }
 
     private void RefreshScroll()
@@ -22,7 +45,8 @@ public class QuestCategoryWindowUIScript : WindowBase
         _infiniteScroll.Clear();
 
         // カテゴリに含まれるクエストのうち一つでも表示条件を満たしているものがあれば表示する
-        questCategoryList = MasterRecord.GetMasterOf<QuestCategoryMB>().GetAll()
+        targetQuestCategoryList = MasterRecord.GetMasterOf<QuestCategoryMB>().GetAll()
+            .Where(questCategory => questCategory.questType == GetQuestTypeFromTabValue(currentTabValue))
             .Where(questCategory =>
             {
                 var questList = MasterRecord.GetMasterOf<QuestMB>().GetAll().Where(quest => quest.questCategoryId == questCategory.id).ToList();
@@ -31,15 +55,15 @@ public class QuestCategoryWindowUIScript : WindowBase
             .OrderBy(m => m.id)
             .ToList();
 
-        if (questCategoryList.Any()) _infiniteScroll.Init(questCategoryList.Count, OnUpdateItem);
+        if (targetQuestCategoryList.Any()) _infiniteScroll.Init(targetQuestCategoryList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)
     {
-        if ((questCategoryList.Count <= index) || (index < 0)) return;
+        if ((targetQuestCategoryList.Count <= index) || (index < 0)) return;
 
         var scrollItem = item.GetComponent<QuestCategoryScrollItem>();
-        var questCategory = questCategoryList[index];
+        var questCategory = targetQuestCategoryList[index];
         var questList = MasterRecord.GetMasterOf<QuestMB>().GetAll().Where(quest => quest.questCategoryId == questCategory.id).ToList();
         var userBattleList = ApplicationContext.userData.userBattleList;
         var canExecute = questList.Any(m => ConditionUtil.IsValid(ApplicationContext.userData, m.canExecuteConditionList));
@@ -52,6 +76,18 @@ public class QuestCategoryWindowUIScript : WindowBase
         {
             QuestListWindowFactory.Create(new QuestListWindowRequest() { questCategoryId = questCategory.id }).Subscribe();
         });
+    }
+
+    private QuestType GetQuestTypeFromTabValue(int tabValue)
+    {
+        switch (tabValue) {
+            case NORMAL_QUEST_TAB_VALUE:
+                return QuestType.Normal;
+            case EVENT_QUEST_TAB_VALUE:
+                return QuestType.Event;
+            default:
+                return QuestType.Normal;
+        }
     }
 
     public override void Open(WindowInfo info)
