@@ -8,6 +8,7 @@ public class GachaExecuteButton : ScrollItem
 {
     [SerializeField] protected TextMeshProUGUI _costText;
     [SerializeField] protected Image _propertyImage;
+    [SerializeField] protected GameObject _grayoutPanel;
 
     public void SetCostText(string cost)
     {
@@ -17,5 +18,10 @@ public class GachaExecuteButton : ScrollItem
     public void SetPropertyImage(long propertyId)
     {
 
+    }
+
+    public void ShowGrayoutPanel(bool isShow)
+    {
+        _grayoutPanel.SetActive(isShow);
     }
 }

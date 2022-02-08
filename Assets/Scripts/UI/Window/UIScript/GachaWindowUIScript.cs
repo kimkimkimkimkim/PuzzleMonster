@@ -19,7 +19,14 @@ public class GachaWindowUIScript : WindowBase
     {
         base.Init(info);
 
-        gachaBoxList = MasterRecord.GetMasterOf<GachaBoxMB>().GetAll().ToList();
+        gachaBoxList = MasterRecord.GetMasterOf<GachaBoxMB>().GetAll()
+            .Where(gachaBox =>
+            {
+                // ガチャボックスに対応するガチャボックス詳細マスタの中に一つでも表示条件を満たしているものがあれば表示する
+                var gachaBoxDetailList = MasterRecord.GetMasterOf<GachaBoxDetailMB>().GetAll().Where(gachaBoxDetail => gachaBoxDetail.gachaBoxId == gachaBox.id).ToList();
+                return gachaBoxDetailList.Any(gachaBoxDetail => ConditionUtil.IsValid(ApplicationContext.userData, gachaBoxDetail.displayConditionList));
+            })
+            .ToList();
 
         RefreshScroll();
     }
@@ -37,21 +44,28 @@ public class GachaWindowUIScript : WindowBase
 
         var scrollItem = item.GetComponent<GachaBoxScrollItem>();
         var gachaBox = gachaBoxList[index];
-        var gachaBoxDetailList = MasterRecord.GetMasterOf<GachaBoxDetailMB>().GetAll().Where(m => m.gachaBoxId == gachaBox.id).ToList();
+        var gachaBoxDetailList = MasterRecord.GetMasterOf<GachaBoxDetailMB>().GetAll()
+            .Where(m => m.gachaBoxId == gachaBox.id)
+            .Where(m => ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList))
+            .ToList();
 
         scrollItem.SetText(gachaBox.title);
         gachaBoxDetailList.ForEach(gachaBoxDetail => {
             var gachaExecuteButton = UIManager.Instance.CreateContent<GachaExecuteButton>(scrollItem._executeButtonBase);
             var title = gachaBoxDetail.title;
-            
+            var canExecute = ConditionUtil.IsValid(ApplicationContext.userData, gachaBoxDetail.canExecuteConditionList);
+            var cost = gachaBoxDetail.requiredItemList.First().num; // ガチャに必要なアイテムが複数になることはない
+
+            gachaExecuteButton.ShowGrayoutPanel(!canExecute);
             gachaExecuteButton.SetText(title);
+            gachaExecuteButton.SetCostText(cost.ToString());
             gachaExecuteButton.SetOnClickAction(() => OnClickGachaExecuteButtonAction(gachaBoxDetail));
         });
     }
 
     private void OnClickGachaExecuteButtonAction(GachaBoxDetailMB gachaBoxDetail) {
-        var cost = gachaBoxDetail.requiredItemList.First().num;
-        var num = cost / 5; // TODO
+        var cost = gachaBoxDetail.requiredItemList.First().num; // ガチャに必要なアイテムが複数になることはない
+        var num = gachaBoxDetail.gachaExecuteType.Num();
 
         CommonDialogFactory.Create(new CommonDialogRequest()
         {
