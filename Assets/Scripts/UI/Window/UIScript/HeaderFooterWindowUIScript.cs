@@ -16,6 +16,10 @@ public class HeaderFooterWindowUIScript : WindowBase
     [SerializeField] protected TextMeshProUGUI _coinText;
     [SerializeField] protected TextMeshProUGUI _staminaText;
     [SerializeField] protected TextMeshProUGUI _staminaCountdownText;
+    [SerializeField] protected TextMeshProUGUI _userRankText;
+    [SerializeField] protected TextMeshProUGUI _userNameText;
+    [SerializeField] protected TextMeshProUGUI _userExpText;
+    [SerializeField] protected Slider _userExpSlider;
     [SerializeField] protected Toggle _homeToggle;
     [SerializeField] protected Toggle _monsterToggle;
     [SerializeField] protected Toggle _gachaToggle;
@@ -84,6 +88,7 @@ public class HeaderFooterWindowUIScript : WindowBase
         _homeToggle.isOn = true;
         UpdateVirtualCurrencyText();
         SetStaminaText();
+        UpdateUserDataUI();
     }
 
     /// <summary>
@@ -155,6 +160,33 @@ public class HeaderFooterWindowUIScript : WindowBase
                 }
             })
             .Subscribe();
+    }
+
+    public void UpdateUserDataUI()
+    {
+        var playerProfile = ApplicationContext.playerProfile;
+        var userData = ApplicationContext.userData;
+        var currentRankUpTable = MasterRecord.GetMasterOf<UserRankUpTableMB>().GetAll().First(m => m.rank == userData.rank);
+        var nextRankUpTable = MasterRecord.GetMasterOf<UserRankUpTableMB>().GetAll().FirstOrDefault(m => m.rank == userData.rank + 1);
+
+        _userNameText.text = playerProfile.DisplayName;
+        _userRankText.text = userData.rank.ToString();
+
+        if(nextRankUpTable == null)
+        {
+            // 最大ランクの時
+            _userExpText.text = "-";
+            _userExpSlider.maxValue = currentRankUpTable.totalRequiredExp;
+            _userExpSlider.value = currentRankUpTable.totalRequiredExp;
+        }
+        else
+        {
+            var requiredExp = nextRankUpTable.requiredExp;
+            var currentExp = userData.totalPlayerExp - currentRankUpTable.totalRequiredExp;
+            _userExpText.text = $"{currentExp}/{requiredExp}";
+            _userExpSlider.maxValue = requiredExp;
+            _userExpSlider.value = currentExp;
+        }
     }
 
     public override void Open(WindowInfo info)

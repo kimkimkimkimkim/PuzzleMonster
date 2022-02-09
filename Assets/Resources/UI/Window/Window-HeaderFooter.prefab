@@ -2110,7 +2110,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 0}
   m_FillRect: {fileID: 6689274677822773451}
   m_HandleRect: {fileID: 0}
@@ -2317,7 +2317,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 568.37854, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 68}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &6821079832791272541
@@ -3436,7 +3436,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 568.37854, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 68}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &2077722877478490865
@@ -4511,6 +4511,10 @@ MonoBehaviour:
   _coinText: {fileID: 8511192202490709474}
   _staminaText: {fileID: 8590280689351507074}
   _staminaCountdownText: {fileID: 7031416826284305995}
+  _userRankText: {fileID: 1386642327557440213}
+  _userNameText: {fileID: 1917165003043712017}
+  _userExpText: {fileID: 619163445935948185}
+  _userExpSlider: {fileID: 5486941555706611629}
   _homeToggle: {fileID: 8261115783097138507}
   _monsterToggle: {fileID: 7935931620092787673}
   _gachaToggle: {fileID: 8643438031838833782}
@@ -6283,7 +6287,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 568.37854, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 68}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &5280341822925123525

@@ -28,6 +28,12 @@ public class HeaderFooterManager : SingletonMonoBehaviour<HeaderFooterManager>
         uiScript.SetStaminaText();
     }
 
+    public void UpdateUserDataUI()
+    {
+        if (uiScript == null) return;
+        uiScript.UpdateUserDataUI();
+    }
+
     /// <summary>
     /// 表示制御
     /// </summary>
