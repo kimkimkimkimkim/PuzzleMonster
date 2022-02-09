@@ -32,8 +32,8 @@ public class IconItemRounded : MonoBehaviour
 
     public void SetIcon(ItemMI item)
     {
-        var iconColorType = ItemUtil.GetIconColorType(item);
-        var iconImageType = ItemUtil.GetIconImageType(item.itemType);
+        var iconColorType = ClientItemUtil.GetIconColorType(item);
+        var iconImageType = ClientItemUtil.GetIconImageType(item.itemType);
         var numText = item.num <= 1 ? "" : item.num.ToString();
 
         SetFrameImage(iconColorType);

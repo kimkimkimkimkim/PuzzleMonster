@@ -81,7 +81,7 @@ public class GachaResultDialogUIScript : DialogBase
         // アイコン画像の設定
         // TODO : リスト内全部のアイテムを表示するように
         var item = itemList[0];
-        PMAddressableAssetUtil.GetIconImageSpriteObservable(ItemUtil.GetIconImageType(item.itemType), item.itemId)
+        PMAddressableAssetUtil.GetIconImageSpriteObservable(ClientItemUtil.GetIconImageType(item.itemType), item.itemId)
             .Do(sprite =>
             {
                 _gachaItemImage.sprite = sprite;
