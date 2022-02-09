@@ -75,10 +75,15 @@ public class GachaWindowUIScript : WindowBase
         })
             .Where(res => res.dialogResponseType == DialogResponseType.Yes)
             .SelectMany(_ => ExecuteGachaObservable(gachaBoxDetail))
-            .SelectMany(res => GachaResultDialogFactory.Create(new GachaResultDialogRequest()
+            .SelectMany(res =>
             {
-                itemList = ItemUtil.GetItemMI(res.itemInstanceList)
-            }))
+                var itemList = ItemUtil.GetSeparatedItemMIList(res.itemInstanceList);
+                itemList = itemList.Shuffle().ToList();
+                return GachaResultDialogFactory.Create(new GachaResultDialogRequest()
+                {
+                    itemList = itemList,
+                });
+            })
             .Subscribe();
     }
 

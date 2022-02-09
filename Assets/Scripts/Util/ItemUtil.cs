@@ -41,7 +41,7 @@ public static class ItemUtil
         {
             itemType = GetItemType(itemInstance),
             itemId = GetItemId(itemInstance),
-            num = 1,
+            num = itemInstance.UsesIncrementedBy ?? 0,
         };
     }
 
@@ -61,9 +61,32 @@ public static class ItemUtil
     /// <summary>
     /// ItemInstanceからItemMIを返す
     /// </summary>
-    public static List<ItemMI> GetItemMI(List<ItemInstance> itemInstanceList)
+    public static List<ItemMI> GetItemMIList(List<ItemInstance> itemInstanceList)
     {
         return itemInstanceList.Select(i => GetItemMI(i)).ToList();
+    }
+
+    /// <summary>
+    /// 渡されたアイテムリストをすべて個数一つのアイテムに分解してリストで返す
+    /// </summary>
+    public static List<ItemMI> GetSeparatedItemMIList(List<ItemInstance> itemInstanceList)
+    {
+        var itemList = GetItemMIList(itemInstanceList);
+        var separatedItemList = new List<ItemMI>();
+        itemList.ForEach(item =>
+        {
+            var singleItem = new ItemMI()
+            {
+                itemType = item.itemType,
+                itemId = item.itemId,
+                num = 1,
+            };
+            for(var i = 0; i < item.num; i++)
+            {
+                separatedItemList.Add(singleItem);
+            }
+        });
+        return separatedItemList;
     }
 
     /// <summary>

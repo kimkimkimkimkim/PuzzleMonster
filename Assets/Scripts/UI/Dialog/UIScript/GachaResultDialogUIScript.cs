@@ -14,6 +14,8 @@ public class GachaResultDialogUIScript : DialogBase
     [SerializeField] protected Button _closeButton;
     [SerializeField] protected Image _gachaItemImage;
     [SerializeField] protected Text _contentText;
+    [SerializeField] protected GameObject _iconItemBase;
+    [SerializeField] protected List<IconItem> _iconItemList;
 
     private List<ItemMI> itemList;
 
@@ -33,8 +35,43 @@ public class GachaResultDialogUIScript : DialogBase
             })
             .Subscribe();
 
+        if(itemList.Count == 1)
+        {
+            SetOneUI();
+        }
+        else
+        {
+            SetTenUI();
+        }
+    }
+
+    /// <summary>
+    /// 単発ガチャ用のUIをセット
+    /// </summary>
+    private void SetOneUI()
+    {
+        _gachaItemImage.gameObject.SetActive(true);
+        _contentText.gameObject.SetActive(true);
+        _iconItemBase.gameObject.SetActive(false);
+
         SetGachaItemImage();
         SetText();
+    }
+
+    /// <summary>
+    /// 10連ガチャ用のUIをセット
+    /// </summary>
+    private void SetTenUI()
+    {
+        _gachaItemImage.gameObject.SetActive(false);
+        _contentText.gameObject.SetActive(false);
+        _iconItemBase.gameObject.SetActive(true);
+
+        _iconItemList.ForEach((iconItem, index) =>
+        {
+            var item = itemList[index];
+            iconItem.SetIcon(item);
+        });
     }
 
     private void SetGachaItemImage()
