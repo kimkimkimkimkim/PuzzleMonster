@@ -573,7 +573,9 @@
           "DropTable1001001"
         ],
         "BundledVirtualCurrencies": {
-          "CN": 100
+          "CN": 100,
+          "PE": 10,
+          "ME": 100
         }
       },
       "CanBecomeCharacter": false,
@@ -607,7 +609,10 @@
         "BundledResultTables": [
           "DropTable1002001"
         ],
-        "BundledVirtualCurrencies": null
+        "BundledVirtualCurrencies": {
+          "PE": 15,
+          "ME": 150
+        }
       },
       "CanBecomeCharacter": false,
       "IsStackable": false,
@@ -641,7 +646,9 @@
           "DropTable1002002"
         ],
         "BundledVirtualCurrencies": {
-          "CN": 100
+          "CN": 100,
+          "PE": 20,
+          "ME": 200
         }
       },
       "CanBecomeCharacter": false,
@@ -672,7 +679,8 @@
         "BundledItems": [],
         "BundledResultTables": [],
         "BundledVirtualCurrencies": {
-          "CN": 100
+          "CN": 100,
+          "OB": 1
         }
       },
       "CanBecomeCharacter": false,
@@ -703,7 +711,8 @@
         "BundledItems": [],
         "BundledResultTables": [],
         "BundledVirtualCurrencies": {
-          "CN": 200
+          "CN": 200,
+          "OB": 2
         }
       },
       "CanBecomeCharacter": false,
@@ -734,7 +743,8 @@
         "BundledItems": [],
         "BundledResultTables": [],
         "BundledVirtualCurrencies": {
-          "CN": 300
+          "CN": 300,
+          "OB": 5
         }
       },
       "CanBecomeCharacter": false,
