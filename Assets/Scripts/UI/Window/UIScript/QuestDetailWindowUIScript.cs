@@ -13,10 +13,12 @@ public class QuestDetailWindowUIScript : WindowBase
 {
     [SerializeField] protected Button _okButton;
     [SerializeField] protected TextMeshProUGUI _questNameText;
+    [SerializeField] protected TextMeshProUGUI _consumeStaminaText;
     [SerializeField] protected InfiniteScroll _monsterInfiniteScroll;
     [SerializeField] protected InfiniteScroll _normalRewardInfiniteScroll;
     [SerializeField] protected InfiniteScroll _dropRewardInfiniteScroll;
     [SerializeField] protected InfiniteScroll _firstRewardInfiniteScroll;
+    [SerializeField] protected GameObject _okButtonGrayoutPanel;
 
     private bool isCleared;
     private QuestMB quest;
@@ -33,6 +35,7 @@ public class QuestDetailWindowUIScript : WindowBase
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
 
         _questNameText.text = quest.name;
+        _consumeStaminaText.text = $"消費スタミナ: {quest.consumeStamina}";
         isCleared = ApplicationContext.userData.userBattleList.Any(u => u.questId == quest.id && u.winOrLose == WinOrLose.Win && u.completedDate > DateTimeUtil.Epoch);
 
         _okButton.OnClickIntentAsObservable()
@@ -49,6 +52,7 @@ public class QuestDetailWindowUIScript : WindowBase
         RefreshNormalRewardInfiniteScroll();
         RefreshDropRewardInfiniteScroll();
         RefreshFirstRewardInfiniteScroll();
+        RefreshGrayoutPanel();
     }
 
     private void RefreshMonsterInfiniteScroll()
@@ -165,6 +169,17 @@ public class QuestDetailWindowUIScript : WindowBase
         scrollItem.SetIcon(firstRewardItem);
         scrollItem.ShowGrayoutPanel(isCleared);
         scrollItem.ShowCheckImage(isCleared);
+    }
+
+    private void RefreshGrayoutPanel()
+    {
+        var userData = ApplicationContext.userData;
+        var lastCalculatedStaminaDateTime = userData.lastCalculatedStaminaDateTime;
+        var stamina = userData.stamina;
+        var maxStamina = MasterRecord.GetMasterOf<StaminaMB>().GetAll().First(m => m.rank == userData.rank).stamina;
+        var currentStamina = UserDataUtil.GetCurrentStaminaAndLastCalculatedStaminaDateTime(lastCalculatedStaminaDateTime, stamina, maxStamina).currentStamina;
+        var enoughStamina = userData.stamina >= quest.consumeStamina;
+        _okButtonGrayoutPanel.SetActive(!enoughStamina);
     }
 
     public override void Open(WindowInfo info)
