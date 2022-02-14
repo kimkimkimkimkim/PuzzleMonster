@@ -59,4 +59,21 @@ public static class ClientItemUtil
                 return IconImageType.None;
         }
     }
+
+    /// <summary>
+    /// アイテム名を取得する
+    /// </summary>
+    public static string GetName(ItemMI item)
+    {
+        switch (item.itemType) {
+            case ItemType.VirtualCurrency:
+                var virtualCurrency = (VirtualCurrencyType)item.itemId;
+                return virtualCurrency.Name();
+            case ItemType.Monster:
+                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(item.itemId);
+                return monster.name;
+            default:
+                return "";
+        }
+    }
 }

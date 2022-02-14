@@ -32,11 +32,11 @@ public class IconItem : MonoBehaviour
 
     private IDisposable onClickButtonObservable;
 
-    public void SetIcon(ItemMI item)
+    public void SetIcon(ItemMI item, bool showNumTextAtOne = false)
     {
         var iconColorType = ClientItemUtil.GetIconColorType(item);
         var iconImageType = ClientItemUtil.GetIconImageType(item.itemType);
-        var numText = item.num <= 1 ? "" : item.num.ToString();
+        var numText = item.num <= 1 && !showNumTextAtOne ? "" : item.num.ToString();
 
         SetFrameImage(iconColorType);
         SetIconImage(iconImageType, item.itemId);
@@ -61,7 +61,7 @@ public class IconItem : MonoBehaviour
             .AddTo(this);
     }
 
-    private void SetNumText(string text)
+    public void SetNumText(string text)
     {
         _numText.text = text;
     }

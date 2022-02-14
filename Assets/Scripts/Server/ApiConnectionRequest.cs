@@ -276,5 +276,16 @@ public partial class ApiConnection
             userBattleId = userBattleId,
         });
     }
+
+    /// <summary>
+    /// 指定したミッションをクリアする
+    /// </summary>
+    public static IObservable<ClearMissionApiResponse> ClearMission(long missionId)
+    {
+        return SendRequest<ClearMissionApiRequest, ClearMissionApiResponse>(ClearMissionApiInterface.functionName, new ClearMissionApiRequest()
+        {
+            missionId = missionId,
+        });
+    }
     #endregion
 }

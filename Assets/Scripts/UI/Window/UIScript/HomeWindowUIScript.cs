@@ -12,6 +12,7 @@ using System.Linq;
 public class HomeWindowUIScript : WindowBase
 {
     [SerializeField] protected Button _questButton;
+    [SerializeField] protected Button _missionButton;
     [SerializeField] protected Transform _monsterAreaParentBase;
 
     private List<Transform> monsterAreaParentList = new List<Transform>();
@@ -22,6 +23,10 @@ public class HomeWindowUIScript : WindowBase
 
         _questButton.OnClickIntentAsObservable()
             .SelectMany(_ => QuestCategoryWindowFactory.Create(new QuestCategoryWindowRequest()))
+            .Subscribe();
+
+        _missionButton.OnClickIntentAsObservable()
+            .SelectMany(_ => MissionDialogFactory.Create(new MissionDialogRequest()))
             .Subscribe();
 
         SetMonsterImage();
