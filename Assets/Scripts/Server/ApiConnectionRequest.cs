@@ -244,12 +244,13 @@ public partial class ApiConnection
     /// <summary>
     /// バトルを実行する
     /// </summary>
-    public static IObservable<ExecuteBattleApiResponse> ExecuteBattle(string userMonsterPartyId, long questId)
+    public static IObservable<ExecuteBattleApiResponse> ExecuteBattle(string userMonsterPartyId, long questId, WinOrLose winOrLose)
     {
         return SendRequest<ExecuteBattleApiRequest, ExecuteBattleApiResponse>(ExecuteBattleApiInterface.functionName, new ExecuteBattleApiRequest()
         {
             userMonsterPartyId = userMonsterPartyId,
             questId = questId,
+            winOrLose = winOrLose,
         });
     }
 
@@ -268,13 +269,11 @@ public partial class ApiConnection
     /// <summary>
     /// バトル終了時に実行
     /// </summary>
-    public static IObservable<EndBattleApiResponse> EndBattle(string userMonsterPartyId, long questId, WinOrLose winOrLose)
+    public static IObservable<EndBattleApiResponse> EndBattle(string userBattleId)
     {
         return SendRequest<EndBattleApiRequest, EndBattleApiResponse>(EndBattleApiInterface.functionName, new EndBattleApiRequest()
         {
-            userMonsterPartyId = userMonsterPartyId, 
-            questId = questId,
-            winOrLose = winOrLose,
+            userBattleId = userBattleId,
         });
     }
     #endregion

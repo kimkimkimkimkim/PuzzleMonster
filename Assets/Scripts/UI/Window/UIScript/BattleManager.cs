@@ -48,8 +48,9 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             .SelectMany(res =>
             {
                 var winOrLose = res.dialogResponseType == DialogResponseType.Yes ? WinOrLose.Win : WinOrLose.Lose;
-                return ApiConnection.EndBattle(userMonsterPartyId, questId, winOrLose);
+                return ApiConnection.ExecuteBattle(userMonsterPartyId, questId, winOrLose);
             })
+            .SelectMany(res => ApiConnection.EndBattle(res.userBattle.id))
             .SelectMany(res => BattleResultDialogFactory.Create(new BattleResultDialogRequest() { userBattle = res.userBattle }))
             .SelectMany(_ => FadeOutObservable())
             .AsUnitObservable();
@@ -90,6 +91,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// バトルを開始する
     /// アニメーション再生とフェードアウトまでする
     /// </summary>
+    /*
     private IObservable<Unit> BattleStartObservable(List<BattleLogInfo> battleLogList)
     {
         // アニメーションリストを作成
@@ -102,6 +104,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest()))
             .SelectMany(_ => FadeOutObservable());
     }
+    */
     
     /// <summary>
     /// バトルログ情報に応じたアニメーションを再生する

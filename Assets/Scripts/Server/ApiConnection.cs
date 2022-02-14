@@ -105,6 +105,8 @@ public partial class ApiConnection
                         {
                             UIManager.Instance.TryHideTapBlocker();
                             HeaderFooterManager.Instance.UpdateVirutalCurrencyText();
+                            HeaderFooterManager.Instance.UpdateUserDataUI();
+                            HeaderFooterManager.Instance.SetStaminaText();
 
                             o.OnNext(response);
                             o.OnCompleted();
