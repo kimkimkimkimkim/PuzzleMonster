@@ -182,7 +182,7 @@ public class HeaderFooterWindowUIScript : WindowBase
         else
         {
             var requiredExp = nextRankUpTable.requiredExp;
-            var currentExp = userData.totalPlayerExp - currentRankUpTable.totalRequiredExp;
+            var currentExp = ApplicationContext.userVirtualCurrency.playerExp - currentRankUpTable.totalRequiredExp;
             _userExpText.text = $"{currentExp}/{requiredExp}";
             _userExpSlider.maxValue = requiredExp;
             _userExpSlider.value = currentExp;
