@@ -11,7 +11,6 @@ public class MonsterFormationWindowFactory
         {
             var param = new Dictionary<string, object>();
             param.Add("partyId", request.partyId);
-            param.Add("userMonsterList", request.userMontserList);
             param.Add("initialUserMonsterList", request.initialUserMonsterList);
             param.Add("onClose", new Action(() =>
             {

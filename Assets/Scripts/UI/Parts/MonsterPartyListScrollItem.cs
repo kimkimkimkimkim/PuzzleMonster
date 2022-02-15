@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using GameBase;
@@ -22,7 +23,7 @@ public class MonsterPartyListScrollItem : ScrollItem
             {
                 if (0 <= index && index < _monsterImageList.Count)
                 {
-                    return PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, id)
+                    return GetMonsterSpriteObservable(id)
                         .Where(res => res != null)
                         .Do(res =>
                         {
@@ -38,5 +39,17 @@ public class MonsterPartyListScrollItem : ScrollItem
             });
 
         Observable.WhenAll(observableList).Subscribe();
+    }
+
+    private IObservable<Sprite> GetMonsterSpriteObservable(long id)
+    {
+        if(id <= 0)
+        {
+            return Observable.Return(_emptySprite);
+        }
+        else
+        {
+            return PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, id);
+        }
     }
 }

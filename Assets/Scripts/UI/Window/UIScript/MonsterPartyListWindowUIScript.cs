@@ -38,7 +38,7 @@ public class MonsterPartyListWindowUIScript : WindowBase
                     {
                         id = "",
                         partyIndex = index,
-                        userMonsterIdList = new List<string>(),
+                        userMonsterIdList = Enumerable.Repeat<string>("", ConstManager.Battle.MAX_PARTY_MEMBER_NUM).ToList(),
                     };
                 }
             })
@@ -53,8 +53,20 @@ public class MonsterPartyListWindowUIScript : WindowBase
 
         var scrollItem = item.GetComponent<MonsterPartyListScrollItem>();
         var userMonsterParty = userMonsterPartyList[index];
-        var initialUserMonsterList = userMonsterParty.userMonsterIdList.Select(id => ApplicationContext.userInventory.userMonsterList.First(u => u.id == id)).ToList();
-        var monsterIdList = initialUserMonsterList.Select(u => MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId).id).ToList();
+        var initialUserMonsterList = userMonsterParty.userMonsterIdList.Select(id => ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.id == id)).ToList();
+        var monsterIdList = initialUserMonsterList
+            .Select(u =>
+            {
+                if (u == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId).id;
+                }
+            })
+            .ToList();
 
         scrollItem.SetMonsterImage(userMonsterParty.partyIndex, monsterIdList);
         scrollItem.SetOnClickAction(() =>
@@ -62,7 +74,6 @@ public class MonsterPartyListWindowUIScript : WindowBase
             MonsterFormationWindowFactory.Create(new MonsterFormationWindowRequest()
             {
                 partyId = userMonsterParty.partyIndex,
-                userMontserList = ApplicationContext.userInventory.userMonsterList,
                 initialUserMonsterList = initialUserMonsterList,
             }).Subscribe();
         });

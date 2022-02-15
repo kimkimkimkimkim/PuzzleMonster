@@ -14,6 +14,7 @@ public class MonsterFormationWindowUIScript : WindowBase
     private int partyId;
     private List<UserMonsterInfo> initialUserMonsterList = new List<UserMonsterInfo>();
     private List<UserMonsterInfo> userMonsterList;
+    private List<MonsterFormationInitialScrollItem> monsterFormatioinInitialScrollItemList = new List<MonsterFormationInitialScrollItem>();
     private List<string> selectedUserMonsterIdList = Enumerable.Repeat<string>("", ConstManager.Battle.MAX_PARTY_MEMBER_NUM).ToList();
     private int currentNumber = 1;
 
@@ -23,31 +24,47 @@ public class MonsterFormationWindowUIScript : WindowBase
 
         partyId = (int)info.param["partyId"];
         initialUserMonsterList = (List<UserMonsterInfo>)info.param["initialUserMonsterList"];
-        userMonsterList = (List<UserMonsterInfo>)info.param["userMonsterList"];
 
-        // すでに編成済みのモンスターを排除
-        userMonsterList = userMonsterList.Where(u => !initialUserMonsterList.Any(initialUserMonster => initialUserMonster.id == u.id)).ToList();
-
-        SetInitialMonster();
+        RefreshUserMonsterList();
+        SetInitialMonsterItem();
+        RefreshInitialMonsterItem();
         RefreshScroll();
     }
 
-    private void SetInitialMonster()
+    private void SetInitialMonsterItem()
     {
         for(var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
         {
             var item = UIManager.Instance.CreateContent<MonsterFormationInitialScrollItem>(_initialMonsterAreaPanel);
-            if(i < initialUserMonsterList.Count && initialUserMonsterList[i] != null)
+            monsterFormatioinInitialScrollItemList.Add(item);
+        }
+    }
+
+    private void RefreshInitialMonsterItem()
+    {
+        for (var i = 0; i < ConstManager.Battle.MAX_PARTY_MEMBER_NUM; i++)
+        {
+            if (i < initialUserMonsterList.Count && initialUserMonsterList[i] != null)
             {
                 var userMonster = initialUserMonsterList[i];
+                var item = monsterFormatioinInitialScrollItemList[i];
                 item.SetMonsterImage(userMonster.monsterId);
+                item.SetSelectionState(0);
                 item.SetOnClickAction(() => OnClickItemAction(item, userMonster.id));
             }
         }
+        
+    }
+
+    private void RefreshUserMonsterList()
+    {
+        // すでに編成済みのモンスターを排除
+        userMonsterList = ApplicationContext.userInventory.userMonsterList.Where(u => !initialUserMonsterList.Any(initialUserMonster => initialUserMonster != null && initialUserMonster.id == u.id)).ToList();
     }
 
     private void RefreshScroll()
     {
+        currentNumber = 1;
         _infiniteScroll.Clear();
 
         if (userMonsterList.Any()) _infiniteScroll.Init(userMonsterList.Count, OnUpdateItem);
@@ -62,6 +79,7 @@ public class MonsterFormationWindowUIScript : WindowBase
 
         scrollItem.SetGradeImage(userMonster.customData.grade);
         scrollItem.SetMonsterImage(userMonster.monsterId);
+        scrollItem.SetSelectionState(0);
         scrollItem.SetOnClickAction(() => OnClickItemAction(scrollItem, userMonster.id));
     }
 
@@ -93,13 +111,13 @@ public class MonsterFormationWindowUIScript : WindowBase
                 })
                     .Where(res => res.dialogResponseType == PM.Enum.UI.DialogResponseType.Yes)
                     .SelectMany(_ => ApiConnection.UpdateUserMosnterFormation(partyId, selectedUserMonsterIdList))
-                    .Do(_ => UIManager.Instance.CloseWindow())
-                    .Do(_ => {
-                        if (onClose != null)
-                        {
-                            onClose();
-                            onClose = null;
-                        }
+                    .Do(_ =>
+                    {
+                        initialUserMonsterList = selectedUserMonsterIdList.Select(id => ApplicationContext.userInventory.userMonsterList.First(u => u.id == id)).ToList();
+                        selectedUserMonsterIdList = Enumerable.Repeat<string>("", ConstManager.Battle.MAX_PARTY_MEMBER_NUM).ToList();
+                        RefreshUserMonsterList();
+                        RefreshInitialMonsterItem();
+                        RefreshScroll();
                     })
                     .Subscribe();
             }

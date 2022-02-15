@@ -12,6 +12,7 @@ public class MonsterFormationScrollItem : ScrollItem {
     [SerializeField] protected GameObject _backgroundPanel;
     [SerializeField] protected GameObject _numberPanel;
     [SerializeField] protected Text _numberText;
+    [SerializeField] protected Sprite _emptySprite;
 
     public void SetGradeImage(int grade)
     {
@@ -20,6 +21,8 @@ public class MonsterFormationScrollItem : ScrollItem {
 
     public void SetMonsterImage(long monsterId)
     {
+        if (monsterId <= 0) _monsterImage.sprite = _emptySprite;
+
         PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monsterId)
             .Where(res => res != null)
             .Do(res => _monsterImage.sprite = res)
