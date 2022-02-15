@@ -155,6 +155,54 @@ public partial class PlayFabDataPublisher : EditorWindow
             }
         }
 
+        // ContainerMBをBundleに追加
+        for (var i = 0; i < sheetNum; i++)
+        {
+            var sheet = book.GetSheetAt(i);
+            var masterName = sheet.GetRow(NAME_ROW_INDEX).GetCell(NAME_COLUMN_INDEX).StringCellValue;
+            if (masterName != "ContainerMB") continue;
+
+            var rowIndex = START_DATA_ROW_INDEX;
+
+            // 各レコードに対する処理開始
+            while (GetValueStr(sheet, rowIndex, START_DATA_COLUMN_INDEX) != "")
+            {
+                var id = "";
+                var name = "";
+                var itemList = new List<ItemMI>();
+
+                var columnIndex = START_DATA_COLUMN_INDEX;
+
+                // 各カラムに対する処理開始
+                while (GetTypeStr(sheet, columnIndex) != "")
+                {
+                    // 階層1が空ならスキップ
+                    var key = GetCellValueStr(sheet, HIERARCHY_1_ROW_INDEX, columnIndex);
+                    if (key == "")
+                    {
+                        columnIndex++;
+                        continue;
+                    }
+
+                    var value = GetCellValueStr(sheet, rowIndex, columnIndex);
+
+                    if (key == "id") id = value;
+                    if (key == "name") name = value;
+                    if (key == "itemList")
+                    {
+                        var listValue = GetListValueStr(sheet, rowIndex, columnIndex);
+                        listValue = listValue.Replace("\\", "");
+                        itemList = JsonConvert.DeserializeObject<ItemMI[]>(listValue).ToList();
+                    }
+                    columnIndex++;
+                }
+
+                var jsonStr = GetContainerDataJson(masterName, id, name, itemList);
+                allJsonStr += jsonStr + ",";
+                rowIndex++;
+            }
+        }
+
         // Catalogの追加終了
         allJsonStr = allJsonStr.Remove(allJsonStr.Length - 1);
         allJsonStr += "],\"DropTables\":[";
@@ -341,7 +389,76 @@ public partial class PlayFabDataPublisher : EditorWindow
             "\"ActivatedMembership\": null" +
         "}";
     }
-    
+
+    private string GetContainerDataJson(string masterName, string id, string name, List<ItemMI> itemList)
+    {
+        var itemClass = masterName.Substring(0, masterName.Length - 2);
+        var itemId = $"{itemClass}{id}";
+
+        // itemContentsの作成
+        var itemContentsIdList = new List<string>();
+        itemList.Where(m => m.itemType == ItemType.Monster || m.itemType == ItemType.Property).ToList().ForEach(m =>
+        {
+            var _itemId = ItemUtil.GetItemId(m.itemType, m.itemId);
+            for (var i = 0; i < m.num; i++)
+            {
+                itemContentsIdList.Add($"\"{_itemId}\"");
+            }
+        });
+        var itemContents = $"[{string.Join(",", itemContentsIdList)}]";
+
+        // resultTableContentsの作成
+        var resultTableContentsIdList = new List<string>();
+        itemList.Where(m => m.itemType == ItemType.DropTable).ToList().ForEach(m =>
+        {
+            var _itemId = ItemUtil.GetItemId(m.itemType, m.itemId);
+            for (var i = 0; i < m.num; i++)
+            {
+                resultTableContentsIdList.Add($"\"{_itemId}\"");
+            }
+        });
+        var resultTableContents = $"[{string.Join(",", resultTableContentsIdList)}]";
+
+        // virtualCurrencyContentsの作成
+        var virtualCurrencyContentsDataList = itemList.Where(m => m.itemType == ItemType.VirtualCurrency).Select(m =>
+        {
+            var virtualCurrency = (VirtualCurrencyType)m.itemId;
+            return $"\"{virtualCurrency}\":{m.num}";
+        }).ToList();
+        var virtualCurrencyContents = virtualCurrencyContentsDataList.Any() ? $"{{{string.Join(",", virtualCurrencyContentsDataList)}}}" : "null";
+
+        return "{" +
+            "\"ItemId\": \"" + itemId + "\"," +
+            "\"ItemClass\": \"" + itemClass + "\"," +
+            "\"CatalogVersion\": \"" + catalogVersion + "\"," +
+            "\"DisplayName\": \"" + name + "\"," +
+            "\"Description\": null," +
+            "\"VirtualCurrencyPrices\": {}," +
+            "\"RealCurrencyPrices\": {}," +
+            "\"Tags\": []," +
+            "\"CustomData\": null," +
+            "\"Consumable\": {" +
+                "\"UsageCount\": 1," +
+                "\"UsagePeriod\": null," +
+                "\"UsagePeriodGroup\": null" +
+            "}," +
+            "\"Container\": {" +
+                "\"KeyItemId\": null," +
+                "\"ItemContents\": " + itemContents + "," +
+                "\"ResultTableContents\": " + resultTableContents + "," +
+                "\"VirtualCurrencyContents\": " + virtualCurrencyContents +
+            "}," +
+            "\"Bundle\": null," +
+            "\"CanBecomeCharacter\": false," +
+            "\"IsStackable\": false," +
+            "\"IsTradable\": false," +
+            "\"ItemImageUrl\": null," +
+            "\"IsLimitedEdition\": false," +
+            "\"InitialLimitedEditionCount\": 0," +
+            "\"ActivatedMembership\": null" +
+        "}";
+    }
+
     private string GetDropTableDataJson(string masterName, string id, List<ProbabilityItemMI> probabilityItemList)
     {
         var itemClass = masterName.Substring(0, masterName.Length - 2);
