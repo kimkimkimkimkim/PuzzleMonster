@@ -169,6 +169,7 @@ public partial class PlayFabDataPublisher : EditorWindow
             {
                 var id = "";
                 var name = "";
+                var description = "";
                 var itemList = new List<ItemMI>();
 
                 var columnIndex = START_DATA_COLUMN_INDEX;
@@ -188,6 +189,7 @@ public partial class PlayFabDataPublisher : EditorWindow
 
                     if (key == "id") id = value;
                     if (key == "name") name = value;
+                    if (key == "description") description = value;
                     if (key == "itemList")
                     {
                         var listValue = GetListValueStr(sheet, rowIndex, columnIndex);
@@ -197,7 +199,7 @@ public partial class PlayFabDataPublisher : EditorWindow
                     columnIndex++;
                 }
 
-                var jsonStr = GetContainerDataJson(masterName, id, name, itemList);
+                var jsonStr = GetContainerDataJson(masterName, id, name, description, itemList);
                 allJsonStr += jsonStr + ",";
                 rowIndex++;
             }
@@ -390,7 +392,7 @@ public partial class PlayFabDataPublisher : EditorWindow
         "}";
     }
 
-    private string GetContainerDataJson(string masterName, string id, string name, List<ItemMI> itemList)
+    private string GetContainerDataJson(string masterName, string id, string name, string description, List<ItemMI> itemList)
     {
         var itemClass = masterName.Substring(0, masterName.Length - 2);
         var itemId = $"{itemClass}{id}";
@@ -432,7 +434,7 @@ public partial class PlayFabDataPublisher : EditorWindow
             "\"ItemClass\": \"" + itemClass + "\"," +
             "\"CatalogVersion\": \"" + catalogVersion + "\"," +
             "\"DisplayName\": \"" + name + "\"," +
-            "\"Description\": null," +
+            "\"Description\": \"" + description + "\"," +
             "\"VirtualCurrencyPrices\": {}," +
             "\"RealCurrencyPrices\": {}," +
             "\"Tags\": []," +
