@@ -77,7 +77,7 @@ public class GachaWindowUIScript : WindowBase
             .SelectMany(_ => ExecuteGachaObservable(gachaBoxDetail))
             .SelectMany(res =>
             {
-                var itemList = ItemUtil.GetSeparatedItemMIList(res.itemInstanceList);
+                var itemList = ItemUtil.GetSeparatedItemMIList(res.itemList);
                 itemList = itemList.Shuffle().ToList();
                 return GachaResultDialogFactory.Create(new GachaResultDialogRequest()
                 {
