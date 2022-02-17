@@ -13,6 +13,7 @@ public class HomeWindowUIScript : WindowBase
 {
     [SerializeField] protected Button _questButton;
     [SerializeField] protected Button _missionButton;
+    [SerializeField] protected Button _presentButton;
     [SerializeField] protected Transform _monsterAreaParentBase;
 
     private List<Transform> monsterAreaParentList = new List<Transform>();
@@ -27,6 +28,10 @@ public class HomeWindowUIScript : WindowBase
 
         _missionButton.OnClickIntentAsObservable()
             .SelectMany(_ => MissionDialogFactory.Create(new MissionDialogRequest()))
+            .Subscribe();
+
+        _presentButton.OnClickIntentAsObservable()
+            .SelectMany(_ => PresentDialogFactory.Create(new PresentDialogRequest()))
             .Subscribe();
 
         SetMonsterImage();

@@ -287,5 +287,27 @@ public partial class ApiConnection
             missionId = missionId,
         });
     }
+
+    /// <summary>
+    /// 指定したユーザーコンテナを受け取る
+    /// </summary>
+    public static IObservable<UnlockContainerApiResponse> UnlockContainer(string userContainerId)
+    {
+        return SendRequest<UnlockContainerApiRequest, UnlockContainerApiResponse>(UnlockContainerApiInterface.functionName, new UnlockContainerApiRequest()
+        {
+            userContainerIdList = new List<string>() { userContainerId },
+        });
+    }
+
+    /// <summary>
+    /// 指定したユーザーコンテナを受け取る
+    /// </summary>
+    public static IObservable<UnlockContainerApiResponse> UnlockContainer(List<string> userContainerIdList)
+    {
+        return SendRequest<UnlockContainerApiRequest, UnlockContainerApiResponse>(UnlockContainerApiInterface.functionName, new UnlockContainerApiRequest()
+        {
+            userContainerIdList = userContainerIdList,
+        });
+    }
     #endregion
 }

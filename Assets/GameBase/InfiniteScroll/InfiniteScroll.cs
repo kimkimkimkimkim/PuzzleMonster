@@ -6,6 +6,7 @@ using System.Linq;
 using System;
 using UniRx;
 using DG.Tweening;
+using TMPro;
 
 namespace GameBase
 {
@@ -26,6 +27,7 @@ namespace GameBase
         #region inspector properties
 
         public RectTransform itemPrototype;
+        public TextMeshProUGUI noDataText;
 
         //表示するアイテム最大行数
         public int lineCount = 9;
@@ -177,6 +179,11 @@ namespace GameBase
         /// <param name="isStartPosReversal">スクロール生成時、スクロール表示時点を反対へ更新（vertical : 下、horizontal : 右）</param>
         public void Init(int maxDataCount, Action<int, GameObject> updator, bool isStartPosReversal = false)
         {
+            // データが一つもない場合はテキストを表示
+            var existsData = maxDataCount > 0;
+            if (noDataText != null) noDataText.gameObject.SetActive(!existsData);
+            if (!existsData) return;
+
             _onUpdateItem = updator;
             const float anchorFixedAxisValue = 0.5f;
             const float anchorMovingAxisValue = 1.0f;
