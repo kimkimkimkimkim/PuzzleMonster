@@ -1460,6 +1460,71 @@
       "IsLimitedEdition": false,
       "InitialLimitedEditionCount": 0,
       "ActivatedMembership": null
+    },
+    {
+      "ItemId": "Container300010001",
+      "ItemClass": "Container",
+      "CatalogVersion": "1.0.0",
+      "DisplayName": "デイリーログインボーナス",
+      "Description": "「ログインボーナス」で獲得したオーブ5個です",
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": {
+          "OB": 5
+        }
+      },
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
+    },
+    {
+      "ItemId": "Container400010001",
+      "ItemClass": "Container",
+      "CatalogVersion": "1.0.0",
+      "DisplayName": "【リリース記念プレゼント】",
+      "Description": "リリースを記念して、オーブ500個とコイン10000個をプレゼント！",
+      "VirtualCurrencyPrices": {},
+      "RealCurrencyPrices": {},
+      "Tags": [],
+      "CustomData": null,
+      "Consumable": {
+        "UsageCount": 1,
+        "UsagePeriod": null,
+        "UsagePeriodGroup": null
+      },
+      "Container": {
+        "KeyItemId": null,
+        "ItemContents": [],
+        "ResultTableContents": [],
+        "VirtualCurrencyContents": {
+          "OB": 500,
+          "CN": 10000
+        }
+      },
+      "Bundle": null,
+      "CanBecomeCharacter": false,
+      "IsStackable": false,
+      "IsTradable": false,
+      "ItemImageUrl": null,
+      "IsLimitedEdition": false,
+      "InitialLimitedEditionCount": 0,
+      "ActivatedMembership": null
     }
   ],
   "DropTables": [
