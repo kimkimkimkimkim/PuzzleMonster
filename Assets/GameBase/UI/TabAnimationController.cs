@@ -13,9 +13,6 @@ namespace GameBase
         [SerializeField] protected List<TextMeshProUGUI> _tabTextList;
         [SerializeField] protected List<ToggleWithValue> _tabList;
         [SerializeField] protected Transform _tabBar;
-        [SerializeField] protected bool _isCustomColor;
-        [SerializeField] protected Color _onColor;
-        [SerializeField] protected Color _offColor;
 
         private const float TAB_MOVING_TIME = 0.3f;
 
@@ -36,12 +33,6 @@ namespace GameBase
             var offColor = Color.white;
             ColorUtility.TryParseHtmlString(ON_COLOR_CODE, out onColor);
             ColorUtility.TryParseHtmlString(OFF_COLOR_CODE, out offColor);
-
-            if (_isCustomColor)
-            {
-                onColor = _onColor;
-                offColor = _offColor;
-            }
 
             _tabList.ForEach(tab =>
             {
