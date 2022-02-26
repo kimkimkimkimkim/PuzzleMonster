@@ -1,76 +1,48 @@
-﻿using Newtonsoft.Json;
-using PM.Enum.Battle;
+﻿using PM.Enum.Battle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
-using UnityEngine;
 using GameBase;
 
-public class BattleDataProcessorManager
+public class BattleDataProcessor
 {
 
     private int currentWaveCount;
     private int currentTurnCount;
-    private QuestMB quest;
+    private List<QuestWaveMB> questWaveList;
     private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>();
     private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>();
     private List<BeDoneBattleMonsterData> beDoneBattleMonsterDataList;
     private List<BattleMonsterIndex> chainParticipantMonsterIndexList = new List<BattleMonsterIndex>();
-    // private BattleMonsterIndex doMonsterIndex;
-    // private BattleMonsterActType doBattleMonsterActType;
     private WinOrLose currentWinOrLose;
-    // private BattlePhase currentBattlePhase;
-    // private long skillFxId;
 
     private void Init(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
     {
-        this.quest = quest;
+        questWaveList = MasterRecord.GetMasterOf<QuestWaveMB>().GetAll().Where(m => quest.questWaveIdList.Contains(m.id)).ToList();
 
-        // skillFxId = 0;
-        currentWaveCount = 1;
-        currentTurnCount = 1;
+        currentWaveCount = 0;
+        currentTurnCount = 0;
         currentWinOrLose = WinOrLose.Continue;
         beDoneBattleMonsterDataList = new List<BeDoneBattleMonsterData>();
 
         SetPlayerBattleMonsterList(userMonsterParty);
-        // RefreshEnemyBattleMonsterList(currentWaveCount);
     }
 
     int loopCount = 0;
-    public IObservable<Unit> StartBattleObservable(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
+    public List<BattleLogInfo> GetBattleLogList(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
     {
         Init(userMonsterParty, quest);
 
         // バトル処理を開始する
-        while (currentWinOrLose == WinOrLose.Continue && loopCount <= 50)
+        while (currentWinOrLose == WinOrLose.Continue && loopCount < 50)
         {
             loopCount++;
             PlayLoop();
         }
 
-        battleLogList.ForEach(l => {
-            Debug.Log(l.log);
-
-            if (l.playerBattleMonsterList != null && l.enemyBattleMonsterList != null)
-            {
-                var playerMonsterHpLogList = l.playerBattleMonsterList.Select(m => {
-                    var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
-                    return $"{monster.name}: {m.currentHp}";
-                });
-                var enemyMonsterHpLogList = l.enemyBattleMonsterList.Select(m => {
-                    var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
-                    return $"{monster.name}: {m.currentHp}";
-                });
-                Debug.Log("===================================================");
-                Debug.Log($"【味方】{string.Join(",", playerMonsterHpLogList)}");
-                Debug.Log($"　【敵】{string.Join(",", enemyMonsterHpLogList)}");
-                Debug.Log("===================================================");
-            }
-        });
-
-        return Observable.ReturnUnit();
+        return battleLogList;
     }
 
     private void PlayLoop()
@@ -81,16 +53,8 @@ public class BattleDataProcessorManager
         // ウェーブを進行する
         MoveWaveIfNeeded();
 
-        // ウェーブ開始時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnWaveStart);
-        chainParticipantMonsterIndexList.Clear();
-
         // ターンを進行する
         MoveTurnIfNeeded();
-
-        // ターン開始時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnTurnStart);
-        chainParticipantMonsterIndexList.Clear();
 
         // アクション実行者を取得する
         var actionMonsterIndex = GetNormalActioner();
@@ -106,16 +70,8 @@ public class BattleDataProcessorManager
         // ターンを終了する
         EndTurnIfNeeded();
 
-        // ターン終了時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnTurnEnd);
-        chainParticipantMonsterIndexList.Clear();
-
         // ウェーブを終了する
         EndWaveIfNeeded();
-
-        // ウェーブ終了時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnWaveEnd);
-        chainParticipantMonsterIndexList.Clear();
 
         // バトルを終了する
         EndBattleIfNeeded();
@@ -200,8 +156,14 @@ public class BattleDataProcessorManager
         // 敵が全滅していたら実行、残っていたらスキップ
         if (enemyBattleMonsterList.Any(m => !m.isDead)) return;
 
+        // 現在が最終ウェーブであればスキップ
+        if (currentWaveCount >= questWaveList.Count) return;
+
         // ウェーブ数をインクリメント
         currentWaveCount++;
+
+        // 敵モンスターデータを更新
+        RefreshEnemyBattleMonsterList(currentWaveCount);
 
         // ウェーブ進行ログの差し込み
         var battleLog = new BattleLogInfo()
@@ -211,12 +173,16 @@ public class BattleDataProcessorManager
             log = $"ウェーブ{currentWaveCount}を開始します",
         };
         battleLogList.Add(battleLog);
+
+        // ウェーブ開始時パッシブスキルを発動する
+        ExecutePassiveIfNeeded(SkillTriggerType.OnWaveStart);
+        chainParticipantMonsterIndexList.Clear();
     }
 
     private void MoveTurnIfNeeded()
     {
-        // すべてのモンスターが行動済みであれば実行、そうでなければスキップ
-        if (playerBattleMonsterList.Any(b => !b.isActed && !b.isDead) || enemyBattleMonsterList.Any(b => !b.isActed && !b.isDead)) return;
+        // すべてのモンスターが行動済みかつ0ターン目でなければ実行そうでなければスキップ
+        if ((playerBattleMonsterList.Any(b => !b.isActed && !b.isDead) || enemyBattleMonsterList.Any(b => !b.isActed && !b.isDead)) && currentTurnCount > 0) return;
 
         // ターン数をインクリメント
         currentTurnCount++;
@@ -233,6 +199,10 @@ public class BattleDataProcessorManager
             log = $"ターン{currentTurnCount}を開始します",
         };
         battleLogList.Add(battleLog);
+
+        // ターン開始時パッシブスキルを発動する
+        ExecutePassiveIfNeeded(SkillTriggerType.OnTurnStart);
+        chainParticipantMonsterIndexList.Clear();
     }
 
     private void StartAction(BattleMonsterIndex monsterIndex, BattleActionType actionType)
@@ -373,6 +343,10 @@ public class BattleDataProcessorManager
             log = $"ターン{currentTurnCount}が終了しました",
         };
         battleLogList.Add(battleLog);
+
+        // ターン終了時パッシブスキルを発動する
+        ExecutePassiveIfNeeded(SkillTriggerType.OnTurnEnd);
+        chainParticipantMonsterIndexList.Clear();
     }
 
     private void EndWaveIfNeeded()
@@ -388,6 +362,10 @@ public class BattleDataProcessorManager
             log = $"ウェーブ{currentWaveCount}が終了しました",
         };
         battleLogList.Add(battleLog);
+
+        // ウェーブ終了時パッシブスキルを発動する
+        ExecutePassiveIfNeeded(SkillTriggerType.OnWaveEnd);
+        chainParticipantMonsterIndexList.Clear();
     }
 
     private void EndBattleIfNeeded()
@@ -719,8 +697,7 @@ public class BattleDataProcessorManager
     private void RefreshEnemyBattleMonsterList(int waveCount)
     {
         var waveIndex = waveCount - 1;
-        var questWaveId = quest.questWaveIdList[waveIndex];
-        var questWave = MasterRecord.GetMasterOf<QuestWaveMB>().Get(questWaveId);
+        var questWave = questWaveList[waveIndex];
 
         enemyBattleMonsterList.Clear();
         questWave.questMonsterIdList.ForEach((questMonsterId, index) =>

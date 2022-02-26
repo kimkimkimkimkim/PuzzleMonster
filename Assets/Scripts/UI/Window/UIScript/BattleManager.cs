@@ -38,6 +38,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     {
         Init(questId, userMonsterPartyId);
 
+        /*
         return FadeInObservable()
             .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
             {
@@ -54,23 +55,56 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             .SelectMany(res => BattleResultDialogFactory.Create(new BattleResultDialogRequest() { userBattle = res.userBattle }))
             .SelectMany(_ => FadeOutObservable())
             .AsUnitObservable();
+        */
 
         // TODO: バトル機能の実装
-        /*
         // 初期化
         Init(questId, userMonsterPartyId);
         
         return FadeInObservable()
-            .SelectMany(_ =>
+            .Do(_ =>
             {
                 var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
                 var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
 
                 var battleDataProcessor = new BattleDataProcessor();
                 var battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
-                return BattleStartObservable(battleLogList);
-            });
-        */
+
+                battleLogList.ForEach(l => {
+                    Debug.Log(l.log);
+
+                    if (l.playerBattleMonsterList != null && l.enemyBattleMonsterList != null)
+                    {
+                        var playerMonsterHpLogList = l.playerBattleMonsterList.Select(m => {
+                            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                            return $"{monster.name}: {m.currentHp}";
+                        });
+                        var enemyMonsterHpLogList = l.enemyBattleMonsterList.Select(m => {
+                            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                            return $"{monster.name}: {m.currentHp}";
+                        });
+                        Debug.Log("===================================================");
+                        Debug.Log($"【味方】{string.Join(",", playerMonsterHpLogList)}");
+                        Debug.Log($"　【敵】{string.Join(",", enemyMonsterHpLogList)}");
+                        Debug.Log("===================================================");
+                    }
+                });
+            })
+            .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
+            {
+                commonDialogType = CommonDialogType.NoAndYes,
+                title = "確認",
+                content = "バトルを勝ったことにしますか？\n（いいえを選んだら負けたことになります）",
+            }))
+            .SelectMany(res =>
+            {
+                var winOrLose = res.dialogResponseType == DialogResponseType.Yes ? WinOrLose.Win : WinOrLose.Lose;
+                return ApiConnection.ExecuteBattle(userMonsterPartyId, questId, winOrLose);
+            })
+            .SelectMany(res => ApiConnection.EndBattle(res.userBattle.id))
+            .SelectMany(res => BattleResultDialogFactory.Create(new BattleResultDialogRequest() { userBattle = res.userBattle }))
+            .SelectMany(_ => FadeOutObservable())
+            .AsUnitObservable();
     }
     
     /// <summary>
