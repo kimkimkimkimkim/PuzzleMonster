@@ -124,9 +124,9 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                 {
                     case BattleLogType.MoveWave:
                         return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
-                    case BattleLogType.StartAttack:
+                    case BattleLogType.StartAction:
                         return battleWindow.PlayStartAttackAnimationObservable(battleLog.doBattleMonsterIndex);
-                    case BattleLogType.TakeDamage:
+                    case BattleLogType.TakeAction:
                         var takeDamageObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
                         {
                             var isPlayer = d.battleMonsterIndex.isPlayer;
