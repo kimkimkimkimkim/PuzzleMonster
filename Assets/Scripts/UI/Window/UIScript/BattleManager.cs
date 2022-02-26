@@ -11,22 +11,19 @@ using PM.Enum.Monster;
 public class BattleManager : SingletonMonoBehaviour<BattleManager>
 {
     private BattleWindowUIScript battleWindow;
-    private BattleResult battleResult;
-    private long questId;
     private QuestMB quest;
     private int maxWaveCount;
     private string userMonsterPartyId;
     private List<BattleLogInfo> battleLogList;
+    private UserBattleInfo userBattle;
 
     /// <summary>
     /// 初期化処理
     /// </summary>
     private void Init(long questId, string userMonsterPartyId)
     {
-        this.questId = questId;
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
         maxWaveCount = quest.questWaveIdList.Count;
-        battleResult = new BattleResult() { wol = WinOrLose.Continue };
         this.userMonsterPartyId = userMonsterPartyId;
     }
 
@@ -36,73 +33,29 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// </summary>
     public IObservable<Unit> BattleStartObservable(long questId, string userMonsterPartyId)
     {
-        Init(questId, userMonsterPartyId);
-
-        /*
-        return FadeInObservable()
-            .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
-            {
-                commonDialogType = CommonDialogType.NoAndYes,
-                title = "確認",
-                content = "バトルを勝ったことにしますか？\n（いいえを選んだら負けたことになります）",
-            }))
-            .SelectMany(res =>
-            {
-                var winOrLose = res.dialogResponseType == DialogResponseType.Yes ? WinOrLose.Win : WinOrLose.Lose;
-                return ApiConnection.ExecuteBattle(userMonsterPartyId, questId, winOrLose);
-            })
-            .SelectMany(res => ApiConnection.EndBattle(res.userBattle.id))
-            .SelectMany(res => BattleResultDialogFactory.Create(new BattleResultDialogRequest() { userBattle = res.userBattle }))
-            .SelectMany(_ => FadeOutObservable())
-            .AsUnitObservable();
-        */
-
-        // TODO: バトル機能の実装
         // 初期化
         Init(questId, userMonsterPartyId);
-        
-        return FadeInObservable()
-            .Do(_ =>
+
+        // 暗転中にバトルログの取得とバトル実行APIを呼んでおく
+        var callbackObservable = new Func<IObservable<Unit>>(() =>
+        {
+            var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
+            var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
+
+            var battleDataProcessor = new BattleDataProcessor();
+            battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
+            var winOrLose = battleLogList.First(l => l.type == BattleLogType.Result).winOrLose;
+
+            return ApiConnection.ExecuteBattle(userMonsterPartyId, questId, winOrLose).Do(res => userBattle = res.userBattle).AsUnitObservable();
+        });
+        return FadeInObservable(callbackObservable)
+            .SelectMany(_ =>
             {
-                var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
-                var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
-
-                var battleDataProcessor = new BattleDataProcessor();
-                var battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
-
-                battleLogList.ForEach(l => {
-                    Debug.Log(l.log);
-
-                    if (l.playerBattleMonsterList != null && l.enemyBattleMonsterList != null)
-                    {
-                        var playerMonsterHpLogList = l.playerBattleMonsterList.Select(m => {
-                            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
-                            return $"{monster.name}: {m.currentHp}";
-                        });
-                        var enemyMonsterHpLogList = l.enemyBattleMonsterList.Select(m => {
-                            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
-                            return $"{monster.name}: {m.currentHp}";
-                        });
-                        Debug.Log("===================================================");
-                        Debug.Log($"【味方】{string.Join(",", playerMonsterHpLogList)}");
-                        Debug.Log($"　【敵】{string.Join(",", enemyMonsterHpLogList)}");
-                        Debug.Log("===================================================");
-                    }
-                });
+                var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
+                return Observable.ReturnUnit().Connect(observableList.ToArray());
             })
-            .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
-            {
-                commonDialogType = CommonDialogType.NoAndYes,
-                title = "確認",
-                content = "バトルを勝ったことにしますか？\n（いいえを選んだら負けたことになります）",
-            }))
-            .SelectMany(res =>
-            {
-                var winOrLose = res.dialogResponseType == DialogResponseType.Yes ? WinOrLose.Win : WinOrLose.Lose;
-                return ApiConnection.ExecuteBattle(userMonsterPartyId, questId, winOrLose);
-            })
-            .SelectMany(res => ApiConnection.EndBattle(res.userBattle.id))
-            .SelectMany(res => BattleResultDialogFactory.Create(new BattleResultDialogRequest() { userBattle = res.userBattle }))
+            .SelectMany(_ => ApiConnection.EndBattle(userBattle.id))
+            .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest() { userBattle = userBattle }))
             .SelectMany(_ => FadeOutObservable())
             .AsUnitObservable();
     }
@@ -150,16 +103,36 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             {
                 Debug.Log($"--------- {battleLog.type} ---------");
                 Debug.Log(battleLog.log);
-                Debug.Log($"{string.Join(" ", battleLog.playerBattleMonsterList.Select(m => m.currentHp))} vs {string.Join(" ", battleLog.enemyBattleMonsterList.Select(m => m.currentHp))}");
+
+                if (battleLog.playerBattleMonsterList != null && battleLog.enemyBattleMonsterList != null)
+                {
+                    var playerMonsterHpLogList = battleLog.playerBattleMonsterList.Select(m => {
+                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                        return $"{monster.name}: {m.currentHp}";
+                    });
+                    var enemyMonsterHpLogList = battleLog.enemyBattleMonsterList.Select(m => {
+                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                        return $"{monster.name}: {m.currentHp}";
+                    });
+                    Debug.Log("===================================================");
+                    Debug.Log($"【味方】{string.Join(",", playerMonsterHpLogList)}");
+                    Debug.Log($"　【敵】{string.Join(",", enemyMonsterHpLogList)}");
+                    Debug.Log("===================================================");
+                }
             })
             .SelectMany(_ =>
             {
                 switch (battleLog.type)
                 {
+                    // ウェーブ進行アニメーション
                     case BattleLogType.MoveWave:
                         return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
+
+                    // 今からアクションしますアニメーション
                     case BattleLogType.StartAction:
-                        return battleWindow.PlayStartAttackAnimationObservable(battleLog.doBattleMonsterIndex);
+                        return Observable.ReturnUnit();
+
+                    // アクション実行者のモーション後スキルエフェクト
                     case BattleLogType.TakeAction:
                         var takeDamageObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
                         {
@@ -168,13 +141,18 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             var beDoneMonster = battleMonsterList.FirstOrDefault(b => b.index.index == d.battleMonsterIndex.index);
                             return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex,battleLog.skillFxId, d.hpChanges, beDoneMonster.currentHp);
                         });
-                        return Observable.WhenAll(takeDamageObservableList);
+                        return battleWindow.PlayStartAttackAnimationObservable(battleLog.doBattleMonsterIndex)
+                            .SelectMany(res => Observable.WhenAll(takeDamageObservableList));
+
+                    // モンスター戦闘不能アニメーション
                     case BattleLogType.Die:
                         var dieObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
                         {
                             return battleWindow.PlayDieAnimationObservable(d.battleMonsterIndex);
                         });
                         return Observable.WhenAll(dieObservableList);
+
+                    // バトル結果アニメーション
                     case BattleLogType.Result:
                         if (battleLog.winOrLose == WinOrLose.Win)
                         {
@@ -193,7 +171,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 画面遷移（フェードイン）時処理を実行
     /// </summary>
-    private IObservable<Unit> FadeInObservable()
+    private IObservable<Unit> FadeInObservable(Func<IObservable<Unit>> callbackObservable)
     {
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
             .SelectMany(res =>
@@ -203,16 +181,11 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                 HeaderFooterManager.Instance.Show(false);
                 return Observable.ReturnUnit();
             })
-            .SelectMany(_ => VisualFxManager.Instance.PlayQuestTitleFxObservable(quest.name))
+            .SelectMany(_ => Observable.WhenAll(
+                VisualFxManager.Instance.PlayQuestTitleFxObservable(quest.name),
+                callbackObservable()
+            ))
             .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0));
-    }
-
-    /// <summary>
-    /// バトル結果ダイアログを表示する
-    /// </summary>
-    private IObservable<Unit> ShowResultDialogObservable() { 
-        return BattleResultDialogFactory.Create(new BattleResultDialogRequest())
-            .AsUnitObservable();
     }
 
     /// <summary>

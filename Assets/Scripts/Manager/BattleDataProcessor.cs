@@ -20,7 +20,7 @@ public class BattleDataProcessor
 
     private void Init(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
     {
-        questWaveList = MasterRecord.GetMasterOf<QuestWaveMB>().GetAll().Where(m => quest.questWaveIdList.Contains(m.id)).ToList();
+        questWaveList = quest.questWaveIdList.Select(id => MasterRecord.GetMasterOf<QuestWaveMB>().Get(id)).ToList();
 
         currentWaveCount = 0;
         currentTurnCount = 0;
@@ -36,10 +36,22 @@ public class BattleDataProcessor
         Init(userMonsterParty, quest);
 
         // バトル処理を開始する
-        while (currentWinOrLose == WinOrLose.Continue && loopCount < 50)
+        while (currentWinOrLose == WinOrLose.Continue && loopCount < 1000)
         {
             loopCount++;
             PlayLoop();
+        }
+
+        // TODO
+        if(battleLogList.FirstOrDefault(l => l.type == BattleLogType.Result) == null)
+        {
+            var battleLog = new BattleLogInfo()
+            {
+                type = BattleLogType.Result,
+                winOrLose = WinOrLose.Lose,
+                log = "バトルに敗北しました",
+            };
+            battleLogList.Add(battleLog);
         }
 
         return battleLogList;
@@ -83,7 +95,13 @@ public class BattleDataProcessor
         if (currentWaveCount > 0) return;
 
         // バトル開始ログの差し込み
-        // 現状存在しない
+        var battleLog = new BattleLogInfo()
+        {
+            type = BattleLogType.StartBattle,
+            playerBattleMonsterList = playerBattleMonsterList,
+            log = "バトルを開始します",
+        };
+        battleLogList.Add(battleLog);
 
         // バトル開始時パッシブスキルを発動する
         ExecutePassiveIfNeeded(SkillTriggerType.OnBattleStart);
@@ -98,7 +116,7 @@ public class BattleDataProcessor
         var allMonsterList = GetAllMonsterList();
 
         // 次のアクション実行者を取得
-        var actioner = allMonsterList.Where(b => !b.isActed && !b.isDead).OrderBy(b => b.currentSpeed).ThenBy(_ => Guid.NewGuid()).FirstOrDefault();
+        var actioner = allMonsterList.Where(b => !b.isActed && !b.isDead).OrderByDescending(b => b.currentSpeed).ThenBy(_ => Guid.NewGuid()).FirstOrDefault();
 
         // アクション実行者を設定
         return actioner?.index;
@@ -216,6 +234,7 @@ public class BattleDataProcessor
         var battleLog = new BattleLogInfo()
         {
             type = BattleLogType.StartAction,
+            doBattleMonsterIndex = monsterIndex,
             log = $"{possess}{monster.name}が{skillName}を発動",
         };
         battleLogList.Add(battleLog);
@@ -267,9 +286,11 @@ public class BattleDataProcessor
         var battleLog = new BattleLogInfo()
         {
             type = BattleLogType.TakeAction,
+            doBattleMonsterIndex = doMonsterIndex,
             beDoneBattleMonsterDataList = beDoneMonsterDataList,
             playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
             enemyBattleMonsterList = this.enemyBattleMonsterList.Clone(),
+            skillFxId = skillEffect.skillFxId,
             log = log,
         };
         battleLogList.Add(battleLog);
@@ -283,6 +304,9 @@ public class BattleDataProcessor
         // 死亡判定フラグを立てる
         dieMonsterList.ForEach(m => m.isDead = true);
 
+        // ログに渡す用のリストを作成
+        var beDoneBattleMonsterDataList = dieMonsterList.Clone().Select(m => new BeDoneBattleMonsterData() { battleMonsterIndex = m.index }).ToList();
+
         var logList = dieMonsterList.Select(m => {
             var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
             var possess = m.index.isPlayer ? "味方の" : "敵の";
@@ -294,6 +318,7 @@ public class BattleDataProcessor
         var battleLog = new BattleLogInfo()
         {
             type = BattleLogType.Die,
+            beDoneBattleMonsterDataList = beDoneBattleMonsterDataList,
             log = log,
         };
         battleLogList.Add(battleLog);
@@ -370,6 +395,9 @@ public class BattleDataProcessor
 
     private void EndBattleIfNeeded()
     {
+        // 最終ウェーブでなければ何もしない
+        if (currentWaveCount < questWaveList.Count) return;
+
         // 敵味方ともに戦えるモンスターが一体でもいれば何もしない
         var existsAlly = playerBattleMonsterList.Any(m => !m.isDead);
         var existsEnemy = enemyBattleMonsterList.Any(m => !m.isDead);
@@ -383,6 +411,7 @@ public class BattleDataProcessor
         var battleLog = new BattleLogInfo()
         {
             type = BattleLogType.Result,
+            winOrLose = winOrLose,
             log = winOrLose == WinOrLose.Win ? "バトルに勝利しました" : "バトルに敗北しました",
         };
         battleLogList.Add(battleLog);
