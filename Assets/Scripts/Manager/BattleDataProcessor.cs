@@ -465,7 +465,7 @@ public class BattleDataProcessor
         // TODO: 攻撃受ける側の防御力計算
         var baseValue = GetTargetValue(doMonsterIndex, skillEffect);
         var random = UnityEngine.Random.Range(0.85f, 1.0f);
-        var rate = skillEffect.value / 100;
+        var rate = (float)skillEffect.value / 100;
         var skillType = skillEffect.type;
         var skillTypeCoefficient =
             skillType == SkillType.Damage ? -1 :
