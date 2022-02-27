@@ -14,6 +14,7 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected List<BattleMonsterBase> _playerMonsterBaseList;
     [SerializeField] protected List<BattleMonsterBase> _enemyMonsterBaseList;
     [SerializeField] protected Transform _fxParent;
+    [SerializeField] protected Transform _battleMonsterInfoItemBase;
 
     private UserMonsterPartyInfo userMonsterParty;
     private QuestMB quest;
@@ -26,6 +27,7 @@ public class BattleWindowUIScript : DummyWindowBase
         SetPlayerMonsterImage();
         SetTurnText(1);
         SetWaveText(1, quest.questWaveIdList.Count);
+        SetBattleMonsterInfoItem(userMonsterParty);
     }
 
     private void SetPlayerMonsterImage()
@@ -68,6 +70,16 @@ public class BattleWindowUIScript : DummyWindowBase
                 parent.SetBattleMonsterItem(item);
                 item.Init(questMonster.monsterId, questMonster.level);
             }
+        });
+    }
+
+    private void SetBattleMonsterInfoItem(UserMonsterPartyInfo userMonsterParty)
+    {
+        userMonsterParty.userMonsterIdList.ForEach(userMonsterId =>
+        {
+            var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
+            var battleMonsterInfoItem = UIManager.Instance.CreateContent<BattleMonsterInfoItem>(_battleMonsterInfoItemBase);
+            battleMonsterInfoItem.Set(userMonster);
         });
     }
 
