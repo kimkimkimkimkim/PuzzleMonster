@@ -63,10 +63,10 @@ public class BattleDataProcessor
         StartBattleIfNeeded();
 
         // ウェーブを進行する
-        MoveWaveIfNeeded();
+        var isWaveMove = MoveWaveIfNeeded();
 
         // ターンを進行する
-        MoveTurnIfNeeded();
+        MoveTurnIfNeeded(isWaveMove);
 
         // アクション実行者を取得する
         var actionMonsterIndex = GetNormalActioner();
@@ -169,13 +169,17 @@ public class BattleDataProcessor
         ExecutePassiveIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
     }
 
-    private void MoveWaveIfNeeded()
+    /// <summary>
+    /// ウェーブ進行が必要ならウェーブを進行させる
+    /// ウェーブ進行したか否かを返す
+    /// </summary>
+    private bool MoveWaveIfNeeded()
     {
         // 敵が全滅していたら実行、残っていたらスキップ
-        if (enemyBattleMonsterList.Any(m => !m.isDead)) return;
+        if (enemyBattleMonsterList.Any(m => !m.isDead)) return false;
 
         // 現在が最終ウェーブであればスキップ
-        if (currentWaveCount >= questWaveList.Count) return;
+        if (currentWaveCount >= questWaveList.Count) return false;
 
         // ウェーブ数をインクリメント
         currentWaveCount++;
@@ -195,12 +199,14 @@ public class BattleDataProcessor
         // ウェーブ開始時パッシブスキルを発動する
         ExecutePassiveIfNeeded(SkillTriggerType.OnWaveStart);
         chainParticipantMonsterIndexList.Clear();
+
+        return true;
     }
 
-    private void MoveTurnIfNeeded()
+    private void MoveTurnIfNeeded(bool isForce)
     {
         // すべてのモンスターが行動済みかつ0ターン目でなければ実行そうでなければスキップ
-        if ((playerBattleMonsterList.Any(b => !b.isActed && !b.isDead) || enemyBattleMonsterList.Any(b => !b.isActed && !b.isDead)) && currentTurnCount > 0) return;
+        if (((playerBattleMonsterList.Any(b => !b.isActed && !b.isDead) || enemyBattleMonsterList.Any(b => !b.isActed && !b.isDead)) && currentTurnCount > 0) && !isForce) return;
 
         // ターン数をインクリメント
         currentTurnCount++;

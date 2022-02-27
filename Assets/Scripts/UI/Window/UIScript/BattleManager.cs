@@ -128,6 +128,10 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     case BattleLogType.MoveWave:
                         return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
 
+                    // ターン進行アニメーション
+                    case BattleLogType.MoveTurn:
+                        return battleWindow.PlayTurnFxObservable(battleLog.turnCount);
+
                     // 今からアクションしますアニメーション
                     case BattleLogType.StartAction:
                         return Observable.ReturnUnit();

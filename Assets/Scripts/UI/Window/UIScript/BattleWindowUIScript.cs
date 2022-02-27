@@ -129,6 +129,12 @@ public class BattleWindowUIScript : DummyWindowBase
         return VisualFxManager.Instance.PlayWaveTitleFxObservable(_fxParent, currentWaveCount, maxWaveCount);
     }
 
+    public IObservable<Unit> PlayTurnFxObservable(int currentTurn)
+    {
+        SetTurnText(currentTurn);
+        return Observable.ReturnUnit();
+    }
+
     public IObservable<Unit> PlayWinAnimationObservable()
     {
         return VisualFxManager.Instance.PlayWinBattleFxObservable(_fxParent).Delay(TimeSpan.FromSeconds(1));
