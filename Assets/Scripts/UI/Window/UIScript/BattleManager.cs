@@ -55,7 +55,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                 return Observable.ReturnUnit().Connect(observableList.ToArray());
             })
             .SelectMany(_ => ApiConnection.EndBattle(userBattle.id))
-            .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest() { userBattle = userBattle }))
+            .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest() { userBattleId = userBattle.id }))
             .SelectMany(_ => FadeOutObservable())
             .AsUnitObservable();
     }

@@ -26,7 +26,9 @@ public class BattleResultDialogUIScript : DialogBase
     public override void Init(DialogInfo info)
     {
         onClickClose = (Action)info.param["onClickClose"];
-        userBattle = (UserBattleInfo)info.param["userBattle"];
+        var userBattleId = (string)info.param["userBattleId"];
+
+        userBattle = ApplicationContext.userData.userBattleList.First(u => u.id == userBattleId);
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())

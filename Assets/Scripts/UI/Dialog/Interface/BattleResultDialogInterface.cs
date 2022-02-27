@@ -3,9 +3,9 @@ using System.Collections.Generic;
 public class BattleResultDialogRequest
 {
     /// <summary>
-    /// ユーザーバトル情報
+    /// ユーザーバトル情報ID
     /// </summary>
-    public UserBattleInfo userBattle { get; set; }
+    public string userBattleId { get; set; }
 }
 
 public class BattleResultDialogResponse

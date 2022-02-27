@@ -10,7 +10,7 @@ public class BattleResultDialogFactory
     {
         return Observable.Create<BattleResultDialogResponse>(observer => {
             var param = new Dictionary<string, object>();
-            param.Add("userBattle", request.userBattle);
+            param.Add("userBattleId", request.userBattleId);
             param.Add("onClickClose", new Action(() => {
                 observer.OnNext(new BattleResultDialogResponse());
                 observer.OnCompleted();
