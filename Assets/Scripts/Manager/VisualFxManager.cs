@@ -132,7 +132,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     /// <param name="toHp">攻撃をくらった後のHP</param>
     public IObservable<Unit> PlayTakeDamageFxObservable(Slider slider, Transform effectBase,long skillFxId, int damage, int toHp)
     {
-        const float SLIDER_ANIMATION_TIME = 0.5f;
+        const float SLIDER_ANIMATION_TIME = 2.0f;
         const float DAMAGE_EFFECT_DELAY_TIME = 0.5f;
         var DAMAGE_FX_OFFSET = new Vector3(0, 50, 0);
 

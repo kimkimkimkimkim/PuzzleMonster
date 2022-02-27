@@ -134,7 +134,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
 
                     // 今からアクションしますアニメーション
                     case BattleLogType.StartAction:
-                        return Observable.ReturnUnit();
+                        return battleWindow.PlayStartActionAnimationObservable(GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList), battleLog.actionType);
 
                     // アクション実行者のモーション後スキルエフェクト
                     case BattleLogType.TakeAction:
@@ -145,7 +145,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             var beDoneMonster = battleMonsterList.FirstOrDefault(b => b.index.index == d.battleMonsterIndex.index);
                             return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex,battleLog.skillFxId, d.hpChanges, beDoneMonster.currentHp);
                         });
-                        return battleWindow.PlayStartAttackAnimationObservable(battleLog.doBattleMonsterIndex)
+                        return battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex)
                             .SelectMany(res => Observable.WhenAll(takeDamageObservableList));
 
                     // モンスター戦闘不能アニメーション
@@ -227,5 +227,17 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                 HeaderFooterManager.Instance.Show(true);
             })
             .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0));
+    }
+
+    private BattleMonsterInfo GetBattleMonster(BattleMonsterIndex monsterIndex, List<BattleMonsterInfo> playerBattleMonsterList, List<BattleMonsterInfo> enemyBattleMonsterList)
+    {
+        if (monsterIndex.isPlayer)
+        {
+            return playerBattleMonsterList[monsterIndex.index];
+        }
+        else
+        {
+            return enemyBattleMonsterList[monsterIndex.index];
+        }
     }
 }

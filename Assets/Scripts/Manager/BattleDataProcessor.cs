@@ -240,7 +240,10 @@ public class BattleDataProcessor
         var battleLog = new BattleLogInfo()
         {
             type = BattleLogType.StartAction,
+            playerBattleMonsterList = playerBattleMonsterList,
+            enemyBattleMonsterList = enemyBattleMonsterList,
             doBattleMonsterIndex = monsterIndex,
+            actionType = actionType,
             log = $"{possess}{monster.name}が{skillName}を発動",
         };
         battleLogList.Add(battleLog);

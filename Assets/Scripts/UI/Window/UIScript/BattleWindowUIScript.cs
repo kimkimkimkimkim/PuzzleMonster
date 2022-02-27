@@ -1,4 +1,5 @@
 ﻿using GameBase;
+using PM.Enum.Battle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,13 +12,20 @@ public class BattleWindowUIScript : DummyWindowBase
 {
     [SerializeField] protected TextMeshProUGUI _turnText;
     [SerializeField] protected TextMeshProUGUI _waveText;
+    [SerializeField] protected TextMeshProUGUI _skillNameText;
+    [SerializeField] protected TextMeshProUGUI _actionDescriptionTitleText;
+    [SerializeField] protected TextMeshProUGUI _actionDescriptionContentText;
     [SerializeField] protected List<BattleMonsterBase> _playerMonsterBaseList;
     [SerializeField] protected List<BattleMonsterBase> _enemyMonsterBaseList;
     [SerializeField] protected Transform _fxParent;
     [SerializeField] protected Transform _battleMonsterInfoItemBase;
+    [SerializeField] protected GameObject _skillNameBase;
+    [SerializeField] protected GameObject _actionDescriptionBase;
 
     private UserMonsterPartyInfo userMonsterParty;
     private QuestMB quest;
+    private IDisposable skillNameObservable;
+    private IDisposable actionDescriptionObservable;
 
     public void Init(string userMonsterPartyId, long questId)
     {
@@ -93,7 +101,49 @@ public class BattleWindowUIScript : DummyWindowBase
         _waveText.text = $"Wave {waveCount}/{maxWaveCount}";
     }
 
-    public IObservable<Unit> PlayStartAttackAnimationObservable(BattleMonsterIndex doBattleMonsterIndex)
+    public IObservable<Unit> PlayStartActionAnimationObservable(BattleMonsterInfo doBattleMonster, BattleActionType actionType)
+    {
+        const float SHOW_TIME = 2.0f;
+
+        var skillNameAndDescription = GetSkillNameAndDescription(doBattleMonster, actionType);
+
+        if (skillNameObservable != null)
+        {
+            skillNameObservable.Dispose();
+            skillNameObservable = null;
+        }
+        if (actionDescriptionObservable != null)
+        {
+            actionDescriptionObservable.Dispose();
+            actionDescriptionObservable = null;
+        }
+
+        skillNameObservable = Observable.ReturnUnit()
+            .Do(_ =>
+            {
+                _skillNameText.text = skillNameAndDescription.skillName;
+                _skillNameBase.SetActive(true);
+            })
+            .Delay(TimeSpan.FromSeconds(SHOW_TIME/1.5f))
+            .DoOnCompleted(() => _skillNameBase.SetActive(false))
+            .Subscribe();
+        actionDescriptionObservable = Observable.ReturnUnit()
+            .Do(_ =>
+            {
+                var actionName = GetActionName(actionType);
+                _actionDescriptionTitleText.text = $"{actionName}の効果";
+                _actionDescriptionContentText.text = $"{skillNameAndDescription.skillName}が発動！\n<color=\"yellow\">{skillNameAndDescription.skillDescription}";
+                _actionDescriptionBase.SetActive(true);
+            })
+            .Delay(TimeSpan.FromSeconds(SHOW_TIME))
+            .DoOnCompleted(() => _actionDescriptionBase.SetActive(false))
+            .Subscribe();
+
+        // アクション開始演出は終了を待たない
+        return Observable.ReturnUnit();
+    }
+
+    public IObservable<Unit> PlayAttackAnimationObservable(BattleMonsterIndex doBattleMonsterIndex)
     {
         var isPlayer = doBattleMonsterIndex.isPlayer;
         var doMonsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
@@ -123,7 +173,7 @@ public class BattleWindowUIScript : DummyWindowBase
         var monsterBase = monsterBaseList[beDoneBattleMonsterIndex.index];
         var slider = monsterBase.battleMonsterItem.GetComponent<BattleMonsterItem>().hpSlider;
 
-        return VisualFxManager.Instance.PlayTakeDamageFxObservable(slider, monsterBase.transform,skillFxId, damage, currentHp);
+        return VisualFxManager.Instance.PlayTakeDamageFxObservable(slider, monsterBase.transform,skillFxId, damage, Math.Max(0, currentHp));
     }
 
     public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterIndex battleMonsterIndex)
@@ -155,5 +205,37 @@ public class BattleWindowUIScript : DummyWindowBase
     public IObservable<Unit> PlayLoseAnimationObservable()
     {
         return VisualFxManager.Instance.PlayLoseBattleFxObservable(_fxParent).Delay(TimeSpan.FromSeconds(1)); ;
+    }
+
+    private string GetActionName(BattleActionType actionType)
+    {
+        switch (actionType) {
+            case BattleActionType.PassiveSkill:
+                return "パッシブスキル";
+            case BattleActionType.NormalSkill:
+                return "通常スキル";
+            case BattleActionType.UltimateSkill:
+                return "アルティメットスキル";
+            case BattleActionType.None:
+            default:
+                return "";
+        }
+    }
+    private (string skillName, string skillDescription) GetSkillNameAndDescription(BattleMonsterInfo battleMonster, BattleActionType actionType)
+    {
+        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        switch (actionType) {
+            case BattleActionType.PassiveSkill:
+                var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(monster.passiveSkillId);
+                return (passiveSkill.name, passiveSkill.description);
+            case BattleActionType.NormalSkill:
+                var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(monster.normalSkillId);
+                return (normalSkill.name, normalSkill.description);
+            case BattleActionType.UltimateSkill:
+                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(monster.ultimateSkillId);
+                return (ultimateSkill.name, ultimateSkill.description);
+            default:
+                return ("", "");
+        }
     }
 }
