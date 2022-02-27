@@ -2,12 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UniRx;
 using UnityEngine;
 
 [ResourcePath("UI/Window/Window-Battle")]
 public class BattleWindowUIScript : DummyWindowBase
 {
+    [SerializeField] protected TextMeshProUGUI _turnText;
+    [SerializeField] protected TextMeshProUGUI _waveText;
     [SerializeField] protected List<BattleMonsterBase> _playerMonsterBaseList;
     [SerializeField] protected List<BattleMonsterBase> _enemyMonsterBaseList;
     [SerializeField] protected Transform _fxParent;
@@ -21,6 +24,8 @@ public class BattleWindowUIScript : DummyWindowBase
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
 
         SetPlayerMonsterImage();
+        SetTurnText(1);
+        SetWaveText(1, quest.questWaveIdList.Count);
     }
 
     private void SetPlayerMonsterImage()
@@ -64,6 +69,16 @@ public class BattleWindowUIScript : DummyWindowBase
                 item.Init(questMonster.monsterId, questMonster.level);
             }
         });
+    }
+
+    public void SetTurnText(int turnCount)
+    {
+        _turnText.text = $"Turn {turnCount}";
+    }
+
+    public void SetWaveText(int waveCount, int maxWaveCount)
+    {
+        _waveText.text = $"Wave {waveCount}/{maxWaveCount}";
     }
 
     public IObservable<Unit> PlayStartAttackAnimationObservable(BattleMonsterIndex doBattleMonsterIndex)
@@ -110,6 +125,7 @@ public class BattleWindowUIScript : DummyWindowBase
     
     public IObservable<Unit> PlayWaveTitleFxObservable(int currentWaveCount, int maxWaveCount){
         SetEnemyMonsterImage(currentWaveCount);
+        SetWaveText(currentWaveCount, maxWaveCount);
         return VisualFxManager.Instance.PlayWaveTitleFxObservable(_fxParent, currentWaveCount, maxWaveCount);
     }
 

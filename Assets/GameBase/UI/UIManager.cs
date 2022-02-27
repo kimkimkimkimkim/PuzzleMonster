@@ -581,10 +581,6 @@ namespace GameBase
             var dummyWindow = CreateContent<T>(parent);
 
             // サイズ修正
-            if (dummyWindow._windowFrameRT != null)
-            {
-                dummyWindow._windowFrameRT.SetStretchedRectOffset(0, HEADER_HEIGHT, 0, FOOTER_HEIGHT);
-            }
             if (dummyWindow._fullScreenBaseRT != null)
             {
                 dummyWindow._fullScreenBaseRT.SetStretchedRectOffset(0, -topMargin, 0, -bottomMargin);
