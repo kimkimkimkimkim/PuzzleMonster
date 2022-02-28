@@ -56,22 +56,22 @@ namespace GameBase
             {
                 case DialogAnimationType.Center:
                     rect.localScale = rect.localScale * OPEN_LOCAL_SCALE;
-                    rect.DOScale(Vector3.one, MOVING_TIME * 2).SetEase(Ease.OutBack);
+                    rect.DOScale(Vector3.one, MOVING_TIME * 2).SetEase(Ease.OutBack).SetUpdate(true);
                     canvas.alpha = 0.0f;
-                    canvas.DOFade(1.0F, MOVING_TIME);
+                    canvas.DOFade(1.0F, MOVING_TIME).SetUpdate(true);
                     break;
                 case DialogAnimationType.Right:
                     rect.position += new Vector3(FRAME_INITIAL_POSOTION, 0.0f, 0.0f);
-                    rect.DOAnchorPosX(FRAME_IN_ANCHOR_POSOTION, MOVING_TIME);
+                    rect.DOAnchorPosX(FRAME_IN_ANCHOR_POSOTION, MOVING_TIME).SetUpdate(true);
                     break;
                 case DialogAnimationType.Left:
                     rect.position += new Vector3(-FRAME_INITIAL_POSOTION, 0.0f, 0.0f);
-                    rect.DOAnchorPosX(-FRAME_IN_ANCHOR_POSOTION, MOVING_TIME);
+                    rect.DOAnchorPosX(-FRAME_IN_ANCHOR_POSOTION, MOVING_TIME).SetUpdate(true);
                     break;
                 case DialogAnimationType.Bottom:
                     var initialPos = rect.localPosition;
                     rect.localPosition += new Vector3(0.0f, -Screen.height, 0.0f);
-                    rect.DOLocalMove(initialPos, MOVING_TIME);
+                    rect.DOLocalMove(initialPos, MOVING_TIME).SetUpdate(true);
                     break;
             }
         }
@@ -86,18 +86,18 @@ namespace GameBase
             {
                 case DialogAnimationType.Center:
                     var scale = rect.localScale * CLOSE_LOCAL_SCALE;
-                    rect.DOScale(scale, MOVING_TIME).SetEase(Ease.InOutBack);
-                    canvas.DOFade(0.0F, MOVING_TIME);
-                    return _grayOutImage.DOFade(0.0F, MOVING_TIME).OnCompleteAsObservable().AsUnitObservable();
+                    rect.DOScale(scale, MOVING_TIME).SetEase(Ease.InOutBack).SetUpdate(true);
+                    canvas.DOFade(0.0F, MOVING_TIME).SetUpdate(true);
+                    return _grayOutImage.DOFade(0.0F, MOVING_TIME).SetUpdate(true).OnCompleteAsObservable().AsUnitObservable();
                 case DialogAnimationType.Right:
                     position = UIManager.Instance.dialogParant.position.x + FRAME_OUT_ANCHOR_POSITION;
-                    return rect.DOAnchorPosX(position, MOVING_TIME).OnCompleteAsObservable().AsUnitObservable();
+                    return rect.DOAnchorPosX(position, MOVING_TIME).SetUpdate(true).OnCompleteAsObservable().AsUnitObservable();
                 case DialogAnimationType.Left:
                     position = UIManager.Instance.dialogParant.position.x - FRAME_OUT_ANCHOR_POSITION;
-                    return rect.DOAnchorPosX(position, MOVING_TIME).OnCompleteAsObservable().AsUnitObservable();
+                    return rect.DOAnchorPosX(position, MOVING_TIME).SetUpdate(true).OnCompleteAsObservable().AsUnitObservable();
                 case DialogAnimationType.Bottom:
                     position = UIManager.Instance.dialogParant.position.y - FRAME_OUT_ANCHOR_POSITION;
-                    return rect.DOAnchorPosY(position, MOVING_TIME).OnCompleteAsObservable().AsUnitObservable();
+                    return rect.DOAnchorPosY(position, MOVING_TIME).SetUpdate(true).OnCompleteAsObservable().AsUnitObservable();
                 case DialogAnimationType.None:
                 default:
                     return Observable.ReturnUnit();

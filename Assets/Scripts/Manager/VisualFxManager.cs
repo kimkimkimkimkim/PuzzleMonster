@@ -18,7 +18,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     /// </summary>
     public IObservable<Unit> PlayQuestTitleFxObservable(string title)
     {
-        UIManager.Instance.ShowTapBlocker();
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<QuestTitleFx>(FadeManager.Instance.GetFadeCanvasRT())
             .SelectMany(fx => {
                 fx.text.SetAlpha(0);
@@ -32,7 +31,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .OnCompleteAsObservable()
                     .Do(_ => {
                         if(fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
-                        UIManager.Instance.TryHideTapBlocker();
                     })
                     .AsUnitObservable();
             });
@@ -43,7 +41,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     /// </summary>
     public IObservable<Unit> PlayWaveTitleFxObservable(Transform parent, int currentWaveCount, int maxWaveCount)
     {
-        UIManager.Instance.ShowTapBlocker();
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<WaveTitleFx>(parent)
             .SelectMany(fx => {
                 var distance = 100.0f;
@@ -62,7 +59,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .OnCompleteAsObservable()
                     .Do(_ => {
                         if(fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
-                        UIManager.Instance.TryHideTapBlocker();
                     })
                     .AsUnitObservable();
             });
@@ -79,7 +75,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         var moveYEase = Ease.OutSine;
         var fadeEase = Ease.InQuad;
         
-        UIManager.Instance.ShowTapBlocker();
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<WinBattleFx>(parent)
             .SelectMany(fx => {
                 var initialPosition = fx.textInitialPositionTransform.position;
@@ -106,13 +101,11 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                 });
 
                 return Observable.WhenAll(observableList);
-            })
-            .Do(_ => UIManager.Instance.TryHideTapBlocker());
+            });
     }
 
     public IObservable<Unit> PlayLoseBattleFxObservable(Transform parent)
     {
-        UIManager.Instance.ShowTapBlocker();
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<LoseBattleFx>(parent)
             .SelectMany(fx => {
                 return Observable.Timer(TimeSpan.FromSeconds(1))
@@ -121,8 +114,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                         if (fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
                     })
                     .AsUnitObservable();
-            })
-            .Do(_ => UIManager.Instance.TryHideTapBlocker());
+            });
     }
 
     /// <summary>
@@ -139,7 +131,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         ParticleSystem skillEffectPS = null;
         DamageFx damageFX = null;
 
-        UIManager.Instance.ShowTapBlocker();
         return Observable.WhenAll(
                 PMAddressableAssetUtil.InstantiateVisualFxItemObservable<DamageFx>(effectBase).Do(fx => damageFX =fx).AsUnitObservable(),
                 PMAddressableAssetUtil.InstantiateSkillFxObservable(effectBase, skillFxId).Do(ps => skillEffectPS = ps).AsUnitObservable()
@@ -174,8 +165,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .AsUnitObservable();
 
                 return Observable.WhenAll(damageAnimationObservable, sliderAnimationObservable);
-            })
-            .Do(_ => UIManager.Instance.TryHideTapBlocker());
+            });
     }
     #endregion FxItem
     
@@ -190,7 +180,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         var hopDistanceY = 20.0f;
         var downMagnification = 2f;
 
-        UIManager.Instance.ShowTapBlocker();
         return DOTween.Sequence()
             .Append(DOTween.Sequence().Append(item.transform.DOLocalMoveY(hopDistanceY, animationTime / 2).SetRelative().SetEase(Ease.OutSine)).Append(item.transform.DOLocalMoveY(-hopDistanceY * downMagnification, animationTime / 2).SetRelative().SetEase(Ease.InSine)))
             .Join(item.transform.DOScaleX(scaleEndValue, animationTime))
@@ -200,7 +189,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             .Join(item.transform.DOScaleX(1, animationTime))
             .Join(item.transform.DOScaleY(1, animationTime))
             .OnCompleteAsObservable()
-            .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .AsUnitObservable();
     }
 
@@ -212,7 +200,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         ParticleSystem orbitPS = null;
         ParticleSystem fxPS = null;
         
-        UIManager.Instance.ShowTapBlocker();
         return Observable.WhenAll(
             PMAddressableAssetUtil.InstantiateNormalAttackOrbitObservable(parent, attribute).Do(ps => orbitPS = ps).AsUnitObservable(),
             PMAddressableAssetUtil.InstantiateNormalAttackFxObservable(parent, attackId).Do(ps => fxPS = ps).AsUnitObservable()
@@ -237,7 +224,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                         if (fxPS.gameObject != null) Addressables.ReleaseInstance(fxPS.gameObject);
                     })
                     .OnCompleteAsObservable()
-                    .Do(res => UIManager.Instance.TryHideTapBlocker())
                     .AsUnitObservable();
             });
     }
@@ -257,7 +243,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         var defaultPosition = doMonsterRT.localPosition;
         var defaultPivot = doMonsterRT.pivot;
 
-        UIManager.Instance.ShowTapBlocker();
         return Observable.ReturnUnit()
             .SelectMany(_ => {
                 return DOTween.Sequence()
@@ -278,7 +263,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             {
                 // もとに戻るアニメーションは別のストリームで行う
                 doMonsterRT.DOLocalMoveX(defaultPosition.x, BACK_ANIMATION_TIME);
-                UIManager.Instance.TryHideTapBlocker();
             })
             .AsUnitObservable();
     }
@@ -297,7 +281,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         var defaultPosition = doMonsterRT.localPosition;
         var defaultPivot = doMonsterRT.pivot;
 
-        UIManager.Instance.ShowTapBlocker();
         return Observable.ReturnUnit()
             .SelectMany(_ =>
             {
@@ -324,7 +307,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .OnCompleteAsObservable()
                     .AsUnitObservable();
             })
-            .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .AsUnitObservable();
             
     }
@@ -341,7 +323,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         var canvasGroup = item.GetCanvasGroup();
         canvasGroup.alpha = 0;
 
-        UIManager.Instance.ShowTapBlocker();
         return item.SetMonsterImageObservable(monsterId)
             .SelectMany(_ =>
             {
@@ -350,7 +331,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .OnCompleteAsObservable()
                     .AsUnitObservable();
             })
-            .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .Select(_ => item);
     }
 
@@ -361,11 +341,9 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     {
         var canvasGroup = item.GetCanvasGroup();
         
-        UIManager.Instance.ShowTapBlocker();
         return DOTween.Sequence()
             .Append(canvasGroup.DOFade(0.0f, 0.5f))
             .OnCompleteAsObservable()
-            .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .AsUnitObservable();
     }
     

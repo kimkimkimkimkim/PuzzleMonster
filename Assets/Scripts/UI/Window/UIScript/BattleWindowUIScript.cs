@@ -6,6 +6,7 @@ using System.Linq;
 using TMPro;
 using UniRx;
 using UnityEngine;
+using UnityEngine.UI;
 
 [ResourcePath("UI/Window/Window-Battle")]
 public class BattleWindowUIScript : DummyWindowBase
@@ -21,6 +22,7 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected Transform _battleMonsterInfoItemBase;
     [SerializeField] protected GameObject _skillNameBase;
     [SerializeField] protected GameObject _actionDescriptionBase;
+    [SerializeField] protected Button _pauseButton;
 
     private UserMonsterPartyInfo userMonsterParty;
     private QuestMB quest;
@@ -31,6 +33,12 @@ public class BattleWindowUIScript : DummyWindowBase
     {
         userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
+
+        _pauseButton.OnClickIntentAsObservable()
+            .Do(_ => TimeManager.Instance.Pause())
+            .SelectMany(_ => BattlePauseDialogFactory.Create(new BattlePauseDialogRequest()))
+            .Do(_ => TimeManager.Instance.SpeedBy1())
+            .Subscribe();
 
         SetPlayerMonsterImage();
         SetTurnText(1);

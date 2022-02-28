@@ -35,7 +35,7 @@ namespace GameBase {
                     clickObservable = clickObservable.First();
                     break;
                 case ButtonClickIntent.IntervalTap:
-                    clickObservable = clickObservable.ThrottleFirst(TimeSpan.FromSeconds(0.5f));
+                    clickObservable = clickObservable.ThrottleFirst(TimeSpan.FromSeconds(0.5f), Scheduler.MainThreadIgnoreTimeScale);
                     break;
                 case ButtonClickIntent.Normal:
                 default:
@@ -49,9 +49,9 @@ namespace GameBase {
                     var sequence = DOTween.Sequence();
                     sequence.Append(rectTransform.DOScale(scale * 0.95f, 0.05f));
                     sequence.Append(rectTransform.DOScale(scale, 0.05f));
-                    sequence.PlayAsObservable().Subscribe();
+                    sequence.SetUpdate(true).PlayAsObservable().Subscribe();
                 })
-                .Delay(TimeSpan.FromSeconds(0.1f))// アニメーション終了まで待つ
+                .Delay(TimeSpan.FromSeconds(0.1f), Scheduler.MainThreadIgnoreTimeScale)// アニメーション終了まで待つ
                 .AsUnitObservable();
         }
     }

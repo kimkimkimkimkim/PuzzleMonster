@@ -85,15 +85,15 @@ namespace GameBase
             {
                 case WindowAnimationType.GardenWindow:
                     rect.position += new Vector3(0.0f, -FRAME_OUT_POSITION, 0.0f);
-                    rect.DOLocalMoveY(0.0f, MOVING_TIME).SetEase(Ease.InOutQuart);
+                    rect.DOLocalMoveY(0.0f, MOVING_TIME).SetEase(Ease.InOutQuart).SetUpdate(true);
                     break;
                 case WindowAnimationType.FooterWindowRight:
                     rect.position += new Vector3(FRAME_OUT_POSITION, 0.0f, 0.0f);
-                    rect.DOLocalMoveX(0.0f, MOVING_TIME);
+                    rect.DOLocalMoveX(0.0f, MOVING_TIME).SetUpdate(true);
                     break;
                 case WindowAnimationType.FooterWindowLeft:
                     rect.position += new Vector3(-FRAME_OUT_POSITION, 0.0f, 0.0f);
-                    rect.DOLocalMoveX(0.0f, MOVING_TIME);
+                    rect.DOLocalMoveX(0.0f, MOVING_TIME).SetUpdate(true);
                     break;
                 case WindowAnimationType.None:
                 default:
@@ -111,13 +111,13 @@ namespace GameBase
             {
                 case WindowAnimationType.GardenWindow:
                     position = UIManager.Instance.windowParent.position.y - FRAME_OUT_POSITION;
-                    return rect.DOMoveY(position, MOVING_TIME).SetEase(Ease.InOutExpo).OnCompleteAsObservable().AsUnitObservable();
+                    return rect.DOMoveY(position, MOVING_TIME).SetEase(Ease.InOutExpo).SetUpdate(true).OnCompleteAsObservable().AsUnitObservable();
                 case WindowAnimationType.FooterWindowRight:
                     position = UIManager.Instance.windowParent.position.x + FRAME_OUT_POSITION;
-                    return rect.DOMoveX(position, MOVING_TIME).OnCompleteAsObservable().AsUnitObservable();
+                    return rect.DOMoveX(position, MOVING_TIME).SetUpdate(true).OnCompleteAsObservable().AsUnitObservable();
                 case WindowAnimationType.FooterWindowLeft:
                     position = UIManager.Instance.windowParent.position.x - FRAME_OUT_POSITION;
-                    return rect.DOMoveX(position, MOVING_TIME).OnCompleteAsObservable().AsUnitObservable();
+                    return rect.DOMoveX(position, MOVING_TIME).SetUpdate(true).OnCompleteAsObservable().AsUnitObservable();
                 case WindowAnimationType.None:
                 default:
                     return Observable.ReturnUnit();
