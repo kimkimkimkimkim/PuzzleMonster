@@ -12,10 +12,11 @@ public class BattleMonsterItem : MonoBehaviour
     [SerializeField] protected Image _monsterImage;
     [SerializeField] protected Image _attributeImage;
     [SerializeField] protected Slider _hpSlider;
-    [SerializeField] protected Slider _ctSlider;
+    [SerializeField] protected Slider _energySlider;
     [SerializeField] protected TextMeshProUGUI _levelText;
 
     public Slider hpSlider { get { return _hpSlider; } }
+    public Slider energySlider { get { return _energySlider; } }
 
     public void Init(long monsterId, int level)
     {
@@ -43,7 +44,7 @@ public class BattleMonsterItem : MonoBehaviour
         _hpSlider.maxValue = status.hp;
         _hpSlider.value = status.hp;
 
-        _ctSlider.maxValue = ConstManager.Battle.MAX_ENERGY_VALUE;
-        _ctSlider.value = 0.0f;
+        _energySlider.maxValue = ConstManager.Battle.MAX_ENERGY_VALUE;
+        _energySlider.value = ConstManager.Battle.INITIAL_ENERGY_VALUE;
     }
 }

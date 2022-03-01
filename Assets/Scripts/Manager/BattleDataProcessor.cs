@@ -358,7 +358,10 @@ public class BattleDataProcessor
         // アクション終了ログを差し込む
         var battleLog = new BattleLogInfo()
         {
-            type = BattleLogType.None,
+            type = BattleLogType.EndAction,
+            doBattleMonsterIndex = doMonsterIndex,
+            playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
+            enemyBattleMonsterList = this.enemyBattleMonsterList.Clone(),
             log = $"{possess}{monster.name}のアクションが終了しました",
         };
         battleLogList.Add(battleLog);

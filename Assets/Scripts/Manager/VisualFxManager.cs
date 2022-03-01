@@ -122,7 +122,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     /// </summary>
     /// <param name="effectBase">ダメージエフェクトの親</param>
     /// <param name="toHp">攻撃をくらった後のHP</param>
-    public IObservable<Unit> PlayTakeDamageFxObservable(Slider slider, Transform effectBase,long skillFxId, int damage, int toHp)
+    public IObservable<Unit> PlayTakeDamageFxObservable(Slider hpSlider,Slider energySlider, Transform effectBase,long skillFxId, int damage, int toHp, int toEnergy)
     {
         const float SLIDER_ANIMATION_TIME = 2.0f;
         const float DAMAGE_EFFECT_DELAY_TIME = 0.5f;
@@ -159,13 +159,27 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .SelectMany(_ =>
                     {
                         return DOTween.Sequence()
-                            .Append(DOVirtual.Float(slider.value, toHp, SLIDER_ANIMATION_TIME, value => slider.value = value))
+                            .Append(DOVirtual.Float(hpSlider.value, toHp, SLIDER_ANIMATION_TIME, value => hpSlider.value = value))
                             .OnCompleteAsObservable();
                     })
                     .AsUnitObservable();
 
-                return Observable.WhenAll(damageAnimationObservable, sliderAnimationObservable);
+                return Observable.WhenAll(damageAnimationObservable, sliderAnimationObservable, PlayEnergySliderAnimationObservable(energySlider, toEnergy));
             });
+    }
+
+    public IObservable<Unit> PlayEnergySliderAnimationObservable(Slider slider, int toEnergy)
+    {
+        const float SLIDER_ANIMATION_TIME = 0.5f;
+
+        return Observable.ReturnUnit()
+            .SelectMany(_ =>
+            {
+                return DOTween.Sequence()
+                    .Append(DOVirtual.Float(slider.value, toEnergy, SLIDER_ANIMATION_TIME, value => slider.value = value))
+                    .OnCompleteAsObservable();
+            })
+            .AsUnitObservable();
     }
     #endregion FxItem
     

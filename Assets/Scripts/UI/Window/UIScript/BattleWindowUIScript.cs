@@ -161,27 +161,26 @@ public class BattleWindowUIScript : DummyWindowBase
 
     public IObservable<Unit> PlayAttackAnimationObservable(BattleMonsterIndex doBattleMonsterIndex, List<BattleMonsterIndex> beDoneBattleMonsterIndexList)
     {
-        var isPlayer = doBattleMonsterIndex.isPlayer;
-        var doMonsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
-        var beDoneMonsterBaseList = isPlayer ? _enemyMonsterBaseList : _playerMonsterBaseList;
+        var doMonsterRT = GetBattleMonsterBase(doBattleMonsterIndex).GetComponent<RectTransform>();
+        var beDoneMonsterBaseTransformList = beDoneBattleMonsterIndexList.Select(monsterIndex => GetBattleMonsterBase(monsterIndex).transform).ToList();
 
-        var doMonsterRT = doMonsterBaseList[doBattleMonsterIndex.index].battleMonsterItem.GetComponent<RectTransform>();
-        var beDoneMonsterBaseTransformList = beDoneMonsterBaseList
-            .Where((battleMonsterBase, index) => beDoneBattleMonsterIndexList.Select(battleMonsterIndex => battleMonsterIndex.index).Contains(index))
-            .Select(battleMonsterBase => battleMonsterBase.transform)
-            .ToList();
-
-        return VisualFxManager.Instance.PlayNormalAttackFxObservable(doMonsterRT, beDoneMonsterBaseTransformList, isPlayer);
+        return VisualFxManager.Instance.PlayNormalAttackFxObservable(doMonsterRT, beDoneMonsterBaseTransformList, doBattleMonsterIndex.isPlayer);
     }
 
-    public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleMonsterIndex beDoneBattleMonsterIndex,long skillFxId, int damage, int currentHp)
+    public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleMonsterIndex beDoneBattleMonsterIndex,long skillFxId, int damage, int currentHp, int currentEnergy)
     {
-        var isPlayer = beDoneBattleMonsterIndex.isPlayer;
-        var monsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
-        var monsterBase = monsterBaseList[beDoneBattleMonsterIndex.index];
-        var slider = monsterBase.battleMonsterItem.GetComponent<BattleMonsterItem>().hpSlider;
+        var monsterBase = GetBattleMonsterBase(beDoneBattleMonsterIndex);
+        var hpSlider = monsterBase.battleMonsterItem.hpSlider;
+        var energySlider = monsterBase.battleMonsterItem.energySlider;
 
-        return VisualFxManager.Instance.PlayTakeDamageFxObservable(slider, monsterBase.transform,skillFxId, damage, Math.Max(0, currentHp));
+        return VisualFxManager.Instance.PlayTakeDamageFxObservable(hpSlider, energySlider, monsterBase.transform,skillFxId, damage, Math.Max(0, currentHp), currentEnergy);
+    }
+
+    public IObservable<Unit> PlayEnergySliderAnimationObservable(BattleMonsterIndex monsterIndex, int currentEnergy)
+    {
+        var monsterBase = GetBattleMonsterBase(monsterIndex);
+        var energySlider = monsterBase.battleMonsterItem.energySlider;
+        return VisualFxManager.Instance.PlayEnergySliderAnimationObservable(energySlider, currentEnergy);
     }
 
     public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterIndex battleMonsterIndex)
@@ -245,5 +244,13 @@ public class BattleWindowUIScript : DummyWindowBase
             default:
                 return ("", "");
         }
+    }
+
+    private BattleMonsterBase GetBattleMonsterBase(BattleMonsterIndex battleMonsterIndex)
+    {
+        var isPlayer = battleMonsterIndex.isPlayer;
+        var monsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
+        var monsterBase = monsterBaseList[battleMonsterIndex.index];
+        return monsterBase;
     }
 }

@@ -143,10 +143,15 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             var isPlayer = d.battleMonsterIndex.isPlayer;
                             var battleMonsterList = isPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
                             var beDoneMonster = battleMonsterList.FirstOrDefault(b => b.index.index == d.battleMonsterIndex.index);
-                            return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex,battleLog.skillFxId, d.hpChanges, beDoneMonster.currentHp);
+                            return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex,battleLog.skillFxId, d.hpChanges, beDoneMonster.currentHp, beDoneMonster.currentEnergy);
                         });
                         return battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex)
                             .SelectMany(res => Observable.WhenAll(takeDamageObservableList));
+
+                    // アクション終了時アニメーション
+                    case BattleLogType.EndAction:
+                        var endActionBattleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
+                        return battleWindow.PlayEnergySliderAnimationObservable(battleLog.doBattleMonsterIndex,endActionBattleMonster.currentEnergy);
 
                     // モンスター戦闘不能アニメーション
                     case BattleLogType.Die:
