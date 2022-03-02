@@ -75,7 +75,8 @@ public class BattleDataProcessor
         if (actionMonsterIndex != null)
         {
             var actionType = GetNormalActionerActionType(actionMonsterIndex);
-            StartActionStream(actionMonsterIndex, actionType);
+            var skillEffectList = GetSkillEffectList(actionMonsterIndex, actionType);
+            StartActionStream(actionMonsterIndex, actionType, skillEffectList);
             chainParticipantMonsterIndexList.Clear();
         }
 
@@ -130,7 +131,7 @@ public class BattleDataProcessor
     }
 
     // アクション実行者とアクション内容を受け取りアクションを実行する
-    private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType)
+    private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, List<SkillEffectMI> skillEffectList)
     {
         // チェーン参加者リストに追加
         if (actionType == BattleActionType.PassiveSkill) chainParticipantMonsterIndexList.Add(actionMonsterIndex);
@@ -140,9 +141,6 @@ public class BattleDataProcessor
 
         // アクション開始時パッシブスキルを発動する
         ExecutePassiveIfNeeded(SkillTriggerType.OnMeActionStart);
-
-        // 実行するアクションの効果リストを取得する
-        var skillEffectList = GetSkillEffectList(actionMonsterIndex, actionType);
 
         // 被アクション前パッシブスキルを発動する
         ExecutePassiveIfNeeded(SkillTriggerType.OnMeTakeActionBefore);
@@ -444,7 +442,8 @@ public class BattleDataProcessor
 
                 var actionMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(actionBattleMonster.monsterId);
                 var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(actionMonster.passiveSkillId);
-                if (passiveSkill.triggerType == SkillTriggerType.OnMeActionEnd) StartActionStream(actionMonsterIndex, BattleActionType.PassiveSkill);
+                var skillEffectList = passiveSkill.effectList.Where(effect => effect.triggerType == SkillTriggerType.OnMeActionEnd).Select(effect => (SkillEffectMI)effect).ToList();
+                if (skillEffectList.Any()) StartActionStream(actionMonsterIndex, BattleActionType.PassiveSkill, skillEffectList);
                 break;
             default:
                 break;
@@ -454,17 +453,16 @@ public class BattleDataProcessor
     private void ExecuteOnBattleStartPassiveIfNeeded()
     {
         GetAllMonsterList()
-            .Where(m => {
-                if (chainParticipantMonsterIndexList.Contains(m.index)) return false;
-                if (m.isDead) return false;
+            .ForEach(m => {
+                if (chainParticipantMonsterIndexList.Contains(m.index)) return;
+                if (m.isDead) return;
 
                 var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
                 var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(monster.passiveSkillId);
-                return passiveSkill.triggerType == SkillTriggerType.OnBattleStart;
-            })
-            .ToList()
-            .ForEach(m => {
-                StartActionStream(m.index, BattleActionType.PassiveSkill);
+                var effectList = passiveSkill.effectList.Where(effect => effect.triggerType == SkillTriggerType.OnBattleStart).Select(effect => (SkillEffectMI)effect).ToList();
+                if (!effectList.Any()) return;
+
+                StartActionStream(m.index, BattleActionType.PassiveSkill, effectList);
                 chainParticipantMonsterIndexList.Clear();
             });
     }
