@@ -94,7 +94,7 @@ public class BattleDataProcessorTemp
         battleMonsterList.AddRange(enemyBattleMonsterList);
 
         // まだ行動していないかつスピードが一番早いモンスターを取得
-        var battleMonster = battleMonsterList.Where(m => !m.isActed && m.currentHp > 0).OrderByDescending(m => m.currentSpeed).FirstOrDefault();
+        var battleMonster = battleMonsterList.Where(m => !m.isActed && m.currentHp > 0).OrderByDescending(m => m.currentSpeed()).FirstOrDefault();
         doBattleMonsterIndex = battleMonster?.index;
     }
 
@@ -163,7 +163,7 @@ public class BattleDataProcessorTemp
             case BattleMonsterActType.PassiveSkill:
                 break;
             case BattleMonsterActType.NormalSkill:
-                doBattleMonster.currentEnergy += ConstManager.Battle.ENERGY_RISE_VALUE_ON_ACT;
+                doBattleMonster.ChangeEnergy(ConstManager.Battle.ENERGY_RISE_VALUE_ON_ACT);
                 break;
             case BattleMonsterActType.UltimateSkill:
                 doBattleMonster.currentEnergy = 0;
@@ -204,7 +204,7 @@ public class BattleDataProcessorTemp
             var skillType = skillEffect.type;
 
             // TODO: 状態異常の実装
-            if (skillType == SkillType.Condition) return;
+            if (skillType == SkillType.ConditionAdd) return;
 
             // 乱数
             var random = new Random();
@@ -222,7 +222,7 @@ public class BattleDataProcessorTemp
             {
                 // TODO: 防御力計算
                 var beDoneBattleMonster = GetBattleMonster(beDoneBattleMonsterData.battleMonsterIndex);
-                beDoneBattleMonster.currentHp += value;
+                beDoneBattleMonster.ChangeHp(value);
                 beDoneBattleMonsterData.hpChanges = value;
             });
 
@@ -246,7 +246,7 @@ public class BattleDataProcessorTemp
         });
 
         // パッシブスキル発動
-        ActivatePassiveSkillIfNeeded(SkillTriggerType.OnMeTurnEnd);
+        ActivatePassiveSkillIfNeeded(SkillTriggerType.OnMeActionEnd);
         switch (doBattleMonsterActType)
         {
             case BattleMonsterActType.NormalSkill:
@@ -382,13 +382,13 @@ public class BattleDataProcessorTemp
             case ValueTargetType.MyCurrentHP:
                 return battleMonster.currentHp;
             case ValueTargetType.MyCurrentAttack:
-                return battleMonster.currentAttack;
+                return battleMonster.currentAttack();
             case ValueTargetType.MyCurrentDefense:
-                return battleMonster.currentDefense;
+                return battleMonster.currentDefense();
             case ValueTargetType.MyCurrentHeal:
-                return battleMonster.currentHeal;
+                return battleMonster.currentHeal();
             case ValueTargetType.MyCurrentSpeed:
-                return battleMonster.currentSpeed;
+                return battleMonster.currentSpeed();
             case ValueTargetType.MyMaxHp:
                 return battleMonster.maxHp;
             case ValueTargetType.None:
@@ -550,7 +550,7 @@ public class BattleDataProcessorTemp
                 return true;
             case SkillTriggerType.OnBattleStart:
                 return true;
-            case SkillTriggerType.OnMeTurnEnd:
+            case SkillTriggerType.OnMeActionEnd:
                 return doBattleMonster.index.index == battleMonster.index.index;
             case SkillTriggerType.OnMeNormalSkillEnd:
                 return doBattleMonster.index.index == battleMonster.index.index;
@@ -657,7 +657,7 @@ public class BattleDataProcessorTemp
                 var skillType = skillEffect.type;
 
                 // TODO: 状態異常の実装
-                if (skillType == SkillType.Condition) return;
+                if (skillType == SkillType.ConditionAdd) return;
 
                 // 乱数
                 var random = new Random();
@@ -675,7 +675,7 @@ public class BattleDataProcessorTemp
                 {
                     // TODO: 防御力計算
                     var beDoneBattleMonster = GetBattleMonster(beDoneBattleMonsterData.battleMonsterIndex);
-                    beDoneBattleMonster.currentHp += value;
+                    beDoneBattleMonster.ChangeHp(value);
                     beDoneBattleMonsterData.hpChanges = value;
                 });
 
