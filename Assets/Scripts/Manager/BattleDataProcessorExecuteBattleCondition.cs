@@ -1,6 +1,7 @@
 ﻿using PM.Enum.Battle;
 using System.Collections.Generic;
 using System.Linq;
+
 /// <summary>
 /// 状態異常効果関係の処理を行うクラス
 /// </summary>
