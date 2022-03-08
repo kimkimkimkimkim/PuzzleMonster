@@ -1,4 +1,5 @@
 ﻿using PM.Enum.Battle;
+using PM.Enum.Monster;
 using System.Linq;
 using UnityEngine;
 
@@ -86,6 +87,7 @@ public partial class BattleDataProcessor
 			* BattleConditionKiller(doMonster, beDoneMonster)											   // 状態異常特攻倍率
 			* BuffTypeNumKiller(doMonster, beDoneMonster)												   // 指定バフタイプの個数特攻倍率
 			* MonsterAttributeKiller(doMonster, beDoneMonster)											   // 属性特攻倍率
+			* MonsterAttributeCompatibility(doMonster, beDoneMonster)									   // 属性相性
 			* (
 				isCritical ?																			   // クリティカルかどうかを判定
 				(CRITICAL_DAMAGE_MAGNIFICATION + CRITICAL_DAMAGE_COEFFICIANT * doMonster.criticalDamage()) // クリティカルならクリティカルダメージ
@@ -155,7 +157,61 @@ public partial class BattleDataProcessor
 		return GetRate(rate + 100);
 	}
 
-	private float ArmorMitigation(BattleMonsterInfo beDoneMonster)
+	private float MonsterAttributeCompatibility(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster)
+	{
+		const int MONSTER_ATTRIBUTE_COMPATIBILITY_RATE = 40;
+		var doMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(doBattleMonster.monsterId);
+		var beDoneMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(beDoneBattleMonster.monsterId);
+
+		var rate = 0;
+		switch (doMonster.attribute) {
+			case MonsterAttribute.Red:
+                if(beDoneMonster.attribute == MonsterAttribute.Green)
+                {
+					rate = MONSTER_ATTRIBUTE_COMPATIBILITY_RATE;
+                }
+				else if(beDoneMonster.attribute == MonsterAttribute.Blue)
+                {
+					rate = -MONSTER_ATTRIBUTE_COMPATIBILITY_RATE;
+                }
+				break;
+			case MonsterAttribute.Blue:
+				if (beDoneMonster.attribute == MonsterAttribute.Red)
+				{
+					rate = MONSTER_ATTRIBUTE_COMPATIBILITY_RATE;
+				}
+				else if (beDoneMonster.attribute == MonsterAttribute.Green)
+				{
+					rate = -MONSTER_ATTRIBUTE_COMPATIBILITY_RATE;
+				}
+				break;
+			case MonsterAttribute.Green:
+				if (beDoneMonster.attribute == MonsterAttribute.Blue)
+				{
+					rate = MONSTER_ATTRIBUTE_COMPATIBILITY_RATE;
+				}
+				else if (beDoneMonster.attribute == MonsterAttribute.Red)
+				{
+					rate = -MONSTER_ATTRIBUTE_COMPATIBILITY_RATE;
+				}
+				break;
+			case MonsterAttribute.Yellow:
+				if (beDoneMonster.attribute == MonsterAttribute.Purple)
+				{
+					rate = MONSTER_ATTRIBUTE_COMPATIBILITY_RATE;
+				}
+				break;
+			case MonsterAttribute.Purple:
+				if (beDoneMonster.attribute == MonsterAttribute.Yellow)
+				{
+					rate = MONSTER_ATTRIBUTE_COMPATIBILITY_RATE;
+				}
+				break;
+		}
+		return GetRate(rate + 100);
+	}
+
+    private float ArmorMitigation(BattleMonsterInfo beDoneMonster)
 	{
 		// 防御/(180+20×Level)
 		const float DEFENSE_RESISTIVITY = 180.0f;
