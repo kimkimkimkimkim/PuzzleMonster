@@ -113,7 +113,7 @@ public partial class BattleDataProcessor
 				else
 				{
 					// 相手が対象の状態異常を保持していれば合計の倍率を返す
-					return group.Sum(battleCondition => battleCondition.value);
+					return group.Sum(battleCondition => battleCondition.skillEffect.value);
 
 				}
             })
@@ -153,7 +153,7 @@ public partial class BattleDataProcessor
 		var beDoneMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(beDoneBattleMonster.monsterId);
 		var rate = doBattleMonster.battleConditionList
 			.Where(c => c.battleCondition.battleConditionType == BattleConditionType.MonsterAttributeKiller && c.battleCondition.targetMonsterAttribute == beDoneMonster.attribute)
-			.Sum(battleCondition => battleCondition.value);
+			.Sum(battleCondition => battleCondition.skillEffect.value);
 		return GetRate(rate + 100);
 	}
 

@@ -669,7 +669,7 @@ public partial class BattleDataProcessor
             battleCondition = battleConditionMB,
             skillEffect = skillEffect,
             remainingTurnNum = skillEffect.durationTurnNum,
-            value = calculatedValue,
+            actionValue = calculatedValue,
             shieldValue = shieldValue,
             order = order,
         };
