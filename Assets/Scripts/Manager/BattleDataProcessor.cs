@@ -441,8 +441,7 @@ public partial class BattleDataProcessor
             if (isSucceeded)
             {
                 // 状態異常を付与
-                var battleCondition = GetBattleCondition(doMonsterIndex, battleMonster.index, skillEffect, battleConditionMB);
-                battleMonster.battleConditionList.Add(battleCondition.Clone());
+                AddBattleCondition(doMonsterIndex, battleMonster.index, skillEffect, battleConditionMB);
             }
 
             return new BeDoneBattleMonsterData()
@@ -635,11 +634,24 @@ public partial class BattleDataProcessor
                 return true;
         }
     }
+    
+    /// <summary>
+    /// 状態異常情報を付与する
+    /// </summary>
+    private void AddBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleConditionMB battleConditionMB)
+    {
+        var beDoneBattleMonster = GetBattleMonster(beDoneMonsterIndex);
+        var battleCondition = GetBattleCondition(doMonsterIndex, beDoneMonsterIndex, skillEffect, battleConditionMB, beDoneBattleMonster.battleConditionCount);
+        
+        // 状態異常を付与しカウントをインクリメント
+        beDoneBattleMonster.battleConditionList.Add(battleCondition.Clone());
+        beDoneBattleMonster.battleConditionCount++;
+    }
 
     /// <summary>
     /// 状態異常情報を作成して返す
     /// </summary>
-    private BattleConditionInfo GetBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleConditionMB battleConditionMB)
+    private BattleConditionInfo GetBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleConditionMB battleConditionMB, int order)
     {
 
         var calculatedValue = battleConditionMB.battleConditionType == BattleConditionType.Action ? GetActionValue(doMonsterIndex, beDoneMonsterIndex, skillEffect) : 0;
@@ -652,6 +664,7 @@ public partial class BattleDataProcessor
             remainingTurnNum = skillEffect.durationTurnNum,
             value = calculatedValue,
             shieldValue = shieldValue,
+            order = order,
         };
         return battleCondition.Clone();
     }
