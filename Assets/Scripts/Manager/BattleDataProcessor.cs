@@ -437,7 +437,14 @@ public partial class BattleDataProcessor
 
         var beDoneMonsterDataList = beDoneMonsterList.Select(battleMonster =>
         {
-            var isSucceeded = ExecuteProbability(skillEffect.activateProbability);
+            var battleConditionResist = battleMonster.battleConditionList
+                .Where(c => {
+                    var isTargetBattleConditionResist = c.battleCondition.battleConditionType == BattleConditionType.BattleConditionResist && c.battleCondition.targetBattleConditionId == battleConditionMB.id;
+                    var isTargetBuffTypeResist = c.battleCondition.battleConditionType == BattleConditionType.BuffTypeResist && c.battleCondition.targetBuffType == battleConditionMB.buffType;
+                    return isTargetBattleConditionResist || isTargetBuffTypeResist;
+                })
+                .Sum(c => c.skillEffect.value);
+            var isSucceeded = ExecuteProbability(skillEffect.activateProbability - battleConditionResist);
             if (isSucceeded)
             {
                 // 状態異常を付与
