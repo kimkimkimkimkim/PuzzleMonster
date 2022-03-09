@@ -129,35 +129,27 @@ public class UserTestAction : ITestAction
 
         testActionDataList.Add(new TestActionData()
         {
-            title = "開発用:インベントリカスタムデータ更新",
+            title = "モンスター付与",
             action = new Action(() =>
             {
-                var itemInstanceId = "24C48BD78B361A0C";
-                var data = new Dictionary<string, string>()
-                {
-                    {"sampleDataKey","sampleDataValue" },
-                    {"level","1" },
-                    {"grade","3" },
-                };
-
+                const long bundleId = 9001005;
+                var itemId = ItemUtil.GetItemId(ItemType.Bundle, bundleId);
                 CommonDialogFactory.Create(new CommonDialogRequest()
                 {
                     commonDialogType = CommonDialogType.NoAndYes,
                     title = "確認",
-                    content = "インベントリカスタムデータを更新します"
+                    content = "モンスターを付与します"
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-                    .SelectMany(_ => {
-                        return ApiConnection.DevelopUpdateUserInventoryCustomData(itemInstanceId,data);
-                    })
+                    .SelectMany(_ => ApiConnection.GrantItemsToUser(itemId))
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
                         title = "お知らせ",
-                        content = "データの更新が完了しました",
+                        content = "モンスターの付与が完了しました",
                     }))
                     .Subscribe();
-            }),
+            })
         });
 
         testActionDataList.Add(new TestActionData()
@@ -182,22 +174,6 @@ public class UserTestAction : ITestAction
                         title = "お知らせ",
                         content = "スタミナを消費しました",
                     }))
-                    .Subscribe();
-            })
-        });
-
-        testActionDataList.Add(new TestActionData()
-        {
-            title = "ObservableText",
-            action = new Action(() =>
-            {
-                var observableList = new List<string>() { "a", "b", "c", "d", "e" }.Select(s =>
-                {
-                    return Observable.Timer(TimeSpan.FromSeconds(1)).Do(_ => Debug.Log(s)).AsUnitObservable();
-                });
-
-                Observable.WhenAll(Observable.ReturnUnit().Concat(observableList.ToArray()))
-                    .Do(_ => Debug.Log("=================== end =================="))
                     .Subscribe();
             })
         });
