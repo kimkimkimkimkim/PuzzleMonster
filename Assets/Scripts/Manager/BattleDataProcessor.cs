@@ -167,6 +167,9 @@ public partial class BattleDataProcessor
 
         // 被アクション前開始時状態異常効果を発動する
         ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeTakeActionBefore);
+        
+        // アクションアニメーションを開始する
+        StartActionAnimation(actionMonsterIndex, actionType);
 
         // 各効果の実行
         var currentBeDoneMonsterIndexList = new List<BattleMonsterIndex>();
@@ -348,6 +351,26 @@ public partial class BattleDataProcessor
             doBattleMonsterIndex = monsterIndex,
             actionType = actionType,
             log = $"{possess}{monster.name}が{skillName}を発動",
+        };
+        battleLogList.Add(battleLog);
+    }
+    
+    private void StartActionAnimation(BattleMonsterIndex monsterIndex, BattleActionType actionType)
+    {
+        var battleMonster = GetBattleMonster(monsterIndex);
+        var possess = monsterIndex.isPlayer ? "味方の" : "敵の";
+        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        var skillName = GetSkillName(battleMonster, actionType);
+
+        // アクション開始ログの差し込み
+        var battleLog = new BattleLogInfo()
+        {
+            type = BattleLogType.StartActionAnimation,
+            playerBattleMonsterList = playerBattleMonsterList.Clone(),
+            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
+            doBattleMonsterIndex = monsterIndex,
+            actionType = actionType,
+            log = $"{possess}{monster.name}が{skillName}を実行",
         };
         battleLogList.Add(battleLog);
     }
