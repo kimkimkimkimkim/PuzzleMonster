@@ -243,14 +243,14 @@ public partial class BattleDataProcessor
         if(!isProgress) return;
         
         // 状態異常ターン進行ログの差し込み
-        var battleLog = new BattleLogInfo()
+        var progressBattleConditionTurnBattleLog = new BattleLogInfo()
         {
             type = BattleLogType.ProgressBattleConditionTurn,
             playerBattleMonsterList = playerBattleMonsterList.Clone(),
             enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
             log = "状態異常のターンを進行しました",
         };
-        battleLogList.Add(battleLog);
+        battleLogList.Add(progressBattleConditionTurnBattleLog);
 
         // 何も解除されなかったら何もしない
         if (!isRemoved) return;
@@ -259,14 +259,14 @@ public partial class BattleDataProcessor
         battleMonster.battleConditionList = battleMonster.battleConditionList.Where(battleCondition => battleCondition.remainingTurnNum != 0).ToList();
 
         // 状態異常解除ログの差し込み
-        var battleLog = new BattleLogInfo()
+        var takeBattleConditionRemoveBattleLog = new BattleLogInfo()
         {
-            type = BattleLogType.BattleConditionRemove,
+            type = BattleLogType.TakeBattleConditionRemove,
             playerBattleMonsterList = playerBattleMonsterList.Clone(),
             enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
             log = "状態異常を解除しました",
         };
-        battleLogList.Add(battleLog);
+        battleLogList.Add(takeBattleConditionRemoveBattleLog);
     }
 
     /// <summary>
@@ -412,7 +412,7 @@ public partial class BattleDataProcessor
 
             // 効果量を反映
             // 攻撃でも回復でも加算
-            m.ChangeHp(actionValue);
+            m.ChangeHp(actionValue.value);
 
             // エネルギーを上昇させる
             m.ChangeEnergy(ConstManager.Battle.ENERGY_RISE_VALUE_ON_TAKE_DAMAGE);
@@ -455,7 +455,7 @@ public partial class BattleDataProcessor
 
             // 効果量を反映
             // 攻撃でも回復でも加算
-            m.ChangeHp(actionValue);
+            m.ChangeHp(actionValue.value);
 
             return new BeDoneBattleMonsterData()
             {

@@ -136,8 +136,13 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     case BattleLogType.StartAction:
                         return battleWindow.PlayStartActionAnimationObservable(GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList), battleLog.actionType);
 
-                    // アクション実行者のモーション後スキルエフェクト
-                    case BattleLogType.TakeAction:
+                    // アクションスタートアニメーション
+                    case BattleLogType.StartActionAnimation:
+                        return battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex);
+
+                    // スキルエフェクト
+                    case BattleLogType.TakeDamage:
+                    case BattleLogType.TakeHeal:
                         var takeDamageObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
                         {
                             var isPlayer = d.battleMonsterIndex.isPlayer;
@@ -145,8 +150,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             var beDoneMonster = battleMonsterList.FirstOrDefault(b => b.index.index == d.battleMonsterIndex.index);
                             return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex,battleLog.skillFxId, d.hpChanges, beDoneMonster.currentHp, beDoneMonster.currentEnergy);
                         });
-                        return battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex)
-                            .SelectMany(res => Observable.WhenAll(takeDamageObservableList));
+                        return Observable.WhenAll(takeDamageObservableList);
 
                     // アクション終了時アニメーション
                     case BattleLogType.EndAction:

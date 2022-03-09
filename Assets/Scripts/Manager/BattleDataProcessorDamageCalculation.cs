@@ -34,7 +34,7 @@ public partial class BattleDataProcessor
 			case SkillType.ConditionRemove:
 			case SkillType.Revive:
 			default:
-				return new BattleActionValueDate();
+				return new BattleActionValueData();
 		}
 	}
 
