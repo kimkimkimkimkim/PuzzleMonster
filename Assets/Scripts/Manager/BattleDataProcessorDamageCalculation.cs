@@ -23,13 +23,13 @@ public partial class BattleDataProcessor
 					case ValueTargetType.MyMaxHp:
 					case ValueTargetType.TargetCurrentHP:
 					case ValueTargetType.TargetMaxHp:
-						return GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
+						return new BattleActionValueData(){ value = GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect) };
 					// それ以外のダメージの場合は含めて計算
 					default:
-						return new BattleActionValueData(){ value = -GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect) };
+						return GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
 				}
 			case SkillType.Heal:
-				return return new BattleActionValueData(){ value = GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect) };
+				return new BattleActionValueData(){ value = GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect) };
 			case SkillType.ConditionAdd:
 			case SkillType.ConditionRemove:
 			case SkillType.Revive:
@@ -48,6 +48,7 @@ public partial class BattleDataProcessor
 		const float LUCK_DAMAGE_MAGNIFICATION = 30.0f;
 		const float BLOCK_DAMAGE_REDUCE_RATE = 33.0f;
 		
+		var coefficient = GetValueCoefficient(skillEffect);
 		var incomingDamage = IncomingDamage(doBattleMonster,beDoneBattleMonster, skillEffect);
 		var isBlocked = ExecuteProbability(beDoneBattleMonster.blockRate());
 		var damage =
@@ -66,7 +67,7 @@ public partial class BattleDataProcessor
 				)
 			);
 		return new BattleActionValueData(){
-			value = -damage,
+			value = coefficient * damage,
 			isCritical = incomingDamage.isCritical,
 			isBlocked = isBlocked
 		};
@@ -77,7 +78,8 @@ public partial class BattleDataProcessor
 	/// </summary>
 	private int GetActionValueWithoutFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
 	{
-		return (int)(GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
+		var coefficient = GetValueCoefficient(skillEffect);
+		return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
 	}
 
 	private (float damage, bool isCritical) IncomingDamage(BattleMonsterInfo doMonster, BattleMonsterInfo beDoneMonster, SkillEffectMI skillEffect)
@@ -264,6 +266,29 @@ public partial class BattleDataProcessor
 				return beDoneMonster.maxHp;
 			default:
 				return 0.0f;
+		}
+	}
+	
+	private int GetValueCoefficient(SkillEffectMI skillEffect){
+		switch(skillEffect.type){
+			case SkillType.Damage:
+				return -1;
+			case SkillType.Heal:
+				return 1;
+			case SkillType.ConditionAdd:
+				var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
+				switch(battleCondition.skillType){
+					case SkillType.Damage:
+						return -1;
+					case SkillType.Heal:
+						return 1;
+					default:
+						return 0;
+				}
+			case SkillType.ConditionRemove:
+			case SkillType.Revive:
+			default:
+				return 0;
 		}
 	}
 }
