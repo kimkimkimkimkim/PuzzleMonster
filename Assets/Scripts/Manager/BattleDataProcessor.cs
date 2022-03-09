@@ -87,7 +87,7 @@ public partial class BattleDataProcessor
             else
             {
                 // アクション失敗
-
+                ActionFailed(actionMonsterIndex);
             }
 
             // 状態異常のターンを経過させる
@@ -113,7 +113,7 @@ public partial class BattleDataProcessor
         var battleLog = new BattleLogInfo()
         {
             type = BattleLogType.StartBattle,
-            playerBattleMonsterList = playerBattleMonsterList,
+            playerBattleMonsterList = playerBattleMonsterList.Clone(),
             log = "バトルを開始します",
         };
         battleLogList.Add(battleLog);
@@ -196,6 +196,21 @@ public partial class BattleDataProcessor
         // アクション終了時状態異常効果を発動する
         ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeActionEnd, actionMonsterIndex);
     }
+    
+    private void ActionFailed(BattleMonsterIndex actionMonsterIndex){
+        var battleMonster = GetBattleMonster(actionMonsterIndex);
+        var possess = actionMonsterIndex.isPlayer ? "味方の" : "敵の";
+        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        
+        // アクション失敗ログの差し込み
+        var battleLog = new BattleLogInfo()
+        {
+            type = BattleLogType.ActionFailed,
+            doBattleMonsterIndex = actionMonsterIndex,
+            log = $"{possess}{monster.name}は動けない",
+        };
+        battleLogList.Add(battleLog);
+    }
 
     /// <summary>
     /// 状態異常のターンを経過させる
@@ -204,6 +219,7 @@ public partial class BattleDataProcessor
     private void ProgressBattleConditionTurnIfNeeded(BattleMonsterIndex battleMonsterIndex)
     {
         var isRemoved = false;
+        var isProgress = false;
         var battleMonster = GetBattleMonster(battleMonsterIndex);
         battleMonster.battleConditionList.ForEach(battleCondition =>
         {
@@ -211,6 +227,7 @@ public partial class BattleDataProcessor
             if (battleCondition.remainingTurnNum > 0)
             {
                 battleCondition.remainingTurnNum--;
+                isProgress = true;
                 if(battleCondition.remainingTurnNum == 0)
                 {
                     // 解除出来たら解除時状態異常効果を発動
@@ -218,6 +235,19 @@ public partial class BattleDataProcessor
                 }
             }
         });
+        
+        // 状態異常のターンが一つも進行しなければ何もしない
+        if(!isProgress) return;
+        
+        // 状態異常ターン進行ログの差し込み
+        var battleLog = new BattleLogInfo()
+        {
+            type = BattleLogType.ProgressBattleConditionTurn,
+            playerBattleMonsterList = playerBattleMonsterList.Clone(),
+            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
+            log = "状態異常のターンを進行しました",
+        };
+        battleLogList.Add(battleLog);
 
         // 何も解除されなかったら何もしない
         if (!isRemoved) return;
@@ -229,8 +259,8 @@ public partial class BattleDataProcessor
         var battleLog = new BattleLogInfo()
         {
             type = BattleLogType.BattleConditionRemove,
-            playerBattleMonsterList = playerBattleMonsterList,
-            enemyBattleMonsterList = enemyBattleMonsterList,
+            playerBattleMonsterList = playerBattleMonsterList.Clone(),
+            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
             log = "状態異常を解除しました",
         };
         battleLogList.Add(battleLog);
@@ -313,8 +343,8 @@ public partial class BattleDataProcessor
         var battleLog = new BattleLogInfo()
         {
             type = BattleLogType.StartAction,
-            playerBattleMonsterList = playerBattleMonsterList,
-            enemyBattleMonsterList = enemyBattleMonsterList,
+            playerBattleMonsterList = playerBattleMonsterList.Clone(),
+            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
             doBattleMonsterIndex = monsterIndex,
             actionType = actionType,
             log = $"{possess}{monster.name}が{skillName}を発動",
@@ -382,7 +412,7 @@ public partial class BattleDataProcessor
         // アクション実行ログの差し込み
         var battleLog = new BattleLogInfo()
         {
-            type = BattleLogType.TakeAction,
+            type = BattleLogType.TakeDamage,
             doBattleMonsterIndex = doMonsterIndex,
             beDoneBattleMonsterDataList = beDoneMonsterDataList,
             playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
@@ -420,7 +450,7 @@ public partial class BattleDataProcessor
         // アクション実行ログの差し込み
         var battleLog = new BattleLogInfo()
         {
-            type = BattleLogType.TakeAction,
+            type = BattleLogType.TakeHeal,
             doBattleMonsterIndex = doMonsterIndex,
             beDoneBattleMonsterDataList = beDoneMonsterDataList,
             playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
@@ -472,7 +502,7 @@ public partial class BattleDataProcessor
         // アクション実行ログの差し込み
         var battleLog = new BattleLogInfo()
         {
-            type = BattleLogType.BattleConditionAdd,
+            type = BattleLogType.TakeBattleConditionAdd,
             doBattleMonsterIndex = doMonsterIndex,
             beDoneBattleMonsterDataList = beDoneMonsterDataList,
             playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
