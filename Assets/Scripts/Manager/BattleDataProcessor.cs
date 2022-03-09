@@ -397,7 +397,9 @@ public partial class BattleDataProcessor
             return new BeDoneBattleMonsterData()
             {
                 battleMonsterIndex = m.index,
-                hpChanges = actionValue,
+                hpChanges = actionValue.value,
+                isCritical = actionValue.isCritical,
+                isBlocked = actionValue.isBlocked,
             };
         }).ToList();
         var logList = beDoneMonsterDataList.Select(d => {
@@ -435,7 +437,7 @@ public partial class BattleDataProcessor
             return new BeDoneBattleMonsterData()
             {
                 battleMonsterIndex = m.index,
-                hpChanges = actionValue,
+                hpChanges = actionValue.value,
             };
         }).ToList();
         var logList = beDoneMonsterDataList.Select(d => {
@@ -691,7 +693,7 @@ public partial class BattleDataProcessor
     private BattleConditionInfo GetBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleConditionMB battleConditionMB, int order)
     {
 
-        var calculatedValue = battleConditionMB.battleConditionType == BattleConditionType.Action ? GetActionValue(doMonsterIndex, beDoneMonsterIndex, skillEffect) : 0;
+        var calculatedValue = battleConditionMB.battleConditionType == BattleConditionType.Action ? GetActionValue(doMonsterIndex, beDoneMonsterIndex, skillEffect).value : 0;
         var shieldValue = battleConditionMB.battleConditionType == BattleConditionType.Shield ? skillEffect.value : 0;
 
         var battleCondition = new BattleConditionInfo()
