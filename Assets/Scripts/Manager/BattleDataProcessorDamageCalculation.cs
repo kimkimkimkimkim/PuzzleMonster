@@ -8,7 +8,7 @@ using UnityEngine;
 /// </summary>
 public partial class BattleDataProcessor
 {
-	private int GetActionValue(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect)
+	private BattleActionValueData GetActionValue(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect)
 	{
 		var doBattleMonster = GetBattleMonster(doMonsterIndex);
 		var beDoneBattleMonster = GetBattleMonster(beDoneMonsterIndex);
@@ -23,35 +23,36 @@ public partial class BattleDataProcessor
 					case ValueTargetType.MyMaxHp:
 					case ValueTargetType.TargetCurrentHP:
 					case ValueTargetType.TargetMaxHp:
-						return -GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
+						return GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
 					// それ以外のダメージの場合は含めて計算
 					default:
-						return -GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
+						return new BattleActionValueData(){ value = -GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect) };
 				}
 			case SkillType.Heal:
-				return GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
+				return return new BattleActionValueData(){ value = GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect) };
 			case SkillType.ConditionAdd:
 			case SkillType.ConditionRemove:
 			case SkillType.Revive:
 			default:
-				return 0;
+				return new BattleActionValueDate();
 		}
 	}
 
 	/// <summary>
 	/// 様々な要因を加味したアクション値を取得する
 	/// </summary>
-	private int GetActionValueWithFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
+	private BattleActionValueData GetActionValueWithFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
 	{
 		// Incoming Damage × (1 – Reduce Damage %) × [(1 – Armor Mitigation %  + 70% × Holy Damage % + 30% × Luck Damage % ]
 		const float HOLY_DAMAGE_MAGNIFICATION = 70.0f;
 		const float LUCK_DAMAGE_MAGNIFICATION = 30.0f;
 		const float BLOCK_DAMAGE_REDUCE_RATE = 33.0f;
-
-		var isBlock = ExecuteProbability(beDoneBattleMonster.blockRate());
-		return
+		
+		var incomingDamage = IncomingDamage(doBattleMonster,beDoneBattleMonster, skillEffect);
+		var isBlocked = ExecuteProbability(beDoneBattleMonster.blockRate());
+		var damage =
 			(int)(
-				IncomingDamage(doBattleMonster,beDoneBattleMonster, skillEffect)			// 基準ダメージ
+				incomingDamage.damage														// 基準ダメージ
 				* (1 - GetRate(beDoneBattleMonster.damageResistRate()))						// ダメージ軽減分ダメージを軽減
 				* (
 					(1 - ArmorMitigation(beDoneBattleMonster))								// 防御力分ダメージを軽減
@@ -59,11 +60,16 @@ public partial class BattleDataProcessor
 					+ LUCK_DAMAGE_MAGNIFICATION * GetRate(doBattleMonster.luckDamageRate()) // ラックダメージを上乗せ
 				)
 				* (
-					isBlock ?																// ブロックしたかを判定
+					isBlocked ?																// ブロックしたかを判定
 					((float)(100 - BLOCK_DAMAGE_REDUCE_RATE) / 100) :						// ブロックしていればブロックでの軽減率分ダメージを軽減
 					1																		// ブロックしていなければそのまま
 				)
 			);
+		return new BattleActionValueData(){
+			value = -damage,
+			isCritical = incomingDamage.isCritical,
+			isBlocked = isBlocked
+		};
 	}
 
 	/// <summary>
@@ -74,14 +80,14 @@ public partial class BattleDataProcessor
 		return (int)(GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
 	}
 
-	private float IncomingDamage(BattleMonsterInfo doMonster, BattleMonsterInfo beDoneMonster, SkillEffectMI skillEffect)
+	private (float damage, bool isCritical) IncomingDamage(BattleMonsterInfo doMonster, BattleMonsterInfo beDoneMonster, SkillEffectMI skillEffect)
 	{
 		// 攻撃×攻撃倍率×クリ時(1.5+0.02×クリダメ)
 		const float CRITICAL_DAMAGE_MAGNIFICATION = 1.5f;
 		const float CRITICAL_DAMAGE_COEFFICIANT = 0.02f;
 
 		var isCritical = ExecuteProbability(doMonster.criticalRate());
-		return 
+		var damage =
 			GetStatusValue(doMonster, beDoneMonster, skillEffect)										   // 対象のステータス値
 			* GetRate(skillEffect.value, false)															   // ダメージ倍率
 			* BattleConditionKiller(doMonster, beDoneMonster)											   // 状態異常特攻倍率
@@ -93,6 +99,7 @@ public partial class BattleDataProcessor
 				(CRITICAL_DAMAGE_MAGNIFICATION + CRITICAL_DAMAGE_COEFFICIANT * doMonster.criticalDamage()) // クリティカルならクリティカルダメージ
 				: 1.0f																					   // クリティカルでなければそのまま
 			);
+		return (damage, isCritical);
 	}
 
 	private float BattleConditionKiller(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster)
@@ -259,4 +266,11 @@ public partial class BattleDataProcessor
 				return 0.0f;
 		}
 	}
+}
+
+public class BattleActionValueData{
+    public int value { get; set; }
+    public bool isMissed { get; set; }
+    public bool isCritical { get; set; }
+    public bool isBlocked { get; set; }
 }
