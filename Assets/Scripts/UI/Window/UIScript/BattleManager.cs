@@ -124,6 +124,10 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             {
                 switch (battleLog.type)
                 {
+                    // バトル開始
+                    case BattleLogType.StartBattle:
+                        return Observable.ReturnUnit();
+                        
                     // ウェーブ進行アニメーション
                     case BattleLogType.MoveWave:
                         return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
@@ -131,13 +135,22 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     // ターン進行アニメーション
                     case BattleLogType.MoveTurn:
                         return battleWindow.PlayTurnFxObservable(battleLog.turnCount);
+                        
+                    // アクションするモンスターのアクションが決まった
+                    case BattleLogType.StartAction:
+                        return Observable.ReturnUnit();
 
                     // 今からアクションしますアニメーション
-                    case BattleLogType.StartAction:
+                    case BattleLogType.StartActionAnimation:
                         return battleWindow.PlayStartActionAnimationObservable(GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList), battleLog.actionType);
 
-                    // アクション実行者のモーション後スキルエフェクト
-                    case BattleLogType.TakeAction:
+                    // アクション失敗
+                    case BattleLogType.ActionFailed:
+                        return Observable.ReturnUnit();
+                    
+                    // スキルエフェクト
+                    case BattleLogType.TakeDamage:
+                    case BattleLogType.TakeHeal:
                         var takeDamageObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
                         {
                             var isPlayer = d.battleMonsterIndex.isPlayer;
@@ -145,14 +158,20 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             var beDoneMonster = battleMonsterList.FirstOrDefault(b => b.index.index == d.battleMonsterIndex.index);
                             return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex,battleLog.skillFxId, d.hpChanges, beDoneMonster.currentHp, beDoneMonster.currentEnergy);
                         });
-                        return battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex)
-                            .SelectMany(res => Observable.WhenAll(takeDamageObservableList));
-
-                    // アクション終了時アニメーション
-                    case BattleLogType.EndAction:
-                        var endActionBattleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
-                        return battleWindow.PlayEnergySliderAnimationObservable(battleLog.doBattleMonsterIndex,endActionBattleMonster.currentEnergy);
-
+                        return Observable.WhenAll(takeDamageObservableList);
+                        
+                    // 状態異常付与
+                    case BattleLogType.TakeBattleConditionAdd:
+                        return Observable.ReturnUnit();
+                        
+                    // 状態異常解除
+                    case BattleLogType.TakeBattleConditionRemove:
+                        return Observable.ReturnUnit();
+                        
+                    // 蘇生
+                    case BattleLogType.TakeRevive:
+                        return Observable.ReturnUnit();
+                        
                     // モンスター戦闘不能アニメーション
                     case BattleLogType.Die:
                         var dieObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
@@ -160,17 +179,20 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             return battleWindow.PlayDieAnimationObservable(d.battleMonsterIndex);
                         });
                         return Observable.WhenAll(dieObservableList);
+                        
+                    // 状態異常ターン進行
+                    case BattleLogType.ProgressBattleConditionTurn:
+                        return Observable.ReturnUnit();
+
+                    // アクション終了時アニメーション
+                    case BattleLogType.EndAction:
+                        var endActionBattleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
+                        return battleWindow.PlayEnergySliderAnimationObservable(battleLog.doBattleMonsterIndex,endActionBattleMonster.currentEnergy);
 
                     // バトル結果アニメーション
                     case BattleLogType.Result:
-                        if (battleLog.winOrLose == WinOrLose.Win)
-                        {
-                            return battleWindow.PlayWinAnimationObservable();
-                        }
-                        else
-                        {
-                            return battleWindow.PlayLoseAnimationObservable();
-                        }
+                        return battleLog.winOrLose == WinOrLose.Win ? battleWindow.PlayWinAnimationObservable() : battleWindow.PlayLoseAnimationObservable();
+                        
                     default:
                         return Observable.ReturnUnit();
                 }
