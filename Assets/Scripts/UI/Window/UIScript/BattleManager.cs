@@ -138,11 +138,18 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                         
                     // アクションするモンスターのアクションが決まった
                     case BattleLogType.StartAction:
+                        // 何もしない
                         return Observable.ReturnUnit();
 
                     // アクションスタートアニメーション
                     case BattleLogType.StartActionAnimation:
-                        return battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex);
+                        {
+                            var battleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
+                            return Observable.WhenAll(
+                                battleWindow.ShowSkillInfoObservable(battleMonster, battleLog.actionType),
+                                battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex)
+                            );
+                        }
 
                     // アクション失敗
                     case BattleLogType.ActionFailed:

@@ -109,7 +109,7 @@ public class BattleWindowUIScript : DummyWindowBase
         _waveText.text = $"Wave {waveCount}/{maxWaveCount}";
     }
 
-    public IObservable<Unit> PlayStartActionAnimationObservable(BattleMonsterInfo doBattleMonster, BattleActionType actionType)
+    public IObservable<Unit> ShowSkillInfoObservable(BattleMonsterInfo doBattleMonster, BattleActionType actionType)
     {
         const float SHOW_TIME = 2.0f;
 
@@ -135,6 +135,7 @@ public class BattleWindowUIScript : DummyWindowBase
             .Delay(TimeSpan.FromSeconds(SHOW_TIME/1.5f))
             .DoOnCompleted(() => _skillNameBase.SetActive(false))
             .Subscribe();
+
         actionDescriptionObservable = Observable.ReturnUnit()
             .Do(_ =>
             {
@@ -147,24 +148,16 @@ public class BattleWindowUIScript : DummyWindowBase
             .DoOnCompleted(() => _actionDescriptionBase.SetActive(false))
             .Subscribe();
 
-        // アクション開始演出は終了を待たない
+        // スキル情報表示演出は終了を待たない
         return Observable.ReturnUnit();
     }
 
     public IObservable<Unit> PlayAttackAnimationObservable(BattleMonsterIndex doBattleMonsterIndex)
     {
         var isPlayer = doBattleMonsterIndex.isPlayer;
-        var doMonsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
-        var doMonsterRT = doMonsterBaseList[doBattleMonsterIndex.index].battleMonsterItem.GetComponent<RectTransform>();
+        var doMonsterBase = GetBattleMonsterBase(doBattleMonsterIndex);
+        var doMonsterRT = doMonsterBase.battleMonsterItem.GetComponent<RectTransform>();
         return VisualFxManager.Instance.PlayStartAttackFxObservable(doMonsterRT, isPlayer);
-    }
-
-    public IObservable<Unit> PlayAttackAnimationObservable(BattleMonsterIndex doBattleMonsterIndex, List<BattleMonsterIndex> beDoneBattleMonsterIndexList)
-    {
-        var doMonsterRT = GetBattleMonsterBase(doBattleMonsterIndex).GetComponent<RectTransform>();
-        var beDoneMonsterBaseTransformList = beDoneBattleMonsterIndexList.Select(monsterIndex => GetBattleMonsterBase(monsterIndex).transform).ToList();
-
-        return VisualFxManager.Instance.PlayNormalAttackFxObservable(doMonsterRT, beDoneMonsterBaseTransformList, doBattleMonsterIndex.isPlayer);
     }
 
     public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleMonsterIndex beDoneBattleMonsterIndex,long skillFxId, int damage, int currentHp, int currentEnergy)
@@ -185,9 +178,8 @@ public class BattleWindowUIScript : DummyWindowBase
 
     public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterIndex battleMonsterIndex)
     {
-        var isPlayer = battleMonsterIndex.isPlayer;
-        var monsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
-        var monster = monsterBaseList[battleMonsterIndex.index].battleMonsterItem.gameObject;
+        var monsterBase = GetBattleMonsterBase(battleMonsterIndex);
+        var monster = monsterBase.battleMonsterItem.gameObject;
         monster.SetActive(false);
         return Observable.ReturnUnit();
     }
