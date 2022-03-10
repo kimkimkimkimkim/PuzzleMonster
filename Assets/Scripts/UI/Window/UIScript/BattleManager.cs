@@ -159,12 +159,6 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex,battleLog.skillFxId, d.hpChanges, beDoneMonster.currentHp, beDoneMonster.currentEnergy);
                         });
                         return Observable.WhenAll(takeDamageObservableList);
-
-                    // アクション終了時アニメーション
-                    case BattleLogType.EndAction:
-                        var endActionBattleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
-                        return battleWindow.PlayEnergySliderAnimationObservable(battleLog.doBattleMonsterIndex,endActionBattleMonster.currentEnergy);
-
                         
                     // 状態異常付与
                     case BattleLogType.TakeBattleConditionAdd:
