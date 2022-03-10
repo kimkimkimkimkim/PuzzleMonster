@@ -9,14 +9,19 @@ using UnityEngine.UI;
 [ResourcePath("UI/Parts/Parts-BattleMonsterItem")]
 public class BattleMonsterItem : MonoBehaviour
 {
+    [SerializeField] protected RectTransform _rectTransform;
     [SerializeField] protected Image _monsterImage;
     [SerializeField] protected Image _attributeImage;
     [SerializeField] protected Slider _hpSlider;
     [SerializeField] protected Slider _energySlider;
     [SerializeField] protected TextMeshProUGUI _levelText;
+    [SerializeField] protected TextMeshProUGUI _missText;
 
+    public RectTransform rectTransform { get { return _rectTransform; } }
+    public Image monsterImage { get { return _monsterImage; } }
     public Slider hpSlider { get { return _hpSlider; } }
     public Slider energySlider { get { return _energySlider; } }
+    public TextMeshProUGUI missText { get { return _missText; } }
 
     public void Init(long monsterId, int level)
     {

@@ -153,7 +153,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
 
                     // アクション失敗
                     case BattleLogType.ActionFailed:
-                        return Observable.ReturnUnit();
+                        return battleWindow.PlayActionFailedAnimationObservable(battleLog.doBattleMonsterIndex);
                     
                     // スキルエフェクト
                     case BattleLogType.TakeDamage:

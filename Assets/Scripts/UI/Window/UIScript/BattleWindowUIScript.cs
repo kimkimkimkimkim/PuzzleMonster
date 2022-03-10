@@ -160,6 +160,12 @@ public class BattleWindowUIScript : DummyWindowBase
         return VisualFxManager.Instance.PlayStartAttackFxObservable(doMonsterRT, isPlayer);
     }
 
+    public IObservable<Unit> PlayActionFailedAnimationObservable(BattleMonsterIndex doBattleMonsterIndex)
+    {
+        var monsterBase = GetBattleMonsterBase(doBattleMonsterIndex);
+        return VisualFxManager.Instance.PlayActionFailedAnimationObservable(monsterBase.battleMonsterItem);
+    }
+
     public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleMonsterIndex beDoneBattleMonsterIndex,long skillFxId, int damage, int currentHp, int currentEnergy)
     {
         var monsterBase = GetBattleMonsterBase(beDoneBattleMonsterIndex);

@@ -63,7 +63,84 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .AsUnitObservable();
             });
     }
-    
+
+    /// <summary>
+    /// 攻撃開始アニメーションの再生
+    /// 攻撃するモンスターが前に出て戻るアニメーション
+    /// </summary>
+    public IObservable<Unit> PlayStartAttackFxObservable(RectTransform doMonsterRT, bool isPlayer)
+    {
+        const float SCALE_ANIMATION_TIME = 0.15f;
+        const float GO_ANIMATION_TIME = 0.5f;
+        const float BACK_ANIMATION_TIME = 0.5f;
+        const float MOVE_X_DISTANCE = 20.0f;
+        const float MOVE_Y_DISTANCE = 10.0f;
+
+        var defaultPosition = doMonsterRT.localPosition;
+        var defaultPivot = doMonsterRT.pivot;
+
+        return Observable.ReturnUnit()
+            .SelectMany(_ => {
+                return DOTween.Sequence()
+                    .AppendCallback(() => doMonsterRT.SetPivot(new Vector2(0.5f, 0.0f)))
+                    .Append(doMonsterRT.DOScaleY(0.8f, SCALE_ANIMATION_TIME))
+                    .AppendCallback(() =>
+                    {
+                        doMonsterRT.localScale = new Vector3(1, 1, 1);
+                        doMonsterRT.SetPivot(defaultPivot);
+                    })
+                    .Append(doMonsterRT.DOLocalMoveX(isPlayer ? defaultPosition.x + MOVE_X_DISTANCE : defaultPosition.x - MOVE_X_DISTANCE, GO_ANIMATION_TIME))
+                    .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y + MOVE_Y_DISTANCE, GO_ANIMATION_TIME / 2).SetEase(Ease.OutSine))
+                    .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y, GO_ANIMATION_TIME / 2).SetEase(Ease.OutSine).SetDelay(GO_ANIMATION_TIME / 2))
+                    .OnCompleteAsObservable()
+                    .AsUnitObservable();
+            })
+            .Do(_ =>
+            {
+                // もとに戻るアニメーションは別のストリームで行う
+                doMonsterRT.DOLocalMoveX(defaultPosition.x, BACK_ANIMATION_TIME);
+            })
+            .AsUnitObservable();
+    }
+
+    /// <summary>
+    /// 攻撃不能アニメーション
+    /// ぶるぶるさせてミステキストを表示
+    /// </summary>
+    public IObservable<Unit> PlayActionFailedAnimationObservable(BattleMonsterItem doBattleMonsterItem)
+    {
+        const int SHAKE_TIME = 3;
+        const float SHAKE_DISTANCE = 10.0f;
+        const float ONE_SHAKE_ANIMATION_TIME = 0.1f;
+        const float MISS_TEXT_DISTANCE = 34.0f;
+        const float MISS_TEXT_ANIMATION_TIME = 0.7f;
+        const float MISS_TEXT_WAIT_TIME = 0.3f;
+        const Ease MISS_TEXT_ANIMATION_EASE = Ease.OutQuint;
+
+        var shakeAnimationSequence = DOTween.Sequence().Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(SHAKE_DISTANCE / 2, ONE_SHAKE_ANIMATION_TIME / 2));
+        for (var i = 0; i < SHAKE_TIME; i++)
+        {
+            shakeAnimationSequence
+                .Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(-SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME))
+                .Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME));
+        }
+        shakeAnimationSequence
+            .Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(-SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME))
+            .Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(SHAKE_DISTANCE / 2, ONE_SHAKE_ANIMATION_TIME / 2));
+
+        var missTextAnimationSequence = DOTween.Sequence()
+            .AppendCallback(() => doBattleMonsterItem.missText.gameObject.SetActive(true))
+            .Append(doBattleMonsterItem.missText.transform.DOLocalMoveY(MISS_TEXT_DISTANCE, MISS_TEXT_ANIMATION_TIME).SetEase(MISS_TEXT_ANIMATION_EASE))
+            .SetDelay(MISS_TEXT_WAIT_TIME)
+            .AppendCallback(() => doBattleMonsterItem.missText.gameObject.SetActive(false))
+            .Append(doBattleMonsterItem.missText.transform.DOLocalMoveY(-MISS_TEXT_DISTANCE, 0));
+
+        return Observable.WhenAll(
+            shakeAnimationSequence.OnCompleteAsObservable().AsUnitObservable(),
+            missTextAnimationSequence.OnCompleteAsObservable().AsUnitObservable()
+        );
+    }
+
     /// <summary>
     /// バトル勝利演出を実行
     /// </summary>
@@ -240,89 +317,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     .OnCompleteAsObservable()
                     .AsUnitObservable();
             });
-    }
-
-    /// <summary>
-    /// 攻撃開始アニメーションの再生
-    /// 攻撃するモンスターが前に出て戻るアニメーション
-    /// </summary>
-    public IObservable<Unit> PlayStartAttackFxObservable(RectTransform doMonsterRT, bool isPlayer)
-    {
-        const float SCALE_ANIMATION_TIME = 0.15f;
-        const float GO_ANIMATION_TIME = 0.5f;
-        const float BACK_ANIMATION_TIME = 0.5f;
-        const float MOVE_X_DISTANCE = 20.0f;
-        const float MOVE_Y_DISTANCE = 10.0f;
-
-        var defaultPosition = doMonsterRT.localPosition;
-        var defaultPivot = doMonsterRT.pivot;
-
-        return Observable.ReturnUnit()
-            .SelectMany(_ => {
-                return DOTween.Sequence()
-                    .AppendCallback(() => doMonsterRT.SetPivot(new Vector2(0.5f, 0.0f)))
-                    .Append(doMonsterRT.DOScaleY(0.8f, SCALE_ANIMATION_TIME))
-                    .AppendCallback(() =>
-                    {
-                        doMonsterRT.localScale = new Vector3(1, 1, 1);
-                        doMonsterRT.SetPivot(defaultPivot);
-                    })
-                    .Append(doMonsterRT.DOLocalMoveX(isPlayer ? defaultPosition.x + MOVE_X_DISTANCE : defaultPosition.x - MOVE_X_DISTANCE, GO_ANIMATION_TIME))
-                    .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y + MOVE_Y_DISTANCE, GO_ANIMATION_TIME / 2).SetEase(Ease.OutSine))
-                    .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y, GO_ANIMATION_TIME / 2).SetEase(Ease.OutSine).SetDelay(GO_ANIMATION_TIME / 2))
-                    .OnCompleteAsObservable()
-                    .AsUnitObservable();
-            })
-            .Do(_ =>
-            {
-                // もとに戻るアニメーションは別のストリームで行う
-                doMonsterRT.DOLocalMoveX(defaultPosition.x, BACK_ANIMATION_TIME);
-            })
-            .AsUnitObservable();
-    }
-
-
-
-    public IObservable<Unit> PlayNormalAttackFxObservable(RectTransform doMonsterRT, List<Transform> beDoneEffectBaseList, bool isPlayer)
-    {
-        const float SCALE_ANIMATION_TIME = 0.15f;
-        const float GO_ANIMATION_TIME = 0.5f;
-        const float BACK_ANIMATION_TIME = 0.5f;
-        const float MOVE_X_DISTANCE = 20.0f;
-        const float MOVE_Y_DISTANCE = 10.0f;
-
-        var psList = new List<ParticleSystem>();
-        var defaultPosition = doMonsterRT.localPosition;
-        var defaultPivot = doMonsterRT.pivot;
-
-        return Observable.ReturnUnit()
-            .SelectMany(_ =>
-            {
-                var observableList = beDoneEffectBaseList.Select(beDoneEffectBase =>
-                {
-                    return PMAddressableAssetUtil.InstantiateNormalAttackFxObservable(beDoneEffectBase).Do(ps => psList.Add(ps));
-                }).ToList();
-                return Observable.WhenAll(observableList);
-            })
-            .SelectMany(_ => {
-                return DOTween.Sequence()
-                    .AppendCallback(() => doMonsterRT.SetPivot(new Vector2(0.5f, 0.0f)))
-                    .Append(doMonsterRT.DOScaleY(0.8f, SCALE_ANIMATION_TIME))
-                    .AppendCallback(() =>
-                    {
-                        doMonsterRT.localScale = new Vector3(1, 1, 1);
-                        doMonsterRT.SetPivot(defaultPivot);
-                    })
-                    .Append(doMonsterRT.DOLocalMoveX(isPlayer ? defaultPosition.x + MOVE_X_DISTANCE : defaultPosition.x - MOVE_X_DISTANCE, GO_ANIMATION_TIME))
-                    .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y + MOVE_Y_DISTANCE,GO_ANIMATION_TIME/2).SetEase(Ease.OutSine))
-                    .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y, GO_ANIMATION_TIME/2).SetEase(Ease.OutSine).SetDelay(GO_ANIMATION_TIME/2))
-                    .AppendCallback(() => psList.ForEach(ps => ps.PlayWithRelease(0.5f)))
-                    .Append(doMonsterRT.DOLocalMoveX(defaultPosition.x, BACK_ANIMATION_TIME))
-                    .OnCompleteAsObservable()
-                    .AsUnitObservable();
-            })
-            .AsUnitObservable();
-            
     }
     #endregion ParticleSystem
 
