@@ -162,15 +162,19 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                         {
                             var beDoneMonster = GetBattleMonster(d.battleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
                             return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex,battleLog.skillFxId, d.hpChanges, beDoneMonster.currentHp, beDoneMonster.currentEnergy);
-                        });
+                        }).ToList();
                         return Observable.WhenAll(takeDamageObservableList);
                         
                     // 状態異常付与
                     case BattleLogType.TakeBattleConditionAdd:
-                        return Observable.ReturnUnit();
-                        
                     // 状態異常解除
                     case BattleLogType.TakeBattleConditionRemove:
+                    // 状態異常ターン進行
+                    case BattleLogType.ProgressBattleConditionTurn:
+                        battleLog.beDoneBattleMonsterDataList.ForEach(d => {
+                            var battleMonster = GetBattleMonster(d.battleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
+                            battleWindow.RefreshBattleCondition(battleMonster);
+                        });
                         return Observable.ReturnUnit();
                         
                     // 蘇生
@@ -184,10 +188,6 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             return battleWindow.PlayDieAnimationObservable(d.battleMonsterIndex);
                         });
                         return Observable.WhenAll(dieObservableList);
-                        
-                    // 状態異常ターン進行
-                    case BattleLogType.ProgressBattleConditionTurn:
-                        return Observable.ReturnUnit();
 
                     // アクション終了時アニメーション
                     case BattleLogType.EndAction:
