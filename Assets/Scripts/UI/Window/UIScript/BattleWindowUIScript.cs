@@ -166,13 +166,10 @@ public class BattleWindowUIScript : DummyWindowBase
         return VisualFxManager.Instance.PlayActionFailedAnimationObservable(monsterBase.battleMonsterItem);
     }
 
-    public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleMonsterIndex beDoneBattleMonsterIndex,long skillFxId, int damage, int currentHp, int currentEnergy)
+    public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleMonsterIndex beDoneBattleMonsterIndex,long skillFxId, int damage, int currentHp, int currentEnergy, int currentShield)
     {
         var monsterBase = GetBattleMonsterBase(beDoneBattleMonsterIndex);
-        var hpSlider = monsterBase.battleMonsterItem.hpSlider;
-        var energySlider = monsterBase.battleMonsterItem.energySlider;
-
-        return VisualFxManager.Instance.PlayTakeDamageFxObservable(hpSlider, energySlider, monsterBase.transform,skillFxId, damage, Math.Max(0, currentHp), currentEnergy);
+        return VisualFxManager.Instance.PlayTakeDamageFxObservable(monsterBase.battleMonsterItem, monsterBase.transform,skillFxId, damage, Math.Max(0, currentHp), currentEnergy, currentShield);
     }
 
     public IObservable<Unit> PlayEnergySliderAnimationObservable(BattleMonsterIndex monsterIndex, int currentEnergy)
