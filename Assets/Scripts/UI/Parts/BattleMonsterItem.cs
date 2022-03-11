@@ -16,8 +16,10 @@ public class BattleMonsterItem : MonoBehaviour
     [SerializeField] protected Image _attributeImage;
     [SerializeField] protected Slider _hpSlider;
     [SerializeField] protected Slider _energySlider;
+    [SerializeField] protected Slider _shieldSlider;
     [SerializeField] protected TextMeshProUGUI _levelText;
     [SerializeField] protected TextMeshProUGUI _missText;
+    [SerializeField] protected GameObject _shieldSliderBase;
     [SerializeField] protected CanvasGroup _battleConditionBaseCanvasGroup;
     [SerializeField] protected List<BattleConditionIconItem> _battleConditionIconItemList;
     
@@ -29,6 +31,7 @@ public class BattleMonsterItem : MonoBehaviour
     public Image monsterImage { get { return _monsterImage; } }
     public Slider hpSlider { get { return _hpSlider; } }
     public Slider energySlider { get { return _energySlider; } }
+    public Slider shieldSlider { get { return _shieldSlider; } }
     public TextMeshProUGUI missText { get { return _missText; } }
 
     private IDisposable battleConditionAnimationObservable;
@@ -62,6 +65,21 @@ public class BattleMonsterItem : MonoBehaviour
         _energySlider.maxValue = ConstManager.Battle.MAX_ENERGY_VALUE;
         _energySlider.value = ConstManager.Battle.INITIAL_ENERGY_VALUE;
     }
+    
+    public void RefreshShieldSlider(List<BattleConditionInfo> battleConditionList)
+    {
+        var shieldValue = battleConditionList.Where(c => c.battleCondition.battleConditionType == BattleConditionType.Shield).Sum(c => c.shieldValue);
+        if(shieldValue <= 0)
+        {
+            _shieldSliderBase.SetActive(false);
+        }
+        else
+        {
+            _shieldSlider.maxValue = shieldValue;
+            _shieldSlider.value = shieldValue;
+            _shieldSliderBase.SetActive(true);
+        }
+    }
 
     public void RefreshBattleCondition(List<BattleConditionInfo> battleConditionList)
     {
@@ -91,6 +109,9 @@ public class BattleMonsterItem : MonoBehaviour
                 })
                 .Subscribe();
         }
+        
+        // シールド値の更新も行う
+        RefreshShieldSlider(battleConditionList);
     }
     
     private void SetBattleConditionIcon(List<BattleConditionInfo> battleConditionList, int startIndex = 0)
@@ -104,6 +125,11 @@ public class BattleMonsterItem : MonoBehaviour
             var battleCondition = battleConditionList[startIndex + i];
             battleConditionIconItem.SetInfo(battleCondition);
         }
+    }
+    
+    public void ShowShieldSlider(bool isShow)
+    {
+        _shieldSliderBase.SetActive(isShow);
     }
     
     private void OnDestroy() {
