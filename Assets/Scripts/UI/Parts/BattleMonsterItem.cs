@@ -18,7 +18,12 @@ public class BattleMonsterItem : MonoBehaviour
     [SerializeField] protected Slider _energySlider;
     [SerializeField] protected TextMeshProUGUI _levelText;
     [SerializeField] protected TextMeshProUGUI _missText;
+    [SerializeField] protected CanvasGroup _battleConditionBaseCanvasGroup;
     [SerializeField] protected List<BattleConditionIconItem> _battleConditionIconItemList;
+    
+    private const int BATTLE_CONDITION_NUM = 4;
+    private const float BATTLE_CONDITION_ANIMATION_TIME = 1.5f;
+    private const float BATTLE_CONDITION_FADE_OUT_TIME = 0.3f;
 
     public RectTransform rectTransform { get { return _rectTransform; } }
     public Image monsterImage { get { return _monsterImage; } }
@@ -60,9 +65,6 @@ public class BattleMonsterItem : MonoBehaviour
 
     public void RefreshBattleCondition(List<BattleConditionInfo> battleConditionList)
     {
-        const int BATTLE_CONDITION_NUM = 4;
-        const float BATTLE_CONDITION_ANIMATION_TIME = 1.5f;
-
         if(battleConditionAnimationObservable != null)
         {
             battleConditionAnimationObservable.Dispose();
@@ -71,22 +73,44 @@ public class BattleMonsterItem : MonoBehaviour
 
         if(battleConditionList.Count <= BATTLE_CONDITION_NUM)
         {
-            // ó‘ÔˆÙí‚ª4‚ÂˆÈ‰º‚È‚çƒAƒjƒ[ƒVƒ‡ƒ“‚È‚µ‚Å•\Ž¦
-            _battleConditionIconItemList.ForEach(i => i.ResetInfo());
-            battleConditionList.ForEach((battleCondition, index) =>
-            {
-                var battleConditionIconItem = _battleConditionIconItemList[index];
-                battleConditionIconItem.SetInfo(battleCondition);
-            });
+            // çŠ¶æ…‹ç•°å¸¸ãŒ4ã¤ä»¥ä¸‹ãªã‚‰ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãªã—ã§è¡¨ç¤º
+            SetBattleConditionIcon(battleConditionList);
         }
         else
         {
             battleConditionAnimationObservable = Observable.Interval(TimeSpan.FromSeconds(BATTLE_CONDITION_ANIMATION_TIME))
-                .Do(count =>
+                .SelectMany(count =>
                 {
-
+                    var startIndex = (count * BATTLE_CONDITION_NUM) % ( battleConditionList.Count + (BATTLE_CONDITION_NUM - (battleConditionList.Count % BATTLE_CONDITION_NUM)));
+                    SetBattleConditionIcon(battleConditionList, startIndex);
+                    
+                    var fadeOutSequence = DOTween.Sequence()
+                        .Delay(BATTLE_CONDITION_ANIMATION_TIME - BATTLE_CONDITION_FADE_OUT_TIME - 0.01f)
+                        .Append(_battleConditionBaseCanvasGroup.DOFade(0, BATTLE_CONDITION_FADE_OUT_TIME));
+                    return fadeOutSequence.OnCompleteAsObservable().AsUnitObservable()
                 })
                 .Subscribe();
+        }
+    }
+    
+    private void SetBattleConditionIcon(List<BattleConditionInfo> battleConditionList, int startIndex = 0)
+    {
+        var loopCount = battleConditionList.Count - startIndex >= BATTLE_CONDITION_NUM ? BATTLE_CONDITION_NUM :  battleConditionList.Count - startIndex;
+        
+        _battleConditionIconItemList.ForEach(i => i.ResetInfo());
+        _battleConditionBaseCanvasGroup.alpha = 1.0f;
+        for(var i = 0; i < loopCount; i++){
+            var battleConditionIconItem = _battleConditionIconItemList[i];
+            var battleCondition = battleConditionList[startIndex + i];
+            battleConditionIconItem.SetInfo(battleCondition);
+        }
+    }
+    
+    private void OnDestroy() {
+        if(battleConditionAnimationObservable != null)
+        {
+            battleConditionAnimationObservable.Dispose();
+            battleConditionAnimationObservable = null;
         }
     }
 }
