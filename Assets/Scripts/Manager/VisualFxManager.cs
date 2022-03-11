@@ -197,9 +197,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     /// <summary>
     /// 被ダメージ演出の再生
     /// </summary>
-    /// <param name="effectBase">ダメージエフェクトの親</param>
-    /// <param name="toHp">攻撃をくらった後のHP</param>
-    public IObservable<Unit> PlayTakeDamageFxObservable(Slider hpSlider,Slider energySlider, Transform effectBase,long skillFxId, int damage, int toHp, int toEnergy)
+    public IObservable<Unit> PlayTakeDamageFxObservable(BattleMonsterItem battleMonsterItem, Transform effectBase,long skillFxId, int damage, int toHp, int toEnergy, int toShield)
     {
         const float SLIDER_ANIMATION_TIME = 2.0f;
         const float DAMAGE_EFFECT_DELAY_TIME = 0.5f;
@@ -232,16 +230,18 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     })
                     .AsUnitObservable();
 
-                var sliderAnimationObservable = Observable.ReturnUnit()
-                    .SelectMany(_ =>
-                    {
-                        return DOTween.Sequence()
-                            .Append(DOVirtual.Float(hpSlider.value, toHp, SLIDER_ANIMATION_TIME, value => hpSlider.value = value))
-                            .OnCompleteAsObservable();
-                    })
-                    .AsUnitObservable();
+                var hpSliderAnimationSequence = DOTween.Sequence()
+                    .Append(DOVirtual.Float(battleMonsterItem.hpSlider.value, toHp, SLIDER_ANIMATION_TIME, value => battleMonsterItem.hpSlider.value = value));
+                var shieldSliderAnimationSequence = DOTween.Sequence()
+                    .Append(DOVirtual.Float(battleMonsterItem.shieldSlider.value, toShield, SLIDER_ANIMATION_TIME, value => battleMonsterItem.shieldSlider.value = value))
+                    .AppendCallback(() => battleMonsterItem.ShowShieldSlider(toShield > 0));
 
-                return Observable.WhenAll(damageAnimationObservable, sliderAnimationObservable, PlayEnergySliderAnimationObservable(energySlider, toEnergy));
+                return Observable.WhenAll(
+                    damageAnimationObservable, 
+                    hpSliderAnimationSequence.OnCompleteAsObservable().AsUnitObservable(),
+                    shieldSliderAnimationSequence.OnCompleteAsObservable().AsUnitObservable(),
+                    PlayEnergySliderAnimationObservable(battleMonsterItem.energySlider, toEnergy)
+                );
             });
     }
 
