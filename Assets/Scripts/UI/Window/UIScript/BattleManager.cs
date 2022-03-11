@@ -160,9 +160,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     case BattleLogType.TakeHeal:
                         var takeDamageObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
                         {
-                            var isPlayer = d.battleMonsterIndex.isPlayer;
-                            var battleMonsterList = isPlayer ? battleLog.playerBattleMonsterList : battleLog.enemyBattleMonsterList;
-                            var beDoneMonster = battleMonsterList.FirstOrDefault(b => b.index.index == d.battleMonsterIndex.index);
+                            var beDoneMonster = GetBattleMonster(d.battleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
                             return battleWindow.PlayTakeDamageAnimationObservable(d.battleMonsterIndex,battleLog.skillFxId, d.hpChanges, beDoneMonster.currentHp, beDoneMonster.currentEnergy);
                         });
                         return Observable.WhenAll(takeDamageObservableList);

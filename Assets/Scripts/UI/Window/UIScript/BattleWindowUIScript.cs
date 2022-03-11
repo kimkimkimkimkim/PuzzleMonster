@@ -212,6 +212,12 @@ public class BattleWindowUIScript : DummyWindowBase
         return VisualFxManager.Instance.PlayLoseBattleFxObservable(_fxParent).Delay(TimeSpan.FromSeconds(1)); ;
     }
 
+    public void RefreshBattleCondition(BattleMonsterInfo battleMonster)
+    {
+        var monsterBase = GetBattleMonsterBase(battleMonster.index);
+        monsterBase.battleMonsterItem.RefreshBattleCondition(battleMonster.battleConditionList);
+    }
+
     private string GetActionName(BattleActionType actionType)
     {
         switch (actionType) {
