@@ -247,7 +247,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
 
     public IObservable<Unit> PlayEnergySliderAnimationObservable(Slider slider, int toEnergy)
     {
-        const float SLIDER_ANIMATION_TIME = 0.5f;
+        const float SLIDER_ANIMATION_TIME = 0.0f;
 
         return Observable.ReturnUnit()
             .SelectMany(_ =>

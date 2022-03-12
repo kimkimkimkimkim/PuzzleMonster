@@ -41,6 +41,7 @@ public class BattleMonsterItem : MonoBehaviour
 
     public void Init(long monsterId, int level)
     {
+        level = 100; // TODO
         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(monsterId);
         var status = MonsterUtil.GetMonsterStatus(monster, level);
 

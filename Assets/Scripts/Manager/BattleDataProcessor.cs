@@ -119,7 +119,7 @@ public partial class BattleDataProcessor
         battleLogList.Add(battleLog);
 
         // バトル開始時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnBattleStart);
+        ExecutePassiveIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().Select(m => m.index).ToList());
         chainParticipantMonsterIndexList.Clear();
 
         // バトル開始時状態異常効果を発動する
@@ -157,13 +157,13 @@ public partial class BattleDataProcessor
         StartAction(actionMonsterIndex, actionType);
 
         // アクション開始時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnMeActionStart);
+        ExecutePassiveIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
 
         // アクション開始時状態異常効果を発動する
         ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeActionStart);
 
         // 被アクション前パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnMeTakeActionBefore);
+        // ExecutePassiveIfNeeded(SkillTriggerType.OnMeTakeActionBefore);
 
         // 被アクション前開始時状態異常効果を発動する
         ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeTakeActionBefore);
@@ -181,8 +181,11 @@ public partial class BattleDataProcessor
             ExecuteAction(actionMonsterIndex, currentBeDoneMonsterIndexList, skillEffect);
         });
 
+        // ダメージ与えた後パッシブスキルを発動する
+        ExecutePassiveIfNeeded(SkillTriggerType.OnMeExecuteDamageAfter, actionMonsterIndex);
+
         // 被アクション後パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnMeTakeActionAfter);
+        ExecutePassiveIfNeeded(SkillTriggerType.OnMeTakeActionAfter, currentBeDoneMonsterIndexList);
 
         // 被アクション後開始時状態異常効果を発動する
         ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeTakeActionAfter);
@@ -204,6 +207,9 @@ public partial class BattleDataProcessor
         var battleMonster = GetBattleMonster(actionMonsterIndex);
         var possess = actionMonsterIndex.isPlayer ? "味方の" : "敵の";
         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+
+        // 行動済みフラグは立てる
+        battleMonster.isActed = true;
         
         // アクション失敗ログの差し込み
         var battleLog = new BattleLogInfo()
@@ -218,7 +224,6 @@ public partial class BattleDataProcessor
     /// <summary>
     /// 状態異常のターンを経過させる
     /// </summary>
-    /// <param name="battleMonsterIndex"></param>
     private void ProgressBattleConditionTurnIfNeeded(BattleMonsterIndex battleMonsterIndex)
     {
         var isRemoved = false;
@@ -241,11 +246,14 @@ public partial class BattleDataProcessor
         
         // 状態異常のターンが一つも進行しなければ何もしない
         if(!isProgress) return;
+
+        var beDoneBattleMonsterDataList = new List<BeDoneBattleMonsterData>() { new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonsterIndex } };
         
         // 状態異常ターン進行ログの差し込み
         var progressBattleConditionTurnBattleLog = new BattleLogInfo()
         {
             type = BattleLogType.ProgressBattleConditionTurn,
+            beDoneBattleMonsterDataList = beDoneBattleMonsterDataList,
             playerBattleMonsterList = playerBattleMonsterList.Clone(),
             enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
             log = "状態異常のターンを進行しました",
@@ -262,6 +270,7 @@ public partial class BattleDataProcessor
         var takeBattleConditionRemoveBattleLog = new BattleLogInfo()
         {
             type = BattleLogType.TakeBattleConditionRemove,
+            beDoneBattleMonsterDataList = beDoneBattleMonsterDataList,
             playerBattleMonsterList = playerBattleMonsterList.Clone(),
             enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
             log = "状態異常を解除しました",
@@ -297,7 +306,7 @@ public partial class BattleDataProcessor
         battleLogList.Add(battleLog);
 
         // ウェーブ開始時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnWaveStart);
+        ExecutePassiveIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().Select(m => m.index).ToList());
         chainParticipantMonsterIndexList.Clear();
 
         // ウェーブ開始時状態異常効果を発動する
@@ -328,7 +337,7 @@ public partial class BattleDataProcessor
         battleLogList.Add(battleLog);
 
         // ターン開始時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnTurnStart);
+        ExecutePassiveIfNeeded(SkillTriggerType.OnTurnStart, GetAllMonsterList().Select(m => m.index).ToList());
         chainParticipantMonsterIndexList.Clear();
 
         // ターン開始時状態異常効果を発動する
@@ -625,7 +634,7 @@ public partial class BattleDataProcessor
         battleLogList.Add(battleLog);
 
         // ターン終了時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnTurnEnd);
+        ExecutePassiveIfNeeded(SkillTriggerType.OnTurnEnd, GetAllMonsterList().Select(m => m.index).ToList());
         chainParticipantMonsterIndexList.Clear();
 
         // ターン終了時状態異常効果を発動する
@@ -647,7 +656,7 @@ public partial class BattleDataProcessor
         battleLogList.Add(battleLog);
 
         // ウェーブ終了時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnWaveEnd);
+        ExecutePassiveIfNeeded(SkillTriggerType.OnWaveEnd, GetAllMonsterList().Select(m => m.index).ToList());
         chainParticipantMonsterIndexList.Clear();
 
         // ウェーブ終了時状態異常効果を発動する
@@ -656,13 +665,13 @@ public partial class BattleDataProcessor
 
     private void EndBattleIfNeeded()
     {
-        // 最終ウェーブでなければ何もしない
-        if (currentWaveCount < questWaveList.Count) return;
-
         // 敵味方ともに戦えるモンスターが一体でもいれば何もしない
         var existsAlly = playerBattleMonsterList.Any(m => !m.isDead);
         var existsEnemy = enemyBattleMonsterList.Any(m => !m.isDead);
         if (existsAlly && existsEnemy) return;
+
+        // 味方残っている場合は最終ウェーブでなければ何もしない
+        if (existsAlly && currentWaveCount < questWaveList.Count) return;
 
         // 味方が残っていれば勝利
         var winOrLose = existsAlly ? WinOrLose.Win : WinOrLose.Lose;
@@ -718,6 +727,13 @@ public partial class BattleDataProcessor
 
         var calculatedValue = battleConditionMB.battleConditionType == BattleConditionType.Action ? GetActionValue(doMonsterIndex, beDoneMonsterIndex, skillEffect).value : 0;
         var shieldValue = battleConditionMB.battleConditionType == BattleConditionType.Shield ? skillEffect.value : 0;
+
+        // アクション状態異常の場合はスキル効果のスキルタイプを変更する
+        if(battleConditionMB.battleConditionType == BattleConditionType.Action)
+        {
+            skillEffect = skillEffect.Clone();
+            skillEffect.type = battleConditionMB.skillType;
+        }
 
         var battleCondition = new BattleConditionInfo()
         {
@@ -875,25 +891,33 @@ public partial class BattleDataProcessor
                 battleMonsterIndexList = isBeAttackedValid ? new List<BattleMonsterIndex>() { doMonster.currentBeDoneAttackedMonsterIndex } : new List<BattleMonsterIndex>();
                 break;
             case SkillTargetType.AllyFrontAll:
-                var allyFrontAll = allyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
-                // 前衛のモンスターが1体もいない場合は後衛全体を対象とする
-                battleMonsterIndexList = allyFrontAll.Any() ? allyFrontAll : allyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
-                break;
+                {
+                    var allyFrontAll = allyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    // 前衛のモンスターが1体もいない場合は後衛全体を対象とする
+                    battleMonsterIndexList = allyFrontAll.Any() ? allyFrontAll : allyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    break;
+                }
             case SkillTargetType.AllyBackAll:
-                var allyBackAll = allyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
-                // 後衛のモンスターが1体もいない場合は前衛全体を対象とする
-                battleMonsterIndexList = allyBackAll.Any() ? allyBackAll : allyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
-                break;
+                {
+                    var allyBackAll = allyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    // 後衛のモンスターが1体もいない場合は前衛全体を対象とする
+                    battleMonsterIndexList = allyBackAll.Any() ? allyBackAll : allyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    break;
+                }
             case SkillTargetType.EnemyFrontAll:
-                var enemyFrontAll = enemyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
-                // 前衛のモンスターが1体もいない場合は後衛全体を対象とする
-                battleMonsterIndexList = enemyFrontAll.Any() ? enemyFrontAll : enemyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
-                break;
+                {
+                    var enemyFrontAll = enemyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    // 前衛のモンスターが1体もいない場合は後衛全体を対象とする
+                    battleMonsterIndexList = enemyFrontAll.Any() ? enemyFrontAll : enemyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    break;
+                }
             case SkillTargetType.EnemyBackAll:
-                var enemyBackAll = enemyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
-                // 後衛のモンスターが1体もいない場合は前衛全体を対象とする
-                battleMonsterIndexList = enemyBackAll.Any() ? enemyBackAll : enemyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
-                break;
+                {
+                    var enemyBackAll = enemyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    // 後衛のモンスターが1体もいない場合は前衛全体を対象とする
+                    battleMonsterIndexList = enemyBackAll.Any() ? enemyBackAll : enemyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    break;
+                }
             case SkillTargetType.AllyMostFront:
                 battleMonsterIndexList = allyBattleMonsterList.OrderBy(b => b.index.index).Take(1).Select(b => b.index).ToList();
                 break;
@@ -927,6 +951,86 @@ public partial class BattleDataProcessor
             case SkillTargetType.Target:
                 battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValid(battleIndex, skillEffect.activateConditionType)).Select(battleIndex => battleIndex).ToList();
                 break;
+            case SkillTargetType.AllyFrontRandom1:
+                {
+                    // 前衛のモンスターが1体もいない場合は後衛全体を対象とする
+                    var allyFrontAll = allyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    var targetList = allyFrontAll.Any() ? allyFrontAll : allyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    battleMonsterIndexList = targetList.Shuffle().Take(1).ToList();
+                    break;
+                }
+            case SkillTargetType.AllyFrontRandom2:
+                {
+                    // 前衛のモンスターが1体もいない場合は後衛全体を対象とする
+                    var allyFrontAll = allyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    var targetList = allyFrontAll.Any() ? allyFrontAll : allyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    battleMonsterIndexList = targetList.Shuffle().Take(2).ToList();
+                    break;
+                }
+            case SkillTargetType.AllyBackRandom1:
+                {
+                    // 後衛のモンスターが1体もいない場合は前衛全体を対象とする
+                    var allyBackAll = allyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    var targetList = allyBackAll.Any() ? allyBackAll : allyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    battleMonsterIndexList = targetList.Shuffle().Take(1).ToList();
+                    break;
+                }
+            case SkillTargetType.AllyBackRandom2:
+                {
+                    // 後衛のモンスターが1体もいない場合は前衛全体を対象とする
+                    var allyBackAll = allyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    var targetList = allyBackAll.Any() ? allyBackAll : allyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    battleMonsterIndexList = targetList.Shuffle().Take(2).ToList();
+                    break;
+                }
+            case SkillTargetType.AllyBackRandom3:
+                {
+                    // 後衛のモンスターが1体もいない場合は前衛全体を対象とする
+                    var allyBackAll = allyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    var targetList = allyBackAll.Any() ? allyBackAll : allyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    battleMonsterIndexList = targetList.Shuffle().Take(3).ToList();
+                    break;
+                }
+            case SkillTargetType.EnemyFrontRandom1:
+                {
+                    // 前衛のモンスターが1体もいない場合は後衛全体を対象とする
+                    var enemyFrontAll = enemyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    var targetList = enemyFrontAll.Any() ? enemyFrontAll : enemyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    battleMonsterIndexList = targetList.Shuffle().Take(1).ToList();
+                    break;
+                }
+            case SkillTargetType.EnemyFrontRandom2:
+                {
+                    // 前衛のモンスターが1体もいない場合は後衛全体を対象とする
+                    var enemyFrontAll = enemyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    var targetList = enemyFrontAll.Any() ? enemyFrontAll : enemyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    battleMonsterIndexList = targetList.Shuffle().Take(2).ToList();
+                    break;
+                }
+            case SkillTargetType.EnemyBackRandom1:
+                {
+                    // 後衛のモンスターが1体もいない場合は前衛全体を対象とする
+                    var enemyBackAll = enemyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    var targetList = enemyBackAll.Any() ? enemyBackAll : enemyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    battleMonsterIndexList = targetList.Shuffle().Take(1).ToList();
+                    break;
+                }
+            case SkillTargetType.EnemyBackRandom2:
+                {
+                    // 後衛のモンスターが1体もいない場合は前衛全体を対象とする
+                    var enemyBackAll = enemyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    var targetList = enemyBackAll.Any() ? enemyBackAll : enemyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    battleMonsterIndexList = targetList.Shuffle().Take(2).ToList();
+                    break;
+                }
+            case SkillTargetType.EnemyBackRandom3:
+                {
+                    // 後衛のモンスターが1体もいない場合は前衛全体を対象とする
+                    var enemyBackAll = enemyBattleMonsterList.Where(b => IsBack(b.index)).Select(b => b.index).ToList();
+                    var targetList = enemyBackAll.Any() ? enemyBackAll : enemyBattleMonsterList.Where(b => IsFront(b.index)).Select(b => b.index).ToList();
+                    battleMonsterIndexList = targetList.Shuffle().Take(3).ToList();
+                    break;
+                }
             case SkillTargetType.None:
             default:
                 battleMonsterIndexList = new List<BattleMonsterIndex>();
@@ -951,7 +1055,7 @@ public partial class BattleDataProcessor
     {
         switch (activateConditionType)
         {
-            case ActivateConditionType.Under50PercentMyHP:
+            case ActivateConditionType.Under50PercentHP:
                 // HPが50%未満ならOK
                 return battleMonster.currentHp < battleMonster.maxHp / 2;
             case ActivateConditionType.Alive:

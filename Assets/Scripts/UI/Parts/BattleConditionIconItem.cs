@@ -10,9 +10,13 @@ public class BattleConditionIconItem : MonoBehaviour
     [SerializeField] protected TextMeshProUGUI _turnText;
     [SerializeField] protected Sprite _emptySprite;
 
+    private long currentBattleConditionId;
+
     public void SetInfo(BattleConditionInfo battleCondition)
     {
+        currentBattleConditionId = battleCondition.battleCondition.id;
         PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.BattleCondition, battleCondition.battleCondition.id)
+            .Where(_ => currentBattleConditionId == battleCondition.battleCondition.id)
             .Do(sprite => _iconImage.sprite = sprite)
             .Subscribe();
 
@@ -34,6 +38,7 @@ public class BattleConditionIconItem : MonoBehaviour
 
     public void ResetInfo()
     {
+        currentBattleConditionId = 0;
         _iconImage.sprite = _emptySprite;
         _turnText.gameObject.SetActive(false);
     }
