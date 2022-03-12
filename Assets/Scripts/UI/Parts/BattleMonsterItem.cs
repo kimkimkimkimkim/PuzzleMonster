@@ -1,8 +1,11 @@
+using DG.Tweening;
 using GameBase;
+using PM.Enum.Battle;
 using PM.Enum.Monster;
 using PM.Enum.UI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UniRx;
 using UnityEngine;
@@ -99,13 +102,13 @@ public class BattleMonsterItem : MonoBehaviour
             battleConditionAnimationObservable = Observable.Interval(TimeSpan.FromSeconds(BATTLE_CONDITION_ANIMATION_TIME))
                 .SelectMany(count =>
                 {
-                    var startIndex = (count * BATTLE_CONDITION_NUM) % ( battleConditionList.Count + (BATTLE_CONDITION_NUM - (battleConditionList.Count % BATTLE_CONDITION_NUM)));
+                    var startIndex = (int)(count * BATTLE_CONDITION_NUM) % ( battleConditionList.Count + (BATTLE_CONDITION_NUM - (battleConditionList.Count % BATTLE_CONDITION_NUM)));
                     SetBattleConditionIcon(battleConditionList, startIndex);
                     
                     var fadeOutSequence = DOTween.Sequence()
-                        .Delay(BATTLE_CONDITION_ANIMATION_TIME - BATTLE_CONDITION_FADE_OUT_TIME - 0.01f)
+                        .SetDelay(BATTLE_CONDITION_ANIMATION_TIME - BATTLE_CONDITION_FADE_OUT_TIME - 0.01f)
                         .Append(_battleConditionBaseCanvasGroup.DOFade(0, BATTLE_CONDITION_FADE_OUT_TIME));
-                    return fadeOutSequence.OnCompleteAsObservable().AsUnitObservable()
+                    return fadeOutSequence.OnCompleteAsObservable().AsUnitObservable();
                 })
                 .Subscribe();
         }
