@@ -14,7 +14,7 @@ public partial class BattleDataProcessor
     private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>();
     private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>();
-    private List<BattleMonsterIndex> chainParticipantMonsterIndexList = new List<BattleMonsterIndex>();
+    private List<BattleChainParticipantInfo> battleChainParticipantList = new List<BattleChainParticipantInfo>();
     private WinOrLose currentWinOrLose;
 
     private void Init(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
@@ -82,7 +82,7 @@ public partial class BattleDataProcessor
                 // アクション開始
                 var skillEffectList = GetSkillEffectList(actionMonsterIndex, actionType);
                 StartActionStream(actionMonsterIndex, actionType, skillEffectList);
-                chainParticipantMonsterIndexList.Clear();
+                battleChainParticipantList.Clear();
             }
             else
             {
@@ -120,7 +120,7 @@ public partial class BattleDataProcessor
 
         // バトル開始時パッシブスキルを発動する
         ExecutePassiveIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().Select(m => m.index).ToList());
-        chainParticipantMonsterIndexList.Clear();
+        battleChainParticipantList.Clear();
 
         // バトル開始時状態異常効果を発動する
         ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnBattleStart);
@@ -148,10 +148,15 @@ public partial class BattleDataProcessor
     }
 
     // アクション実行者とアクション内容を受け取りアクションを実行する
-    private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, List<SkillEffectMI> skillEffectList)
+    private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, List<SkillEffectMI> skillEffectList, int battleChainParticipantValue = 0)
     {
         // チェーン参加者リストに追加
-        if (actionType == BattleActionType.PassiveSkill) chainParticipantMonsterIndexList.Add(actionMonsterIndex);
+        var battleChainParticipant = new BattleChainParticipantInfo(){
+            battleMonsterIndex = actionMonsterIndex, 
+            battleActionType = actionType,
+            value = battleChainParticipantValue,
+        };
+        battleChainParticipantList.Add(battleChainParticipant);
 
         // アクションを開始する
         StartAction(actionMonsterIndex, actionType);
@@ -307,7 +312,7 @@ public partial class BattleDataProcessor
 
         // ウェーブ開始時パッシブスキルを発動する
         ExecutePassiveIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().Select(m => m.index).ToList());
-        chainParticipantMonsterIndexList.Clear();
+        battleChainParticipantList.Clear();
 
         // ウェーブ開始時状態異常効果を発動する
         ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnWaveStart);
@@ -338,7 +343,7 @@ public partial class BattleDataProcessor
 
         // ターン開始時パッシブスキルを発動する
         ExecutePassiveIfNeeded(SkillTriggerType.OnTurnStart, GetAllMonsterList().Select(m => m.index).ToList());
-        chainParticipantMonsterIndexList.Clear();
+        battleChainParticipantList.Clear();
 
         // ターン開始時状態異常効果を発動する
         ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnTurnStart);
@@ -635,7 +640,7 @@ public partial class BattleDataProcessor
 
         // ターン終了時パッシブスキルを発動する
         ExecutePassiveIfNeeded(SkillTriggerType.OnTurnEnd, GetAllMonsterList().Select(m => m.index).ToList());
-        chainParticipantMonsterIndexList.Clear();
+        battleChainParticipantList.Clear();
 
         // ターン終了時状態異常効果を発動する
         ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnTurnEnd);
@@ -657,7 +662,7 @@ public partial class BattleDataProcessor
 
         // ウェーブ終了時パッシブスキルを発動する
         ExecutePassiveIfNeeded(SkillTriggerType.OnWaveEnd, GetAllMonsterList().Select(m => m.index).ToList());
-        chainParticipantMonsterIndexList.Clear();
+        battleChainParticipantList.Clear();
 
         // ウェーブ終了時状態異常効果を発動する
         ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnWaveEnd);
