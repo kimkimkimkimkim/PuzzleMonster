@@ -10,7 +10,7 @@ public partial class BattleDataProcessor
     private void ExecutePassiveIfNeeded(SkillTriggerType triggerType, BattleMonsterIndex targetBattleMonsterIndex)
     {
         // インデックスがnullまたはすでにチェインに参加していたら発動しない
-        if (targetBattleMonsterIndex == null || chainParticipantMonsterIndexList.Contains(targetBattleMonsterIndex)) return;
+        if (targetBattleMonsterIndex == null || battleChainParticipantList.Any(p => p.battleMonsterIndex.IsSame(targetBattleMonsterIndex) && p.battleActionType == BattleActionType.PassiveSkill)) return;
 
         // 発動条件を満たしていなければだめ
         var targetBattleMonster = GetBattleMonster(targetBattleMonsterIndex);
