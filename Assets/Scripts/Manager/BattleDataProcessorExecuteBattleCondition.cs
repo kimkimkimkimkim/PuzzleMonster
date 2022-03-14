@@ -14,11 +14,11 @@ public partial class BattleDataProcessor
         
         var targetBattleMonster = GetBattleMonster(targetBattleMonsterIndex);
         var skillEffectList = targetBattleMonster.battleConditionList
-            .Where(c => c.battleCondition.battleConditionTriggerType == BattleConditionTriggerType.OnMeActionEnd)
+            .Where(c => c.battleCondition.triggerType == triggerType)
             .Where(c => IsValid(targetBattleMonsterIndex, c.battleCondition.activateConditionType))
             .Select(c => c.skillEffect)
             .ToList();
-        if (skillEffectList.Any()) StartActionStream(actionMonsterIndex, BattleActionType.BattleCondition, skillEffectList);
+        if (skillEffectList.Any()) StartActionStream(targetBattleMonsterIndex, BattleActionType.BattleCondition, skillEffectList);
     }
 
     private void ExecuteBattleConditionIfNeeded(SkillTriggerType  triggerType, List<BattleMonsterIndex> targetBattleMonsterIndexList)

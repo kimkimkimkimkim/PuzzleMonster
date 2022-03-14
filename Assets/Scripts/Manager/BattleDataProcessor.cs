@@ -88,6 +88,15 @@ public partial class BattleDataProcessor
             {
                 // アクション失敗
                 ActionFailed(actionMonsterIndex);
+
+                // アクション失敗してもアクション終了時スキルは発動する
+                // アクション終了時パッシブスキルを発動する
+                ExecutePassiveIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
+                battleChainParticipantList.Clear();
+
+                // アクション終了時状態異常効果を発動する
+                ExecuteBattleConditionIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
+                battleChainParticipantList.Clear();
             }
 
             // 状態異常のターンを経過させる
@@ -123,7 +132,8 @@ public partial class BattleDataProcessor
         battleChainParticipantList.Clear();
 
         // バトル開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnBattleStart);
+        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().Select(m => m.index).ToList());
+        battleChainParticipantList.Clear();
     }
 
     // 通常アクション実行者を取得
@@ -165,16 +175,16 @@ public partial class BattleDataProcessor
         ExecutePassiveIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
 
         // アクション開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeActionStart);
+        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
 
         // 被アクション前パッシブスキルを発動する
         // ExecutePassiveIfNeeded(SkillTriggerType.OnMeTakeActionBefore);
 
         // 被アクション前開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeTakeActionBefore);
+        // ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeTakeActionBefore);
         
         // アクションアニメーションを開始する
-        StartActionAnimation(actionMonsterIndex, actionType);
+        if(actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill) StartActionAnimation(actionMonsterIndex, actionType);
 
         // 各効果の実行
         var currentBeDoneMonsterIndexList = new List<BattleMonsterIndex>();
@@ -193,7 +203,7 @@ public partial class BattleDataProcessor
         ExecutePassiveIfNeeded(SkillTriggerType.OnMeTakeActionAfter, currentBeDoneMonsterIndexList);
 
         // 被アクション後開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeTakeActionAfter);
+        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnMeTakeActionAfter, currentBeDoneMonsterIndexList);
 
         // 死亡処理を実行
         ExecuteDieIfNeeded();
@@ -205,7 +215,7 @@ public partial class BattleDataProcessor
         ExecutePassiveIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
 
         // アクション終了時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeActionEnd, actionMonsterIndex);
+        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
     }
     
     private void ActionFailed(BattleMonsterIndex actionMonsterIndex){
@@ -315,7 +325,8 @@ public partial class BattleDataProcessor
         battleChainParticipantList.Clear();
 
         // ウェーブ開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnWaveStart);
+        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().Select(m => m.index).ToList());
+        battleChainParticipantList.Clear();
 
         return true;
     }
@@ -346,7 +357,8 @@ public partial class BattleDataProcessor
         battleChainParticipantList.Clear();
 
         // ターン開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnTurnStart);
+        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnTurnStart, GetAllMonsterList().Select(m => m.index).ToList());
+        battleChainParticipantList.Clear();
     }
 
     private void StartAction(BattleMonsterIndex monsterIndex, BattleActionType actionType)
@@ -643,7 +655,8 @@ public partial class BattleDataProcessor
         battleChainParticipantList.Clear();
 
         // ターン終了時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnTurnEnd);
+        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnTurnEnd, GetAllMonsterList().Select(m => m.index).ToList());
+        battleChainParticipantList.Clear();
     }
 
     private void EndWaveIfNeeded()
@@ -665,7 +678,8 @@ public partial class BattleDataProcessor
         battleChainParticipantList.Clear();
 
         // ウェーブ終了時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnWaveEnd);
+        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnWaveEnd, GetAllMonsterList().Select(m => m.index).ToList());
+        battleChainParticipantList.Clear();
     }
 
     private void EndBattleIfNeeded()
@@ -733,11 +747,12 @@ public partial class BattleDataProcessor
         var calculatedValue = battleConditionMB.battleConditionType == BattleConditionType.Action ? GetActionValue(doMonsterIndex, beDoneMonsterIndex, skillEffect).value : 0;
         var shieldValue = battleConditionMB.battleConditionType == BattleConditionType.Shield ? skillEffect.value : 0;
 
-        // アクション状態異常の場合はスキル効果のスキルタイプを変更する
+        // アクション状態異常の場合はスキル効果を修正する
         if(battleConditionMB.battleConditionType == BattleConditionType.Action)
         {
             skillEffect = skillEffect.Clone();
             skillEffect.type = battleConditionMB.skillType;
+            skillEffect.skillTargetType = SkillTargetType.Myself;
         }
 
         var battleCondition = new BattleConditionInfo()
@@ -1062,10 +1077,16 @@ public partial class BattleDataProcessor
         {
             case ActivateConditionType.Under50PercentHP:
                 // HPが50%未満ならOK
-                return battleMonster.currentHp < battleMonster.maxHp / 2;
+                return !battleMonster.isDead && battleMonster.currentHp < battleMonster.maxHp * (50.0f / 100.0f);
             case ActivateConditionType.Alive:
                 // HPが0より多ければOK
-                return battleMonster.currentHp > 0;
+                return !battleMonster.isDead && battleMonster.currentHp > 0;
+            case ActivateConditionType.Dead:
+                // 戦闘不能ならOK
+                return battleMonster.isDead;
+            case ActivateConditionType.Under30PercentHP:
+                // HPが30%未満ならOK
+                return !battleMonster.isDead && battleMonster.currentHp < battleMonster.maxHp * (30.0f / 100.0f);
             case ActivateConditionType.None:
             default:
                 return false;
