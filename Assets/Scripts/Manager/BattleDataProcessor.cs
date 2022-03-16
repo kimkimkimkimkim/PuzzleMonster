@@ -89,13 +89,8 @@ public partial class BattleDataProcessor
                 // アクション失敗
                 ActionFailed(actionMonsterIndex);
 
-                // アクション失敗してもアクション終了時スキルは発動する
-                // アクション終了時パッシブスキルを発動する
-                ExecutePassiveIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
-                battleChainParticipantList.Clear();
-
-                // アクション終了時状態異常効果を発動する
-                ExecuteBattleConditionIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
+                // アクション失敗してもアクション終了時トリガースキルを発動する
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
                 battleChainParticipantList.Clear();
             }
 
@@ -127,12 +122,8 @@ public partial class BattleDataProcessor
         };
         battleLogList.Add(battleLog);
 
-        // バトル開始時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().Select(m => m.index).ToList());
-        battleChainParticipantList.Clear();
-
-        // バトル開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().Select(m => m.index).ToList());
+        // バトル開始時トリガースキルを発動する
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().Select(m => m.index).ToList());
         battleChainParticipantList.Clear();
     }
 
@@ -171,17 +162,8 @@ public partial class BattleDataProcessor
         // アクションを開始する
         StartAction(actionMonsterIndex, actionType);
 
-        // アクション開始時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
-
-        // アクション開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
-
-        // 被アクション前パッシブスキルを発動する
-        // ExecutePassiveIfNeeded(SkillTriggerType.OnMeTakeActionBefore);
-
-        // 被アクション前開始時状態異常効果を発動する
-        // ExecuteBattleConditionIfNeeded(BattleConditionTriggerType.OnMeTakeActionBefore);
+        // アクション開始時トリガースキルを発動する
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
         
         // アクションアニメーションを開始する
         if(actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill) StartActionAnimation(actionMonsterIndex, actionType);
@@ -193,17 +175,22 @@ public partial class BattleDataProcessor
             currentBeDoneMonsterIndexList = GetBeDoneMonsterIndexList(actionMonsterIndex, currentBeDoneMonsterIndexList, skillEffect);
 
             // アクション処理を実行する
-            ExecuteAction(actionMonsterIndex, currentBeDoneMonsterIndexList, skillEffect);
+            ExecuteAction(actionMonsterIndex, actionType, currentBeDoneMonsterIndexList, skillEffect);
         });
 
-        // ダメージ与えた後パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnMeExecuteDamageAfter, actionMonsterIndex);
+        if (actionType == BattleActionType.NormalSkill)
+        {
+            // 通常攻撃後トリガースキルを発動する
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeNormalSkillEnd, actionMonsterIndex);
+        }
+        else if (actionType == BattleActionType.UltimateSkill)
+        {
+            // ウルト攻撃後トリガースキルを発動する
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeUltimateSkillEnd, actionMonsterIndex);
+        }
 
-        // 被アクション後パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnMeTakeActionAfter, currentBeDoneMonsterIndexList);
-
-        // 被アクション後開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnMeTakeActionAfter, currentBeDoneMonsterIndexList);
+        // 被アクション後トリガースキルを発動する
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeTakeActionAfter, currentBeDoneMonsterIndexList);
 
         // 死亡処理を実行
         ExecuteDieIfNeeded();
@@ -211,11 +198,8 @@ public partial class BattleDataProcessor
         // アクションを終了する
         EndAction(actionMonsterIndex, actionType);
 
-        // アクション終了時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
-
-        // アクション終了時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
+        // アクション終了時トリガースキルを発動する
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
     }
     
     private void ActionFailed(BattleMonsterIndex actionMonsterIndex){
@@ -320,12 +304,8 @@ public partial class BattleDataProcessor
         };
         battleLogList.Add(battleLog);
 
-        // ウェーブ開始時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().Select(m => m.index).ToList());
-        battleChainParticipantList.Clear();
-
-        // ウェーブ開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().Select(m => m.index).ToList());
+        // ウェーブ開始時トリガースキルを発動する
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().Select(m => m.index).ToList());
         battleChainParticipantList.Clear();
 
         return true;
@@ -352,12 +332,8 @@ public partial class BattleDataProcessor
         };
         battleLogList.Add(battleLog);
 
-        // ターン開始時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnTurnStart, GetAllMonsterList().Select(m => m.index).ToList());
-        battleChainParticipantList.Clear();
-
-        // ターン開始時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnTurnStart, GetAllMonsterList().Select(m => m.index).ToList());
+        // ターン開始時トリガースキルを発動する
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTurnStart, GetAllMonsterList().Select(m => m.index).ToList());
         battleChainParticipantList.Clear();
     }
 
@@ -401,7 +377,7 @@ public partial class BattleDataProcessor
         battleLogList.Add(battleLog);
     }
 
-    private void ExecuteAction(BattleMonsterIndex doMonsterIndex, List<BattleMonsterIndex> beDoneMonsterIndexList, SkillEffectMI skillEffect)
+    private void ExecuteAction(BattleMonsterIndex doMonsterIndex,BattleActionType actionType, List<BattleMonsterIndex> beDoneMonsterIndexList, SkillEffectMI skillEffect)
     {
         // 対象モンスターが存在しない場合はなにもしない
         if (!beDoneMonsterIndexList.Any()) return;
@@ -412,7 +388,7 @@ public partial class BattleDataProcessor
         var skillType = skillEffect.type;
         switch (skillType) {
             case SkillType.Damage:
-                ExecuteAttack(doMonsterIndex, beDoneMonsterList, skillEffect);
+                ExecuteAttack(doMonsterIndex,actionType, beDoneMonsterList, skillEffect);
                 break;
             case SkillType.Heal:
                 ExecuteHeal(doMonsterIndex, beDoneMonsterList, skillEffect);
@@ -431,7 +407,7 @@ public partial class BattleDataProcessor
         }
     }
 
-    private void ExecuteAttack(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
+    private void ExecuteAttack(BattleMonsterIndex doMonsterIndex,BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
     {
         var beDoneMonsterDataList = beDoneMonsterList.Select(m => {
             var actionValue = GetActionValue(doMonsterIndex, m.index, skillEffect);
@@ -441,7 +417,7 @@ public partial class BattleDataProcessor
             m.ChangeHp(actionValue.value);
 
             // エネルギーを上昇させる
-            m.ChangeEnergy(ConstManager.Battle.ENERGY_RISE_VALUE_ON_TAKE_DAMAGE);
+            if(actionType != BattleActionType.BattleCondition) m.ChangeEnergy(ConstManager.Battle.ENERGY_RISE_VALUE_ON_TAKE_DAMAGE);
 
             return new BeDoneBattleMonsterData()
             {
@@ -472,6 +448,58 @@ public partial class BattleDataProcessor
             log = log,
         };
         battleLogList.Add(battleLog);
+
+        // トリガースキルを発動する
+        var beDoneBattleMonsterIndexList = beDoneMonsterDataList.Select(d => d.battleMonsterIndex).ToList();
+        var allBattleMonsterList = GetAllMonsterList();
+        var playerBattleMonsterIndexList = allBattleMonsterList.Where(m => m.index.isPlayer).Select(m => m.index).ToList();
+        var enemyBattleMonsterIndexList = allBattleMonsterList.Where(m => !m.index.isPlayer).Select(m => m.index).ToList();
+        var existsPlayer = beDoneBattleMonsterIndexList.Any(i => i.isPlayer);
+        var existsEnemy = beDoneBattleMonsterIndexList.Any(i => !i.isPlayer);
+
+        // 自身がダメージを与えたとき
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeExecuteDamageAfter, doMonsterIndex);
+
+        // 自身がクリティカルを発動した時
+        if (beDoneMonsterDataList.Any(d => d.isCritical)) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeExecuteCriticcalAfter, doMonsterIndex);
+
+        // ブロックされた時
+        if (beDoneMonsterDataList.Any(d => d.isBlocked)) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeBlocked, doMonsterIndex);
+
+        beDoneMonsterDataList.Where(d => d.isBlocked).ToList().ForEach(d =>
+        {
+            // 自身がブロックした時
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBlocked, d.battleMonsterIndex);
+
+            // 味方がブロックした時
+            if (d.battleMonsterIndex.isPlayer) 
+            {
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBlocked, playerBattleMonsterIndexList);
+            }
+            else
+            {
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBlocked, enemyBattleMonsterIndexList);
+            }
+
+            // 敵がブロックした時
+            if (d.battleMonsterIndex.isPlayer)
+            {
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBlocked, enemyBattleMonsterIndexList);
+            }
+            else
+            {
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBlocked, playerBattleMonsterIndexList);
+            }
+        });
+
+        // 通常攻撃またはウルトを発動したとき
+        if (actionType == BattleActionType.None || actionType == BattleActionType.UltimateSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeExecuteNormalOrUltimateSkill, doMonsterIndex);
+
+        // 通常攻撃またはウルトを受けたとき
+        if (actionType == BattleActionType.None || actionType == BattleActionType.UltimateSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeExecutedNormalOrUltimateSkill, beDoneBattleMonsterIndexList);
+
+        // ダメージを受けたとき
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeTakeDamageEnd, beDoneBattleMonsterIndexList);
     }
 
     private void ExecuteHeal(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
@@ -562,6 +590,25 @@ public partial class BattleDataProcessor
             log = log,
         };
         battleLogList.Add(battleLog);
+
+        // 状態異常付与時トリガースキルを発動する
+        var beAddedBattleMonsterIndexList = beDoneMonsterDataList.Where(d => !d.isMissed).Select(d => d.battleMonsterIndex).ToList();
+        var allBattleMonsterList = GetAllMonsterList();
+        var playerBattleMonsterIndexList = allBattleMonsterList.Where(m => m.index.isPlayer).Select(m => m.index).ToList();
+        var enemyBattleMonsterIndexList = allBattleMonsterList.Where(m => !m.index.isPlayer).Select(m => m.index).ToList();
+        var existsPlayer = beAddedBattleMonsterIndexList.Any(i => i.isPlayer);
+        var existsEnemy = beAddedBattleMonsterIndexList.Any(i => !i.isPlayer);
+
+        // 自身が付与された時
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAddedBattleCondition, beAddedBattleMonsterIndexList, (int)battleConditionMB.id);
+
+        // 味方が付与された時
+        if (existsPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, playerBattleMonsterIndexList, (int)battleConditionMB.id);
+        if (existsEnemy) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, enemyBattleMonsterIndexList, (int)battleConditionMB.id);
+
+        // 敵が付与された時
+        if (existsPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBeAddedBattleCondition, enemyBattleMonsterIndexList, (int)battleConditionMB.id);
+        if (existsEnemy) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBeAddedBattleCondition, playerBattleMonsterIndexList, (int)battleConditionMB.id);
     }
 
     private void ExecuteBattleConditionRemove(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
@@ -576,16 +623,19 @@ public partial class BattleDataProcessor
 
     private void ExecuteDieIfNeeded()
     {
-        var allMonsterList = GetAllMonsterList();
-        var dieMonsterList = allMonsterList.Where(m => !m.isDead && m.currentHp <= 0).ToList();
+        var allBattleMonsterList = GetAllMonsterList();
+        var dieBattleMonsterList = allBattleMonsterList.Where(m => !m.isDead && m.currentHp <= 0).ToList();
+
+        // 倒れたモンスターがいなければ何もしない
+        if (!dieBattleMonsterList.Any()) return;
 
         // 死亡判定フラグを立てる
-        dieMonsterList.ForEach(m => m.isDead = true);
+        dieBattleMonsterList.ForEach(m => m.isDead = true);
 
         // ログに渡す用のリストを作成
-        var beDoneBattleMonsterDataList = dieMonsterList.Clone().Select(m => new BeDoneBattleMonsterData() { battleMonsterIndex = m.index }).ToList();
+        var beDoneBattleMonsterDataList = dieBattleMonsterList.Clone().Select(m => new BeDoneBattleMonsterData() { battleMonsterIndex = m.index }).ToList();
 
-        var logList = dieMonsterList.Select(m => {
+        var logList = dieBattleMonsterList.Select(m => {
             var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
             var possess = m.index.isPlayer ? "味方の" : "敵の";
             return $"{possess}{monster.name}が倒れた";
@@ -600,6 +650,23 @@ public partial class BattleDataProcessor
             log = log,
         };
         battleLogList.Add(battleLog);
+
+        // 戦闘不能時トリガースキルを発動する
+        var existsPlayer = dieBattleMonsterList.Any(m => m.index.isPlayer);
+        var existsEnemy = dieBattleMonsterList.Any(m => !m.index.isPlayer);
+        var playerBattleMonsterIndexList = allBattleMonsterList.Where(m => m.index.isPlayer).Select(m => m.index).ToList();
+        var enemyBattleMonsterIndexList = allBattleMonsterList.Where(m => !m.index.isPlayer).Select(m => m.index).ToList();
+
+        // 自分が戦闘不能時
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeDeadEnd, dieBattleMonsterList.Select(m => m.index).ToList());
+
+        // 味方が戦闘不能時
+        if (existsPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyDead, playerBattleMonsterIndexList);
+        if (existsEnemy) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyDead, enemyBattleMonsterIndexList);
+
+        // 敵が戦闘不能時
+        if (existsPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyDead, enemyBattleMonsterIndexList);
+        if (existsEnemy) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyDead, playerBattleMonsterIndexList);
     }
 
     private void EndAction(BattleMonsterIndex doMonsterIndex, BattleActionType actionType)
@@ -650,12 +717,8 @@ public partial class BattleDataProcessor
         };
         battleLogList.Add(battleLog);
 
-        // ターン終了時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnTurnEnd, GetAllMonsterList().Select(m => m.index).ToList());
-        battleChainParticipantList.Clear();
-
-        // ターン終了時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnTurnEnd, GetAllMonsterList().Select(m => m.index).ToList());
+        // ターン終了時トリガースキルを発動する
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTurnEnd, GetAllMonsterList().Select(m => m.index).ToList());
         battleChainParticipantList.Clear();
     }
 
@@ -673,12 +736,8 @@ public partial class BattleDataProcessor
         };
         battleLogList.Add(battleLog);
 
-        // ウェーブ終了時パッシブスキルを発動する
-        ExecutePassiveIfNeeded(SkillTriggerType.OnWaveEnd, GetAllMonsterList().Select(m => m.index).ToList());
-        battleChainParticipantList.Clear();
-
-        // ウェーブ終了時状態異常効果を発動する
-        ExecuteBattleConditionIfNeeded(SkillTriggerType.OnWaveEnd, GetAllMonsterList().Select(m => m.index).ToList());
+        // ウェーブ終了時トリガースキルを発動する
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveEnd, GetAllMonsterList().Select(m => m.index).ToList());
         battleChainParticipantList.Clear();
     }
 
@@ -765,31 +824,6 @@ public partial class BattleDataProcessor
             order = order,
         };
         return battleCondition.Clone();
-    }
-
-    /// <summary>
-    /// スキルの効果量の対象ステータス値を返す
-    /// </summary>
-    private float GetTargetValue(BattleMonsterIndex doMonsterIndex, SkillEffectMI skillEffect)
-    {
-        var battleMonster = GetBattleMonster(doMonsterIndex);
-        switch (skillEffect.valueTargetType)
-        {
-            case ValueTargetType.MyCurrentAttack:
-                return battleMonster.currentAttack();
-            case ValueTargetType.MyCurrentDefense:
-                return battleMonster.currentAttack();
-            case ValueTargetType.MyCurrentHeal:
-                return battleMonster.currentHeal();
-            case ValueTargetType.MyCurrentSpeed:
-                return battleMonster.currentSpeed();
-            case ValueTargetType.MyCurrentHP:
-                return battleMonster.currentHp;
-            case ValueTargetType.MyMaxHp:
-                return battleMonster.maxHp;
-            default:
-                return 0.0f;
-        }
     }
 
     private List<BattleMonsterInfo> GetAllMonsterList()
@@ -902,13 +936,12 @@ public partial class BattleDataProcessor
                 battleMonsterIndexList = enemyBattleMonsterList.Shuffle().Take(5).Select(b => b.index).ToList();
                 break;
             case SkillTargetType.DoAttack:
-                var isDoAttackValid = IsValid(doMonsterIndex, skillEffect.activateConditionType);
-                battleMonsterIndexList = isDoAttackValid ? new List<BattleMonsterIndex>() { doMonsterIndex } : new List<BattleMonsterIndex>();
-                break;
-            case SkillTargetType.BeAttacked:
                 var doMonster = GetBattleMonster(doMonsterIndex);
                 var isBeAttackedValid = IsValid(doMonster.currentBeDoneAttackedMonsterIndex, skillEffect.activateConditionType);
                 battleMonsterIndexList = isBeAttackedValid ? new List<BattleMonsterIndex>() { doMonster.currentBeDoneAttackedMonsterIndex } : new List<BattleMonsterIndex>();
+                break;
+            case SkillTargetType.BeAttacked:
+                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValid(battleIndex, skillEffect.activateConditionType)).Select(battleIndex => battleIndex).ToList();
                 break;
             case SkillTargetType.AllyFrontAll:
                 {
