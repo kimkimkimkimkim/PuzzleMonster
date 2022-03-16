@@ -34,7 +34,7 @@ public partial class BattleDataProcessor
         var targetBattleMonster = GetBattleMonster(targetBattleMonsterIndex);
         var targetMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(targetBattleMonster.monsterId);
         var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(targetMonster.passiveSkillId);
-        if (!IsValid(targetBattleMonsterIndex, passiveSkill.activateConditionType)) return;
+        if (!IsValidActivateCondition(targetBattleMonsterIndex, passiveSkill.activateConditionType)) return;
 
         // 発動回数制限に達していたらだめ
         if (passiveSkill.limitExecuteNum > 0 && targetBattleMonster.passiveSkillExecuteCount >= passiveSkill.limitExecuteNum) return;
@@ -53,7 +53,7 @@ public partial class BattleDataProcessor
         var targetBattleMonster = GetBattleMonster(targetBattleMonsterIndex);
         var skillEffectList = targetBattleMonster.battleConditionList
             .Where(c => c.battleCondition.triggerType == triggerType)
-            .Where(c => IsValid(targetBattleMonsterIndex, c.battleCondition.activateConditionType))
+            .Where(c => IsValidActivateCondition(targetBattleMonsterIndex, c.battleCondition.activateConditionType))
             .Select(c => c.skillEffect)
             .ToList();
         if (skillEffectList.Any()) StartActionStream(targetBattleMonsterIndex, BattleActionType.BattleCondition, skillEffectList);

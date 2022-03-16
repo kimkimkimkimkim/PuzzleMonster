@@ -890,8 +890,8 @@ public partial class BattleDataProcessor
         var isDoMonsterPlayer = doMonsterIndex.isPlayer;
         var allyBattleMonsterList = isDoMonsterPlayer ? this.playerBattleMonsterList : this.enemyBattleMonsterList;
         var enemyBattleMonsterList = isDoMonsterPlayer ? this.enemyBattleMonsterList : this.playerBattleMonsterList;
-        allyBattleMonsterList = allyBattleMonsterList.Where(b => IsValid(b, skillEffect.activateConditionType)).ToList();
-        enemyBattleMonsterList = enemyBattleMonsterList.Where(b => IsValid(b, skillEffect.activateConditionType)).ToList();
+        allyBattleMonsterList = allyBattleMonsterList.Where(b => IsValidActivateCondition(b, skillEffect.activateConditionType)).ToList();
+        enemyBattleMonsterList = enemyBattleMonsterList.Where(b => IsValidActivateCondition(b, skillEffect.activateConditionType)).ToList();
 
         var battleMonsterIndexList = new List<BattleMonsterIndex>();
         switch (skillEffect.skillTargetType)
@@ -937,11 +937,11 @@ public partial class BattleDataProcessor
                 break;
             case SkillTargetType.DoAttack:
                 var doMonster = GetBattleMonster(doMonsterIndex);
-                var isBeAttackedValid = IsValid(doMonster.currentBeDoneAttackedMonsterIndex, skillEffect.activateConditionType);
+                var isBeAttackedValid = IsValidActivateCondition(doMonster.currentBeDoneAttackedMonsterIndex, skillEffect.activateConditionType);
                 battleMonsterIndexList = isBeAttackedValid ? new List<BattleMonsterIndex>() { doMonster.currentBeDoneAttackedMonsterIndex } : new List<BattleMonsterIndex>();
                 break;
             case SkillTargetType.BeAttacked:
-                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValid(battleIndex, skillEffect.activateConditionType)).Select(battleIndex => battleIndex).ToList();
+                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValidActivateCondition(battleIndex, skillEffect.activateConditionType)).Select(battleIndex => battleIndex).ToList();
                 break;
             case SkillTargetType.AllyFrontAll:
                 {
@@ -1002,7 +1002,7 @@ public partial class BattleDataProcessor
                 battleMonsterIndexList = enemyBattleMonsterList.OrderBy(b => b.currentHp).Take(4).Select(b => b.index).ToList();
                 break;
             case SkillTargetType.Target:
-                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValid(battleIndex, skillEffect.activateConditionType)).Select(battleIndex => battleIndex).ToList();
+                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValidActivateCondition(battleIndex, skillEffect.activateConditionType)).Select(battleIndex => battleIndex).ToList();
                 break;
             case SkillTargetType.AllyFrontRandom1:
                 {
@@ -1098,13 +1098,13 @@ public partial class BattleDataProcessor
         return random <= activateProbability;
     }
 
-    private bool IsValid(BattleMonsterIndex battleMonsterIndex, ActivateConditionType activateConditionType)
+    private bool IsValidActivateCondition(BattleMonsterIndex battleMonsterIndex, ActivateConditionType activateConditionType)
     {
         var battleMonster = GetBattleMonster(battleMonsterIndex);
-        return IsValid(battleMonster, activateConditionType);
+        return IsValidActivateCondition(battleMonster, activateConditionType);
     }
 
-    private bool IsValid(BattleMonsterInfo battleMonster, ActivateConditionType activateConditionType)
+    private bool IsValidActivateCondition(BattleMonsterInfo battleMonster, ActivateConditionType activateConditionType)
     {
         switch (activateConditionType)
         {
