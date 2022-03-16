@@ -17,6 +17,9 @@ public partial class BattleDataProcessor
         var targetMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(targetBattleMonster.monsterId);
         var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(targetMonster.passiveSkillId);
         if (!IsValid(targetBattleMonsterIndex, passiveSkill.activateConditionType)) return;
+        
+        // 発動回数制限に達していたらだめ
+        if (passiveSkill.limitExecuteNum > 0 && targetBattleMonster.passiveSkillExecuteCount  >= passiveSkill.limitExecuteNum) return;
 
         // 指定したトリガータイプのパッシブスキルを保持していれば発動
         var skillEffectList = passiveSkill.effectList.Where(effect => effect.triggerType == triggerType).Select(effect => (SkillEffectMI)effect).ToList();
