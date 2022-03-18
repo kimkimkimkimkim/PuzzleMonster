@@ -145,10 +145,9 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     case BattleLogType.StartActionAnimation:
                         {
                             var battleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
-                            var attackAnimationObservable = battleLog.actionType == BattleActionType.PassiveSkill ? Observable.ReturnUnit() : battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex);
                             return Observable.WhenAll(
                                 battleWindow.ShowSkillInfoObservable(battleMonster, battleLog.actionType),
-                                attackAnimationObservable
+                                battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex)
                             );
                         }
 

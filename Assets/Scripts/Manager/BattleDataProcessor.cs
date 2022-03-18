@@ -170,7 +170,8 @@ public partial class BattleDataProcessor
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
 
         // アクションアニメーションを開始する
-        if(actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill) StartActionAnimation(actionMonsterIndex, actionType);
+        var isCounter = actionType == BattleActionType.PassiveSkill && skillEffectList.Any(effect => effect.type == SkillType.Damage); // パッシブかつ攻撃のスキルは反撃と判定
+        if(actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill || isCounter) StartActionAnimation(actionMonsterIndex, actionType);
 
         // 各効果の実行
         var currentBeDoneMonsterIndexList = new List<BattleMonsterIndex>();
