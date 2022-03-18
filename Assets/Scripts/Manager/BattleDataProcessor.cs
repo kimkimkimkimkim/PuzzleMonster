@@ -156,6 +156,10 @@ public partial class BattleDataProcessor
     // アクション実行者とアクション内容を受け取りアクションを実行する
     private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, List<SkillEffectMI> skillEffectList, BattleChainParticipantInfo battleChainParticipant)
     {
+        // 状態異常付与以外のスキル効果はこのタイミングで発動確率判定を行う
+        skillEffectList = skillEffectList.Where(effect => effect.type == SkillType.ConditionAdd || ExecuteProbability(effect.activateProbability)).ToList();
+        if (!skillEffectList.Any()) return;
+
         // チェーン参加者リストに追加
         battleChainParticipantList.Add(battleChainParticipant);
 
