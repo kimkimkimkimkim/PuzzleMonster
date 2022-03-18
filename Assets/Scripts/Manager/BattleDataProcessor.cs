@@ -81,7 +81,12 @@ public partial class BattleDataProcessor
             {
                 // アクション開始
                 var skillEffectList = GetSkillEffectList(actionMonsterIndex, actionType);
-                StartActionStream(actionMonsterIndex, actionType, skillEffectList);
+                var battleChainParticipant = new BattleChainParticipantInfo()
+                {
+                    battleMonsterIndex = actionMonsterIndex,
+                    battleActionType = actionType,
+                };
+                StartActionStream(actionMonsterIndex, actionType, skillEffectList, battleChainParticipant);
                 battleChainParticipantList.Clear();
             }
             else
@@ -149,14 +154,9 @@ public partial class BattleDataProcessor
     }
 
     // アクション実行者とアクション内容を受け取りアクションを実行する
-    private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, List<SkillEffectMI> skillEffectList, int battleChainParticipantValue = 0)
+    private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, List<SkillEffectMI> skillEffectList, BattleChainParticipantInfo battleChainParticipant)
     {
         // チェーン参加者リストに追加
-        var battleChainParticipant = new BattleChainParticipantInfo(){
-            battleMonsterIndex = actionMonsterIndex, 
-            battleActionType = actionType,
-            value = battleChainParticipantValue,
-        };
         battleChainParticipantList.Add(battleChainParticipant);
 
         // アクションを開始する
@@ -164,7 +164,7 @@ public partial class BattleDataProcessor
 
         // アクション開始時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
-        
+
         // アクションアニメーションを開始する
         if(actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill) StartActionAnimation(actionMonsterIndex, actionType);
 
@@ -496,10 +496,14 @@ public partial class BattleDataProcessor
         });
 
         // 通常攻撃またはウルトを発動したとき
-        if (actionType == BattleActionType.None || actionType == BattleActionType.UltimateSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeExecuteNormalOrUltimateSkill, doMonsterIndex);
+        if (actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeExecuteNormalOrUltimateSkill, doMonsterIndex);
 
         // 通常攻撃またはウルトを受けたとき
-        if (actionType == BattleActionType.None || actionType == BattleActionType.UltimateSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeExecutedNormalOrUltimateSkill, beDoneBattleMonsterIndexList);
+        if (actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill)
+        {
+            // 反撃系はトリガー発動の要因も渡す
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeExecutedNormalOrUltimateSkill, beDoneBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0);
+        }
 
         // ダメージを受けたとき
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeTakeDamageEnd, beDoneBattleMonsterIndexList);
