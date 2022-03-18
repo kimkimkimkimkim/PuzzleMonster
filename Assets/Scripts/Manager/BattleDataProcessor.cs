@@ -599,19 +599,20 @@ public partial class BattleDataProcessor
         var allBattleMonsterList = GetAllMonsterList();
         var playerBattleMonsterIndexList = allBattleMonsterList.Where(m => m.index.isPlayer).Select(m => m.index).ToList();
         var enemyBattleMonsterIndexList = allBattleMonsterList.Where(m => !m.index.isPlayer).Select(m => m.index).ToList();
-        var existsPlayer = beAddedBattleMonsterIndexList.Any(i => i.isPlayer);
-        var existsEnemy = beAddedBattleMonsterIndexList.Any(i => !i.isPlayer);
 
-        // 自身が付与された時
-        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAddedBattleCondition, beAddedBattleMonsterIndexList, (int)battleConditionMB.id);
+        beAddedBattleMonsterIndexList.ForEach(battleMonsterIndex =>
+        {
+            // 自身が付与された時
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAddedBattleCondition, battleMonsterIndex, (int)battleConditionMB.id);
 
-        // 味方が付与された時
-        if (existsPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, playerBattleMonsterIndexList, (int)battleConditionMB.id);
-        if (existsEnemy) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, enemyBattleMonsterIndexList, (int)battleConditionMB.id);
+            // 味方が付与された時
+            if (battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, playerBattleMonsterIndexList, (int)battleConditionMB.id);
+            if (!battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, enemyBattleMonsterIndexList, (int)battleConditionMB.id);
 
-        // 敵が付与された時
-        if (existsPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBeAddedBattleCondition, enemyBattleMonsterIndexList, (int)battleConditionMB.id);
-        if (existsEnemy) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBeAddedBattleCondition, playerBattleMonsterIndexList, (int)battleConditionMB.id);
+            // 敵が付与された時
+            if (battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBeAddedBattleCondition, enemyBattleMonsterIndexList, (int)battleConditionMB.id);
+            if (!battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBeAddedBattleCondition, playerBattleMonsterIndexList, (int)battleConditionMB.id);
+        });
     }
 
     private void ExecuteBattleConditionRemove(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
@@ -660,16 +661,19 @@ public partial class BattleDataProcessor
         var playerBattleMonsterIndexList = allBattleMonsterList.Where(m => m.index.isPlayer).Select(m => m.index).ToList();
         var enemyBattleMonsterIndexList = allBattleMonsterList.Where(m => !m.index.isPlayer).Select(m => m.index).ToList();
 
-        // 自分が戦闘不能時
-        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeDeadEnd, dieBattleMonsterList.Select(m => m.index).ToList());
+        dieBattleMonsterList.Select(m => m.index).ToList().ForEach(battleMonsterIndex =>
+        {
+            // 自分が戦闘不能時
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeDeadEnd, battleMonsterIndex);
 
-        // 味方が戦闘不能時
-        if (existsPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyDead, playerBattleMonsterIndexList);
-        if (existsEnemy) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyDead, enemyBattleMonsterIndexList);
+            // 味方が戦闘不能時
+            if (battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyDead, playerBattleMonsterIndexList);
+            if (!battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyDead, enemyBattleMonsterIndexList);
 
-        // 敵が戦闘不能時
-        if (existsPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyDead, enemyBattleMonsterIndexList);
-        if (existsEnemy) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyDead, playerBattleMonsterIndexList);
+            // 敵が戦闘不能時
+            if (battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyDead, enemyBattleMonsterIndexList);
+            if (!battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyDead, playerBattleMonsterIndexList);
+        });
     }
 
     private void EndAction(BattleMonsterIndex doMonsterIndex, BattleActionType actionType)
