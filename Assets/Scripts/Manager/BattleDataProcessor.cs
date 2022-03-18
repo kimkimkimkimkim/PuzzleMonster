@@ -183,6 +183,13 @@ public partial class BattleDataProcessor
             ExecuteAction(actionMonsterIndex, actionType, currentBeDoneMonsterIndexList, skillEffect);
         });
 
+        // パッシブスキル発動回数を計上
+        if(actionType == BattleActionType.PassiveSkill)
+        {
+            var actionMonster = GetBattleMonster(actionMonsterIndex);
+            actionMonster.passiveSkillExecuteCount++;
+        }
+
         if (actionType == BattleActionType.NormalSkill)
         {
             // 通常攻撃後トリガースキルを発動する
