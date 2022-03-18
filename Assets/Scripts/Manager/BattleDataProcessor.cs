@@ -412,6 +412,9 @@ public partial class BattleDataProcessor
         var beDoneMonsterDataList = beDoneMonsterList.Select(m => {
             var actionValue = GetActionValue(doMonsterIndex, m.index, skillEffect);
 
+            // 攻撃してきたモンスターの更新
+            if (actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill) m.currentBeDoneAttackedMonsterIndex = doMonsterIndex;
+
             // 効果量を反映
             // 攻撃でも回復でも加算
             m.ChangeHp(actionValue.value);
