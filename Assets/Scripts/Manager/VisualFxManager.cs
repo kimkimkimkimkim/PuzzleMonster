@@ -8,6 +8,7 @@ using PM.Enum.Monster;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
+using PM.Enum.Battle;
 
 public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
 {
@@ -192,6 +193,41 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                     })
                     .AsUnitObservable();
             });
+    }
+
+    public IObservable<Unit> PlaySkillFxObservable(SkillFxMB skillFx, BattleMonsterItem targetBattleMonsterItem, GameObject wholeSkillEffectBase)
+    {
+        SkillFxItem skillFxItem = null;
+        Sprite skillEffectSprite = null;
+
+        var skillEffectBase = skillFx.skillFxPositionType == SkillFxPositionType.TargetWhole ? wholeSkillEffectBase.transform : targetBattleMonsterItem.transform;
+
+        return Observable.WhenAll(
+            PMAddressableAssetUtil.InstantiateSkillFxPrefabObservable(skillEffectBase, skillFx.id).Do(item => skillFxItem = item).AsUnitObservable(),
+        )
+            .Do(_ =>
+            {
+                // テクスチャの設定
+                skillFxItem.renderer.material.mainTexture = skillEffectSprite.texture;
+
+                // タイルの設定
+                var textureSheetAnimation = skillFxItem.particleSystem.textureSheetAnimation;
+                var numTilesX = (int)skillEffectSprite.rect.width / 192;
+                var numTilesY = (int)skillEffectSprite.rect.height / 192;
+                textureSheetAnimation.numTilesX = numTilesX;
+                textureSheetAnimation.numTilesY = numTilesY;
+
+                // 位置の設定
+                skillFxItem.transform.localPosition = new Vector3(skillFx.offsetX, skillFx.offsetY, 0.0f);
+
+                // アニメーション時間の設定
+                var main = skillFxItem.particleSystem.main;
+                main.startLifetime = skillFx.animationTime;
+
+                skillFxItem.particleSystem.PlayWithRelease(skillFx.animationTime);
+            })
+            .Delay(TimeSpan.FromSeconds(skillFx.animationTime))
+            .AsUnitObservable();
     }
 
     /// <summary>
