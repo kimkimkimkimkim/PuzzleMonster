@@ -18,10 +18,13 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected TextMeshProUGUI _actionDescriptionContentText;
     [SerializeField] protected List<BattleMonsterBase> _playerMonsterBaseList;
     [SerializeField] protected List<BattleMonsterBase> _enemyMonsterBaseList;
+    [SerializeField] protected Image _fxParentImage;
     [SerializeField] protected Transform _fxParent;
     [SerializeField] protected Transform _battleMonsterInfoItemBase;
     [SerializeField] protected GameObject _skillNameBase;
     [SerializeField] protected GameObject _actionDescriptionBase;
+    [SerializeField] protected GameObject _playerWholeSkillEffectBase;
+    [SerializeField] protected GameObject _enemyWholeSkillEffectBase;
     [SerializeField] protected Button _pauseButton;
 
     private UserMonsterPartyInfo userMonsterParty;
@@ -44,6 +47,50 @@ public class BattleWindowUIScript : DummyWindowBase
         SetTurnText(1);
         SetWaveText(1, quest.questWaveIdList.Count);
         SetBattleMonsterInfoItem(userMonsterParty);
+    }
+
+    public void StartSkillTest()
+    {
+        quest = MasterRecord.GetMasterOf<QuestMB>().GetAll().First();
+        SetEnemyMonsterImage(1);
+
+        var targetMonsterBase = _enemyMonsterBaseList[1];
+        var skillFxList = Enumerable.Range(1, 234).Select(id => new SkillFxMB()
+        {
+            id = id,
+        }).ToList();
+        skillFxList = MasterRecord.GetMasterOf<SkillFxMB>().GetAll().Where(m => m.id >= 1 && m.id <= 10).ToList();
+        var animationObservableList = skillFxList.Shuffle().Select(skillEffect =>
+        {
+            const float SHOW_TIME = 2.0f;
+            
+            var skillNameObservable = Observable.ReturnUnit()
+                .Do(_ =>
+                {
+                    _skillNameText.text = $"スキル演出ID{skillEffect.id}の演出";
+                    _skillNameBase.SetActive(true);
+                })
+                .Delay(TimeSpan.FromSeconds(SHOW_TIME / 1.5f))
+                .DoOnCompleted(() => _skillNameBase.SetActive(false));
+            var actionDescriptionObservable = Observable.ReturnUnit()
+                .Do(_ =>
+                {
+                    _actionDescriptionTitleText.text = $"スキル演出ID{skillEffect.id}";
+                    _actionDescriptionContentText.text = skillEffect.description;
+                    _actionDescriptionBase.SetActive(true);
+                })
+                .Delay(TimeSpan.FromSeconds(SHOW_TIME))
+                .DoOnCompleted(() => _actionDescriptionBase.SetActive(false));
+            var skillFxObservable = Observable.Timer(TimeSpan.FromSeconds(0.5f)).SelectMany(_ => VisualFxManager.Instance.PlaySkillFxObservable(skillEffect, targetMonsterBase.battleMonsterItem, _enemyWholeSkillEffectBase, _fxParentImage));
+
+            return Observable.WhenAll(
+                skillNameObservable,
+                actionDescriptionObservable,
+                skillFxObservable
+            ).Delay(TimeSpan.FromSeconds(1.0f));
+        }).ToList();
+
+        Observable.ReturnUnit().Connect(animationObservableList).Subscribe();
     }
 
     private void SetPlayerMonsterImage()
@@ -169,7 +216,8 @@ public class BattleWindowUIScript : DummyWindowBase
     public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleMonsterIndex beDoneBattleMonsterIndex,long skillFxId, int damage, int currentHp, int currentEnergy, int currentShield)
     {
         var monsterBase = GetBattleMonsterBase(beDoneBattleMonsterIndex);
-        return VisualFxManager.Instance.PlayTakeDamageFxObservable(monsterBase.battleMonsterItem, monsterBase.transform,skillFxId, damage, Math.Max(0, currentHp), currentEnergy, currentShield);
+        var wholeSkillEffectBase = beDoneBattleMonsterIndex.isPlayer ? _playerWholeSkillEffectBase : _enemyWholeSkillEffectBase;
+        return VisualFxManager.Instance.PlayTakeDamageFxObservable(monsterBase.battleMonsterItem, monsterBase.transform,skillFxId, damage, Math.Max(0, currentHp), currentEnergy, currentShield, wholeSkillEffectBase, _fxParentImage);
     }
 
     public IObservable<Unit> PlayEnergySliderAnimationObservable(BattleMonsterIndex monsterIndex, int currentEnergy)

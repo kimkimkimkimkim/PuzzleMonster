@@ -66,4 +66,25 @@ public class PMAddressableAssetUtil
         var address = $"{ASSET_PATH_PREFIX}/SkillAttackEffect/Prefab/{skillFxId}.prefab";
         return AddressableAssetController.InstantiateAsObservable<ParticleSystem>(address, parent);
     }
+
+    /// <summary>
+    /// スキル演出Prefabを取得する
+    /// </summary>
+    public static IObservable<ParticleSystem> InstantiateSkillFxPrefabObservable(Transform parent, long skillFxId)
+    {
+        var address = $"{ASSET_PATH_PREFIX}/SkillFx/Prefab/{skillFxId}.prefab";
+        return AddressableAssetController.InstantiateAsObservable<ParticleSystem>(address, parent);
+    }
+
+    public static IObservable<SkillFxItem> InstantiateSkillFxItemObservable(Transform parent, long skillFxId)
+    {
+        var address = $"{ASSET_PATH_PREFIX}/SkillFx/Prefab/SkillFxItem.prefab";
+        return AddressableAssetController.InstantiateAsObservable<SkillFxItem>(address, parent);
+    }
+
+    public static IObservable<Sprite> GetSkillFxSpriteObservable(long skillFxId)
+    {
+        var address = $"{ASSET_PATH_PREFIX}/SkillFx/Sprite/{skillFxId}.png";
+        return AddressableAssetController.LoadAssetAsObservable<Sprite>(address);
+    }
 }

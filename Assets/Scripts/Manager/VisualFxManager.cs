@@ -195,59 +195,79 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             });
     }
 
-    public IObservable<Unit> PlaySkillFxObservable(SkillFxMB skillFx, BattleMonsterItem targetBattleMonsterItem, GameObject wholeSkillEffectBase)
+    public IObservable<Unit> PlaySkillFxObservable(SkillFxMB skillFx, BattleMonsterItem targetBattleMonsterItem, GameObject wholeSkillEffectBase, Image fxBaseImage)
     {
         SkillFxItem skillFxItem = null;
-        Sprite skillEffectSprite = null;
+        Sprite skillFxSprite = null;
 
         var skillEffectBase = skillFx.skillFxPositionType == SkillFxPositionType.TargetWhole ? wholeSkillEffectBase.transform : targetBattleMonsterItem.transform;
 
         return Observable.WhenAll(
-            PMAddressableAssetUtil.InstantiateSkillFxPrefabObservable(skillEffectBase, skillFx.id).Do(item => skillFxItem = item).AsUnitObservable(),
+            PMAddressableAssetUtil.InstantiateSkillFxItemObservable(skillEffectBase, skillFx.id).Do(item => skillFxItem = item).AsUnitObservable(),
+            PMAddressableAssetUtil.GetSkillFxSpriteObservable(skillFx.id).Do(sprite => skillFxSprite = sprite).AsUnitObservable()
         )
-            .Do(_ =>
+            .SelectMany(unit =>
             {
+                const float SKILL_FX_SIZE = 1.3f;
+                const float ALPHA = 0.2f;
+                const float FADE_TIME = 0.2f;
+
                 // テクスチャの設定
-                skillFxItem.renderer.material.mainTexture = skillEffectSprite.texture;
+                skillFxItem.renderer.material.mainTexture = skillFxSprite.texture;
 
                 // タイルの設定
                 var textureSheetAnimation = skillFxItem.particleSystem.textureSheetAnimation;
-                var numTilesX = (int)skillEffectSprite.rect.width / 192;
-                var numTilesY = (int)skillEffectSprite.rect.height / 192;
-                textureSheetAnimation.numTilesX = numTilesX;
-                textureSheetAnimation.numTilesY = numTilesY;
-
-                // 位置の設定
-                skillFxItem.transform.localPosition = new Vector3(skillFx.offsetX, skillFx.offsetY, 0.0f);
+                textureSheetAnimation.numTilesX = skillFx.numTilesX;
+                textureSheetAnimation.numTilesY = skillFx.numTilesY;
 
                 // アニメーション時間の設定
+                var numTiles = skillFx.numTilesX * skillFx.numTilesY;
+                var animationTime = (float)numTiles / 10;
                 var main = skillFxItem.particleSystem.main;
-                main.startLifetime = skillFx.animationTime;
+                // main.duration = animationTime;
+                main.startLifetime = animationTime;
 
-                skillFxItem.particleSystem.PlayWithRelease(skillFx.animationTime);
+                // サイズの設定
+                var spriteWidth = skillFxSprite.rect.width / skillFx.numTilesX;
+                var spriteHeight = skillFxSprite.rect.height / skillFx.numTilesY;
+                var scaleX = SKILL_FX_SIZE * skillFx.sizeScale;
+                var scaleY = (spriteHeight / spriteWidth) * SKILL_FX_SIZE * skillFx.sizeScale;
+                skillFxItem.gameObject.transform.localScale = new Vector3(scaleX, scaleY, scaleX);
+
+                // 座標の設定
+                skillFxItem.gameObject.transform.localPosition = new Vector3(skillFx.offsetX, skillFx.offsetY, 0);
+
+                // 演出再生
+                var skillFxObservable = Observable.Timer(TimeSpan.FromSeconds(FADE_TIME)).Do(_ => skillFxItem.particleSystem.PlayWithRelease(animationTime)).Delay(TimeSpan.FromSeconds(animationTime)).AsUnitObservable();
+
+                // 演出背景の表示
+                var backgroundSequence = DOTween.Sequence()
+                    .Append(fxBaseImage.DOFade(ALPHA, FADE_TIME))
+                    .AppendInterval(animationTime + 0.1f)
+                    .Append(fxBaseImage.DOFade(0.0f, FADE_TIME));
+
+                return Observable.WhenAll(
+                    skillFxObservable,
+                    backgroundSequence.OnCompleteAsObservable().AsUnitObservable()
+                );
             })
-            .Delay(TimeSpan.FromSeconds(skillFx.animationTime))
             .AsUnitObservable();
     }
 
     /// <summary>
     /// 被ダメージ演出の再生
     /// </summary>
-    public IObservable<Unit> PlayTakeDamageFxObservable(BattleMonsterItem battleMonsterItem, Transform effectBase,long skillFxId, int damage, int toHp, int toEnergy, int toShield)
+    public IObservable<Unit> PlayTakeDamageFxObservable(BattleMonsterItem battleMonsterItem, Transform effectBase,long skillFxId, int damage, int toHp, int toEnergy, int toShield, GameObject wholeSkillEffectBase, Image fxBaseImage)
     {
         const float SLIDER_ANIMATION_TIME = 2.0f;
         const float DAMAGE_EFFECT_DELAY_TIME = 0.5f;
         var DAMAGE_FX_OFFSET = new Vector3(0, 50, 0);
 
-        ParticleSystem skillEffectPS = null;
+        var skillFx = MasterRecord.GetMasterOf<SkillFxMB>().Get(skillFxId);
         DamageFx damageFX = null;
 
-        return Observable.WhenAll(
-                PMAddressableAssetUtil.InstantiateVisualFxItemObservable<DamageFx>(effectBase).Do(fx => damageFX =fx).AsUnitObservable(),
-                PMAddressableAssetUtil.InstantiateSkillFxObservable(effectBase, skillFxId).Do(ps => skillEffectPS = ps).AsUnitObservable()
-        )
-            .Do(_ => skillEffectPS.PlayWithRelease())
-            .Delay(TimeSpan.FromSeconds(DAMAGE_EFFECT_DELAY_TIME))
+        return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<DamageFx>(effectBase).Do(fx => damageFX =fx).AsUnitObservable()
+            .SelectMany(_ => PlaySkillFxObservable(skillFx, battleMonsterItem, wholeSkillEffectBase, fxBaseImage))
             .SelectMany(res =>
             {
                 var damageAnimationObservable = Observable.ReturnUnit()
