@@ -195,12 +195,12 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             });
     }
 
-    public IObservable<Unit> PlaySkillFxObservable(SkillFxMB skillFx, BattleMonsterItem targetBattleMonsterItem, GameObject wholeSkillEffectBase, Image fxBaseImage)
+    public IObservable<Unit> PlaySkillFxObservable(SkillFxMB skillFx, Transform monsterItemEffectBase, GameObject wholeSkillEffectBase, Image fxBaseImage)
     {
         SkillFxItem skillFxItem = null;
         Sprite skillFxSprite = null;
 
-        var skillEffectBase = skillFx.skillFxPositionType == SkillFxPositionType.TargetWhole ? wholeSkillEffectBase.transform : targetBattleMonsterItem.transform;
+        var skillEffectBase = skillFx.skillFxPositionType == SkillFxPositionType.TargetWhole ? wholeSkillEffectBase.transform : monsterItemEffectBase;
 
         return Observable.WhenAll(
             PMAddressableAssetUtil.InstantiateSkillFxItemObservable(skillEffectBase, skillFx.id).Do(item => skillFxItem = item).AsUnitObservable(),
@@ -257,29 +257,40 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     /// <summary>
     /// 被ダメージ演出の再生
     /// </summary>
-    public IObservable<Unit> PlayTakeDamageFxObservable(BattleMonsterItem battleMonsterItem, Transform effectBase,long skillFxId, int damage, int toHp, int toEnergy, int toShield, GameObject wholeSkillEffectBase, Image fxBaseImage)
+    public IObservable<Unit> PlayTakeDamageFxObservable(BeDoneBattleMonsterData beDoneBattleMonsterData,BattleMonsterItem battleMonsterItem, long skillFxId, int toHp, int toEnergy, int toShield, GameObject wholeSkillEffectBase, Image fxBaseImage)
     {
         const float SLIDER_ANIMATION_TIME = 2.0f;
-        const float DAMAGE_EFFECT_DELAY_TIME = 0.5f;
-        var DAMAGE_FX_OFFSET = new Vector3(0, 50, 0);
+        const float DAMAGE_FX_BIG_SCALE = 1.5f;
+        const float DAMAGE_FX_SMALL_SCALE = 1.2f;
+        const float DAMAGE_FX_SCALE_ANIMATION_TIME = 0.4f;
+        const float DAMAGE_FX_MOVE_ANIMATION_TIME = 0.8f;
+        const float DAMAGE_FX_MOVE_ANIMATION_OFFSET_Y = 75.0f;
+        const float DAMAGE_FX_MOVE_ANIMATION_DELAY_TIME = 0.1f;
+        const float DAMAGE_FX_FADE_DELAY_TIME = 0.2f;
 
         var skillFx = MasterRecord.GetMasterOf<SkillFxMB>().Get(skillFxId);
         DamageFx damageFX = null;
 
-        return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<DamageFx>(effectBase).Do(fx => damageFX =fx).AsUnitObservable()
-            .SelectMany(_ => PlaySkillFxObservable(skillFx, battleMonsterItem, wholeSkillEffectBase, fxBaseImage))
+        return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<DamageFx>(battleMonsterItem.effectBase).Do(fx => damageFX =fx).AsUnitObservable()
+            .SelectMany(_ => PlaySkillFxObservable(skillFx, battleMonsterItem.effectBase, wholeSkillEffectBase, fxBaseImage))
             .SelectMany(res =>
             {
                 var damageAnimationObservable = Observable.ReturnUnit()
-                    .Do(_ =>
+                    .SelectMany(_ =>
                     {
-                        damageFX.text.text = damage.ToString();
+                        damageFX.SetText(beDoneBattleMonsterData);
                         damageFX.gameObject.SetActive(true);
 
-                        var position = damageFX.transform.localPosition;
-                        damageFX.transform.localPosition = new Vector3(position.x + DAMAGE_FX_OFFSET.x, position.y + DAMAGE_FX_OFFSET.y, position.z + DAMAGE_FX_OFFSET.z);
+                        var sequence = DOTween.Sequence()
+                            .Append(damageFX.transform.DOScale(DAMAGE_FX_BIG_SCALE, DAMAGE_FX_SCALE_ANIMATION_TIME / 4))
+                            .Append(damageFX.transform.DOScale(1.0f, DAMAGE_FX_SCALE_ANIMATION_TIME / 4))
+                            .Append(damageFX.transform.DOScale(DAMAGE_FX_SMALL_SCALE, DAMAGE_FX_SCALE_ANIMATION_TIME / 4))
+                            .Append(damageFX.transform.DOScale(1.0f, DAMAGE_FX_SCALE_ANIMATION_TIME / 4))
+                            .AppendInterval(DAMAGE_FX_MOVE_ANIMATION_DELAY_TIME)
+                            .Append(damageFX.transform.DOLocalMoveY(DAMAGE_FX_MOVE_ANIMATION_OFFSET_Y, DAMAGE_FX_MOVE_ANIMATION_TIME))
+                            .Join(damageFX.canvasGroup.DOFade(0.0f, DAMAGE_FX_MOVE_ANIMATION_TIME).SetDelay(DAMAGE_FX_FADE_DELAY_TIME));
+                        return sequence.OnCompleteAsObservable();
                     })
-                    .Delay(TimeSpan.FromSeconds(0.5f))
                     .Do(_ =>
                     {
                         if (damageFX.gameObject != null) Addressables.ReleaseInstance(damageFX.gameObject);

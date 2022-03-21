@@ -23,6 +23,7 @@ public class BattleMonsterItem : MonoBehaviour
     [SerializeField] protected TextMeshProUGUI _levelText;
     [SerializeField] protected TextMeshProUGUI _missText;
     [SerializeField] protected GameObject _shieldSliderBase;
+    [SerializeField] protected Transform _effectBase;
     [SerializeField] protected CanvasGroup _battleConditionBaseCanvasGroup;
     [SerializeField] protected List<BattleConditionIconItem> _battleConditionIconItemList;
     
@@ -36,6 +37,7 @@ public class BattleMonsterItem : MonoBehaviour
     public Slider energySlider { get { return _energySlider; } }
     public Slider shieldSlider { get { return _shieldSlider; } }
     public TextMeshProUGUI missText { get { return _missText; } }
+    public Transform effectBase { get { return _effectBase; } }
 
     private IDisposable battleConditionAnimationObservable;
 
