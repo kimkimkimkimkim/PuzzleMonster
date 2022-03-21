@@ -1,5 +1,7 @@
-﻿using GameBase;
+﻿using DG.Tweening;
+using GameBase;
 using PM.Enum.Battle;
+using PM.Enum.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,15 +18,21 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected TextMeshProUGUI _skillNameText;
     [SerializeField] protected TextMeshProUGUI _actionDescriptionTitleText;
     [SerializeField] protected TextMeshProUGUI _actionDescriptionContentText;
+    [SerializeField] protected TextMeshProUGUI _skillCutInSkillNameText;
     [SerializeField] protected List<BattleMonsterBase> _playerMonsterBaseList;
     [SerializeField] protected List<BattleMonsterBase> _enemyMonsterBaseList;
     [SerializeField] protected Image _fxParentImage;
+    [SerializeField] protected Image _skillCutInMonsterBaseImage;
+    [SerializeField] protected Image _skillCutInMonsterIconImage;
     [SerializeField] protected Transform _fxParent;
     [SerializeField] protected Transform _battleMonsterInfoItemBase;
     [SerializeField] protected GameObject _skillNameBase;
     [SerializeField] protected GameObject _actionDescriptionBase;
     [SerializeField] protected GameObject _playerWholeSkillEffectBase;
     [SerializeField] protected GameObject _enemyWholeSkillEffectBase;
+    [SerializeField] protected GameObject _skillCutInSkillNameBase;
+    [SerializeField] protected GameObject _skillCutInBase;
+
     [SerializeField] protected Button _pauseButton;
 
     private UserMonsterPartyInfo userMonsterParty;
@@ -199,12 +207,73 @@ public class BattleWindowUIScript : DummyWindowBase
         return Observable.ReturnUnit();
     }
 
-    public IObservable<Unit> PlayAttackAnimationObservable(BattleMonsterIndex doBattleMonsterIndex)
+    public IObservable<Unit> PlaySkillCutInAnimationObservable(long monsterId)
     {
-        var isPlayer = doBattleMonsterIndex.isPlayer;
-        var doMonsterBase = GetBattleMonsterBase(doBattleMonsterIndex);
+        const float SKILL_NAME_TEXT_ANGLE = -12.23f;
+        const float SKILL_NAME_OFFSET = 2000.0f;
+        const float MOVE_ANIMATION_TIME = 0.2f;
+        const float STOP_TIME = 1.5f;
+        const float MONSTER_ICON_OFFSET_X = 50.0f;
+
+        return PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monsterId)
+            .SelectMany(sprite =>
+            {
+                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(monsterId);
+                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(monster.ultimateSkillId);
+                var monsterIconDefaultPosition = _skillCutInMonsterIconImage.transform.localPosition;
+                var skillNameBaseDefaultPosition = _skillCutInSkillNameBase.transform.localPosition;
+                var skillNameBaseFromPosition = new Vector3(skillNameBaseDefaultPosition.x + SKILL_NAME_OFFSET, skillNameBaseDefaultPosition.y + (float)Math.Sin(Math.PI * SKILL_NAME_TEXT_ANGLE / 180.0), 0.0f);
+                var skillNameBaseToPosition = new Vector3(skillNameBaseDefaultPosition.x - SKILL_NAME_OFFSET, skillNameBaseDefaultPosition.y - (float)Math.Sin(Math.PI * SKILL_NAME_TEXT_ANGLE / 180.0), 0.0f);
+
+                _skillCutInMonsterIconImage.sprite = sprite;
+                _skillCutInMonsterIconImage.transform.localPosition = new Vector3(monsterIconDefaultPosition.x - MONSTER_ICON_OFFSET_X / 2, monsterIconDefaultPosition.y, monsterIconDefaultPosition.z);
+                _skillCutInSkillNameText.text = ultimateSkill.name;
+                _skillCutInSkillNameBase.transform.localPosition = skillNameBaseFromPosition;
+                _skillCutInMonsterBaseImage.fillOrigin = 0;
+                _skillCutInMonsterBaseImage.fillAmount = 0.0f;
+                _skillCutInBase.SetActive(true);
+
+                var sequence = DOTween.Sequence()
+                    .Append(DOVirtual.Float(0.0f, 1.0f, MOVE_ANIMATION_TIME, value => _skillCutInMonsterBaseImage.fillAmount = value))
+                    .Join(_skillCutInSkillNameBase.transform.DOLocalMove(skillNameBaseDefaultPosition, MOVE_ANIMATION_TIME))
+                    .AppendInterval(STOP_TIME)
+                    .AppendCallback(() => _skillCutInMonsterBaseImage.fillOrigin = 1)
+                    .Append(DOVirtual.Float(1.0f, 0.0f, MOVE_ANIMATION_TIME, value => _skillCutInMonsterBaseImage.fillAmount = value))
+                    .Join(_skillCutInSkillNameBase.transform.DOLocalMove(skillNameBaseToPosition, MOVE_ANIMATION_TIME))
+                    .AppendCallback(() =>
+                    {
+                        _skillCutInBase.SetActive(false);
+                        _skillCutInSkillNameBase.transform.localPosition = skillNameBaseDefaultPosition;
+                        _skillCutInMonsterIconImage.transform.localPosition = monsterIconDefaultPosition;
+                    });
+                var monsterIconSequence = DOTween.Sequence()
+                    .Append(_skillCutInMonsterIconImage.transform.DOLocalMoveX(MONSTER_ICON_OFFSET_X / 2, STOP_TIME + MOVE_ANIMATION_TIME * 2));
+                return Observable.WhenAll(
+                    sequence.OnCompleteAsObservable().AsUnitObservable(),
+                    monsterIconSequence.OnCompleteAsObservable().AsUnitObservable()
+                );
+            });
+    }
+
+    public IObservable<Unit> PlayAttackAnimationObservable(BattleMonsterInfo doBattleMonster, BattleActionType actionType)
+    {
+        var isPlayer = doBattleMonster.index.isPlayer;
+        var doMonsterBase = GetBattleMonsterBase(doBattleMonster.index);
         var doMonsterRT = doMonsterBase.battleMonsterItem.GetComponent<RectTransform>();
-        return VisualFxManager.Instance.PlayStartAttackFxObservable(doMonsterRT, isPlayer);
+        return Observable.ReturnUnit()
+            .SelectMany(_ =>
+            {
+                if (actionType == BattleActionType.UltimateSkill)
+                {
+                    // スキルカットイン
+                    return PlaySkillCutInAnimationObservable(doBattleMonster.monsterId);
+                }
+                else
+                {
+                    return Observable.ReturnUnit();
+                }
+            })
+            .SelectMany(_ => VisualFxManager.Instance.PlayStartAttackFxObservable(doMonsterRT, isPlayer));
     }
 
     public IObservable<Unit> PlayActionFailedAnimationObservable(BattleMonsterIndex doBattleMonsterIndex)

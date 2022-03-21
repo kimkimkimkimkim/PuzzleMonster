@@ -147,7 +147,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             var battleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
                             return Observable.WhenAll(
                                 battleWindow.ShowSkillInfoObservable(battleMonster, battleLog.actionType),
-                                battleWindow.PlayAttackAnimationObservable(battleLog.doBattleMonsterIndex)
+                                battleWindow.PlayAttackAnimationObservable(battleMonster, battleLog.actionType)
                             );
                         }
 
