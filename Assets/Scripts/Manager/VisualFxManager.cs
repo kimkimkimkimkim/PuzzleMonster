@@ -71,9 +71,9 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     /// </summary>
     public IObservable<Unit> PlayStartAttackFxObservable(RectTransform doMonsterRT, bool isPlayer)
     {
-        const float SCALE_ANIMATION_TIME = 0.15f;
-        const float GO_ANIMATION_TIME = 0.5f;
-        const float BACK_ANIMATION_TIME = 0.5f;
+        const float SCALE_ANIMATION_TIME = 0.1f;
+        const float GO_ANIMATION_TIME = 0.25f;
+        const float BACK_ANIMATION_TIME = 0.25f;
         const float MOVE_X_DISTANCE = 20.0f;
         const float MOVE_Y_DISTANCE = 10.0f;
 
@@ -259,7 +259,7 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
     /// </summary>
     public IObservable<Unit> PlayTakeDamageFxObservable(BeDoneBattleMonsterData beDoneBattleMonsterData,BattleMonsterItem battleMonsterItem, long skillFxId, int toHp, int toEnergy, int toShield, GameObject wholeSkillEffectBase, Image fxBaseImage)
     {
-        const float SLIDER_ANIMATION_TIME = 2.0f;
+        const float SLIDER_ANIMATION_TIME = 1.5f;
         const float DAMAGE_FX_BIG_SCALE = 1.5f;
         const float DAMAGE_FX_SMALL_SCALE = 1.2f;
         const float DAMAGE_FX_SCALE_ANIMATION_TIME = 0.4f;
@@ -281,19 +281,22 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                         damageFX.SetText(beDoneBattleMonsterData);
                         damageFX.gameObject.SetActive(true);
 
-                        var sequence = DOTween.Sequence()
+                        // 拡大アニメーションが終わったら次の処理にいく
+                        var scaleSequence = DOTween.Sequence()
                             .Append(damageFX.transform.DOScale(DAMAGE_FX_BIG_SCALE, DAMAGE_FX_SCALE_ANIMATION_TIME / 4))
                             .Append(damageFX.transform.DOScale(1.0f, DAMAGE_FX_SCALE_ANIMATION_TIME / 4))
                             .Append(damageFX.transform.DOScale(DAMAGE_FX_SMALL_SCALE, DAMAGE_FX_SCALE_ANIMATION_TIME / 4))
-                            .Append(damageFX.transform.DOScale(1.0f, DAMAGE_FX_SCALE_ANIMATION_TIME / 4))
-                            .AppendInterval(DAMAGE_FX_MOVE_ANIMATION_DELAY_TIME)
-                            .Append(damageFX.transform.DOLocalMoveY(DAMAGE_FX_MOVE_ANIMATION_OFFSET_Y, DAMAGE_FX_MOVE_ANIMATION_TIME))
-                            .Join(damageFX.canvasGroup.DOFade(0.0f, DAMAGE_FX_MOVE_ANIMATION_TIME).SetDelay(DAMAGE_FX_FADE_DELAY_TIME));
-                        return sequence.OnCompleteAsObservable();
-                    })
-                    .Do(_ =>
-                    {
-                        if (damageFX.gameObject != null) Addressables.ReleaseInstance(damageFX.gameObject);
+                            .Append(damageFX.transform.DOScale(1.0f, DAMAGE_FX_SCALE_ANIMATION_TIME / 4));
+                        return scaleSequence.OnCompleteAsObservable()
+                            .Do(tween =>
+                            {
+                                // ムーブアニメーションは個別で実行
+                                var moveSequence = DOTween.Sequence()
+                                    .AppendInterval(DAMAGE_FX_MOVE_ANIMATION_DELAY_TIME)
+                                    .Append(damageFX.transform.DOLocalMoveY(DAMAGE_FX_MOVE_ANIMATION_OFFSET_Y, DAMAGE_FX_MOVE_ANIMATION_TIME))
+                                    .Join(damageFX.canvasGroup.DOFade(0.0f, DAMAGE_FX_MOVE_ANIMATION_TIME).SetDelay(DAMAGE_FX_FADE_DELAY_TIME));
+                                moveSequence.OnCompleteAsObservable().Do(t => { if (damageFX.gameObject != null) Addressables.ReleaseInstance(damageFX.gameObject); }).Subscribe();
+                            });
                     })
                     .AsUnitObservable();
 
