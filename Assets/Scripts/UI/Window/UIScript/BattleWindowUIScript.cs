@@ -19,6 +19,7 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected TextMeshProUGUI _actionDescriptionTitleText;
     [SerializeField] protected TextMeshProUGUI _actionDescriptionContentText;
     [SerializeField] protected TextMeshProUGUI _skillCutInSkillNameText;
+    [SerializeField] protected TextMeshProUGUI _skillCutInSkillNameTitleText;
     [SerializeField] protected List<BattleMonsterBase> _playerMonsterBaseList;
     [SerializeField] protected List<BattleMonsterBase> _enemyMonsterBaseList;
     [SerializeField] protected Image _fxParentImage;
@@ -207,7 +208,7 @@ public class BattleWindowUIScript : DummyWindowBase
         return Observable.ReturnUnit();
     }
 
-    public IObservable<Unit> PlaySkillCutInAnimationObservable(long monsterId)
+    public IObservable<Unit> PlaySkillCutInAnimationObservable(long monsterId, bool isPlayer)
     {
         const float SKILL_NAME_TEXT_ANGLE = -12.23f;
         const float SKILL_NAME_OFFSET = 2000.0f;
@@ -224,13 +225,31 @@ public class BattleWindowUIScript : DummyWindowBase
                 var skillNameBaseDefaultPosition = _skillCutInSkillNameBase.transform.localPosition;
                 var skillNameBaseFromPosition = new Vector3(skillNameBaseDefaultPosition.x + SKILL_NAME_OFFSET, skillNameBaseDefaultPosition.y + (float)Math.Sin(Math.PI * SKILL_NAME_TEXT_ANGLE / 180.0), 0.0f);
                 var skillNameBaseToPosition = new Vector3(skillNameBaseDefaultPosition.x - SKILL_NAME_OFFSET, skillNameBaseDefaultPosition.y - (float)Math.Sin(Math.PI * SKILL_NAME_TEXT_ANGLE / 180.0), 0.0f);
+                var skillCutInBaseRotation = isPlayer ? Vector3.zero : Vector3.up * 180.0f;
+                var skillNameTextRotation = isPlayer ? new Vector3(0.0f, 0.0f, SKILL_NAME_TEXT_ANGLE) : new Vector3(0.0f, 180.0f, -SKILL_NAME_TEXT_ANGLE);
+                var skillNameTitleTextAlignment = isPlayer ? TextAlignmentOptions.BottomLeft : TextAlignmentOptions.BottomRight;
 
+                // モンスターアイコンの設定
                 _skillCutInMonsterIconImage.sprite = sprite;
                 _skillCutInMonsterIconImage.transform.localPosition = new Vector3(monsterIconDefaultPosition.x - MONSTER_ICON_OFFSET_X / 2, monsterIconDefaultPosition.y, monsterIconDefaultPosition.z);
+                
+                // スキルタイトルテキストの設定
+                _skillCutInSkillNameTitleText.transform.localRotation = Quaternion.Euler(skillNameTextRotation);
+                _skillCutInSkillNameTitleText.alignment = skillNameTitleTextAlignment;
+
+                // スキル名テキストの設定
+                _skillCutInSkillNameText.transform.localRotation = Quaternion.Euler(skillNameTextRotation);
                 _skillCutInSkillNameText.text = ultimateSkill.name;
+
+                // スキルベースの設定
                 _skillCutInSkillNameBase.transform.localPosition = skillNameBaseFromPosition;
+
+                // モンスターベースの設定
                 _skillCutInMonsterBaseImage.fillOrigin = 0;
                 _skillCutInMonsterBaseImage.fillAmount = 0.0f;
+
+                // カットインベースの設定
+                _skillCutInBase.transform.localRotation = Quaternion.Euler(skillCutInBaseRotation);
                 _skillCutInBase.SetActive(true);
 
                 var sequence = DOTween.Sequence()
@@ -266,7 +285,7 @@ public class BattleWindowUIScript : DummyWindowBase
                 if (actionType == BattleActionType.UltimateSkill)
                 {
                     // スキルカットイン
-                    return PlaySkillCutInAnimationObservable(doBattleMonster.monsterId);
+                    return PlaySkillCutInAnimationObservable(doBattleMonster.monsterId, doBattleMonster.index.isPlayer);
                 }
                 else
                 {

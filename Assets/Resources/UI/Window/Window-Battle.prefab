@@ -2227,18 +2227,18 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5447111516838762601}
-  m_LocalRotation: {x: -0, y: -0, z: -0.10652211, w: 0.9943104}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: -0.106524326, w: 0.99431014}
+  m_LocalPosition: {x: 0, y: 0, z: 0.46214578}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6483005318517424912}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -12.2300005}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -12.23}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 33, y: 3}
+  m_AnchoredPosition: {x: 277.3263, y: -49.95703}
   m_SizeDelta: {x: 500, y: 200}
-  m_Pivot: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &2907042495141800076
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2399,13 +2399,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5768603314118736961}
-  m_LocalRotation: {x: -0, y: -0, z: -0.10652211, w: 0.9943104}
+  m_LocalRotation: {x: 0, y: 0, z: -0.106524326, w: 0.99431014}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6483005318517424912}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -12.2300005}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -12.23}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 34, y: -3}
@@ -3127,6 +3127,7 @@ MonoBehaviour:
   _actionDescriptionTitleText: {fileID: 7595251478515254299}
   _actionDescriptionContentText: {fileID: 8690267210911440098}
   _skillCutInSkillNameText: {fileID: 4466925189385652450}
+  _skillCutInSkillNameTitleText: {fileID: 8010806631352205818}
   _playerMonsterBaseList:
   - {fileID: 5955615153499888780}
   - {fileID: 3348718902713184110}
