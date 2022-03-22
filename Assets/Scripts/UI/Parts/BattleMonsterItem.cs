@@ -17,6 +17,7 @@ public class BattleMonsterItem : MonoBehaviour
     [SerializeField] protected RectTransform _rectTransform;
     [SerializeField] protected Image _monsterImage;
     [SerializeField] protected Image _attributeImage;
+    [SerializeField] protected Image _graveImage;
     [SerializeField] protected Slider _hpSlider;
     [SerializeField] protected Slider _energySlider;
     [SerializeField] protected Slider _shieldSlider;
@@ -136,6 +137,16 @@ public class BattleMonsterItem : MonoBehaviour
     public void ShowShieldSlider(bool isShow)
     {
         _shieldSliderBase.SetActive(isShow);
+    }
+
+    public void ShowMonsterImage(bool isShow)
+    {
+        _monsterImage.gameObject.SetActive(isShow);
+    }
+
+    public void ShowGraveImage(bool isShow)
+    {
+        _graveImage.gameObject.SetActive(isShow);
     }
     
     private void OnDestroy() {

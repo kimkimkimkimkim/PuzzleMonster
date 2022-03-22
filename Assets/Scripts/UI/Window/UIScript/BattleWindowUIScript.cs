@@ -318,9 +318,7 @@ public class BattleWindowUIScript : DummyWindowBase
     public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterIndex battleMonsterIndex)
     {
         var monsterBase = GetBattleMonsterBase(battleMonsterIndex);
-        var monster = monsterBase.battleMonsterItem.gameObject;
-        monster.SetActive(false);
-        return Observable.ReturnUnit();
+        return VisualFxManager.Instance.PlayDieAnimationObservable(monsterBase.battleMonsterItem);
     }
     
     public IObservable<Unit> PlayWaveTitleFxObservable(int currentWaveCount, int maxWaveCount){

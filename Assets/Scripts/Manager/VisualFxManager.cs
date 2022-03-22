@@ -197,13 +197,17 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
 
     public IObservable<Unit> PlaySkillFxObservable(SkillFxMB skillFx, Transform monsterItemEffectBase, GameObject wholeSkillEffectBase, Image fxBaseImage)
     {
+        var skillEffectBase = skillFx.skillFxPositionType == SkillFxPositionType.TargetWhole ? wholeSkillEffectBase.transform : monsterItemEffectBase;
+        return PlaySkillFxObservable(skillFx, skillEffectBase, fxBaseImage);
+    }
+
+    public IObservable<Unit> PlaySkillFxObservable(SkillFxMB skillFx, Transform fxBase, Image fxBaseImage = null)
+    {
         SkillFxItem skillFxItem = null;
         Sprite skillFxSprite = null;
 
-        var skillEffectBase = skillFx.skillFxPositionType == SkillFxPositionType.TargetWhole ? wholeSkillEffectBase.transform : monsterItemEffectBase;
-
         return Observable.WhenAll(
-            PMAddressableAssetUtil.InstantiateSkillFxItemObservable(skillEffectBase, skillFx.id).Do(item => skillFxItem = item).AsUnitObservable(),
+            PMAddressableAssetUtil.InstantiateSkillFxItemObservable(fxBase, skillFx.id).Do(item => skillFxItem = item).AsUnitObservable(),
             PMAddressableAssetUtil.GetSkillFxSpriteObservable(skillFx.id).Do(sprite => skillFxSprite = sprite).AsUnitObservable()
         )
             .SelectMany(unit =>
@@ -241,10 +245,12 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
                 var skillFxObservable = Observable.Timer(TimeSpan.FromSeconds(FADE_TIME)).Do(_ => skillFxItem.particleSystem.PlayWithRelease(animationTime)).Delay(TimeSpan.FromSeconds(animationTime)).AsUnitObservable();
 
                 // 演出背景の表示
-                var backgroundSequence = DOTween.Sequence()
-                    .Append(fxBaseImage.DOFade(ALPHA, FADE_TIME))
-                    .AppendInterval(animationTime + 0.1f)
-                    .Append(fxBaseImage.DOFade(0.0f, FADE_TIME));
+                var backgroundSequence = fxBaseImage == null ?
+                    DOTween.Sequence() :
+                    DOTween.Sequence()
+                        .Append(fxBaseImage.DOFade(ALPHA, FADE_TIME))
+                        .AppendInterval(animationTime + 0.1f)
+                        .Append(fxBaseImage.DOFade(0.0f, FADE_TIME));
 
                 return Observable.WhenAll(
                     skillFxObservable,
@@ -328,8 +334,21 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
             })
             .AsUnitObservable();
     }
+
+    public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterItem battleMonsterItem)
+    {
+        const long DIE_ANIMATION_SKILL_FXID = 64;
+        const float DELAY_TIME = 0.5f;
+
+        var skillFx = MasterRecord.GetMasterOf<SkillFxMB>().Get(DIE_ANIMATION_SKILL_FXID);
+        return Observable.ReturnUnit()
+            .Do(_ => battleMonsterItem.ShowMonsterImage(false))
+            .SelectMany(_ => PlaySkillFxObservable(skillFx, battleMonsterItem.effectBase))
+            .Do(_ => battleMonsterItem.ShowGraveImage(true))
+            .Delay(TimeSpan.FromSeconds(DELAY_TIME));
+    }
     #endregion FxItem
-    
+
     #region ParticleSystem
     /// <summary>
     /// 敵モンスターの攻撃演出を実行
