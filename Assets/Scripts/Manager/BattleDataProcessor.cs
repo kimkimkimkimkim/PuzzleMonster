@@ -1158,6 +1158,9 @@ public partial class BattleDataProcessor
             case ActivateConditionType.Under30PercentHP:
                 // HPが30%未満ならOK
                 return !battleMonster.isDead && battleMonster.currentHp < battleMonster.maxHp * (30.0f / 100.0f);
+            case ActivateConditionType.Healable:
+                // 回復可能ならOK
+                return !battleMonster.isDead && battleMonster.currentHp < battleMonster.maxHp;
             case ActivateConditionType.None:
             default:
                 return false;
