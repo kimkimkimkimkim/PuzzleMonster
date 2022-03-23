@@ -10,6 +10,7 @@ public partial class BattleDataProcessor
 
     private int currentWaveCount;
     private int currentTurnCount;
+    private QuestMB quest;
     private List<QuestWaveMB> questWaveList;
     private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>();
@@ -20,6 +21,7 @@ public partial class BattleDataProcessor
 
     private void Init(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
     {
+        this.quest = quest;
         questWaveList = quest.questWaveIdList.Select(id => MasterRecord.GetMasterOf<QuestWaveMB>().Get(id)).ToList();
 
         currentWaveCount = 0;
@@ -29,28 +31,15 @@ public partial class BattleDataProcessor
         SetPlayerBattleMonsterList(userMonsterParty);
     }
 
-    int loopCount = 0;
     public List<BattleLogInfo> GetBattleLogList(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
     {
         Init(userMonsterParty, quest);
 
         // バトル処理を開始する
-        while (currentWinOrLose == WinOrLose.Continue && loopCount < 1000)
+        while (currentWinOrLose == WinOrLose.Continue)
         {
             loopCount++;
             PlayLoop();
-        }
-
-        // TODO
-        if(battleLogList.FirstOrDefault(l => l.type == BattleLogType.Result) == null)
-        {
-            var battleLog = new BattleLogInfo()
-            {
-                type = BattleLogType.Result,
-                winOrLose = WinOrLose.Lose,
-                log = "バトルに敗北しました",
-            };
-            battleLogList.Add(battleLog);
         }
 
         return battleLogList;
@@ -105,13 +94,13 @@ public partial class BattleDataProcessor
         }
 
         // ターンを終了する
-        EndTurnIfNeeded();
+        var isTurnEnd = EndTurnIfNeeded();
 
         // ウェーブを終了する
         EndWaveIfNeeded();
 
         // バトルを終了する
-        EndBattleIfNeeded();
+        EndBattleIfNeeded(isTurnEnd);
     }
 
     private void StartBattleIfNeeded()
@@ -733,11 +722,15 @@ public partial class BattleDataProcessor
         battleLogList.Add(battleLog);
     }
 
-    private void EndTurnIfNeeded()
+    /// <summary>
+    /// 現在のターンが終了すればターン終了時処理を実行
+    /// ターンが終了するか否かを返す
+    /// </summary>
+    private bool EndTurnIfNeeded()
     {
         // 一体でも未行動のモンスターが存在すれば実行しない
         var isNotEnd = GetAllMonsterList().Any(m => !m.isActed && !m.isDead);
-        if (isNotEnd) return;
+        if (isNotEnd) return false;;
 
         // ターン終了ログを差し込む
         var battleLog = new BattleLogInfo()
@@ -750,6 +743,8 @@ public partial class BattleDataProcessor
         // ターン終了時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTurnEnd, GetAllMonsterList().Select(m => m.index).ToList());
         battleChainParticipantList.Clear();
+        
+        return true;
     }
 
     private void EndWaveIfNeeded()
@@ -773,30 +768,35 @@ public partial class BattleDataProcessor
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveEnd, GetAllMonsterList().Select(m => m.index).ToList());
         battleChainParticipantList.Clear();
     }
-
-    private void EndBattleIfNeeded()
+    
+    private void EndBattleIfNeeded(bool isTurnEnd)
     {
-        // 敵味方ともに戦えるモンスターが一体でもいれば何もしない
+        // 味方が全滅あるいは最終ウェーブで敵が全滅ならバトル終了
         var existsAlly = playerBattleMonsterList.Any(m => !m.isDead);
         var existsEnemy = enemyBattleMonsterList.Any(m => !m.isDead);
-        if (existsAlly && existsEnemy) return;
+        var isEndBattle = !existsAlly || (!existsEnemy && currentWaveCount >= questWaveList.Count);
 
-        // 味方残っている場合は最終ウェーブでなければ何もしない
-        if (existsAlly && currentWaveCount < questWaveList.Count) return;
-
-        // 味方が残っていれば勝利
-        var winOrLose = existsAlly ? WinOrLose.Win : WinOrLose.Lose;
-        currentWinOrLose = winOrLose;
+        // バトルが終了していなければ続行、バトル終了かつ味方が残っていれば勝利
+        currentWinOrLose = 
+            !isEndBattle ? WinOrLose.Continue 
+            : existsAlly ? WinOrLose.Win 
+            : WinOrLose.Lose;
+        
+        // このタイミングでターンが終了しかつ現在のターンが上限ターンかつ決着がついていなければ敗北
+        if (currentWinOrLose == WinOrLose.Continue && currentTurnCount >= quest.limitTurnNum) currentWinOrLose = WinOrLose.Lose;
+        
+        // バトル続行なら何もしない
+        if (currentWinOrLose == WinOrLose.Continue) return;
         
         // Wave毎の敵情報リストの更新
-        // 味方が全滅した場合はそのWaveの敵情報リストは未更新なのでここで更新する
-        enemyBattleMonsterListByWave.Add(enemyBattleMonsterList);
+        // 敵が全滅していない場合はそのWaveの敵情報リストは未更新なのでここで更新する
+        if (existsEnemy) enemyBattleMonsterListByWave.Add(enemyBattleMonsterList);
 
         // バトル終了ログの差し込み
         var battleLog = new BattleLogInfo()
         {
             type = BattleLogType.Result,
-            winOrLose = winOrLose,
+            winOrLose = currentWinOrLose,
             log = winOrLose == WinOrLose.Win ? "バトルに勝利しました" : "バトルに敗北しました",
             playerBattleMonsterList = playerBattleMonsterList,
             enemyBattleMonsterListByWave = enemyBattleMonsterListByWave,
