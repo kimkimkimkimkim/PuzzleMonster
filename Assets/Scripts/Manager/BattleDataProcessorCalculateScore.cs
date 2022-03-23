@@ -1,3 +1,5 @@
+using PM.Enum.Battle;
+using System;
 /// <summary>
 /// スコア集計を行うクラス
 /// </summary>

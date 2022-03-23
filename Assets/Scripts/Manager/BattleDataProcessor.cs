@@ -15,7 +15,7 @@ public partial class BattleDataProcessor
     private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>();
     private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>();
-    private List<List<BattleMonsterInfo> enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>();
+    private List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>();
     private List<BattleChainParticipantInfo> battleChainParticipantList = new List<BattleChainParticipantInfo>();
     private WinOrLose currentWinOrLose;
 
@@ -38,7 +38,6 @@ public partial class BattleDataProcessor
         // バトル処理を開始する
         while (currentWinOrLose == WinOrLose.Continue)
         {
-            loopCount++;
             PlayLoop();
         }
 
@@ -797,7 +796,7 @@ public partial class BattleDataProcessor
         {
             type = BattleLogType.Result,
             winOrLose = currentWinOrLose,
-            log = winOrLose == WinOrLose.Win ? "バトルに勝利しました" : "バトルに敗北しました",
+            log = currentWinOrLose == WinOrLose.Win ? "バトルに勝利しました" : "バトルに敗北しました",
             playerBattleMonsterList = playerBattleMonsterList,
             enemyBattleMonsterListByWave = enemyBattleMonsterListByWave,
         };
