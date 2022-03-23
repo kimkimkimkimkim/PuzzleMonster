@@ -43,6 +43,12 @@ public class IconItem : MonoBehaviour
         SetNumText(numText);
     }
 
+    public void SetIcon(ItemType itemType, long itemId)
+    {
+        var item = new ItemMI() { itemType = itemType, itemId = itemId };
+        SetIcon(item);
+    }
+
     private void SetFrameImage(IconColorType iconColor)
     {
         var index = (int)iconColor;

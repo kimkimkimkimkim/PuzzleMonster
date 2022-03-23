@@ -10,8 +10,14 @@ public class BattleResultDialogFactory
     {
         return Observable.Create<BattleResultDialogResponse>(observer => {
             var param = new Dictionary<string, object>();
-            param.Add("userBattleId", request.userBattleId);
+            param.Add("winOrLose", request.winOrLose);
+            param.Add("playerBattleMonsterList", request.playerBattleMonsterList);
+            param.Add("enemyBattleMonsterListByWave", request.enemyBattleMonsterListByWave);
             param.Add("onClickClose", new Action(() => {
+                observer.OnNext(new BattleResultDialogResponse());
+                observer.OnCompleted();
+            }));
+            param.Add("onClickOk", new Action(() => {
                 observer.OnNext(new BattleResultDialogResponse());
                 observer.OnCompleted();
             }));
