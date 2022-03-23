@@ -429,7 +429,10 @@ public partial class BattleDataProcessor
 
             // 効果量を反映
             // 攻撃でも回復でも加算
-            m.ChangeHp(actionValue.value);
+            var effectValue = m.ChangeHp(actionValue.value);
+            
+            // スコア計算
+            AddScore(doMonsterIndex, m.index, SkillType.Damage, effectValue);
 
             // エネルギーを上昇させる
             if(actionType != BattleActionType.BattleCondition) m.ChangeEnergy(ConstManager.Battle.ENERGY_RISE_VALUE_ON_TAKE_DAMAGE);
@@ -528,7 +531,10 @@ public partial class BattleDataProcessor
 
             // 効果量を反映
             // 攻撃でも回復でも加算
-            m.ChangeHp(actionValue.value);
+            var effectValue = m.ChangeHp(actionValue.value);
+            
+            // スコア計算
+            AddScore(doMonsterIndex, m.index, SkillType.Heal, effectValue);
 
             return new BeDoneBattleMonsterData()
             {
