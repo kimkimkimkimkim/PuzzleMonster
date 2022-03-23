@@ -782,7 +782,7 @@ public partial class BattleDataProcessor
             : WinOrLose.Lose;
         
         // このタイミングでターンが終了しかつ現在のターンが上限ターンかつ決着がついていなければ敗北
-        if (currentWinOrLose == WinOrLose.Continue && currentTurnCount >= quest.limitTurnNum) currentWinOrLose = WinOrLose.Lose;
+        if (isTurnEnd && currentWinOrLose == WinOrLose.Continue && currentTurnCount >= quest.limitTurnNum) currentWinOrLose = WinOrLose.Lose;
         
         // バトル続行なら何もしない
         if (currentWinOrLose == WinOrLose.Continue) return;
