@@ -14,6 +14,7 @@ public partial class BattleDataProcessor
     private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>();
     private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>();
+    private List<List<BattleMonsterInfo> enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>();
     private List<BattleChainParticipantInfo> battleChainParticipantList = new List<BattleChainParticipantInfo>();
     private WinOrLose currentWinOrLose;
 
@@ -764,6 +765,9 @@ public partial class BattleDataProcessor
             log = $"ウェーブ{currentWaveCount}が終了しました",
         };
         battleLogList.Add(battleLog);
+        
+        // Wave毎の敵情報リストの更新
+        enemyBattleMonsterListByWave.Add(enemyBattleMonsterList);
 
         // ウェーブ終了時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveEnd, GetAllMonsterList().Select(m => m.index).ToList());
@@ -783,6 +787,10 @@ public partial class BattleDataProcessor
         // 味方が残っていれば勝利
         var winOrLose = existsAlly ? WinOrLose.Win : WinOrLose.Lose;
         currentWinOrLose = winOrLose;
+        
+        // Wave毎の敵情報リストの更新
+        // 味方が全滅した場合はそのWaveの敵情報リストは未更新なのでここで更新する
+        enemyBattleMonsterListByWave.Add(enemyBattleMonsterList);
 
         // バトル終了ログの差し込み
         var battleLog = new BattleLogInfo()
@@ -790,6 +798,8 @@ public partial class BattleDataProcessor
             type = BattleLogType.Result,
             winOrLose = winOrLose,
             log = winOrLose == WinOrLose.Win ? "バトルに勝利しました" : "バトルに敗北しました",
+            playerBattleMonsterList = playerBattleMonsterList,
+            enemyBattleMonsterListByWave = enemyBattleMonsterListByWave,
         };
         battleLogList.Add(battleLog);
     }
