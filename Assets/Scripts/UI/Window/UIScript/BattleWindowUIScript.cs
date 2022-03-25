@@ -88,7 +88,7 @@ public class BattleWindowUIScript : DummyWindowBase
                 })
                 .Delay(TimeSpan.FromSeconds(SHOW_TIME))
                 .DoOnCompleted(() => _actionDescriptionBase.SetActive(false));
-            var skillFxObservable = Observable.Timer(TimeSpan.FromSeconds(0.5f)).SelectMany(_ => VisualFxManager.Instance.PlaySkillFxObservable(skillEffect, targetMonsterBase.battleMonsterItem.effectBase, _enemyWholeSkillEffectBase, _fxParentImage));
+            var skillFxObservable = Observable.Timer(TimeSpan.FromSeconds(0.5f)).SelectMany(_ => VisualFxManager.Instance.PlaySkillFxObservable(skillEffect, targetMonsterBase.battleMonsterItem.effectBase,  _fxParentImage));
 
             return Observable.WhenAll(
                 skillNameObservable,
@@ -273,7 +273,7 @@ public class BattleWindowUIScript : DummyWindowBase
     {
         var monsterBase = GetBattleMonsterBase(targetBeDoneBattleMonsterData.battleMonsterIndex);
         var wholeSkillEffectBase = targetBeDoneBattleMonsterData.battleMonsterIndex.isPlayer ? _playerWholeSkillEffectBase : _enemyWholeSkillEffectBase;
-        return VisualFxManager.Instance.PlayTakeDamageFxObservable(targetBeDoneBattleMonsterData, monsterBase.battleMonsterItem,skillFxId, Math.Max(0, currentHp), currentEnergy, currentShield, wholeSkillEffectBase, _fxParentImage);
+        return VisualFxManager.Instance.PlayTakeDamageFxObservable(targetBeDoneBattleMonsterData, monsterBase.battleMonsterItem,skillFxId, Math.Max(0, currentHp), currentEnergy, currentShield, monsterBase.battleMonsterItem.effectBase, _fxParentImage);
     }
 
     public IObservable<Unit> PlayEnergySliderAnimationObservable(BattleMonsterIndex monsterIndex, int currentEnergy)
