@@ -55,14 +55,29 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                 return Observable.ReturnUnit().Connect(observableList.ToArray());
             })
             .SelectMany(_ => ApiConnection.EndBattle(userBattle.id))
-            .SelectMany(_ =>
+            .SelectMany(res =>
             {
                 var resultLog = battleLogList.First(l => l.type == BattleLogType.Result);
                 return BattleResultDialogFactory.Create(new BattleResultDialogRequest() { 
                     winOrLose = resultLog.winOrLose, 
                     playerBattleMonsterList = resultLog.playerBattleMonsterList,
                     enemyBattleMonsterListByWave = resultLog.enemyBattleMonsterListByWave,
-                });
+                })
+                    .SelectMany(_ =>
+                    {
+                        if (resultLog.winOrLose == WinOrLose.Win)
+                        {
+                            var rewardItemList = ItemUtil.GetRewardItemList(res.userBattle);
+                            return RewardReceiveDialogFactory.Create(new RewardReceiveDialogRequest()
+                            {
+                                rewardItemList = rewardItemList,
+                            }).AsUnitObservable();
+                        }
+                        else
+                        {
+                            return Observable.ReturnUnit();
+                        }
+                    });
             })
             .SelectMany(_ => FadeOutObservable())
             .AsUnitObservable();
