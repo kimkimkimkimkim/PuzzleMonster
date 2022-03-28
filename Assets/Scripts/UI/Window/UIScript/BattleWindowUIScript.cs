@@ -34,6 +34,8 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected Sprite _enemySkillCutInSprite;
     [SerializeField] protected Button _pauseButton;
 
+    private List<BattleMonsterInfo> playerBattleMonsterList;
+    private List<BattleMonsterInfo> enemyBattleMonsterList;
     private UserMonsterPartyInfo userMonsterParty;
     private QuestMB quest;
     private IDisposable skillNameObservable;
@@ -108,9 +110,21 @@ public class BattleWindowUIScript : DummyWindowBase
             if (userMonster != null) {
                 var parent = _playerMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
+                var battleMonsterIndex = new BattleMonsterIndex() { index = index, isPlayer = true };
 
                 parent.SetBattleMonsterItem(item);
                 item.Init(userMonster.monsterId, userMonster.customData.level);
+                item.SetOnClickAction(() =>
+                {
+                    var battleMonster = GetBattleMonster(battleMonsterIndex);
+                    if (battleMonster == null) return;
+
+                    Observable.ReturnUnit()
+                        .Do(_ => TimeManager.Instance.Pause())
+                        .SelectMany(_ => BattleConditionListDialogFactory.Create(new BattleConditionListDialogRequest() { battleMonster = battleMonster }))
+                        .Do(_ => TimeManager.Instance.SpeedBy1())
+                        .Subscribe();
+                });
             }
         });
     }
@@ -136,11 +150,53 @@ public class BattleWindowUIScript : DummyWindowBase
             {
                 var parent = _enemyMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
+                var battleMonsterIndex = new BattleMonsterIndex() { index = index, isPlayer = false };
 
                 parent.SetBattleMonsterItem(item);
                 item.Init(questMonster.monsterId, questMonster.level);
+                item.SetOnClickAction(() =>
+                {
+                    var battleMonster = GetBattleMonster(battleMonsterIndex);
+                    if (battleMonster == null) return;
+
+                    Observable.ReturnUnit()
+                        .Do(_ => TimeManager.Instance.Pause())
+                        .SelectMany(_ => BattleConditionListDialogFactory.Create(new BattleConditionListDialogRequest() { battleMonster = battleMonster }))
+                        .Do(_ => TimeManager.Instance.SpeedBy1())
+                        .Subscribe();
+                });
             }
         });
+    }
+
+    private BattleMonsterInfo GetBattleMonster(BattleMonsterIndex battleMonsterIndex)
+    {
+        var targetBattleMonsterList = battleMonsterIndex.isPlayer ? playerBattleMonsterList : enemyBattleMonsterList;
+        return targetBattleMonsterList.FirstOrDefault(b => b.index.IsSame(battleMonsterIndex));
+    }
+
+    public void UpdateBattleMonster(BattleMonsterInfo battleMonster)
+    {
+        var targetBattleMonsterList = battleMonster.index.isPlayer ? playerBattleMonsterList : enemyBattleMonsterList;
+        targetBattleMonsterList[battleMonster.index.index] = battleMonster;
+    }
+
+    public void UpdateBattleMonster(List<BattleMonsterInfo> battleMonsterList)
+    {
+        battleMonsterList.ForEach(battleMonster => UpdateBattleMonster(battleMonster));
+    }
+
+    public void SetBattleMonsterList(List<BattleMonsterInfo> battleMonsterList)
+    {
+        var isPlayer = battleMonsterList.First().index.isPlayer;
+        if (isPlayer)
+        {
+            playerBattleMonsterList = battleMonsterList;
+        }
+        else
+        {
+            enemyBattleMonsterList = battleMonsterList;
+        }
     }
 
     private void SetBattleMonsterInfoItem(UserMonsterPartyInfo userMonsterParty)

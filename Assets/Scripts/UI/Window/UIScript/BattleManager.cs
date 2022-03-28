@@ -149,10 +149,12 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                 {
                     // バトル開始
                     case BattleLogType.StartBattle:
+                        battleWindow.SetBattleMonsterList(battleLog.playerBattleMonsterList);
                         return Observable.ReturnUnit();
                         
                     // ウェーブ進行アニメーション
                     case BattleLogType.MoveWave:
+                        battleWindow.SetBattleMonsterList(battleLog.enemyBattleMonsterList);
                         return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
 
                     // ターン進行アニメーション
@@ -168,6 +170,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     case BattleLogType.StartActionAnimation:
                         {
                             var battleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
+                            battleWindow.UpdateBattleMonster(battleMonster);
                             return Observable.WhenAll(
                                 battleWindow.ShowSkillInfoObservable(battleMonster, battleLog.actionType),
                                 battleWindow.PlayAttackAnimationObservable(battleMonster, battleLog.actionType)
@@ -184,6 +187,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                         var takeDamageObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
                         {
                             var beDoneMonster = GetBattleMonster(d.battleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
+                            battleWindow.UpdateBattleMonster(beDoneMonster);
                             return battleWindow.PlayTakeDamageAnimationObservable(d ,battleLog.skillFxId, beDoneMonster.currentHp, beDoneMonster.currentEnergy, beDoneMonster.shield());
                         }).ToList();
                         return Observable.WhenAll(takeDamageObservableList);
@@ -196,6 +200,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     case BattleLogType.ProgressBattleConditionTurn:
                         battleLog.beDoneBattleMonsterDataList.ForEach(d => {
                             var battleMonster = GetBattleMonster(d.battleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
+                            battleWindow.UpdateBattleMonster(battleMonster);
                             battleWindow.RefreshBattleCondition(battleMonster);
                         });
                         return Observable.ReturnUnit();
@@ -208,6 +213,8 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     case BattleLogType.Die:
                         var dieObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
                         {
+                            var battleMonster = GetBattleMonster(d.battleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
+                            battleWindow.UpdateBattleMonster(battleMonster);
                             return battleWindow.PlayDieAnimationObservable(d.battleMonsterIndex);
                         });
                         return Observable.WhenAll(dieObservableList);
@@ -215,6 +222,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     // アクション終了時アニメーション
                     case BattleLogType.EndAction:
                         var endActionBattleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
+                        battleWindow.UpdateBattleMonster(endActionBattleMonster);
                         return battleWindow.PlayEnergySliderAnimationObservable(battleLog.doBattleMonsterIndex,endActionBattleMonster.currentEnergy);
 
                     // バトル結果アニメーション

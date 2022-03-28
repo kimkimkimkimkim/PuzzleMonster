@@ -301,6 +301,7 @@ public partial class BattleDataProcessor
         {
             type = BattleLogType.MoveWave,
             waveCount = currentWaveCount,
+            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
             log = $"ウェーブ{currentWaveCount}を開始します",
         };
         battleLogList.Add(battleLog);
@@ -661,6 +662,8 @@ public partial class BattleDataProcessor
         var battleLog = new BattleLogInfo()
         {
             type = BattleLogType.Die,
+            playerBattleMonsterList = playerBattleMonsterList.Clone(),
+            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
             beDoneBattleMonsterDataList = beDoneBattleMonsterDataList,
             log = log,
         };

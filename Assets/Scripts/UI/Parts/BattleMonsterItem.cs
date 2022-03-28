@@ -15,6 +15,7 @@ using UnityEngine.UI;
 public class BattleMonsterItem : MonoBehaviour
 {
     [SerializeField] protected RectTransform _rectTransform;
+    [SerializeField] protected Button _button;
     [SerializeField] protected Image _monsterImage;
     [SerializeField] protected Image _attributeImage;
     [SerializeField] protected Image _graveImage;
@@ -41,6 +42,7 @@ public class BattleMonsterItem : MonoBehaviour
     public Transform effectBase { get { return _effectBase; } }
 
     private IDisposable battleConditionAnimationObservable;
+    private IDisposable onClickButtonObservable;
 
     public void Init(long monsterId, int level)
     {
@@ -148,7 +150,22 @@ public class BattleMonsterItem : MonoBehaviour
     {
         _graveImage.gameObject.SetActive(isShow);
     }
-    
+
+    public void SetOnClickAction(Action action)
+    {
+        if (action == null) return;
+
+        if (onClickButtonObservable != null)
+        {
+            onClickButtonObservable.Dispose();
+            onClickButtonObservable = null;
+        }
+
+        onClickButtonObservable = _button.OnClickAsObservable()
+            .Do(_ => action())
+            .Subscribe();
+    }
+
     private void OnDestroy() {
         if(battleConditionAnimationObservable != null)
         {
