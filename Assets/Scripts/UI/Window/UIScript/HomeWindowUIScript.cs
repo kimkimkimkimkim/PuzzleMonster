@@ -36,6 +36,8 @@ public class HomeWindowUIScript : WindowBase
             .SelectMany(_ => PresentDialogFactory.Create(new PresentDialogRequest()))
             .Subscribe();
 
+        MainSceneManager.Instance.SetReadyToShowStackDialog(true);
+
         ActivateBadge();
         SetMonsterImage();
     }

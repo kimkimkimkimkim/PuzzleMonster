@@ -4,6 +4,7 @@ using UniRx;
 
 public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
 {
+    private bool readyToShowStackDialog;
     private TitleWindowUIScript titleUIScript;
 
     private void Start()
@@ -60,5 +61,10 @@ public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
         // タイトル画面を消してホーム画面へ遷移
         if (titleUIScript != null) Destroy(titleUIScript.gameObject);
         HeaderFooterWindowFactory.Create(new HeaderFooterWindowRequest()).Subscribe();
+    }
+
+    public void SetReadyToShowStackDialog(bool isReady)
+    {
+        readyToShowStackDialog = isReady;
     }
 }
