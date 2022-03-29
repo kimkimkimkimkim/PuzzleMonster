@@ -206,6 +206,18 @@ public class BattleWindowUIScript : DummyWindowBase
             var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
             var battleMonsterInfoItem = UIManager.Instance.CreateContent<BattleMonsterInfoItem>(_battleMonsterInfoItemBase);
             battleMonsterInfoItem.Set(userMonster);
+            battleMonsterInfoItem.SetOnClickAction(() =>
+            {
+                Observable.ReturnUnit()
+                    .Do(_ => TimeManager.Instance.Pause())
+                    .SelectMany(_ => MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest()
+                    {
+                        userMonster = userMonster,
+                        canStrength = false,
+                    }))
+                    .Do(_ => TimeManager.Instance.SpeedBy1())
+                    .Subscribe();
+            });
         });
     }
 

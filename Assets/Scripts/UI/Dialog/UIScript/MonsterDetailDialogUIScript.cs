@@ -37,6 +37,7 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Slider _speedSliderBack;
     [SerializeField] protected Slider _speedSliderFront;
     [SerializeField] protected GameObject _passiveSkillBase;
+    [SerializeField] protected GameObject _strengthButtonBase;
 
     private bool isNeedRefresh;
     private MonsterMB monster;
@@ -46,6 +47,7 @@ public class MonsterDetailDialogUIScript : DialogBase
     {
         var onClickClose = (Action<bool>)info.param["onClickClose"];
         userMonster = (UserMonsterInfo)info.param["userMonster"];
+        var canStrength = (bool)info.param["canStrength"];
 
         monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
 
@@ -74,6 +76,7 @@ public class MonsterDetailDialogUIScript : DialogBase
             })
             .Subscribe();
 
+        _strengthButtonBase.SetActive(canStrength);
         SetSliderMaxValue();
         RefreshUIObservable().Subscribe();
     }

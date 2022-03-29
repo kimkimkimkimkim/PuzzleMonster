@@ -25,7 +25,7 @@ public class HeaderFooterManager : SingletonMonoBehaviour<HeaderFooterManager>
     public void SetStaminaText()
     {
         if (uiScript == null) return;
-        uiScript.SetStaminaText();
+        uiScript.SetStaminaUI();
     }
 
     public void UpdateUserDataUI()

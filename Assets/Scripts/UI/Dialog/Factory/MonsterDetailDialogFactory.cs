@@ -11,6 +11,7 @@ public class MonsterDetailDialogFactory
         return Observable.Create<MonsterDetailDialogResponse>(observer => {
             var param = new Dictionary<string, object>();
             param.Add("userMonster", request.userMonster);
+            param.Add("canStrength", request.canStrength);
             param.Add("onClickClose", new Action<bool>((isNeedRefresh) => {
                 observer.OnNext(new MonsterDetailDialogResponse() { isNeedRefresh = isNeedRefresh });
                 observer.OnCompleted();

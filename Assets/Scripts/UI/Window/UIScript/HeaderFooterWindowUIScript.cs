@@ -20,12 +20,14 @@ public class HeaderFooterWindowUIScript : WindowBase
     [SerializeField] protected TextMeshProUGUI _userNameText;
     [SerializeField] protected TextMeshProUGUI _userExpText;
     [SerializeField] protected Slider _userExpSlider;
+    [SerializeField] protected Slider _staminaSlider;
     [SerializeField] protected Toggle _homeToggle;
     [SerializeField] protected Toggle _monsterToggle;
     [SerializeField] protected Toggle _gachaToggle;
     [SerializeField] protected Toggle _shopToggle;
     [SerializeField] protected GameObject _headerPanel;
     [SerializeField] protected GameObject _footerPanel;
+    [SerializeField] protected Button _staminaButton;
 
     public GameObject headerPanel { get { return _headerPanel; } }
     public GameObject footerPanel { get { return _footerPanel; } }
@@ -33,6 +35,7 @@ public class HeaderFooterWindowUIScript : WindowBase
     private IDisposable staminaCountDownObservable;
     private int initialStamina;
     private double elapsedTimeMilliSeconds;
+    private bool isCountdown;
 
     public override void Init(WindowInfo info)
     {
@@ -84,10 +87,19 @@ public class HeaderFooterWindowUIScript : WindowBase
             })
             .Subscribe();
 
+        _staminaButton.OnClickIntentAsObservable()
+            .Do(_ =>
+            {
+                isCountdown = !isCountdown;
+                _staminaText.gameObject.SetActive(!isCountdown);
+                _staminaCountdownText.gameObject.SetActive(isCountdown);
+            })
+            .Subscribe();
+
         Observable.Timer(TimeSpan.FromSeconds(2)).Do(_ => UIManager.Instance.TryHideFullScreenLoadingView()).Take(1).Subscribe();
         _homeToggle.isOn = true;
         UpdateVirtualCurrencyText();
-        SetStaminaText();
+        SetStaminaUI();
         UpdateUserDataUI();
     }
 
@@ -112,7 +124,7 @@ public class HeaderFooterWindowUIScript : WindowBase
     /// スタミナテキストの設定
     /// スタミナ値が変わるたびに実行する
     /// </summary>
-    public void SetStaminaText()
+    public void SetStaminaUI()
     {
         initialStamina = ApplicationContext.userData.stamina;
         var maxStamina = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.rank == ApplicationContext.userData.rank)?.stamina;
@@ -135,6 +147,9 @@ public class HeaderFooterWindowUIScript : WindowBase
             ? "00:00"
             : $"あと {TextUtil.GetZeroPaddingText2Digits(initialMinutes)}:{TextUtil.GetZeroPaddingText2Digits(initialSeconds)}";
 
+        _staminaSlider.maxValue = (float)maxStamina;
+        _staminaSlider.value = (float)initialStamina;
+
         staminaCountDownObservable = Observable.EveryUpdate()
             .Do(_ =>
             {
@@ -152,11 +167,13 @@ public class HeaderFooterWindowUIScript : WindowBase
                 {
                     _staminaCountdownText.text = $"あと {TextUtil.GetZeroPaddingText2Digits(minutes)}:{TextUtil.GetZeroPaddingText2Digits(seconds)}";
                     _staminaText.text = $"{(int)stamina}/{maxStamina}";
+                    _staminaSlider.value = (float)stamina;
                 }
                 else
                 {
                     _staminaCountdownText.text = $"00:00";
                     _staminaText.text = $"{maxStamina}/{maxStamina}";
+                    _staminaSlider.value = (float)maxStamina;
                 }
             })
             .Subscribe();

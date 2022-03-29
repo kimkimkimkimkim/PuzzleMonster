@@ -1,6 +1,7 @@
 using GameBase;
 using PM.Enum.Monster;
 using PM.Enum.UI;
+using System;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,6 +13,9 @@ public class BattleMonsterInfoItem : MonoBehaviour
     [SerializeField] Image _monsterImage;
     [SerializeField] Image _backgroundImage;
     [SerializeField] MonsterGradeParts _monsterGrade;
+    [SerializeField] Button _button;
+
+    private IDisposable onClickButtonObservable;
 
     public void Set(UserMonsterInfo userMonster)
     {
@@ -32,5 +36,20 @@ public class BattleMonsterInfoItem : MonoBehaviour
             })
             .Subscribe()
             .AddTo(this);
+    }
+
+    public void SetOnClickAction(Action action)
+    {
+        if (action == null) return;
+
+        if (onClickButtonObservable != null)
+        {
+            onClickButtonObservable.Dispose();
+            onClickButtonObservable = null;
+        }
+
+        onClickButtonObservable = _button.OnClickAsObservable()
+            .Do(_ => action())
+            .Subscribe();
     }
 }
