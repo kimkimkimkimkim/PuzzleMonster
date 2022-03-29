@@ -39,7 +39,6 @@ public class PresentDialogUIScript : DialogBase
     {
         _infiniteScroll.Clear();
 
-        // カテゴリに含まれるクエストのうち一つでも表示条件を満たしているものがあれば表示する
         userContainerList = ApplicationContext.userInventory.userContainerList;
 
         _infiniteScroll.Init(userContainerList.Count, OnUpdateItem);

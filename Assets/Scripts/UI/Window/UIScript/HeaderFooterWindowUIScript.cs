@@ -27,6 +27,7 @@ public class HeaderFooterWindowUIScript : WindowBase
     [SerializeField] protected Toggle _shopToggle;
     [SerializeField] protected GameObject _headerPanel;
     [SerializeField] protected GameObject _footerPanel;
+    [SerializeField] protected GameObject _homeTabBadge;
     [SerializeField] protected Button _staminaButton;
 
     public GameObject headerPanel { get { return _headerPanel; } }
@@ -101,6 +102,7 @@ public class HeaderFooterWindowUIScript : WindowBase
         UpdateVirtualCurrencyText();
         SetStaminaUI();
         UpdateUserDataUI();
+        ActivateBadge();
     }
 
     /// <summary>
@@ -204,6 +206,35 @@ public class HeaderFooterWindowUIScript : WindowBase
             _userExpSlider.maxValue = requiredExp;
             _userExpSlider.value = currentExp;
         }
+    }
+
+    public void ActivateBadge()
+    {
+        // HomeTab
+        var isShowPresentIconBadge = ApplicationContext.userInventory.userContainerList.Any();
+        var isShowMissionIconBadge = MasterRecord.GetMasterOf<MissionMB>().GetAll()
+            .Where(m =>
+            {
+                // 表示条件を満たしているミッションに絞る
+                return ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList);
+            })
+            .Where(m =>
+            {
+                // クリア条件を満たしているか否か
+                var canClear = ConditionUtil.IsValid(ApplicationContext.userData, m.canClearConditionList);
+                // すでにクリアしているか否か
+                var isCleared = ApplicationContext.userData.userMissionList
+                    .Where(u => u.missionId == m.id)
+                    .Where(u => u.completedDate > DateTimeUtil.Epoch)
+                    .Where(u => (u.startExpirationDate <= DateTimeUtil.Epoch && u.endExpirationDate <= DateTimeUtil.Epoch) || (u.startExpirationDate > DateTimeUtil.Epoch && u.endExpirationDate > DateTimeUtil.Epoch && u.startExpirationDate <= DateTimeUtil.Now && DateTimeUtil.Now < u.endExpirationDate))
+                    .Any();
+
+                // クリア可能 && 未クリアならバッチを表示
+                return canClear && !isCleared;
+            })
+            .Any();
+        var isShowHomeTabBadge = isShowPresentIconBadge || isShowMissionIconBadge;
+        _homeTabBadge.SetActive(isShowHomeTabBadge);
     }
 
     public override void Open(WindowInfo info)

@@ -42,5 +42,10 @@ public class HeaderFooterManager : SingletonMonoBehaviour<HeaderFooterManager>
         uiScript.headerPanel.SetActive(isShow);
         uiScript.footerPanel.SetActive(isShow);
     }
+
+    public void ActivateBadge()
+    {
+        if (uiScript != null) uiScript.ActivateBadge();
+    }
 }
 

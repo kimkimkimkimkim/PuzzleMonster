@@ -15,6 +15,8 @@ public class HomeWindowUIScript : WindowBase
     [SerializeField] protected Button _missionButton;
     [SerializeField] protected Button _presentButton;
     [SerializeField] protected Transform _monsterAreaParentBase;
+    [SerializeField] protected GameObject _missionIconBadge;
+    [SerializeField] protected GameObject _presentIconBadge;
 
     private List<Transform> monsterAreaParentList = new List<Transform>();
 
@@ -34,6 +36,7 @@ public class HomeWindowUIScript : WindowBase
             .SelectMany(_ => PresentDialogFactory.Create(new PresentDialogRequest()))
             .Subscribe();
 
+        ActivateBadge();
         SetMonsterImage();
     }
 
@@ -63,8 +66,39 @@ public class HomeWindowUIScript : WindowBase
         }
     }
 
+    private void ActivateBadge()
+    {
+        var isShowPresentIconBadge = ApplicationContext.userInventory.userContainerList.Any();
+        var isShowMissionIconBadge = MasterRecord.GetMasterOf<MissionMB>().GetAll()
+            .Where(m =>
+            {
+                // 表示条件を満たしているミッションに絞る
+                return ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList);
+            })
+            .Where(m =>
+            {
+                // クリア条件を満たしているか否か
+                var canClear = ConditionUtil.IsValid(ApplicationContext.userData, m.canClearConditionList);
+                // すでにクリアしているか否か
+                var isCleared = ApplicationContext.userData.userMissionList
+                    .Where(u => u.missionId == m.id)
+                    .Where(u => u.completedDate > DateTimeUtil.Epoch)
+                    .Where(u => (u.startExpirationDate <= DateTimeUtil.Epoch && u.endExpirationDate <= DateTimeUtil.Epoch) || (u.startExpirationDate > DateTimeUtil.Epoch && u.endExpirationDate > DateTimeUtil.Epoch && u.startExpirationDate <= DateTimeUtil.Now && DateTimeUtil.Now < u.endExpirationDate))
+                    .Any();
+
+                // クリア可能 && 未クリアならバッチを表示
+                return canClear && !isCleared;
+            })
+            .Any();
+
+        _presentIconBadge.SetActive(isShowPresentIconBadge);
+        _missionIconBadge.SetActive(isShowMissionIconBadge);
+    }
+
     public override void Open(WindowInfo info)
     {
+        ActivateBadge();
+        HeaderFooterManager.Instance.ActivateBadge();
     }
 
     public override void Back(WindowInfo info)

@@ -505,6 +505,7 @@ namespace GameBase
             else
             {
                 currentDialogInfo = null;
+                currentWindowInfo.component.Open(currentWindowInfo);
             }
 
             // プロパティアニメーション

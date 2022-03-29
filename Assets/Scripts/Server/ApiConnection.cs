@@ -107,6 +107,7 @@ public partial class ApiConnection
                             HeaderFooterManager.Instance.UpdateVirutalCurrencyText();
                             HeaderFooterManager.Instance.UpdateUserDataUI();
                             HeaderFooterManager.Instance.SetStaminaText();
+                            HeaderFooterManager.Instance.ActivateBadge();
 
                             o.OnNext(response);
                             o.OnCompleted();

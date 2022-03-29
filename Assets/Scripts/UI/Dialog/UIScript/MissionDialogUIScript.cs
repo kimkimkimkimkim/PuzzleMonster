@@ -15,6 +15,9 @@ public class MissionDialogUIScript : DialogBase
     [SerializeField] protected Button _closeButton;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
     [SerializeField] protected List<ToggleWithValue> _tabList;
+    [SerializeField] protected GameObject _dailyMissionBadge;
+    [SerializeField] protected GameObject _mainMissionBadge;
+    [SerializeField] protected GameObject _eventMissionBadge;
 
     private const int DAILY_MISSION_TAB_VALUE = 0;
     private const int MAIN_MISSION_TAB_VALUE = 1;
@@ -38,6 +41,7 @@ public class MissionDialogUIScript : DialogBase
             })
             .Subscribe();
 
+        ActivateBadge();
         SetTabChangeAction();
     }
 
@@ -92,7 +96,11 @@ public class MissionDialogUIScript : DialogBase
         {
             ApiConnection.ClearMission(mission.id)
                 .SelectMany(res => CommonReceiveDialogFactory.Create(new CommonReceiveDialogRequest() { itemList = res.rewardItemList }))
-                .Do(_ => RefreshScroll())
+                .Do(_ =>
+                {
+                    ActivateBadge();
+                    RefreshScroll();
+                })
                 .Subscribe();
         });
     }
@@ -110,6 +118,39 @@ public class MissionDialogUIScript : DialogBase
             default:
                 return MissionType.Main;
         }
+    }
+
+    private void ActivateBadge()
+    {
+        // ミッションタイプに関わらずクリア可能かつ未クリアのミッションリストを取得
+        var canClearMissionList = MasterRecord.GetMasterOf<MissionMB>().GetAll()
+            .Where(m =>
+            {
+                // 表示可能なものに絞る
+                return ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList);
+            })
+            .Where(m =>
+            {
+                // クリア可能なものに絞る
+                return ConditionUtil.IsValid(ApplicationContext.userData, m.canClearConditionList);
+            })
+            .Where(m =>
+            {
+                // 未クリアのものに絞る
+                return !ApplicationContext.userData.userMissionList
+                    .Where(u => u.missionId == m.id)
+                    .Where(u => u.completedDate > DateTimeUtil.Epoch)
+                    .Where(u => (u.startExpirationDate <= DateTimeUtil.Epoch && u.endExpirationDate <= DateTimeUtil.Epoch) || (u.startExpirationDate > DateTimeUtil.Epoch && u.endExpirationDate > DateTimeUtil.Epoch && u.startExpirationDate <= DateTimeUtil.Now && DateTimeUtil.Now < u.endExpirationDate))
+                    .Any();
+            })
+            .ToList();
+        var isShowDailyMissionBadge = canClearMissionList.Any(m => m.missionType == GetMissionTypeFromTabValue(DAILY_MISSION_TAB_VALUE));
+        var isShowMainMissionBadge = canClearMissionList.Any(m => m.missionType == GetMissionTypeFromTabValue(MAIN_MISSION_TAB_VALUE));
+        var isShowEventMissionBadge = canClearMissionList.Any(m => m.missionType == GetMissionTypeFromTabValue(EVENT_MISSION_TAB_VALUE));
+
+        _dailyMissionBadge.SetActive(isShowDailyMissionBadge);
+        _mainMissionBadge.SetActive(isShowMainMissionBadge);
+        _eventMissionBadge.SetActive(isShowEventMissionBadge);
     }
 
     public override void Back(DialogInfo info)
