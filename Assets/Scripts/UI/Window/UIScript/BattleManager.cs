@@ -48,6 +48,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
 
             return ApiConnection.ExecuteBattle(userMonsterPartyId, questId, winOrLose).Do(res => userBattle = res.userBattle).AsUnitObservable();
         });
+        var beforeRank = ApplicationContext.userData.rank;
         return FadeInObservable(callbackObservable)
             .SelectMany(_ =>
             {
@@ -78,6 +79,33 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             return Observable.ReturnUnit();
                         }
                     });
+            })
+            .SelectMany(_ =>
+            {
+                var afterRank = ApplicationContext.userData.rank;
+                if(afterRank > beforeRank)
+                {
+                    var beforeStamina = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.rank == beforeRank);
+                    var afterStamina = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.rank == afterRank);
+                    if(beforeStamina != null && afterStamina != null)
+                    {
+                        return PlayerRankUpDialogFactory.Create(new PlayerRankUpDialogRequest()
+                        {
+                            beforeRank = beforeRank,
+                            afterRank = afterRank,
+                            beforeMaxStamina = beforeStamina.stamina,
+                            afterMaxStamina = afterStamina.stamina,
+                        }).AsUnitObservable();
+                    }
+                    else
+                    {
+                        return Observable.ReturnUnit();
+                    }
+                }
+                else
+                {
+                    return Observable.ReturnUnit();
+                }
             })
             .SelectMany(_ => FadeOutObservable())
             .AsUnitObservable();
