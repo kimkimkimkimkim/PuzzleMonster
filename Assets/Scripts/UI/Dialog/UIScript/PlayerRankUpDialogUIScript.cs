@@ -15,6 +15,7 @@ public class PlayerRankUpDialogUIScript : DialogBase
     [SerializeField] protected TextMeshProUGUI _afterRankText;
     [SerializeField] protected TextMeshProUGUI _beforeMaxStaminaText;
     [SerializeField] protected TextMeshProUGUI _afterMaxStaminaText;
+    [SerializeField] protected TextMeshProUGUI _riseStaminaText;
 
     public override void Init(DialogInfo info)
     {
@@ -40,6 +41,19 @@ public class PlayerRankUpDialogUIScript : DialogBase
         _afterRankText.text = afterRank.ToString();
         _beforeMaxStaminaText.text = beforeMaxStamina.ToString();
         _afterMaxStaminaText.text = afterMaxStamina.ToString();
+        SetRiseStaminaText(beforeRank, afterRank);
+    }
+
+    private void SetRiseStaminaText(int beforeRank, int afterRank)
+    {
+        var staminaList = MasterRecord.GetMasterOf<StaminaMB>().GetAll().ToList();
+        var riseStamina = 0;
+        for (var rank = afterRank; rank > beforeRank; rank--)
+        {
+            var stamina = staminaList.First(m => m.rank == rank);
+            riseStamina += stamina.stamina;
+        }
+        _riseStaminaText.text = $"プレイヤーランクが上がり、スタミナが<color=#F2548D>{riseStamina}</color>しました";
     }
 
     public override void Back(DialogInfo info)

@@ -174,8 +174,12 @@ public class HeaderFooterWindowUIScript : WindowBase
                 else
                 {
                     _staminaCountdownText.text = $"00:00";
-                    _staminaText.text = $"{maxStamina}/{maxStamina}";
+                    _staminaText.text = $"{(int)stamina}/{maxStamina}";
                     _staminaSlider.value = (float)maxStamina;
+
+                    // 現在のスタミナが最大値以上だったら更新処理を破棄する
+                    staminaCountDownObservable.Dispose();
+                    staminaCountDownObservable = null;
                 }
             })
             .Subscribe();
