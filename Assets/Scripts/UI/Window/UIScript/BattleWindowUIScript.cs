@@ -283,7 +283,7 @@ public class BattleWindowUIScript : DummyWindowBase
             .SelectMany(sprite =>
             {
                 var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(monsterId);
-                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(monster.ultimateSkillId);
+                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(monster.level1UltimateSkillId);
                 var monsterIconDefaultPosition = _skillCutInMonsterIconImage.transform.localPosition;
                 var skillFxItemRotation = isPlayer ? Vector3.zero : Vector3.up * 180.0f;
 
@@ -401,16 +401,18 @@ public class BattleWindowUIScript : DummyWindowBase
     }
     private (string skillName, string skillDescription) GetSkillNameAndDescription(BattleMonsterInfo battleMonster, BattleActionType actionType)
     {
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
         switch (actionType) {
             case BattleActionType.PassiveSkill:
-                var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(monster.passiveSkillId);
-                return (passiveSkill.name, passiveSkill.description);
+                var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(battleMonster.monsterId, battleMonster.level);
+                var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
+                return (passiveSkill?.name ?? "-", passiveSkill?.description ?? "-");
             case BattleActionType.NormalSkill:
-                var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(monster.normalSkillId);
+                var normalSkillId = ClientMonsterUtil.GetNormalSkillId(battleMonster.monsterId, battleMonster.level);
+                var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(normalSkillId);
                 return (normalSkill.name, normalSkill.description);
             case BattleActionType.UltimateSkill:
-                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(monster.ultimateSkillId);
+                var ultimateSkillId = ClientMonsterUtil.GetUltimateSkillId(battleMonster.monsterId, battleMonster.level);
+                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(ultimateSkillId);
                 return (ultimateSkill.name, ultimateSkill.description);
             default:
                 return ("", "");

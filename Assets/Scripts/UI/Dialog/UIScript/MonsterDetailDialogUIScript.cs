@@ -131,20 +131,19 @@ public class MonsterDetailDialogUIScript : DialogBase
 
     private void SetSkillText()
     {
-        var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(monster.normalSkillId);
-        var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(monster.ultimateSkillId);
-        var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(monster.passiveSkillId);
+        var normalSkillId = ClientMonsterUtil.GetNormalSkillId(monster.id, userMonster.customData.level);
+        var ultimateSkillId = ClientMonsterUtil.GetUltimateSkillId(monster.id, userMonster.customData.level);
+        var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(monster.id, userMonster.customData.level);
+        var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(normalSkillId);
+        var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(ultimateSkillId);
+        var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
 
         _normalSkillNameText.text = normalSkill.name;
         _normalSkillDescriptionText.text = normalSkill.description;
         _ultimateSkillNameText.text = ultimateSkill.name;
         _ultimateSkillDescriptionText.text = ultimateSkill.description;
-        _passiveSkillBase.SetActive(passiveSkill != null);
-        if (passiveSkill != null)
-        {
-            _passiveSkillNameText.text = passiveSkill.name;
-            _passiveSkillDescriptionText.text = passiveSkill.description;
-        }
+        _passiveSkillNameText.text = passiveSkill?.name ?? "-";
+        _passiveSkillDescriptionText.text = passiveSkill?.description ?? "-";
     }
 
     /// <summary>

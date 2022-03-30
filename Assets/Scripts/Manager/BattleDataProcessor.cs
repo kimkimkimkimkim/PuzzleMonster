@@ -877,18 +877,20 @@ public partial class BattleDataProcessor
 
     private string GetSkillName(BattleMonsterInfo battleMonster, BattleActionType actionType)
     {
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
         switch (actionType)
         {
             case BattleActionType.NormalSkill:
-                var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(monster.normalSkillId);
+                var normalSkillId = ClientMonsterUtil.GetNormalSkillId(battleMonster.monsterId, battleMonster.level);
+                var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(normalSkillId);
                 return normalSkill.name;
             case BattleActionType.UltimateSkill:
-                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(monster.ultimateSkillId);
+                var ultimateSkillId = ClientMonsterUtil.GetUltimateSkillId(battleMonster.monsterId, battleMonster.level);
+                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(ultimateSkillId);
                 return ultimateSkill.name;
             case BattleActionType.PassiveSkill:
-                var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(monster.passiveSkillId);
-                return passiveSkill.name;
+                var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(battleMonster.monsterId, battleMonster.level);
+                var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
+                return passiveSkill?.name ?? "-";
             default:
                 return "";
         }
@@ -897,18 +899,20 @@ public partial class BattleDataProcessor
     private List<SkillEffectMI> GetSkillEffectList(BattleMonsterIndex monsterIndex, BattleActionType actionType)
     {
         var battleMonster = GetBattleMonster(monsterIndex);
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
         switch (actionType)
         {
             case BattleActionType.NormalSkill:
-                var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(monster.normalSkillId);
+                var normalSkillId = ClientMonsterUtil.GetNormalSkillId(battleMonster.monsterId, battleMonster.level);
+                var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(normalSkillId);
                 return normalSkill.effectList.Select(m => (SkillEffectMI)m).ToList();
             case BattleActionType.UltimateSkill:
-                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(monster.ultimateSkillId);
+                var ultimateSkillId = ClientMonsterUtil.GetUltimateSkillId(battleMonster.monsterId, battleMonster.level);
+                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(ultimateSkillId);
                 return ultimateSkill.effectList.Select(m => (SkillEffectMI)m).ToList();
             case BattleActionType.PassiveSkill:
-                var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(monster.passiveSkillId);
-                return passiveSkill.effectList.Select(m => (SkillEffectMI)m).ToList();
+                var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(battleMonster.monsterId, battleMonster.level);
+                var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
+                return passiveSkill?.effectList.Select(m => (SkillEffectMI)m).ToList() ?? new List<SkillEffectMI>();
             default:
                 return new List<SkillEffectMI>();
         }

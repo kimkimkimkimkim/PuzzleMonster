@@ -33,8 +33,9 @@ public partial class BattleDataProcessor
         // 発動条件を満たしていなければだめ
         var targetBattleMonster = GetBattleMonster(battleMonsterIndex);
         var targetMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(targetBattleMonster.monsterId);
-        var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(targetMonster.passiveSkillId);
-        if (!IsValidActivateCondition(battleMonsterIndex, passiveSkill.activateConditionType)) return;
+        var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(targetMonster.id, targetBattleMonster.level);
+        var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
+        if (passiveSkill == null || !IsValidActivateCondition(battleMonsterIndex, passiveSkill.activateConditionType)) return;
 
         // 発動回数制限に達していたらだめ
         if (passiveSkill.limitExecuteNum > 0 && targetBattleMonster.passiveSkillExecuteCount >= passiveSkill.limitExecuteNum) return;
