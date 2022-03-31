@@ -132,7 +132,7 @@ public class UserTestAction : ITestAction
             title = "モンスター付与",
             action = new Action(() =>
             {
-                const long bundleIdList = [9001005, 9001006, 9001007, 9001008];
+                var bundleIdList = new List<long>() { 9001005, 9001006, 9001007, 9001008 };
                 
                 CommonDialogFactory.Create(new CommonDialogRequest()
                 {
@@ -144,7 +144,7 @@ public class UserTestAction : ITestAction
                     .SelectMany(_ => {
                         var observableList = bundleIdList.Select(bundleId => {
                             var itemId = ItemUtil.GetItemId(ItemType.Bundle, bundleId);
-                            return ApiConnection.GrantItemsToUser(itemId);
+                            return ApiConnection.GrantItemsToUser(itemId).AsUnitObservable();
                         });
                         return Observable.ReturnUnit().Connect(observableList);
                     })

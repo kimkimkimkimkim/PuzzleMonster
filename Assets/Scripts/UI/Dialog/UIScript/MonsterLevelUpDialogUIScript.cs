@@ -145,7 +145,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         // モンスターのレアリティ、グレードによる最大レベルを取得
         var targetMaxMonsterLevel = MasterRecord.GetMasterOf<MaxMonsterLevelMB>().GetAll()
             .FirstOrDefault(m => m.monsterRarity == monster.rarity && m.monsterGrade == userMonster.customData.grade);
-        var maxAfterLevelByInfo = targetMaxMonsterLevel == null ? minAfterLevel : targetMaxMonsterLeve.maxMonsterLevel;
+        var maxAfterLevelByInfo = targetMaxMonsterLevel == null ? minAfterLevel : targetMaxMonsterLevel.maxMonsterLevel;
 
         // 最大強化後レベルを設定
         maxAfterLevel = Math.Min(maxAfterLevelByExp, maxAfterLevelByInfo);

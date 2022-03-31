@@ -28,7 +28,7 @@ public class BattleMonsterInfoItem : MonoBehaviour
         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
 
         _backgroundImage.color = monster.attribute.Color();
-        _monsterGrade.SetGradeImage(monster.initialGrade); // TODO: userMonster‚ÌƒOƒŒ[ƒh‚ðÝ’è
+        _monsterGrade.SetGradeImage(userMonster.customData.grade);
         PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, userMonster.monsterId)
             .Do(sprite =>
             {
