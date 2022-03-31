@@ -208,6 +208,17 @@ public partial class ApiConnection
     }
 
     /// <summary>
+    /// モンスターグレードアップ
+    /// </summary>
+    public static IObservable<MonsterGradeUpApiResponse> MonsterGradeUp(string userMonsterId)
+    {
+        return SendRequest<MonsterGradeUpApiRequest, MonsterGradeUpApiResponse>(MonsterGradeUpApiInterface.functionName, new MonsterGradeUpApiRequest()
+        {
+            userMonsterId = userMonsterId,
+        });
+    }
+
+    /// <summary>
     /// パーティの編成情報更新
     /// </summary>
     public static IObservable<UpdateUserMonsterFormationApiResponse> UpdateUserMosnterFormation(int partyIndex, List<string> userMosnterIdList) {

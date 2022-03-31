@@ -30,7 +30,7 @@ RectTransform:
   - {fileID: 5716366900058058729}
   - {fileID: 1468128828962363554}
   m_Father: {fileID: 931614290792643185}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1047,7 +1047,7 @@ RectTransform:
   - {fileID: 4147603105420314384}
   - {fileID: 9184930215454344063}
   m_Father: {fileID: 931614290792643185}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1257,7 +1257,7 @@ GameObject:
   - component: {fileID: 4907004170658180063}
   - component: {fileID: 9150821552547185668}
   m_Layer: 5
-  m_Name: CloseButton
+  m_Name: GradeUpButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2749,6 +2749,7 @@ MonoBehaviour:
   _grayOutImage: {fileID: 242772588366187851}
   _closeButton: {fileID: 6306463511819065216}
   _levelUpButton: {fileID: 1901440493339080692}
+  _gradeUpButton: {fileID: 9150821552547185668}
   _nameText: {fileID: 8548297311044414951}
   _normalSkillNameText: {fileID: 6729294792797408499}
   _normalSkillDescriptionText: {fileID: 6208548029870218106}
@@ -5053,8 +5054,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 3105749450521940215}
-  - {fileID: 5999062288481501562}
   - {fileID: 4083373301694481505}
+  - {fileID: 5999062288481501562}
   m_Father: {fileID: 857061370419546575}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

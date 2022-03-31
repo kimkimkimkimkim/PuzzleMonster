@@ -160,6 +160,38 @@ public class UserTestAction : ITestAction
 
         testActionDataList.Add(new TestActionData()
         {
+            title = "資産付与",
+            action = new Action(() =>
+            {
+                var itemIdList = MasterRecord.GetMasterOf<PropertyMB>().GetAll().Select(m => ItemUtil.GetItemId(ItemType.Property, m.id));
+
+                CommonDialogFactory.Create(new CommonDialogRequest()
+                {
+                    commonDialogType = CommonDialogType.NoAndYes,
+                    title = "確認",
+                    content = "資産を付与します"
+                })
+                    .Where(res => res.dialogResponseType == DialogResponseType.Yes)
+                    .SelectMany(_ => {
+                        var observableList = itemIdList.Select(itemId => {
+                            var grantItemNum = 20;
+                            var grantItemIdList = Enumerable.Repeat(itemId, grantItemNum).ToList();
+                            return ApiConnection.GrantItemsToUser(grantItemIdList).AsUnitObservable();
+                        });
+                        return Observable.ReturnUnit().Connect(observableList);
+                    })
+                    .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
+                        commonDialogType = CommonDialogType.YesOnly,
+                        title = "お知らせ",
+                        content = "資産の付与が完了しました",
+                    }))
+                    .Subscribe();
+            })
+        });
+
+        testActionDataList.Add(new TestActionData()
+        {
             title = "スタミナ消費(5)",
             action = new Action(() =>
             {

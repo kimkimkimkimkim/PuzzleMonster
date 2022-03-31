@@ -1,6 +1,7 @@
 ﻿using PM.Enum.Item;
 using PM.Enum.Monster;
 using PM.Enum.UI;
+using System.Linq;
 
 public static class ClientItemUtil
 {
@@ -65,7 +66,8 @@ public static class ClientItemUtil
     /// </summary>
     public static string GetName(ItemMI item)
     {
-        switch (item.itemType) {
+        switch (item.itemType) 
+        {
             case ItemType.VirtualCurrency:
                 var virtualCurrency = (VirtualCurrencyType)item.itemId;
                 return virtualCurrency.Name();
@@ -75,5 +77,26 @@ public static class ClientItemUtil
             default:
                 return "";
         }
+    }
+
+    /// <summary>
+    /// 指定したアイテムの所持数を取得する
+    /// </summary>
+    public static int GetPossessedNum(ItemType itemType, long itemId)
+    {
+        switch (itemType)
+        {
+            case ItemType.VirtualCurrency:
+                var userVirtualCurrency = ApplicationContext.userVirtualCurrency.virtualCurrencyNumList.FirstOrDefault(c => c.virtualCurrencyId == itemId);
+                return userVirtualCurrency != null ? userVirtualCurrency.num : 0;
+            case ItemType.Monster:
+                var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.monsterId == itemId);
+                return userMonster != null ? userMonster.num : 0;
+            case ItemType.Property:
+                return ApplicationContext.userInventory.userPropertyList.GetNum((PropertyType)itemId);
+            default:
+                return 0;
+        }
+
     }
 }
