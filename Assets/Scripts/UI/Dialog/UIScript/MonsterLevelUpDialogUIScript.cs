@@ -138,10 +138,17 @@ public class MonsterLevelUpDialogUIScript : DialogBase
 
         // maxExpで到達可能なレベルのレベルアップテーブルマスタ
         var targetLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll()
+            .OrderBy(m => m.totalRequiredExp)
             .LastOrDefault(m => m.totalRequiredExp <= maxExp);
+        var maxAfterLevelByExp = targetLevelUpTable == null ? minAfterLevel : targetLevelUpTable.level;
+        
+        // モンスターのレアリティ、グレードによる最大レベルを取得
+        var targetMaxMonsterLevel = MasterRecord.GetMasterOf<MaxMonsterLevelMB>().GetAll()
+            .FirstOrDefault(m => m.monsterRarity == monster.rarity && m.monsterGrade == userMonster.customData.grade);
+        var maxAfterLevelByInfo = targetMaxMonsterLevel == null ? minAfterLevel : targetMaxMonsterLeve.maxMonsterLevel;
 
         // 最大強化後レベルを設定
-        maxAfterLevel = targetLevelUpTable == null ? minAfterLevel : targetLevelUpTable.level;
+        maxAfterLevel = Math.Min(maxAfterLevelByExp, maxAfterLevelByInfo);
         if (maxAfterLevel < minAfterLevel) maxAfterLevel = minAfterLevel;
 
         // 最初の強化後レベルは最大強化後レベルに設定
