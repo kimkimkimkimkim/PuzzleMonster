@@ -647,7 +647,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.53333336, b: 0.8, a: 1}
+  m_Color: {r: 0.67058825, g: 0.44705883, b: 0.2784314, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -819,7 +819,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u56DE\u5FA9\u529B"
+  m_Text: "\u7D20\u65E9\u3055"
 --- !u!1 &785492040548416112
 GameObject:
   m_ObjectHideFlags: 0
@@ -1173,7 +1173,9 @@ MonoBehaviour:
   _plusButton: {fileID: 9173983529801016434}
   _hpValueText: {fileID: 9170700998843258852}
   _attackValueText: {fileID: 1909032328676830436}
-  _healValueText: {fileID: 8038711063336681482}
+  _defenseValueText: {fileID: 8038711063336681482}
+  _healValueText: {fileID: 1209899492193127129}
+  _speedValueText: {fileID: 6962275446619529135}
   _levelText: {fileID: 967781859958243966}
   _possessionExpNumText: {fileID: 3166149667536770750}
   _consumedExpNumText: {fileID: 6048463968250020977}
@@ -1183,9 +1185,15 @@ MonoBehaviour:
   _attackSliderBack: {fileID: 8985139052688719302}
   _attackSliderAfterValue: {fileID: 6644544849035934266}
   _attackSliderFront: {fileID: 3417305814660993074}
-  _healSliderBack: {fileID: 5255998614193258951}
-  _healSliderAfterValue: {fileID: 4401376409379682902}
-  _healSliderFront: {fileID: 1958043521969490498}
+  _defenseSliderBack: {fileID: 5255998614193258951}
+  _defenseSliderAfterValue: {fileID: 4401376409379682902}
+  _defenseSliderFront: {fileID: 1958043521969490498}
+  _healSliderBack: {fileID: 3144319581014040091}
+  _healSliderAfterValue: {fileID: 4998901530079264210}
+  _healSliderFront: {fileID: 7669293540372512963}
+  _speedSliderBack: {fileID: 7879567451623283725}
+  _speedSliderAfterValue: {fileID: 6594382665753151868}
+  _speedSliderFront: {fileID: 3190704579562084184}
   _levelSlider: {fileID: 1973384606269819993}
   _levelUpButtonGrayoutPanel: {fileID: 1438381164481229903}
 --- !u!1 &1076228164991593007
@@ -1359,7 +1367,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3632949544813312075}
   m_Layer: 5
-  m_Name: HealGaugeArea (2)
+  m_Name: SpeedGaugeArea
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3438,7 +3446,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3103949173252050444}
   m_Layer: 5
-  m_Name: HealGaugeArea (1)
+  m_Name: HealGaugeArea
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4177,7 +4185,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u56DE\u5FA9\u529B"
+  m_Text: "\u9632\u5FA1\u529B"
 --- !u!1 &7324614259714887768
 GameObject:
   m_ObjectHideFlags: 0
@@ -4585,7 +4593,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1757236791228324850}
   m_Layer: 5
-  m_Name: HealGaugeArea
+  m_Name: DefenseGaugeArea
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5478,7 +5486,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.53333336, b: 0.8, a: 1}
+  m_Color: {r: 0.3019608, g: 0.6313726, b: 0.77254903, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:

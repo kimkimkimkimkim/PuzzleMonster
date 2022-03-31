@@ -18,7 +18,9 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     [SerializeField] protected Button _plusButton;
     [SerializeField] protected Text _hpValueText;
     [SerializeField] protected Text _attackValueText;
+    [SerializeField] protected Text _defenseValueText;
     [SerializeField] protected Text _healValueText;
+    [SerializeField] protected Text _speedValueText;
     [SerializeField] protected Text _levelText;
     [SerializeField] protected Text _possessionExpNumText;
     [SerializeField] protected Text _consumedExpNumText;
@@ -28,9 +30,15 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     [SerializeField] protected Slider _attackSliderBack;
     [SerializeField] protected Slider _attackSliderAfterValue;
     [SerializeField] protected Slider _attackSliderFront;
+    [SerializeField] protected Slider _defenseSliderBack;
+    [SerializeField] protected Slider _defenseSliderAfterValue;
+    [SerializeField] protected Slider _defenseSliderFront;
     [SerializeField] protected Slider _healSliderBack;
     [SerializeField] protected Slider _healSliderAfterValue;
     [SerializeField] protected Slider _healSliderFront;
+    [SerializeField] protected Slider _speedSliderBack;
+    [SerializeField] protected Slider _speedSliderAfterValue;
+    [SerializeField] protected Slider _speedSliderFront;
     [SerializeField] protected Slider _levelSlider;
     [SerializeField] protected GameObject _levelUpButtonGrayoutPanel;
 
@@ -143,9 +151,9 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         var maxAfterLevelByExp = targetLevelUpTable == null ? minAfterLevel : targetLevelUpTable.level;
         
         // モンスターのレアリティ、グレードによる最大レベルを取得
-        var targetMaxMonsterLevel = MasterRecord.GetMasterOf<MaxMonsterLevelMB>().GetAll()
-            .FirstOrDefault(m => m.monsterRarity == monster.rarity && m.monsterGrade == userMonster.customData.grade);
-        var maxAfterLevelByInfo = targetMaxMonsterLevel == null ? minAfterLevel : targetMaxMonsterLevel.maxMonsterLevel;
+        var maxAfterLevelByInfo = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, userMonster.customData.grade) > 0 ? 
+            ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, userMonster.customData.grade) : 
+            minAfterLevel;
 
         // 最大強化後レベルを設定
         maxAfterLevel = Math.Min(maxAfterLevelByExp, maxAfterLevelByInfo);
@@ -163,20 +171,30 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         _attackSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
         _attackSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
         _attackSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _defenseSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _defenseSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _defenseSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
         _healSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
         _healSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
         _healSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _speedSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _speedSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _speedSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
 
         // モンスター固有の最大値
         _hpSliderBack.value = monster.level100Hp;
         _attackSliderBack.value = monster.level100Attack;
+        _defenseSliderBack.value = monster.level100Defense;
         _healSliderBack.value = monster.level100Heal;
+        _speedSliderBack.value = monster.level100Speed;
 
         // モンスターの現在値
         var status = MonsterUtil.GetMonsterStatus(monster, userMonster.customData.level);
         _hpSliderFront.value = status.hp;
         _attackSliderFront.value = status.attack;
+        _defenseSliderFront.value = status.defense;
         _healSliderFront.value = status.heal;
+        _speedSliderFront.value = status.speed;
 
         // レベルスライダー
         _levelSlider.minValue = minAfterLevel;
@@ -194,12 +212,16 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         var afterStatus = MonsterUtil.GetMonsterStatus(monster, afterLevel);
         _hpValueText.text = GetStatusValueText(afterStatus.hp, afterStatus.hp - currentStatus.hp);
         _attackValueText.text = GetStatusValueText(afterStatus.attack, afterStatus.attack - currentStatus.attack);
+        _defenseValueText.text = GetStatusValueText(afterStatus.defense, afterStatus.defense - currentStatus.defense);
         _healValueText.text = GetStatusValueText(afterStatus.heal, afterStatus.heal - currentStatus.heal);
+        _speedValueText.text = GetStatusValueText(afterStatus.speed, afterStatus.speed - currentStatus.speed);
 
         // ステータススライダー
         _hpSliderAfterValue.value = afterStatus.hp;
         _attackSliderAfterValue.value = afterStatus.attack;
+        _defenseSliderAfterValue.value = afterStatus.defense;
         _healSliderAfterValue.value = afterStatus.heal;
+        _speedSliderAfterValue.value = afterStatus.speed;
 
         // レベルテキスト
         _levelText.text = GetLevelText(userMonster.customData.level, afterLevel);
@@ -229,7 +251,8 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     /// <returns>The level text.</returns>
     private string GetLevelText(int currentValue,int afterValue)
     {
-        return $"Lv.{currentValue}<color=\"blue\"> → {afterValue}/{ConstManager.Monster.MAX_LEVEL}</color>";
+        var maxMonsterLevel = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, userMonster.customData.grade);
+        return $"Lv.{currentValue}<color=\"blue\"> → {afterValue}/{maxMonsterLevel}</color>";
     }
 
     /// <summary>

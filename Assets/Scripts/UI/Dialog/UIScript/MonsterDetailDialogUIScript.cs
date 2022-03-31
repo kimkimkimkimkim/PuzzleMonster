@@ -27,6 +27,7 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Text _hpText;
     [SerializeField] protected Text _attackText;
     [SerializeField] protected Text _defenseText;
+    [SerializeField] protected Text _healText;
     [SerializeField] protected Text _speedText;
     [SerializeField] protected Slider _hpSliderBack;
     [SerializeField] protected Slider _hpSliderFront;
@@ -34,6 +35,8 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Slider _attackSliderFront;
     [SerializeField] protected Slider _defenseSliderBack;
     [SerializeField] protected Slider _defenseSliderFront;
+    [SerializeField] protected Slider _healSliderBack;
+    [SerializeField] protected Slider _healSliderFront;
     [SerializeField] protected Slider _speedSliderBack;
     [SerializeField] protected Slider _speedSliderFront;
     [SerializeField] protected GameObject _passiveSkillBase;
@@ -89,6 +92,8 @@ public class MonsterDetailDialogUIScript : DialogBase
         _attackSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
         _defenseSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
         _defenseSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _healSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _healSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
         _speedSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
         _speedSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
     }
@@ -107,6 +112,7 @@ public class MonsterDetailDialogUIScript : DialogBase
         _hpText.text = status.hp.ToString();
         _attackText.text = status.attack.ToString();
         _defenseText.text = status.defense.ToString();
+        _healText.text = status.heal.ToString();
         _speedText.text = status.speed.ToString();
 
         // ゲージ
@@ -116,6 +122,8 @@ public class MonsterDetailDialogUIScript : DialogBase
         _attackSliderFront.value = status.attack;
         _defenseSliderBack.value = monster.level100Defense;
         _defenseSliderFront.value = status.defense;
+        _healSliderBack.value = monster.level100Heal;
+        _healSliderFront.value = status.heal;
         _speedSliderBack.value = monster.level100Speed;
         _speedSliderFront.value = status.speed;
 

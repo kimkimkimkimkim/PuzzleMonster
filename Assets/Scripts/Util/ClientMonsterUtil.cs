@@ -1,4 +1,5 @@
 ﻿using PM.Enum.Battle;
+using PM.Enum.Monster;
 using System.Linq;
 /// <summary>
 /// クライアント用のモンスター関係のUtil 
@@ -66,5 +67,11 @@ public static class ClientMonsterUtil
             default:
                 return 0;
         }
+    }
+
+    public static int GetMaxMonsterLevel(MonsterRarity rarity, int grade)
+    {
+        var targetMaxMonsterLevel = MasterRecord.GetMasterOf<MaxMonsterLevelMB>().GetAll().FirstOrDefault(m => m.monsterRarity == rarity && m.monsterGrade == grade);
+        return targetMaxMonsterLevel?.maxMonsterLevel ?? 0;
     }
 }
