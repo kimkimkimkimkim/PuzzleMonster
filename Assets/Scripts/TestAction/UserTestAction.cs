@@ -132,8 +132,8 @@ public class UserTestAction : ITestAction
             title = "モンスター付与",
             action = new Action(() =>
             {
-                const long bundleId = 9001005;
-                var itemId = ItemUtil.GetItemId(ItemType.Bundle, bundleId);
+                const long bundleIdList = [9001005, 9001006, 9001007, 9001008];
+                
                 CommonDialogFactory.Create(new CommonDialogRequest()
                 {
                     commonDialogType = CommonDialogType.NoAndYes,
@@ -141,7 +141,13 @@ public class UserTestAction : ITestAction
                     content = "モンスターを付与します"
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-                    .SelectMany(_ => ApiConnection.GrantItemsToUser(itemId))
+                    .SelectMany(_ => {
+                        var observableList = bundleIdList.Select(bundleId => {
+                            var itemId = ItemUtil.GetItemId(ItemType.Bundle, bundleId);
+                            return ApiConnection.GrantItemsToUser(itemId);
+                        });
+                        return Observable.ReturnUnit().Connect(observableList);
+                    })
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
