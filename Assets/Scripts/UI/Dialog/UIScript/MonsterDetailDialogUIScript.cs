@@ -12,6 +12,7 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Button _closeButton;
     [SerializeField] protected Button _levelUpButton;
     [SerializeField] protected Button _gradeUpButton;
+    [SerializeField] protected Button _luckUpButton;
     [SerializeField] protected Text _nameText;
     [SerializeField] protected Text _normalSkillNameText;
     [SerializeField] protected Text _normalSkillDescriptionText;
@@ -80,6 +81,20 @@ public class MonsterDetailDialogUIScript : DialogBase
 
         _gradeUpButton.OnClickIntentAsObservable()
             .SelectMany(_ => MonsterGradeUpDialogFactory.Create(new MonsterGradeUpDialogRequest()
+            {
+                userMonster = userMonster,
+            }))
+            .Where(res => res.isNeedRefresh)
+            .SelectMany(_ =>
+            {
+                isNeedRefresh = true;
+                userMonster = ApplicationContext.userInventory.userMonsterList.First(u => u.id == userMonster.id);
+                return RefreshUIObservable();
+            })
+            .Subscribe();
+        
+        _luckUpButton.OnClickIntentAsObservable()
+            .SelectMany(_ => MonsterLuckUpDialogFactory.Create(new MonsterLuckUpDialogRequest()
             {
                 userMonster = userMonster,
             }))

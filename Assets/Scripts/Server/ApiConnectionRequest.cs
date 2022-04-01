@@ -218,6 +218,15 @@ public partial class ApiConnection
         });
     }
 
+    public static IObservable<MonsterLuckUpApiResponse> MonsterLuckUp(string userMonsterId, int consumeStackNum)
+    {
+        return SendRequest<MonsterLuckUpApiRequest, MonsterLuckUpApiResponse>(MonsterLuckUpApiInterface.functionName, new MonsterLuckUpApiRequest()
+        {
+            userMonsterId = userMonsterId,
+            consumeStackNum = consumeStackNum,
+        });
+    }
+
     /// <summary>
     /// パーティの編成情報更新
     /// </summary>

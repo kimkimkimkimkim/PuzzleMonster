@@ -118,7 +118,8 @@ public class MonsterGradeUpDialogUIScript : DialogBase
 
         // ŠoÁ‚Ì•K—v‘fÞ‚ÍProperty‚ÉŒÀ‚é
         var possessedNum = ClientItemUtil.GetPossessedNum(requiredItem.itemType, requiredItem.itemId);
-        var numText = $"{possessedNum}/{requiredItem.num}";
+        var color = possessedNum - requiredItem.num > 0 ? "#FFFFFF" : "#D14B39";
+        var numText = $"{possessedNum} / <color={color}>{requiredItem.num}</color>";
 
         scrollItem.SetIcon(requiredItem);
         scrollItem.SetNumText(numText);
