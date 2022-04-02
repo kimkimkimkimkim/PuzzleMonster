@@ -37,7 +37,7 @@ public class RewardReceiveDialogUIScript : DialogBase
     {
         _infiniteScroll.Clear();
 
-        if (rewardItemList.Any()) _infiniteScroll.Init(rewardItemList.Count, OnUpdateItem);
+        _infiniteScroll.Init(rewardItemList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)

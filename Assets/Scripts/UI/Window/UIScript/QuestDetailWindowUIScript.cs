@@ -80,7 +80,7 @@ public class QuestDetailWindowUIScript : WindowBase
             })
             .ToList();
 
-        if (monsterItemList.Any()) _monsterInfiniteScroll.Init(monsterItemList.Count, OnUpdateMonsterItem);
+        _monsterInfiniteScroll.Init(monsterItemList.Count, OnUpdateMonsterItem);
     }
 
     private void OnUpdateMonsterItem(int index, GameObject item)
@@ -100,7 +100,7 @@ public class QuestDetailWindowUIScript : WindowBase
         var bundle = MasterRecord.GetMasterOf<BundleMB>().Get(quest.dropBundleId);
         normalRewardItemList = bundle.itemList.Where(i => i.itemType != ItemType.DropTable).ToList();
 
-        if (normalRewardItemList.Any()) _normalRewardInfiniteScroll.Init(normalRewardItemList.Count, OnUpdateNormalRewardItem);
+        _normalRewardInfiniteScroll.Init(normalRewardItemList.Count, OnUpdateNormalRewardItem);
     }
 
     private void OnUpdateNormalRewardItem(int index, GameObject item)
@@ -136,7 +136,7 @@ public class QuestDetailWindowUIScript : WindowBase
             })
             .ToList();
 
-        if (dropRewardItemList.Any()) _dropRewardInfiniteScroll.Init(dropRewardItemList.Count, OnUpdateDropRewardItem);
+        _dropRewardInfiniteScroll.Init(dropRewardItemList.Count, OnUpdateDropRewardItem);
     }
 
     private void OnUpdateDropRewardItem(int index, GameObject item)
@@ -156,7 +156,7 @@ public class QuestDetailWindowUIScript : WindowBase
         var bundle = MasterRecord.GetMasterOf<BundleMB>().Get(quest.firstRewardBundleId);
         firstRewardItemList = bundle.itemList;
 
-        if (firstRewardItemList.Any()) _firstRewardInfiniteScroll.Init(firstRewardItemList.Count, OnUpdateFirstRewardItem);
+        _firstRewardInfiniteScroll.Init(firstRewardItemList.Count, OnUpdateFirstRewardItem);
     }
 
     private void OnUpdateFirstRewardItem(int index, GameObject item)

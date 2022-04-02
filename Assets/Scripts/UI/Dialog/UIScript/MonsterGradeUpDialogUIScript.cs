@@ -106,7 +106,7 @@ public class MonsterGradeUpDialogUIScript : DialogBase
         var gradeUpTable = MasterRecord.GetMasterOf<GradeUpTableMB>().GetAll().First(m => m.monsterAttribute == monster.attribute && m.targetGrade == userMonster.customData.grade + 1);
         requiredItemList = gradeUpTable != null ? gradeUpTable.requiredItemList : new List<ItemMI>();
 
-        if (requiredItemList.Any()) _infiniteScroll.Init(requiredItemList.Count, OnUpdate);
+        _infiniteScroll.Init(requiredItemList.Count, OnUpdate);
     }
 
     private void OnUpdate(int index, GameObject item)
@@ -118,7 +118,7 @@ public class MonsterGradeUpDialogUIScript : DialogBase
 
         // ŠoÁ‚Ì•K—v‘fÞ‚ÍProperty‚ÉŒÀ‚é
         var possessedNum = ClientItemUtil.GetPossessedNum(requiredItem.itemType, requiredItem.itemId);
-        var color = possessedNum - requiredItem.num > 0 ? "#FFFFFF" : "#D14B39";
+        var color = possessedNum - requiredItem.num >= 0 ? "#FFFFFF" : "#D14B39";
         var numText = $"{possessedNum} / <color={color}>{requiredItem.num}</color>";
 
         scrollItem.SetIcon(requiredItem);

@@ -130,7 +130,7 @@ public class BattleResultDialogUIScript : DialogBase
     {
         _playerInfiniteScroll.Clear();
 
-        if (playerBattleMonsterList.Any()) _playerInfiniteScroll.Init(playerBattleMonsterList.Count, OnUpdatePlayerItem);
+        _playerInfiniteScroll.Init(playerBattleMonsterList.Count, OnUpdatePlayerItem);
     }
 
     private void OnUpdatePlayerItem(int index, GameObject item)
@@ -149,7 +149,7 @@ public class BattleResultDialogUIScript : DialogBase
 
         enemyBattleMonsterList = enemyBattleMonsterListByWave[currentWaveIndex];
 
-        if (enemyBattleMonsterList.Any()) _enemyInfiniteScroll.Init(enemyBattleMonsterList.Count, OnUpdateEnemyItem);
+        _enemyInfiniteScroll.Init(enemyBattleMonsterList.Count, OnUpdateEnemyItem);
     }
 
     private void OnUpdateEnemyItem(int index, GameObject item)

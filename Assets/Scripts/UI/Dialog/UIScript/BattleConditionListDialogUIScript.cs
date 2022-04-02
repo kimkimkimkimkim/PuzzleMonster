@@ -49,7 +49,7 @@ public class BattleConditionListDialogUIScript : DialogBase
     {
         _infiniteScroll.Clear();
 
-        if (targetBattleConditionList.Any()) _infiniteScroll.Init(targetBattleConditionList.Count, OnUpdateItem);
+        _infiniteScroll.Init(targetBattleConditionList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)

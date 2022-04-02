@@ -31,7 +31,7 @@ public class QuestListWindowUIScript : WindowBase
             .OrderBy(m => m.id)
             .ToList();
 
-        if (questList.Any()) _infiniteScroll.Init(questList.Count, OnUpdateItem);
+        _infiniteScroll.Init(questList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)

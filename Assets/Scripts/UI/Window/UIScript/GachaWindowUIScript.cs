@@ -35,7 +35,7 @@ public class GachaWindowUIScript : WindowBase
     {
         _infiniteScroll.Clear();
 
-        if (gachaBoxList.Any()) _infiniteScroll.Init(gachaBoxList.Count, OnUpdateItem);
+        _infiniteScroll.Init(gachaBoxList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)

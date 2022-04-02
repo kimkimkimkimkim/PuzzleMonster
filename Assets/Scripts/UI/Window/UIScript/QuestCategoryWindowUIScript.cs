@@ -14,6 +14,7 @@ public class QuestCategoryWindowUIScript : WindowBase
 
     private const int NORMAL_QUEST_TAB_VALUE = 0;
     private const int EVENT_QUEST_TAB_VALUE = 1;
+    private const int GUERRILLA_QUEST_TAB_VALUE = 2;
 
     private int currentTabValue = NORMAL_QUEST_TAB_VALUE;
     private List<QuestCategoryMB> targetQuestCategoryList;
@@ -55,7 +56,7 @@ public class QuestCategoryWindowUIScript : WindowBase
             .OrderBy(m => m.id)
             .ToList();
 
-        if (targetQuestCategoryList.Any()) _infiniteScroll.Init(targetQuestCategoryList.Count, OnUpdateItem);
+        _infiniteScroll.Init(targetQuestCategoryList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)
@@ -85,6 +86,8 @@ public class QuestCategoryWindowUIScript : WindowBase
                 return QuestType.Normal;
             case EVENT_QUEST_TAB_VALUE:
                 return QuestType.Event;
+            case GUERRILLA_QUEST_TAB_VALUE:
+                return QuestType.Guerrilla;
             default:
                 return QuestType.Normal;
         }

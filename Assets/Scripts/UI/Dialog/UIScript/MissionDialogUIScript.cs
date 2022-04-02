@@ -71,7 +71,7 @@ public class MissionDialogUIScript : DialogBase
             .OrderBy(m => m.id)
             .ToList();
 
-        if (targetMissionList.Any()) _infiniteScroll.Init(targetMissionList.Count, OnUpdateItem);
+        _infiniteScroll.Init(targetMissionList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)

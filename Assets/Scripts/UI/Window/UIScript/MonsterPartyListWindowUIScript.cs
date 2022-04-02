@@ -44,7 +44,7 @@ public class MonsterPartyListWindowUIScript : WindowBase
             })
             .ToList();
 
-        if (userMonsterPartyList.Any()) _infiniteScroll.Init(userMonsterPartyList.Count, OnUpdateItem);
+        _infiniteScroll.Init(userMonsterPartyList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)

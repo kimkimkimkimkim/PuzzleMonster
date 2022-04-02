@@ -37,7 +37,7 @@ public class CommonReceiveDialogUIScript : DialogBase
     {
         _infiniteScroll.Clear();
 
-        if (itemList.Any()) _infiniteScroll.Init(itemList.Count, OnUpdateItem);
+        _infiniteScroll.Init(itemList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)

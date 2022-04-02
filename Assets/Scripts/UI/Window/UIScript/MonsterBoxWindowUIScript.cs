@@ -25,7 +25,7 @@ public class MonsterBoxWindowUIScript : WindowBase
     {
         _infiniteScroll.Clear();
 
-        if (userMonsterList.Any()) _infiniteScroll.Init(userMonsterList.Count, OnUpdateItem);
+        _infiniteScroll.Init(userMonsterList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)
