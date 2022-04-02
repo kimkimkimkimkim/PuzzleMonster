@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using DG.Tweening;
+using PM.Enum.Sound;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
@@ -44,6 +45,10 @@ namespace GameBase {
 
             return clickObservable
                 .Do(_ => {
+                    // 効果音
+                    SoundManager.Instance.sfx.Play(SE.Click);
+
+                    // アニメーション
                     var scale = button.transform.localScale;
                     var rectTransform = button.GetComponent<RectTransform>();
                     var sequence = DOTween.Sequence();

@@ -1,6 +1,7 @@
 ﻿using PM.Enum.UI;
 using GameBase;
 using UniRx;
+using PM.Enum.Sound;
 
 public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
 {
@@ -60,6 +61,7 @@ public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
     {
         // タイトル画面を消してホーム画面へ遷移
         if (titleUIScript != null) Destroy(titleUIScript.gameObject);
+        SoundManager.Instance.bgm.Play(BGM.Main);
         HeaderFooterWindowFactory.Create(new HeaderFooterWindowRequest()).Subscribe();
     }
 

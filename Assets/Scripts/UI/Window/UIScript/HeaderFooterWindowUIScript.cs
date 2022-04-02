@@ -40,7 +40,7 @@ public class HeaderFooterWindowUIScript : WindowBase
 
     public override void Init(WindowInfo info)
     {
-        _homeToggle.OnValueChangedAsObservable()
+        _homeToggle.OnValueChangedIntentAsObservable()
             .Where(isOn => isOn)
             .Do(_ =>
             {
@@ -52,7 +52,7 @@ public class HeaderFooterWindowUIScript : WindowBase
             })
             .Subscribe();
 
-        _monsterToggle.OnValueChangedAsObservable()
+        _monsterToggle.OnValueChangedIntentAsObservable()
             .Where(isOn => isOn)
             .Do(_ =>
             {
@@ -64,7 +64,7 @@ public class HeaderFooterWindowUIScript : WindowBase
             })
             .Subscribe();
 
-        _gachaToggle.OnValueChangedAsObservable()
+        _gachaToggle.OnValueChangedIntentAsObservable()
             .Where(isOn => isOn)
             .Do(_ =>
             {
@@ -76,7 +76,7 @@ public class HeaderFooterWindowUIScript : WindowBase
             })
             .Subscribe();
 
-        _shopToggle.OnValueChangedAsObservable()
+        _shopToggle.OnValueChangedIntentAsObservable()
             .Where(isOn => isOn)
             .Do(_ =>
             {
@@ -98,7 +98,7 @@ public class HeaderFooterWindowUIScript : WindowBase
             .Subscribe();
 
         Observable.Timer(TimeSpan.FromSeconds(2)).Do(_ => UIManager.Instance.TryHideFullScreenLoadingView()).Take(1).Subscribe();
-        _homeToggle.isOn = true;
+
         UpdateVirtualCurrencyText();
         SetStaminaUI();
         UpdateUserDataUI();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PM.Enum.Sound;
+using System;
 using UniRx;
 using UnityEngine.UI;
 
@@ -8,21 +9,17 @@ namespace GameBase
     {
 
         /// <summary>
-        /// 一旦無条件に音を鳴らす
+        /// タップしなくても宣言時に一度呼ばれる
         /// </summary>
         public static IObservable<bool> OnValueChangedIntentAsObservable(this Toggle toggle)
         {
-            var observable = toggle.OnValueChangedAsObservable();
-            return observable;
-            // TODO: 一時的にサウンド再生処理をコメントアウト
-            // .Do(_ => SoundManager.Instance.sfx.Play(AudioClipPath.SE_COMMON_BUTTON_CLICK));
-        }
-    }
+            return toggle.OnValueChangedAsObservable()
+                .Do(_ =>
+                {
+                    // 効果音をならす
+                    SoundManager.Instance.sfx.Play(SE.Click);
+                });
 
-    public enum ToggleType
-    {
-        None = 0,
-        Single = 1,
-        Multiple = 2,
+        }
     }
 }
