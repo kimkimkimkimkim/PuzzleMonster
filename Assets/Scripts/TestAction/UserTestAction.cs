@@ -218,16 +218,9 @@ public class UserTestAction : ITestAction
 
         testActionDataList.Add(new TestActionData()
         {
-            title = "スキルエフェクトテスト",
+            title = "作業用",
             action = new Action(() =>
             {
-                UIManager.Instance.CloseDialogObservable()
-                    .Do(_ =>
-                    {
-                        var battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
-                        battleWindow.StartSkillTest();
-                    })
-                    .Subscribe();
             }),
         });
 
