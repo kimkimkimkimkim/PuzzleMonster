@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
@@ -8,7 +7,6 @@ using UnityEngine.UI;
 using GameBase;
 using PM.Enum.UI;
 using TMPro;
-using PM.Enum.Item;
 
 [ResourcePath("UI/Dialog/Dialog-MonsterGradeUp")]
 public class MonsterGradeUpDialogUIScript : DialogBase
@@ -27,11 +25,14 @@ public class MonsterGradeUpDialogUIScript : DialogBase
     private UserMonsterInfo userMonster;
     private List<ItemMI> requiredItemList;
     private bool isNeedRefresh;
+    private int beforeGradeForFx;
 
     public override void Init(DialogInfo info)
     {
         var onClickClose = (Action<bool>)info.param["onClickClose"];
         userMonster = (UserMonsterInfo)info.param["userMonster"];
+
+        beforeGradeForFx = userMonster.customData.grade;
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
@@ -53,12 +54,14 @@ public class MonsterGradeUpDialogUIScript : DialogBase
                 RefreshScroll();
                 RefreshUI();
             })
-            .SelectMany(res => CommonDialogFactory.Create(new CommonDialogRequest()
+            .SelectMany(_ =>
             {
-                commonDialogType = CommonDialogType.YesOnly,
-                title = "Œ‹‰Ê",
-                content = $"ƒOƒŒ[ƒh{userMonster.customData.grade}‚É‚È‚è‚Ü‚µ‚½",
-            }))
+                return MonsterGradeUpFxDialogFactory.Create(new MonsterGradeUpFxDialogRequest()
+                {
+                    beforeGrade = beforeGradeForFx,
+                    afterGrade = userMonster.customData.grade,
+                }).Do(res => beforeGradeForFx = userMonster.customData.grade);
+            })
             .Subscribe();
 
         RefreshScroll();

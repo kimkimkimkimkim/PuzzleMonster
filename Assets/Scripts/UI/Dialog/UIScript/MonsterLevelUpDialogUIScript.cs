@@ -48,6 +48,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     private int afterLevel;
     private int maxAfterLevel;
     private int minAfterLevel;
+    private int beforeLevelForFx;
 
     public override void Init(DialogInfo info)
     {
@@ -55,6 +56,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         userMonster = (UserMonsterInfo)info.param["userMonster"];
 
         monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
+        beforeLevelForFx = userMonster.customData.level;
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
@@ -83,12 +85,14 @@ public class MonsterLevelUpDialogUIScript : DialogBase
                 SetSliderValue();
                 RefreshUI();
             })
-            .SelectMany(res => CommonDialogFactory.Create(new CommonDialogRequest()
+            .SelectMany(res =>
             {
-                commonDialogType = CommonDialogType.YesOnly,
-                title = "強化結果",
-                content = $"{res.level}レベルになりました",
-            }))
+                return MonsterLevelUpFxDialogFactory.Create(new MonsterLevelUpFxDialogRequest()
+                {
+                    beforeLevel = beforeLevelForFx,
+                    afterLevel = res.level,
+                }).Do(_ => beforeLevelForFx = res.level);
+            })
             .Subscribe();
 
         _minusButton.OnClickIntentAsObservable()

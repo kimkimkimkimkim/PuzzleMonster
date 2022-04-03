@@ -33,6 +33,7 @@ public class MonsterLuckUpDialogUIScript : DialogBase
     private int consumeStackNum;
     private int maxConsumeStackNum;
     private int minConsumeStackNum = 0;
+    private int beforeLuckForFx;
 
     public override void Init(DialogInfo info)
     {
@@ -40,6 +41,7 @@ public class MonsterLuckUpDialogUIScript : DialogBase
         userMonster = (UserMonsterInfo)info.param["userMonster"];
 
         monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
+        beforeLuckForFx = userMonster.customData.luck;
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
@@ -62,12 +64,14 @@ public class MonsterLuckUpDialogUIScript : DialogBase
                 SetSliderValue();
                 RefreshUI();
             })
-            .SelectMany(res => CommonDialogFactory.Create(new CommonDialogRequest()
+            .SelectMany(_ =>
             {
-                commonDialogType = CommonDialogType.YesOnly,
-                title = "ŒÀŠE“Ë”jŒ‹‰Ê",
-                content = $"ƒ‰ƒbƒN{userMonster.customData.luck}‚É‚È‚è‚Ü‚µ‚½",
-            }))
+                return MonsterLuckUpFxDialogFactory.Create(new MonsterLuckUpFxDialogRequest()
+                {
+                    beforeLuck = beforeLuckForFx,
+                    afterLuck = userMonster.customData.luck,
+                }).Do(res => beforeLuckForFx = userMonster.customData.luck);
+            })
             .Subscribe();
 
         _minusButton.OnClickIntentAsObservable()
