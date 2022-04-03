@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: portal_5_mat
+  m_Shader: {fileID: -6465566751694194690, guid: c1eb8e75032c43142a788d2148623595,
+    type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - Texture2D_41083494:
+        m_Texture: {fileID: 2800000, guid: 7edac451f5ebca34fbb67646f748a731, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Texture2D_60305875:
+        m_Texture: {fileID: 2800000, guid: 7eecd401482cfd54f996789d7b485dda, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Texture2D_CBE8DD27:
+        m_Texture: {fileID: 2800000, guid: 7edac451f5ebca34fbb67646f748a731, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - Vector1_A5E42D24: 1.62
+    m_Colors:
+    - Color_9673536E: {r: 19.847162, g: 32.125492, b: 0, a: 1}
+    - Vector2_188C51F5: {r: 0.57, g: 0.52, b: 0, a: 0}
+    - Vector4_DECB3CBE: {r: -0.15, g: 0, b: 0, a: 0}
