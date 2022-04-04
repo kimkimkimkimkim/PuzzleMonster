@@ -21,6 +21,7 @@ namespace GameBase
         public Transform toastParent;
         public Transform tutorialParent;
         public Transform debugParent;
+        public Transform gachaAnimationParent;
         public float screenScale;
         public bool isUnlockAllUI;
         public bool isSkipTutorial;
