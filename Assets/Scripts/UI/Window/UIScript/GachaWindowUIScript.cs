@@ -76,29 +76,39 @@ public class GachaWindowUIScript : WindowBase
             content = $"オーブを{cost}個使用してガチャを{num}回まわしますか？",
         })
             .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(1.0f, FADE_ANIMATION_TIME))
-            .SelectMany(_ =>
-            {
-                var gachaAnimation = UIManager.Instance.CreateContent<GachaAnimation>(UIManager.Instance.gachaAnimationParent);
-                return gachaAnimation.PlayGachaAnimationObservable();
-            })
-            .SelectMany(_ =>
-            {
-                FadeManager.Instance.PlayFadeAnimationObservable(0.0f, FADE_ANIMATION_TIME);
-                return GachaResultWindowFactory.Create(new GachaResultWindowRequest());
-            })
-            /*
             .SelectMany(_ => ExecuteGachaObservable(gachaBoxDetail))
             .SelectMany(res =>
             {
+                return FadeManager.Instance.PlayFadeAnimationObservable(1.0f, FADE_ANIMATION_TIME)
+                    .SelectMany(_ =>
+                    {
+                        var gachaAnimation = UIManager.Instance.CreateContent<GachaAnimation>(UIManager.Instance.gachaAnimationParent);
+                        return gachaAnimation.PlayGachaAnimationObservable();
+                    }).Select(_ => res);
+            })
+            .SelectMany(res =>
+            {
+                /*
                 var itemList = ItemUtil.GetSeparatedItemMIList(res.itemList);
                 itemList = itemList.Shuffle().ToList();
-                return GachaResultDialogFactory.Create(new GachaResultDialogRequest()
+                */
+                var itemList = new List<ItemMI>()
                 {
-                    itemList = itemList,
-                });
+                    new ItemMI() { itemType = ItemType.Monster, itemId = 1, num = 1 },
+                    new ItemMI() { itemType = ItemType.Monster, itemId = 7, num = 1 },
+                    new ItemMI() { itemType = ItemType.Monster, itemId = 9, num = 1 },
+                    new ItemMI() { itemType = ItemType.Monster, itemId = 12, num = 1 },
+                    new ItemMI() { itemType = ItemType.Monster, itemId = 14, num = 1 },
+                    new ItemMI() { itemType = ItemType.Monster, itemId = 16, num = 1 },
+                    new ItemMI() { itemType = ItemType.Monster, itemId = 23, num = 1 },
+                    new ItemMI() { itemType = ItemType.Monster, itemId = 25, num = 1 },
+                    new ItemMI() { itemType = ItemType.Monster, itemId = 48, num = 1 },
+                    new ItemMI() { itemType = ItemType.Monster, itemId = 70, num = 1 },
+                };
+                itemList = itemList.Shuffle().ToList();
+                FadeManager.Instance.PlayFadeAnimationObservable(0.0f, FADE_ANIMATION_TIME).Subscribe();
+                return GachaResultWindowFactory.Create(new GachaResultWindowRequest() { itemList = itemList});
             })
-            */
             .Subscribe();
     }
 

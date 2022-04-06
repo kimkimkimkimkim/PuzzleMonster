@@ -10,6 +10,7 @@ public class GachaResultWindowFactory
         return Observable.Create<GachaResultWindowResponse>(observer =>
         {
             var param = new Dictionary<string, object>();
+            param.Add("itemList", request.itemList);
             param.Add("onClose", new Action(() =>
             {
                 observer.OnNext(new GachaResultWindowResponse());

@@ -19,5 +19,22 @@ namespace GameBase
         {
             return source.OrderBy(_ => Guid.NewGuid());
         }
+
+        public static List<T> InsertAllBetween<T>(this List<T> source, T value)
+        {
+            var list = new List<T>();
+            source.ForEach((v, index) =>
+            {
+                list.Add(v);
+
+                // 最後の要素でなければ指定した要素を挿入
+                if(index != source.Count - 1)
+                {
+                    list.Add(value);
+                }
+            });
+
+            return list;
+        }
     }
 }

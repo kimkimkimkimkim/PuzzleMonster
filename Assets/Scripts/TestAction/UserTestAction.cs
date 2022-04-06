@@ -221,8 +221,6 @@ public class UserTestAction : ITestAction
             title = "作業用",
             action = new Action(() =>
             {
-                var gachaAnimation = UIManager.Instance.CreateContent<GachaAnimation>(UIManager.Instance.gachaAnimationParent);
-                gachaAnimation.PlayGachaAnimationObservable().Subscribe();
             }),
         });
 

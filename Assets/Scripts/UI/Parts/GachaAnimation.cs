@@ -34,7 +34,7 @@ public class GachaAnimation: MonoBehaviour
     // 時間関係の定数値
     private const float FADE_ANIMATION_TIME = 0.3f;
     private const float CAMERA_FIRST_BACK_ANIMATION_TIME = 1.0f;
-    private const float CAMERA_FRONT_ANIMATION_TIME = 2.5f;
+    private const float CAMERA_FRONT_ANIMATION_TIME = 2.0f;
     private const float CAMERA_STOP_TIME = 0.4f;
     private const float CAMERA_SECOND_BACK_ANIMATION_TIME = 3.5f;
     private const float SHOCK_PS_ANIMATION_DELAY = CAMERA_FIRST_BACK_ANIMATION_TIME + CAMERA_FRONT_ANIMATION_TIME + CAMERA_STOP_TIME + 0.1f;

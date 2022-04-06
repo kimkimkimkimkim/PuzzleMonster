@@ -52,8 +52,10 @@ public class FadeImage : UnityEngine.UI.Graphic , IFade
 	{
 		var toValue = isFadeIn ? 1.0f : 0.0f;
 
-		return DOVirtual.Float(Range, toValue, animationTime, value => Range = value)
-			.OnCompleteAsObservable()
+		return Observable.ReturnUnit()
+			.Do(_ => UIManager.Instance.ShowTapBlocker())
+			.SelectMany(_ => DOVirtual.Float(Range, toValue, animationTime, value => Range = value).OnCompleteAsObservable())
+			.Do(_ => UIManager.Instance.TryHideTapBlocker())
 			.AsUnitObservable();
 	}
 
