@@ -25,6 +25,9 @@ public partial class PlayFabDataPublisher : EditorWindow
             // マスタ名を取得
             var name = sheet.GetRow(NAME_ROW_INDEX).GetCell(NAME_COLUMN_INDEX).StringCellValue;
 
+            // 名前が"無視"だったら無視する
+            if (name == "無視") continue;
+
             var rowIndex = START_DATA_ROW_INDEX;
             var jsonStr = "[";
             while (GetValueStr(sheet, rowIndex, START_DATA_COLUMN_INDEX) != "")
