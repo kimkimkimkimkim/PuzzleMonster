@@ -1,65 +1,69 @@
 ﻿using PM.Enum.Sound;
 using UnityEngine;
 using UnityEngine.Audio;
+using DG.Tweening;
+using UniRx;
+using System;
 
 namespace GameBase
 {
+
     [RequireComponent(typeof(AudioSource))]
     public class BGMPlayer : MonoBehaviour
     {
         private const string TAG = "BGM";
-        private const float FADEOUT_DEFAULT_VOLUME = 0.05f;
+        private const float FADE_IN_START_VOLUME = 0.0625f;
         private AudioSource source;
         private AudioClip _currentlyPlayingClip;
-        private AudioClip _nextClip;
         private float _startVolume = 1.0f;
-        private float _nextVolume;
-        private bool _isStopInFadeOut;
+        private IDisposable fadeoutObservable;
 
         public void Awake()
         {
-            _isStopInFadeOut = false;
+            _currentlyPlayingClip = null;
             source = GetComponent<AudioSource>();
             source.loop = true;
             source.playOnAwake = false;
         }
 
-        public void Play(BGM bgm, float volume = 1.0f, bool isCurrentBGMFadeOut = true)
+        public void Play(BGM bgm, float volume = 1.0f, float fadeTime = 0.0f)
         {
             var filePath = $"StaticAssets/Sound/BGM/{bgm}";
-            Play(filePath, volume, isCurrentBGMFadeOut);
+            Play(filePath, volume, fadeTime);
         }
 
-        public void Play(string filePath, float volume = 1f, bool isCurrentBGMFadeOut = true)
+        public void Play(string filePath, float volume = 1f, float fadeTime = 0.0f)
         {
+            if (fadeoutObservable != null) fadeoutObservable.Dispose();
+
             var clip = ResourceManager.Instance.LoadAsset<AudioClip>(filePath);
 
-            //アセット読み込み失敗の際には、処理を止める
+            // アセット読み込み失敗の際には、処理を止める
             if (clip == null)
             {
-                // KoiniwaLogger.LogError("Unabled to load requested SFX Asset : " + filePath, TAG);
+                Debug.LogError("Unabled to load requested BGM Asset : " + filePath);
                 return;
             }
 
-            if (!isCurrentBGMFadeOut || !IsPlaying)
+            if (clip == _currentlyPlayingClip)
             {
-                //FadeOutを使わないかBGMが再生中ではない際には、すぐBGMを再生
-                _isStopInFadeOut = false;
-                _nextClip = null;
-                _currentlyPlayingClip = source.clip = clip;
-                source.volume = volume;
-                source.Play();
-            }
-            else if (clip == _currentlyPlayingClip && _nextClip == null)
-            {
-                //再生中BGMと同じ且つFadeOut後再生予定のBGMがない場合は、処理をスキップ
-                // KoiniwaLogger.Log("同じBGMを再生。FilePath : " + filePath, TAG);
+                // 再生中BGMと同じ場合は処理をスキップ
+                Debug.Log("同じBGMを再生。FilePath : " + filePath);
             }
             else
             {
-                //その以外は、FadeOut後再生
-                _nextClip = clip;
-                _nextVolume = volume;
+                if (fadeTime > 0f)
+                {
+                    source.volume = FADE_IN_START_VOLUME;
+                    source.DOFade(volume, fadeTime);
+                }
+                else
+                {
+                    source.volume = volume;
+                }
+                _startVolume = volume;
+                source.clip = _currentlyPlayingClip = clip;
+                source.Play();
             }
         }
 
@@ -68,15 +72,28 @@ namespace GameBase
             if (source != null) source.volume = volume;
         }
 
-        public void Stop(bool isFadeOut = true)
+        public void Stop(float fadeTime = 0f)
         {
-            if (isFadeOut)
+            _currentlyPlayingClip = null;
+            if (fadeTime > 0f)
             {
-                _isStopInFadeOut = true;
+                fadeoutObservable = source.DOFade(0f, fadeTime).OnCompleteAsObservable()
+                    .Do(_ => Stop(source))
+                    .Subscribe();
             }
             else
             {
-                source.Stop();
+                Stop(source);
+            }
+        }
+
+        private void Stop(AudioSource source)
+        {
+            source.Stop();
+            if (source.clip != null)
+            {
+                source.clip.UnloadAudioData();
+                source.clip = null;
             }
         }
 
@@ -85,35 +102,14 @@ namespace GameBase
             source.Pause();
         }
 
-        public void Unpause()
+        public void UnPause()
         {
             source.UnPause();
         }
 
-        public void Update()
+        public IObservable<Unit> FadeObservable(float endVolume, float fadeTime)
         {
-            //次再生BGMが存在するかFadeOut停止の場合は、FadeOutを行う
-            if (_nextClip != null || _isStopInFadeOut == true)
-            {
-                source.volume -= FADEOUT_DEFAULT_VOLUME;
-
-                //ボリュームが0になったらBGMを止める
-                if (source.volume <= 0.0f)
-                {
-                    _isStopInFadeOut = false;
-                    source.Stop();
-                    source.volume = _nextClip == null ? _startVolume : _nextVolume;
-
-                    //次再生するBGMがあったら再生を行う
-                    if (_nextClip != null)
-                    {
-                        source.clip = _currentlyPlayingClip = _nextClip;
-
-                        source.Play();
-                        _nextClip = null;
-                    }
-                }
-            }
+            return source.DOFade(endVolume, fadeTime).OnCompleteAsObservable().AsUnitObservable();
         }
 
         public void SetMixerGroup(AudioMixerGroup mixerGroup)
@@ -121,11 +117,26 @@ namespace GameBase
             source.outputAudioMixerGroup = mixerGroup;
         }
 
+        /// <summary>
+        /// 指定したパスのAudioClipを現在再生中か否かを返します
+        /// </summary>
+        public bool IsSameClipPlaying(string filePath)
+        {
+            var clip = ResourceManager.Instance.LoadAsset<AudioClip>(filePath);
+
+            return IsSameClipPlaying(clip);
+        }
+
+        public bool IsSameClipPlaying(AudioClip clip)
+        {
+            return clip != null && clip == _currentlyPlayingClip;
+        }
+
         private bool IsPlaying
         {
             get
             {
-                return source.isPlaying || _isStopInFadeOut;
+                return source.isPlaying;
             }
         }
     }
