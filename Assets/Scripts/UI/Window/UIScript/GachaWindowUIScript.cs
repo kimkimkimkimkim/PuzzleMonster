@@ -64,6 +64,8 @@ public class GachaWindowUIScript : WindowBase
     }
 
     private void OnClickGachaExecuteButtonAction(GachaBoxDetailMB gachaBoxDetail) {
+        const float FADE_ANIMATION_TIME = 0.3f;
+
         var cost = gachaBoxDetail.requiredItemList.First().num; // ガチャに必要なアイテムが複数になることはない
         var num = gachaBoxDetail.gachaExecuteType.Num();
 
@@ -74,6 +76,18 @@ public class GachaWindowUIScript : WindowBase
             content = $"オーブを{cost}個使用してガチャを{num}回まわしますか？",
         })
             .Where(res => res.dialogResponseType == DialogResponseType.Yes)
+            .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(1.0f, FADE_ANIMATION_TIME))
+            .SelectMany(_ =>
+            {
+                var gachaAnimation = UIManager.Instance.CreateContent<GachaAnimation>(UIManager.Instance.gachaAnimationParent);
+                return gachaAnimation.PlayGachaAnimationObservable();
+            })
+            .SelectMany(_ =>
+            {
+                FadeManager.Instance.PlayFadeAnimationObservable(0.0f, FADE_ANIMATION_TIME);
+                return GachaResultWindowFactory.Create(new GachaResultWindowRequest());
+            })
+            /*
             .SelectMany(_ => ExecuteGachaObservable(gachaBoxDetail))
             .SelectMany(res =>
             {
@@ -84,6 +98,7 @@ public class GachaWindowUIScript : WindowBase
                     itemList = itemList,
                 });
             })
+            */
             .Subscribe();
     }
 

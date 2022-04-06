@@ -23,6 +23,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System;
+using UniRx;
+using GameBase;
+using DG.Tweening;
 
 public class FadeImage : UnityEngine.UI.Graphic , IFade
 {
@@ -32,6 +36,8 @@ public class FadeImage : UnityEngine.UI.Graphic , IFade
 	[SerializeField, Range (0, 1)]
 	private float cutoutRange;
 
+	private const float ANIMATION_TIME = 1.0f;
+
 	public float Range {
 		get {
 			return cutoutRange;
@@ -40,6 +46,15 @@ public class FadeImage : UnityEngine.UI.Graphic , IFade
 			cutoutRange = value;
 			UpdateMaskCutout (cutoutRange);
 		}
+	}
+
+	public IObservable<Unit> PlayFadeAnimationObservable(bool isFadeIn, float animationTime = ANIMATION_TIME)
+	{
+		var toValue = isFadeIn ? 1.0f : 0.0f;
+
+		return DOVirtual.Float(Range, toValue, animationTime, value => Range = value)
+			.OnCompleteAsObservable()
+			.AsUnitObservable();
 	}
 
 	protected override void Start ()
