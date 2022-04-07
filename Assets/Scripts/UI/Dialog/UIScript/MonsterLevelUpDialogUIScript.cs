@@ -186,11 +186,12 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         _speedSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
 
         // モンスター固有の最大値
-        _hpSliderBack.value = monster.level100Hp;
-        _attackSliderBack.value = monster.level100Attack;
-        _defenseSliderBack.value = monster.level100Defense;
-        _healSliderBack.value = monster.level100Heal;
-        _speedSliderBack.value = monster.level100Speed;
+        var level100MonsterStatus = MonsterUtil.GetMonsterStatus(monster, 100);
+        _hpSliderBack.value = level100MonsterStatus.hp;
+        _attackSliderBack.value = level100MonsterStatus.attack;
+        _defenseSliderBack.value = level100MonsterStatus.defense;
+        _healSliderBack.value = level100MonsterStatus.heal;
+        _speedSliderBack.value = level100MonsterStatus.speed;
 
         // モンスターの現在値
         var status = MonsterUtil.GetMonsterStatus(monster, userMonster.customData.level);

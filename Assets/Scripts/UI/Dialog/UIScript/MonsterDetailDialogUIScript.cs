@@ -144,15 +144,16 @@ public class MonsterDetailDialogUIScript : DialogBase
         _speedText.text = status.speed.ToString();
 
         // ゲージ
-        _hpSliderBack.value = monster.level100Hp;
+        var level100Status = MonsterUtil.GetMonsterStatus(monster, 100);
+        _hpSliderBack.value = level100Status.hp;
         _hpSliderFront.value = status.hp;
-        _attackSliderBack.value = monster.level100Attack;
+        _attackSliderBack.value = level100Status.attack;
         _attackSliderFront.value = status.attack;
-        _defenseSliderBack.value = monster.level100Defense;
+        _defenseSliderBack.value = level100Status.defense;
         _defenseSliderFront.value = status.defense;
-        _healSliderBack.value = monster.level100Heal;
+        _healSliderBack.value = level100Status.heal;
         _healSliderFront.value = status.heal;
-        _speedSliderBack.value = monster.level100Speed;
+        _speedSliderBack.value = level100Status.speed;
         _speedSliderFront.value = status.speed;
 
         // スキル
