@@ -15,7 +15,8 @@ public partial class PlayFabDataPublisher : EditorWindow
         var fs = new FileStream(excelFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         var book = new XSSFWorkbook(fs);
         var sheetNum = book.NumberOfSheets;
-
+        
+        // 全シートを順番に見ていく
         var allJsonStr = "{";
         for (var i = 0; i < sheetNum; i++)
         {
@@ -27,12 +28,15 @@ public partial class PlayFabDataPublisher : EditorWindow
 
             // 名前が"無視"だったら無視する
             if (name == "無視") continue;
-
+            
+            // 縦方向の順次処理
+            // 一番左のカラム（ID）が指定していなかったら終了
             var rowIndex = START_DATA_ROW_INDEX;
             var jsonStr = "[";
             while (GetValueStr(sheet, rowIndex, START_DATA_COLUMN_INDEX) != "")
             {
-                // 各データに対する処理開始
+                // 横方向の順次処理
+                // 型が指定していなかったら終了
                 var columnIndex = START_DATA_COLUMN_INDEX;
                 jsonStr += "{";
                 while (GetTypeStr(sheet, columnIndex) != "")
