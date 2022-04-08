@@ -14,8 +14,9 @@ public partial class PlayFabDataPublisher : EditorWindow
     public static int HIERARCHY_1_ROW_INDEX = 3; // 階層1が記述されたセルの行インデックス（変数名）
     public static int HIERARCHY_2_ROW_INDEX = 4; // 階層2が記述されたセルの行インデックス（数字だったらリストの要素番号、数字以外だったらオブジェクトの変数名）
     public static int HIERARCHY_3_ROW_INDEX = 5; // 階層3が記述されたセルの行インデックス（数字だったらリストの要素番号、数字以外だったらオブジェクトの変数名）
-    public static int TYPE_ROW_INDEX = 6; // 型が記述されたセルの行インデックス
-    public static int START_DATA_ROW_INDEX = 9; // データ記述が開始される行インデックス
+    public static int HIERARCHY_4_ROW_INDEX = 6; // 階層4が記述されたセルの行インデックス（ここには要素番号は来ないので変数名）
+    public static int TYPE_ROW_INDEX = 7; // 型が記述されたセルの行インデックス
+    public static int START_DATA_ROW_INDEX = 10; // データ記述が開始される行インデックス
     public static int START_DATA_COLUMN_INDEX = 1; // データ記述が開始される行インデックス
 
     private DateTime date;
@@ -163,7 +164,8 @@ public partial class PlayFabDataPublisher : EditorWindow
         // 指定したセルの階層1の行に値が無い場合は空文字を返す
         var key1 = GetHierarchyStr(sheet, HIERARCHY_1_ROW_INDEX, columnIndex);
         if (key1 == "") return "";
-
+        
+        // 階層2の値をチェック
         var key2 = GetHierarchyStr(sheet, HIERARCHY_2_ROW_INDEX, columnIndex);
         var cell2 = GetCell(sheet, HIERARCHY_2_ROW_INDEX, columnIndex);
         switch (cell2.CellType)
@@ -236,8 +238,10 @@ public partial class PlayFabDataPublisher : EditorWindow
     {
         // 階層2の値が数値でなければ空文字を返す
         if (GetCell(sheet, HIERARCHY_2_ROW_INDEX, columnIndex).CellType != CellType.Numeric) return "";
-
-        var isObject = GetHierarchyStr(sheet, HIERARCHY_3_ROW_INDEX, columnIndex) != "";
+        
+        // 階層2のリストの中身が何かを取得
+        var isNotObject = GetHierarchyStr(sheet, HIERARCHY_3_ROW_INDEX, columnIndex) == "";
+        var isList = GetCell(sheet, HIERARCHY_3_ROW_INDEX, columnIndex).CellType == CellType.Numeric
 
         var jsonStr = "[";
         var lastColumnIndex = sheet.GetRow(TYPE_ROW_INDEX).LastCellNum - 1;
@@ -275,7 +279,7 @@ public partial class PlayFabDataPublisher : EditorWindow
             if (elementJsonStr != "")
             {
                 elementJsonStr = elementJsonStr.Remove(elementJsonStr.Length - 1);
-                if (isObject)
+                if (!isNotObject)
                 {
                     elementJsonStr = elementJsonStr.Insert(0, "{");
                     elementJsonStr += "}";
@@ -287,5 +291,106 @@ public partial class PlayFabDataPublisher : EditorWindow
         jsonStr += "]";
 
         return jsonStr != "]" ? jsonStr : "[]";
+    }
+    
+    /// <summary>
+    /// 値の中のリストをValue文字列として返します
+    /// どの階層のリストかを指定
+    /// リストの最初の要素のセルインデックスを指定する
+    /// </summary>
+    private string GetListValueStr(ISheet sheet, int hierarchyIndex, int rowIndex, int columnIndex) {
+
+        // 指定した階層の値が数値でなければ空文字を返す
+        if (GetCell(sheet, hierarchyIndex, columnIndex).CellType != CellType.Numeric) return "";
+
+        // もし指定した階層が一番下の階層だったらリストは格納できないので空文字を返す
+        var underHierarchyIndex = hierarchyIndex + 1;
+        if(underHierarchyIndex > HIERARCHY_4_ROW_INDEX) return false;
+        
+        // 指定した階層のリストの中身が何かを取得
+        var listContentType =
+            GetHierarchyStr(sheet, underHierarchyIndex, columnIndex) == "" ? ListContentType.Plain :
+            GetCell(sheet, underHierarchyIndex, columnIndex).CellType == CellType.Numeric ? ListContentType.List :
+            ListContentType.Object;
+
+        var jsonStr = "[";
+        var lastColumnIndex = sheet.GetRow(TYPE_ROW_INDEX).LastCellNum - 1;
+
+        if (listContentType == ListContentType.List) {
+            jsonStr += GetListValueStr(sheet, underHierarchyIndex, rowIndex, columnIndex);
+        } else if (listContentType == ListContentType.Object || listContentType == ListContentType.Plain) {
+
+            do {
+                var elementJsonStr = "";
+                do {
+                    var key = GetHierarchyStr(sheet, underHierarchyIndex, columnIndex);
+                    var value = GetValueStr(sheet, rowIndex, columnIndex);
+
+                    // もし"null"文字列ならnullにする
+                    if (value == "\\\"null\\\"") value = "null";
+
+                    if (key == "") {
+                        // キーが空文字ならオブジェクトじゃない普通の値
+                        if (value != "") {
+                            elementJsonStr += $"{value},";
+                        }
+                    } else {
+                        // キーが空文字じゃないならオブジェクト
+                        if (value != "") {
+                            elementJsonStr += $"{key}:{value},";
+                        }
+                    }
+
+                    columnIndex++;
+                } while (IsAllBlankBetweenHierarchy1(sheet, columnIndex, hierarchyIndex) && columnIndex <= lastColumnIndex);
+
+                if (elementJsonStr != "") {
+                    elementJsonStr = elementJsonStr.Remove(elementJsonStr.Length - 1);
+                    if (listContentType == ListContentType.Object) {
+                        elementJsonStr = elementJsonStr.Insert(0, "{");
+                        elementJsonStr += "}";
+                    }
+                    jsonStr += $"{elementJsonStr},";
+                }
+            } while (IsAllBlankBetweenHierarchy1(sheet, columnIndex, hierarchyIndex - 1) && columnIndex <= lastColumnIndex);
+            jsonStr = jsonStr.Remove(jsonStr.Length - 1);
+        }
+
+        jsonStr += "]";
+
+        return jsonStr != "]" ? jsonStr : "[]";
+    }
+
+    /// <summary>
+    /// 指定した階層から階層1まで全部空か否かを返します
+    /// </summary>
+    private bool IsAllBlankBetweenHierarchy1(ISheet sheet, int columnIndex, int targetHierarchyRowIndex) {
+        if (targetHierarchyRowIndex < HIERARCHY_1_ROW_INDEX) return false;
+
+        for (var i = HIERARCHY_1_ROW_INDEX; i <= targetHierarchyRowIndex; i++) {
+            if (GetCell(sheet, HIERARCHY_1_ROW_INDEX, columnIndex)?.CellType != CellType.Blank) return false;
+        }
+
+        return true;
+    }
+    
+    /// <summary>
+    /// リストの中身タイプ
+    /// </summary>
+    private enum ListContentType {
+        /// <summary>
+        /// オブジェクトではないただの値
+        /// </summary>
+        Plain,
+
+        /// <summary>
+        /// オブジェクト
+        /// </summary>
+        Object,
+
+        /// <summary>
+        /// リスト
+        /// </summary>
+        List,
     }
 }
