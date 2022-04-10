@@ -23,7 +23,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     private void Init(long questId, string userMonsterPartyId)
     {
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
-        maxWaveCount = quest.questWaveIdList.Count;
+        maxWaveCount = quest.questMonsterListByWave.Count;
         this.userMonsterPartyId = userMonsterPartyId;
     }
 

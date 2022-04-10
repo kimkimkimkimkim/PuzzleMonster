@@ -142,7 +142,7 @@ public partial class PlayFabDataPublisher : EditorWindow
                     if (key == "name") name = value;
                     if (key == "itemList")
                     {
-                        var listValue = GetListValueStr(sheet, rowIndex, columnIndex);
+                        var listValue = GetListValueStr(sheet,HIERARCHY_2_ROW_INDEX, rowIndex, columnIndex);
                         listValue = listValue.Replace("\\","");
                         itemList = JsonConvert.DeserializeObject<ItemMI[]>(listValue).ToList();
                     }
@@ -192,7 +192,7 @@ public partial class PlayFabDataPublisher : EditorWindow
                     if (key == "description") description = value;
                     if (key == "itemList")
                     {
-                        var listValue = GetListValueStr(sheet, rowIndex, columnIndex);
+                        var listValue = GetListValueStr(sheet,HIERARCHY_2_ROW_INDEX, rowIndex, columnIndex);
                         listValue = listValue.Replace("\\", "");
                         itemList = JsonConvert.DeserializeObject<ItemMI[]>(listValue).ToList();
                     }
@@ -242,7 +242,7 @@ public partial class PlayFabDataPublisher : EditorWindow
                     if (key == "id") id = value;
                     if (key == "itemList")
                     {
-                        var listValue = GetListValueStr(sheet, rowIndex, columnIndex);
+                        var listValue = GetListValueStr(sheet,HIERARCHY_2_ROW_INDEX, rowIndex, columnIndex);
                         listValue = listValue.Replace("\\", "");
                         itemList = JsonConvert.DeserializeObject<ProbabilityItemMI[]>(listValue).ToList();
                     }
@@ -473,7 +473,7 @@ public partial class PlayFabDataPublisher : EditorWindow
             return "{" +
                 "\"ResultItemType\": \"" + _itemType + "\"," +
                 "\"ResultItem\": \"" + _itemId + "\"," +
-                "\"Weight\": " + m.probability.ToString() +
+                "\"Weight\": " + m.weight.ToString() +
             "}";
         });
         var nodes = $"[{string.Join(",", probabilityItemDataList)}]";

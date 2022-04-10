@@ -59,16 +59,9 @@ public class QuestDetailWindowUIScript : WindowBase
     {
         _monsterInfiniteScroll.Clear();
 
-        monsterItemList = quest.questWaveIdList
-            .SelectMany(questWaveId =>
-            {
-                var questWave = MasterRecord.GetMasterOf<QuestWaveMB>().Get(questWaveId);
-                var questMonsterList = questWave.questMonsterIdList
-                    .Where(questMonsterId => questMonsterId != 0)
-                    .Select(questMonsterId => MasterRecord.GetMasterOf<QuestMonsterMB>().Get(questMonsterId));
-                var monsterIdList = questMonsterList.Select(m => m.monsterId);
-                return monsterIdList;
-            })
+        monsterItemList = quest.questMonsterListByWave
+            .SelectMany(questMonsterList => questMonsterList.Select(questMonster => questMonster.monsterId))
+            .Where(monsterId => monsterId > 0)
             .Distinct()
             .Select(monsterId =>
             {
@@ -97,8 +90,8 @@ public class QuestDetailWindowUIScript : WindowBase
     {
         _normalRewardInfiniteScroll.Clear();
 
-        var bundle = MasterRecord.GetMasterOf<BundleMB>().Get(quest.dropBundleId);
-        normalRewardItemList = bundle.itemList.Where(i => i.itemType != ItemType.DropTable).ToList();
+        // ドロップ率100%のものに絞る
+        normalRewardItemList = quest.dropItemList.Where(p => p.percent >= 100).Select(i => (ItemMI)i).ToList();
 
         _normalRewardInfiniteScroll.Init(normalRewardItemList.Count, OnUpdateNormalRewardItem);
     }
@@ -117,24 +110,8 @@ public class QuestDetailWindowUIScript : WindowBase
     {
         _dropRewardInfiniteScroll.Clear();
 
-        var bundle = MasterRecord.GetMasterOf<BundleMB>().Get(quest.dropBundleId);
-        dropRewardItemList = bundle.itemList
-            .Where(i => i.itemType == ItemType.DropTable)
-            .Select(i => MasterRecord.GetMasterOf<DropTableMB>().Get(i.itemId))
-            .SelectMany(dropTable =>
-            {
-                return dropTable.itemList.Where(i => i.itemType != ItemType.None);
-            })
-            .Select(p =>
-            {
-                return new ItemMI()
-                {
-                    itemType = p.itemType,
-                    itemId = p.itemId,
-                    num = p.num,
-                };
-            })
-            .ToList();
+        // ドロップ率100%以外のものに絞る
+        dropRewardItemList = quest.dropItemList.Where(p => p.percent < 100).Select(i => (ItemMI)i).ToList();
 
         _dropRewardInfiniteScroll.Init(dropRewardItemList.Count, OnUpdateDropRewardItem);
     }
@@ -153,8 +130,7 @@ public class QuestDetailWindowUIScript : WindowBase
     {
         _firstRewardInfiniteScroll.Clear();
 
-        var bundle = MasterRecord.GetMasterOf<BundleMB>().Get(quest.firstRewardBundleId);
-        firstRewardItemList = bundle.itemList;
+        firstRewardItemList = quest.firstRewardItemList;
 
         _firstRewardInfiniteScroll.Init(firstRewardItemList.Count, OnUpdateFirstRewardItem);
     }

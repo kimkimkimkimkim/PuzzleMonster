@@ -54,7 +54,7 @@ public class BattleWindowUIScript : DummyWindowBase
 
         SetPlayerMonsterImage();
         SetTurnText(1);
-        SetWaveText(1, quest.questWaveIdList.Count);
+        SetWaveText(1, quest.questMonsterListByWave.Count);
         SetBattleMonsterInfoItem(userMonsterParty);
     }
 
@@ -140,13 +140,11 @@ public class BattleWindowUIScript : DummyWindowBase
         });
 
         var waveIndex = waveCount - 1;
-        var questWaveId = quest.questWaveIdList[waveIndex];
-        var questWave = MasterRecord.GetMasterOf<QuestWaveMB>().Get(questWaveId);
+        var questMonsterList = quest.questMonsterListByWave[waveIndex];
 
-        questWave.questMonsterIdList.ForEach((questMonsterId, index) =>
+        questMonsterList.ForEach((questMonster, index) =>
         {
-            var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().GetAll().FirstOrDefault(m => m.id == questMonsterId);
-            if(questMonster != null)
+            if (questMonster.monsterId > 0)
             {
                 var parent = _enemyMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);

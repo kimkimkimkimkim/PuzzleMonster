@@ -11,7 +11,6 @@ public partial class BattleDataProcessor
     private int currentWaveCount;
     private int currentTurnCount;
     private QuestMB quest;
-    private List<QuestWaveMB> questWaveList;
     private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>();
     private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>();
@@ -22,7 +21,7 @@ public partial class BattleDataProcessor
     private void Init(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
     {
         this.quest = quest;
-        questWaveList = quest.questWaveIdList.Select(id => MasterRecord.GetMasterOf<QuestWaveMB>().Get(id)).ToList();
+        //questWaveList = quest.questMonsterListByWave.Select(id => MasterRecord.GetMasterOf<QuestWaveMB>().Get(id)).ToList();
 
         currentWaveCount = 0;
         currentTurnCount = 0;
@@ -288,7 +287,7 @@ public partial class BattleDataProcessor
         if (enemyBattleMonsterList.Any(m => !m.isDead)) return false;
 
         // 現在が最終ウェーブであればスキップ
-        if (currentWaveCount >= questWaveList.Count) return false;
+        if (currentWaveCount >= quest.questMonsterListByWave.Count) return false;
 
         // ウェーブ数をインクリメント
         currentWaveCount++;
@@ -776,7 +775,7 @@ public partial class BattleDataProcessor
         // 味方が全滅あるいは最終ウェーブで敵が全滅ならバトル終了
         var existsAlly = playerBattleMonsterList.Any(m => !m.isDead);
         var existsEnemy = enemyBattleMonsterList.Any(m => !m.isDead);
-        var isEndBattle = !existsAlly || (!existsEnemy && currentWaveCount >= questWaveList.Count);
+        var isEndBattle = !existsAlly || (!existsEnemy && currentWaveCount >= quest.questMonsterListByWave.Count);
 
         // バトルが終了していなければ続行、バトル終了かつ味方が残っていれば勝利
         currentWinOrLose = 
@@ -1202,15 +1201,14 @@ public partial class BattleDataProcessor
     private void RefreshEnemyBattleMonsterList(int waveCount)
     {
         var waveIndex = waveCount - 1;
-        var questWave = questWaveList[waveIndex];
+        var questMonsterList = quest.questMonsterListByWave[waveIndex];
 
         enemyBattleMonsterList.Clear();
-        questWave.questMonsterIdList.ForEach((questMonsterId, index) =>
+        questMonsterList.ForEach((questMonster, index) =>
         {
-            var questMonster = MasterRecord.GetMasterOf<QuestMonsterMB>().GetAll().FirstOrDefault(m => m.id == questMonsterId);
-            if (questMonster != null)
+            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(questMonster.monsterId);
+            if (monster != null)
             {
-                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(questMonster.monsterId);
                 var battleMonster = BattleUtil.GetBattleMonster(monster, questMonster.level, false, index);
                 enemyBattleMonsterList.Add(battleMonster);
             }

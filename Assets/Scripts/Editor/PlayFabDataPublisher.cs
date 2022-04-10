@@ -139,7 +139,7 @@ public partial class PlayFabDataPublisher : EditorWindow
     /// </summary>
     private string GetHierarchyStr(ISheet sheet, int rowIndex, int columnIndex)
     {
-        if (rowIndex != HIERARCHY_1_ROW_INDEX && rowIndex != HIERARCHY_2_ROW_INDEX && rowIndex != HIERARCHY_3_ROW_INDEX) return "";
+        if (rowIndex != HIERARCHY_1_ROW_INDEX && rowIndex != HIERARCHY_2_ROW_INDEX && rowIndex != HIERARCHY_3_ROW_INDEX && rowIndex != HIERARCHY_4_ROW_INDEX) return "";
 
         var cell = sheet?.GetRow(rowIndex)?.GetCell(columnIndex);
 
@@ -180,7 +180,7 @@ public partial class PlayFabDataPublisher : EditorWindow
                 return value != "" ? $"{key1}:{value}" : "";
             case CellType.Numeric:
                 // 数値ならリストとして処理
-                var listValue = GetListValueStr(sheet, rowIndex, columnIndex);
+                var listValue = GetListValueStr(sheet, HIERARCHY_2_ROW_INDEX, rowIndex, columnIndex);
                 return listValue != "" ? $"{key1}:{listValue}" : "";
             case CellType.String:
                 // 文字列ならオブジェクトとして処理
@@ -241,7 +241,7 @@ public partial class PlayFabDataPublisher : EditorWindow
         
         // 階層2のリストの中身が何かを取得
         var isNotObject = GetHierarchyStr(sheet, HIERARCHY_3_ROW_INDEX, columnIndex) == "";
-        var isList = GetCell(sheet, HIERARCHY_3_ROW_INDEX, columnIndex).CellType == CellType.Numeric
+        var isList = GetCell(sheet, HIERARCHY_3_ROW_INDEX, columnIndex).CellType == CellType.Numeric;
 
         var jsonStr = "[";
         var lastColumnIndex = sheet.GetRow(TYPE_ROW_INDEX).LastCellNum - 1;
@@ -299,13 +299,16 @@ public partial class PlayFabDataPublisher : EditorWindow
     /// リストの最初の要素のセルインデックスを指定する
     /// </summary>
     private string GetListValueStr(ISheet sheet, int hierarchyIndex, int rowIndex, int columnIndex) {
-
+        if(sheet.SheetName == "QuestMB")
+        {
+            Debug.Log("");
+        }
         // 指定した階層の値が数値でなければ空文字を返す
         if (GetCell(sheet, hierarchyIndex, columnIndex).CellType != CellType.Numeric) return "";
 
         // もし指定した階層が一番下の階層だったらリストは格納できないので空文字を返す
         var underHierarchyIndex = hierarchyIndex + 1;
-        if(underHierarchyIndex > HIERARCHY_4_ROW_INDEX) return false;
+        if(underHierarchyIndex > HIERARCHY_4_ROW_INDEX) return "";
         
         // 指定した階層のリストの中身が何かを取得
         var listContentType =
@@ -368,7 +371,7 @@ public partial class PlayFabDataPublisher : EditorWindow
         if (targetHierarchyRowIndex < HIERARCHY_1_ROW_INDEX) return false;
 
         for (var i = HIERARCHY_1_ROW_INDEX; i <= targetHierarchyRowIndex; i++) {
-            if (GetCell(sheet, HIERARCHY_1_ROW_INDEX, columnIndex)?.CellType != CellType.Blank) return false;
+            if (GetCell(sheet, i, columnIndex)?.CellType != CellType.Blank) return false;
         }
 
         return true;
