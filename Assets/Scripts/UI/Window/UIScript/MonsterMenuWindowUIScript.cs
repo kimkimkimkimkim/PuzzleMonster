@@ -17,7 +17,7 @@ public class MonsterMenuWindowUIScript : WindowBase
         _boxButton.OnClickIntentAsObservable()
             .SelectMany(_ => MonsterBoxWindowFactory.Create(new MonsterBoxWindowRequest()
             {
-                userMontserList = ApplicationContext.userInventory.userMonsterList,
+                userMontserList = ApplicationContext.userData.userMonsterList,
             }))
             .Subscribe();
 

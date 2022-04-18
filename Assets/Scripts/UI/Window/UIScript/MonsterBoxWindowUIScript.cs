@@ -43,7 +43,7 @@ public class MonsterBoxWindowUIScript : WindowBase
                 .Where(res => res.isNeedRefresh)
                 .Do(_ =>
                 {
-                    userMonsterList = ApplicationContext.userInventory.userMonsterList;
+                    userMonsterList = ApplicationContext.userData.userMonsterList;
                     RefreshScroll();
                 })
                 .Subscribe();

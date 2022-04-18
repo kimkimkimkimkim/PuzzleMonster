@@ -80,7 +80,7 @@ public class MissionDialogUIScript : DialogBase
 
         var scrollItem = item.GetComponent<MissionScrollItem>();
         var mission = targetMissionList[index];
-        var firstRewardItem = MasterRecord.GetMasterOf<BundleMB>().Get(mission.rewardBundleId).itemList.First();
+        var firstRewardItem =@mission.rewardItemList.First();
         var canClear = ConditionUtil.IsValid(ApplicationContext.userData, mission.canClearConditionList);
         var isCleared = ApplicationContext.userData.userMissionList
             .Where(u => u.missionId == mission.id)

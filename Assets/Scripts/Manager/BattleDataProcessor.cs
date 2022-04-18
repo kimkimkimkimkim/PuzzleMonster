@@ -1188,7 +1188,7 @@ public partial class BattleDataProcessor
         playerBattleMonsterList.Clear();
         userMonsterParty.userMonsterIdList.ForEach((userMonsterId, index) =>
         {
-            var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
+            var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
             if (userMonster != null)
             {
                 var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);

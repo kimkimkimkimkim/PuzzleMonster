@@ -90,10 +90,10 @@ public static class ClientItemUtil
                 var userVirtualCurrency = ApplicationContext.userVirtualCurrency.virtualCurrencyNumList.FirstOrDefault(c => c.virtualCurrencyId == itemId);
                 return userVirtualCurrency != null ? userVirtualCurrency.num : 0;
             case ItemType.Monster:
-                var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.monsterId == itemId);
+                var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.monsterId == itemId);
                 return userMonster != null ? userMonster.num : 0;
             case ItemType.Property:
-                return ApplicationContext.userInventory.userPropertyList.GetNum((PropertyType)itemId);
+                return ApplicationContext.userData.userPropertyList.GetNum((PropertyType)itemId);
             default:
                 return 0;
         }

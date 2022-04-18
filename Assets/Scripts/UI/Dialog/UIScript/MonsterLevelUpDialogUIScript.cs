@@ -70,7 +70,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
             .Subscribe();
 
         _levelUpButton.OnClickIntentAsObservable()
-            .Where(_ => ApplicationContext.userInventory.userMonsterList.Any())
+            .Where(_ => ApplicationContext.userData.userMonsterList.Any())
             .SelectMany(_ =>
             {
                 var targetLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll().First(m => m.level == afterLevel);
@@ -80,7 +80,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
             .Do(_ =>
             {
                 isNeedRefresh = true;
-                userMonster = ApplicationContext.userInventory.userMonsterList.First(u => u.id == userMonster.id);
+                userMonster = ApplicationContext.userData.userMonsterList.First(u => u.id == userMonster.id);
                 SetAfterLevel();
                 SetSliderValue();
                 RefreshUI();
@@ -143,7 +143,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         // 最小強化後レベルは現在レベル
         minAfterLevel = userMonster.customData.level;
 
-        var monsterExp = ApplicationContext.userVirtualCurrency.monsterExp;
+        var monsterExp = ApplicationContext.userData.userPropertyList.GetNum(PropertyType.MonsterExp);
 
         // 所持している経験値を全て使用した際のモンスター総経験値量
         var maxExp = userMonster.customData.exp + monsterExp;
@@ -234,7 +234,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         // 経験値
         var targetLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll().FirstOrDefault(m => m.level == afterLevel);
         var consumedExp = targetLevelUpTable == null ? 0 : Math.Max(targetLevelUpTable.totalRequiredExp - userMonster.customData.exp,0);
-        var monsterExp = ApplicationContext.userVirtualCurrency.monsterExp;
+        var monsterExp = ApplicationContext.userData.userPropertyList.GetNum(PropertyType.MonsterExp);
         _possessionExpNumText.text = GetPossessionExpNumText(monsterExp, monsterExp - consumedExp);
         _consumedExpNumText.text = consumedExp.ToString();
 

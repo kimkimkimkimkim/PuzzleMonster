@@ -59,7 +59,7 @@ public class MonsterFormationWindowUIScript : WindowBase
     private void RefreshUserMonsterList()
     {
         // すでに編成済みのモンスターを排除
-        userMonsterList = ApplicationContext.userInventory.userMonsterList.Where(u => !initialUserMonsterList.Any(initialUserMonster => initialUserMonster != null && initialUserMonster.id == u.id)).ToList();
+        userMonsterList = ApplicationContext.userData.userMonsterList.Where(u => !initialUserMonsterList.Any(initialUserMonster => initialUserMonster != null && initialUserMonster.id == u.id)).ToList();
     }
 
     private void RefreshScroll()
@@ -113,7 +113,7 @@ public class MonsterFormationWindowUIScript : WindowBase
                     .SelectMany(_ => ApiConnection.UpdateUserMosnterFormation(partyId, selectedUserMonsterIdList))
                     .Do(_ =>
                     {
-                        initialUserMonsterList = selectedUserMonsterIdList.Select(id => ApplicationContext.userInventory.userMonsterList.First(u => u.id == id)).ToList();
+                        initialUserMonsterList = selectedUserMonsterIdList.Select(id => ApplicationContext.userData.userMonsterList.First(u => u.id == id)).ToList();
                         selectedUserMonsterIdList = Enumerable.Repeat<string>("", ConstManager.Battle.MAX_PARTY_MEMBER_NUM).ToList();
                         RefreshUserMonsterList();
                         RefreshInitialMonsterItem();

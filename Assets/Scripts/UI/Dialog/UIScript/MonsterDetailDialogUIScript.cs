@@ -74,7 +74,7 @@ public class MonsterDetailDialogUIScript : DialogBase
             .SelectMany(_ =>
             {
                 isNeedRefresh = true;
-                userMonster = ApplicationContext.userInventory.userMonsterList.First(u => u.id == userMonster.id);
+                userMonster = ApplicationContext.userData.userMonsterList.First(u => u.id == userMonster.id);
                 return RefreshUIObservable();
             })
             .Subscribe();
@@ -88,7 +88,7 @@ public class MonsterDetailDialogUIScript : DialogBase
             .SelectMany(_ =>
             {
                 isNeedRefresh = true;
-                userMonster = ApplicationContext.userInventory.userMonsterList.First(u => u.id == userMonster.id);
+                userMonster = ApplicationContext.userData.userMonsterList.First(u => u.id == userMonster.id);
                 return RefreshUIObservable();
             })
             .Subscribe();
@@ -102,7 +102,7 @@ public class MonsterDetailDialogUIScript : DialogBase
             .SelectMany(_ =>
             {
                 isNeedRefresh = true;
-                userMonster = ApplicationContext.userInventory.userMonsterList.First(u => u.id == userMonster.id);
+                userMonster = ApplicationContext.userData.userMonsterList.First(u => u.id == userMonster.id);
                 return RefreshUIObservable();
             })
             .Subscribe();

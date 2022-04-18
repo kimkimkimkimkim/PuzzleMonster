@@ -106,7 +106,7 @@ public class BattleWindowUIScript : DummyWindowBase
     {
         userMonsterParty.userMonsterIdList.ForEach((userMonsterId, index) =>
         {
-            var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
+            var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
             if (userMonster != null) {
                 var parent = _playerMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
@@ -201,7 +201,7 @@ public class BattleWindowUIScript : DummyWindowBase
     {
         userMonsterParty.userMonsterIdList.ForEach(userMonsterId =>
         {
-            var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
+            var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
             var battleMonsterInfoItem = UIManager.Instance.CreateContent<BattleMonsterInfoItem>(_battleMonsterInfoItemBase);
             battleMonsterInfoItem.Set(userMonster);
             battleMonsterInfoItem.SetOnClickAction(() =>

@@ -53,7 +53,7 @@ public class MonsterPartyListWindowUIScript : WindowBase
 
         var scrollItem = item.GetComponent<MonsterPartyListScrollItem>();
         var userMonsterParty = userMonsterPartyList[index];
-        var initialUserMonsterList = userMonsterParty.userMonsterIdList.Select(id => ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.id == id)).ToList();
+        var initialUserMonsterList = userMonsterParty.userMonsterIdList.Select(id => ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == id)).ToList();
         var monsterIdList = initialUserMonsterList
             .Select(u =>
             {

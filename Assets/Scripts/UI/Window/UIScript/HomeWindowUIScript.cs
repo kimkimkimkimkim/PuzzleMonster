@@ -57,7 +57,7 @@ public class HomeWindowUIScript : WindowBase
             userMonsterParty.userMonsterIdList.ForEach((userMonsterId, index) =>
             {
                 var parent = monsterAreaParentList[index];
-                var userMonster = ApplicationContext.userInventory.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
+                var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
                 if (userMonster != null)
                 {
                     var homeMonsterItem = UIManager.Instance.CreateContent<HomeMonsterItem>(parent);

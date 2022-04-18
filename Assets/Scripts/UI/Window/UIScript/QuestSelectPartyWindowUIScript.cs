@@ -58,7 +58,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         var questId = (long)info.param["questId"];
         var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
         currentUserMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == currentPartyIndex)?.Clone();
-        userMonsterList = ApplicationContext.userInventory.userMonsterList.OrderBy(u => u.monsterId).ToList();
+        userMonsterList = ApplicationContext.userData.userMonsterList.OrderBy(u => u.monsterId).ToList();
 
         _titleText.text = quest.name;
 
