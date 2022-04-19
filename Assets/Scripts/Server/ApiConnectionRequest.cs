@@ -329,5 +329,13 @@ public partial class ApiConnection
             userContainerIdList = userContainerIdList,
         });
     }
+
+    public static IObservable<ExecuteGachaApiResponse> ExecuteGacha(long gachaBoxDetailId)
+    {
+        return SendRequest<ExecuteGachaApiRequest, ExecuteGachaApiResponse>(ExecuteGachaApiInterface.functionName, new ExecuteGachaApiRequest()
+        {
+            gachaBoxDetailId = gachaBoxDetailId,
+        });
+    }
     #endregion
 }

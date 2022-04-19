@@ -54,7 +54,7 @@ public class GachaWindowUIScript : WindowBase
             var gachaExecuteButton = UIManager.Instance.CreateContent<GachaExecuteButton>(scrollItem._executeButtonBase);
             var title = gachaBoxDetail.title;
             var canExecute = ConditionUtil.IsValid(ApplicationContext.userData, gachaBoxDetail.canExecuteConditionList);
-            var cost = gachaBoxDetail.requiredItemList.First().num; // ガチャに必要なアイテムが複数になることはない
+            var cost = gachaBoxDetail.requiredItem.num;
 
             gachaExecuteButton.ShowGrayoutPanel(!canExecute);
             gachaExecuteButton.SetText(title);
@@ -66,7 +66,7 @@ public class GachaWindowUIScript : WindowBase
     private void OnClickGachaExecuteButtonAction(GachaBoxDetailMB gachaBoxDetail) {
         const float FADE_ANIMATION_TIME = 0.3f;
 
-        var cost = gachaBoxDetail.requiredItemList.First().num; // ガチャに必要なアイテムが複数になることはない
+        var cost = gachaBoxDetail.requiredItem.num;
         var num = gachaBoxDetail.gachaExecuteType.Num();
 
         CommonDialogFactory.Create(new CommonDialogRequest()
@@ -76,7 +76,7 @@ public class GachaWindowUIScript : WindowBase
             content = $"オーブを{cost}個使用してガチャを{num}回まわしますか？",
         })
             .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-            .SelectMany(_ => ExecuteGachaObservable(gachaBoxDetail))
+            .SelectMany(_ => ApiConnection.ExecuteGacha(gachaBoxDetail.id))
             .SelectMany(res =>
             {
                 return FadeManager.Instance.PlayFadeAnimationObservable(1.0f, FADE_ANIMATION_TIME)
@@ -88,33 +88,15 @@ public class GachaWindowUIScript : WindowBase
             })
             .SelectMany(res =>
             {
-                /*
-                var itemList = ItemUtil.GetSeparatedItemMIList(res.itemList);
-                itemList = itemList.Shuffle().ToList();
-                */
-                var itemList = new List<ItemMI>()
-                {
-                    new ItemMI() { itemType = ItemType.Monster, itemId = 1, num = 1 },
-                    new ItemMI() { itemType = ItemType.Monster, itemId = 7, num = 1 },
-                    new ItemMI() { itemType = ItemType.Monster, itemId = 9, num = 1 },
-                    new ItemMI() { itemType = ItemType.Monster, itemId = 12, num = 1 },
-                    new ItemMI() { itemType = ItemType.Monster, itemId = 14, num = 1 },
-                    new ItemMI() { itemType = ItemType.Monster, itemId = 16, num = 1 },
-                    new ItemMI() { itemType = ItemType.Monster, itemId = 23, num = 1 },
-                    new ItemMI() { itemType = ItemType.Monster, itemId = 25, num = 1 },
-                    new ItemMI() { itemType = ItemType.Monster, itemId = 48, num = 1 },
-                    new ItemMI() { itemType = ItemType.Monster, itemId = 70, num = 1 },
-                };
-                itemList = itemList.Shuffle().ToList();
                 FadeManager.Instance.PlayFadeAnimationObservable(0.0f, FADE_ANIMATION_TIME).Subscribe();
-                return GachaResultWindowFactory.Create(new GachaResultWindowRequest() { itemList = itemList});
+                return GachaResultWindowFactory.Create(new GachaResultWindowRequest() { itemList = res.rewardItemList});
             })
             .Subscribe();
     }
 
     private IObservable<GrantItemsToUserApiResponse> ExecuteGachaObservable(GachaBoxDetailMB gachaBoxDetail)
     {
-        var itemId = ItemUtil.GetItemId(ItemType.Bundle, gachaBoxDetail.bundleId);
+        var itemId = "";
         var itemIdList = new List<string>() { itemId };
         return ApiConnection.GrantItemsToUser(itemIdList);
     }

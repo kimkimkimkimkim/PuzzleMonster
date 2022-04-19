@@ -14,7 +14,7 @@ public class PresentDialogUIScript : DialogBase
     [SerializeField] protected Button _closeButton;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
 
-    private List<UserContainerInfo> userContainerList;
+    private List<UserPresentInfo> userPresentList;
 
     public override void Init(DialogInfo info)
     {
@@ -39,17 +39,18 @@ public class PresentDialogUIScript : DialogBase
     {
         _infiniteScroll.Clear();
 
-        userContainerList = ApplicationContext.userInventory.userContainerList;
+        userPresentList = ApplicationContext.userData.userPresentList;
 
-        _infiniteScroll.Init(userContainerList.Count, OnUpdateItem);
+        _infiniteScroll.Init(userPresentList.Count, OnUpdateItem);
     }
 
     private void OnUpdateItem(int index, GameObject item)
     {
-        if ((userContainerList.Count <= index) || (index < 0)) return;
+        if ((userPresentList.Count <= index) || (index < 0)) return;
 
         var scrollItem = item.GetComponent<PresentScrollItem>();
-        var userContainer = userContainerList[index];
+        var userPresent = userPresentList[index];
+        /*
         var container = MasterRecord.GetMasterOf<ContainerMB>().Get(userContainer.containerId);
         var firstItem = container.itemList.First();
 
@@ -64,6 +65,7 @@ public class PresentDialogUIScript : DialogBase
                 .Do(_ => RefreshScroll())
                 .Subscribe();
         });
+        */
     }
 
     public override void Back(DialogInfo info)

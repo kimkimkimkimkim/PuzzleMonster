@@ -221,6 +221,21 @@ public class UserTestAction : ITestAction
             title = "作業用",
             action = new Action(() =>
             {
+                var p = new ProbabilityItemMI()
+                {
+                    itemType = ItemType.Bundle,
+                    itemId = 1,
+                    num = 2,
+                    percent = 1,
+                    weight = 1,
+                };
+                var i = new ItemMI()
+                {
+                    itemType = p.itemType,
+                    itemId = p.itemId,
+                    num = p.num,
+                };
+                var g = (GachaRewardItemMI)i;
             }),
         });
 

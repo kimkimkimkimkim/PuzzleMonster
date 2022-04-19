@@ -29,14 +29,14 @@ public class GachaResultWindowUIScript : WindowBase
     private const float OPEN_ANIMATION_DELAY = 1.0f;
     private const float OPEN_ANIMATION_INTERVAL = 0.1f;
 
-    private List<ItemMI> itemList;
+    private List<GachaRewardItemMI> itemList;
     private List<GachaResultItem> gachaResultItemList = new List<GachaResultItem>();
     private Vector3 labelInitialPosition;
     private Vector3 contentInitialPosition;
 
     public override void Init(WindowInfo info)
     {
-        // アニメーションタイプをしていするため基底クラスのInit()は呼ばない
+        // アニメーションタイプを指定するため基底クラスのInit()は呼ばない
         // base.Init(info);
 
         onClose = (Action)info.param["onClose"];
@@ -51,7 +51,7 @@ public class GachaResultWindowUIScript : WindowBase
             })
             .Subscribe();
 
-        itemList = (List<ItemMI>)info.param["itemList"];
+        itemList = (List<GachaRewardItemMI>)info.param["itemList"];
 
         SetInitialize();
         SetReward();

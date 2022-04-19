@@ -207,6 +207,8 @@ public partial class PlayFabDataPublisher : EditorWindow
         if (hierarchyRowIndex == 0) return "";
 
         var jsonStr = "{";
+
+        // TODO: オブジェクトが最後の時にlastColumnIndexが正常に取得できていない
         var lastColumnIndex = sheet.GetRow(TYPE_ROW_INDEX).LastCellNum - 1;
         do
         {
@@ -299,10 +301,6 @@ public partial class PlayFabDataPublisher : EditorWindow
     /// リストの最初の要素のセルインデックスを指定する
     /// </summary>
     private string GetListValueStr(ISheet sheet, int hierarchyIndex, int rowIndex, int columnIndex) {
-        if(sheet.SheetName == "QuestMB")
-        {
-            Debug.Log("");
-        }
         // 指定した階層の値が数値でなければ空文字を返す
         if (GetCell(sheet, hierarchyIndex, columnIndex).CellType != CellType.Numeric) return "";
 
