@@ -70,7 +70,7 @@ public class HomeWindowUIScript : WindowBase
 
     private void ActivateBadge()
     {
-        var isShowPresentIconBadge = ApplicationContext.userInventory.userContainerList.Any();
+        var isShowPresentIconBadge = ApplicationContext.userData.userPresentList.Any(u => u.IsValid());
         var isShowMissionIconBadge = MasterRecord.GetMasterOf<MissionMB>().GetAll()
             .Where(m =>
             {

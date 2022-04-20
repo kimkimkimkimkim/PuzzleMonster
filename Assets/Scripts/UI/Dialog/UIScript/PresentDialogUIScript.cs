@@ -31,7 +31,6 @@ public class PresentDialogUIScript : DialogBase
             })
             .Subscribe();
 
-        var m = MasterRecord.GetMasterOf<ContainerMB>().GetAll();
         RefreshScroll();
     }
 
@@ -39,7 +38,7 @@ public class PresentDialogUIScript : DialogBase
     {
         _infiniteScroll.Clear();
 
-        userPresentList = ApplicationContext.userData.userPresentList;
+        userPresentList = ApplicationContext.userData.userPresentList.Where(u => u.IsValid()).ToList();
 
         _infiniteScroll.Init(userPresentList.Count, OnUpdateItem);
     }
@@ -50,22 +49,18 @@ public class PresentDialogUIScript : DialogBase
 
         var scrollItem = item.GetComponent<PresentScrollItem>();
         var userPresent = userPresentList[index];
-        /*
-        var container = MasterRecord.GetMasterOf<ContainerMB>().Get(userContainer.containerId);
-        var firstItem = container.itemList.First();
 
-        scrollItem.SetNameText(container.name);
-        scrollItem.SetDescriptionText(container.description);
+        scrollItem.SetNameText(userPresent.title);
+        scrollItem.SetDescriptionText(userPresent.message);
         scrollItem.ShowGrayoutPanel(false);
-        scrollItem.SetIcon(firstItem);
+        scrollItem.SetIcon(userPresent.item);
         scrollItem.SetOnClickAction(() =>
         {
-            ApiConnection.UnlockContainer(userContainer.id)
-                .SelectMany(res => CommonReceiveDialogFactory.Create(new CommonReceiveDialogRequest() { itemList = res.itemList }))
+            ApiConnection.ReceivePresent(new List<string>() { userPresent.id })
+                .SelectMany(res => CommonReceiveDialogFactory.Create(new CommonReceiveDialogRequest() { itemList = res.userPresentList.Select(u => u.item).ToList() }))
                 .Do(_ => RefreshScroll())
                 .Subscribe();
         });
-        */
     }
 
     public override void Back(DialogInfo info)

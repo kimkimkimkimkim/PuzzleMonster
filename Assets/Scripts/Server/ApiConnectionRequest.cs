@@ -330,11 +330,25 @@ public partial class ApiConnection
         });
     }
 
+    /// <summary>
+    /// 指定したガチャを実行する
+    /// </summary>
     public static IObservable<ExecuteGachaApiResponse> ExecuteGacha(long gachaBoxDetailId)
     {
         return SendRequest<ExecuteGachaApiRequest, ExecuteGachaApiResponse>(ExecuteGachaApiInterface.functionName, new ExecuteGachaApiRequest()
         {
             gachaBoxDetailId = gachaBoxDetailId,
+        });
+    }
+
+    /// <summary>
+    /// 指定したガチャを実行する
+    /// </summary>
+    public static IObservable<ReceivePresentApiResponse> ReceivePresent(List<string> userPresentIdList)
+    {
+        return SendRequest<ReceivePresentApiRequest, ReceivePresentApiResponse>(ReceivePresentApiInterface.functionName, new ReceivePresentApiRequest()
+        {
+            userPresentIdList = userPresentIdList,
         });
     }
     #endregion

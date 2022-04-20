@@ -215,7 +215,7 @@ public class HeaderFooterWindowUIScript : WindowBase
     public void ActivateBadge()
     {
         // HomeTab
-        var isShowPresentIconBadge = ApplicationContext.userInventory.userContainerList.Any();
+        var isShowPresentIconBadge = ApplicationContext.userData.userPresentList.Any(u => u.IsValid());
         var isShowMissionIconBadge = MasterRecord.GetMasterOf<MissionMB>().GetAll()
             .Where(m =>
             {

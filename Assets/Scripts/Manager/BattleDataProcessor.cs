@@ -21,7 +21,6 @@ public partial class BattleDataProcessor
     private void Init(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
     {
         this.quest = quest;
-        //questWaveList = quest.questMonsterListByWave.Select(id => MasterRecord.GetMasterOf<QuestWaveMB>().Get(id)).ToList();
 
         currentWaveCount = 0;
         currentTurnCount = 0;
