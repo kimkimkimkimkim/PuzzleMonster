@@ -103,11 +103,20 @@ public partial class ApiConnection
                     ApplicationContext.UpdateUserDataObservable()
                         .Do(_ =>
                         {
-                            UIManager.Instance.TryHideTapBlocker();
+                            // UIの更新
                             HeaderFooterManager.Instance.UpdateVirutalCurrencyText();
                             HeaderFooterManager.Instance.UpdateUserDataUI();
                             HeaderFooterManager.Instance.SetStaminaText();
                             HeaderFooterManager.Instance.ActivateBadge();
+
+                            // 通知の制御
+                            response.userNotificationList.ForEach(userNotification =>
+                            {
+                                NotificationManager.Instance.ExecuteNotification(userNotification);
+                            });
+
+                            // タップブロッカーを非表示に
+                            UIManager.Instance.TryHideTapBlocker();
 
                             o.OnNext(response);
                             o.OnCompleted();

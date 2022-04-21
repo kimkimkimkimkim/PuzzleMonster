@@ -40,6 +40,61 @@ public class SaveDataUtil
         #endregion
     }
 
+    public class StackableDialog
+    {
+        #region Key
+        /// <summary>
+        /// ユーザーログインボーナスIDリスト
+        /// </summary>
+        private static string USER_LOGIN_BONUS_ID_LIST = "stackableDialog/userLoginBonusIdList";
+        #endregion
+
+        #region DefaultValue
+        private static List<string> userLoginBonusIdListDefaultValue = new List<string>();
+        #endregion
+
+        #region Get
+        public static List<string> GetUserLoginBonusIdList()
+        {
+            var userLoginBonusIdList = SaveData.GetList(USER_LOGIN_BONUS_ID_LIST, userLoginBonusIdListDefaultValue);
+            return userLoginBonusIdList;
+        }
+        #endregion
+
+        #region Set
+        private static void SetUserLoginBonusIdList(List<string> userLoginBonusIdList)
+        {
+            SaveData.SetList(USER_LOGIN_BONUS_ID_LIST, userLoginBonusIdList);
+            SaveData.Save();
+        }
+        #endregion
+
+        #region Add
+        public static void AddUserLoginBonusId(string userLoginBonusId)
+        {
+            var userLoginBonusIdList = SaveData.GetList(USER_LOGIN_BONUS_ID_LIST, userLoginBonusIdListDefaultValue);
+
+            // すでに存在していなければ追加
+            if (!userLoginBonusIdList.Contains(userLoginBonusId))
+            {
+                userLoginBonusIdList.Add(userLoginBonusId);
+                SetUserLoginBonusIdList(userLoginBonusIdList);
+            }
+        }
+        #endregion
+
+        #region Remove
+        public static void RemoveUserLoginBonusId(string userLoginBonusId)
+        {
+            var userLoginBonusIdList = SaveData.GetList(USER_LOGIN_BONUS_ID_LIST, userLoginBonusIdListDefaultValue);
+
+            // 削除したときのみ更新
+            var removeNum = userLoginBonusIdList.RemoveAll(id => id == userLoginBonusId);
+            if(removeNum > 0) SetUserLoginBonusIdList(userLoginBonusIdList);
+        }
+        #endregion
+    }
+
     public static void Clear()
     {
         SaveData.Clear();

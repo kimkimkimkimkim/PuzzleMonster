@@ -20,6 +20,16 @@ namespace GameBase
             return source.OrderBy(_ => Guid.NewGuid());
         }
 
+        public static T MaxOrDefault<T>(this IEnumerable<T> source)
+        {
+            return source.DefaultIfEmpty().Max();
+        }
+
+        public static T MinOrDefault<T>(this IEnumerable<T> source)
+        {
+            return source.DefaultIfEmpty().Min();
+        }
+
         public static List<T> InsertAllBetween<T>(this List<T> source, T value)
         {
             var list = new List<T>();
