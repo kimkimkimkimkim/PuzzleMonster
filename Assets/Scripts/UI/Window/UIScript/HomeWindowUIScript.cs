@@ -97,6 +97,11 @@ public class HomeWindowUIScript : WindowBase
         _missionIconBadge.SetActive(isShowMissionIconBadge);
     }
 
+    private void Update()
+    {
+        StackableDialogManager.Instance.Call();
+    }
+
     public override void Open(WindowInfo info)
     {
         ActivateBadge();

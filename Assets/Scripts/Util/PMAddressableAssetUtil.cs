@@ -19,6 +19,12 @@ public class PMAddressableAssetUtil
         return AddressableAssetController.LoadAssetAsObservable<Sprite>(address);
     }
 
+    public static IObservable<Sprite> GetIconImageSpriteObservable(ItemMI item)
+    {
+        var iconImageType = ClientItemUtil.GetIconImageType(item.itemType);
+        return GetIconImageSpriteObservable(iconImageType, item.itemId);
+    }
+
     /// <summary>
     /// 指定した演出Prefabを取得する
     /// </summary>

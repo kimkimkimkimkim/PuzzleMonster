@@ -10,7 +10,7 @@ namespace GameBase
         private List<StackDialogInfo> stackList = new List<StackDialogInfo>();
         private bool isCalling;
 
-        public IObservable<T> Push<T>(IObservable<T> observable, int priority, string type = "") where T : IStackableDialogResponse
+        public IObservable<T> Push<T>(IObservable<T> observable, int priority, string type = "")
         {
             var stack = new StackDialogInfo()
             {

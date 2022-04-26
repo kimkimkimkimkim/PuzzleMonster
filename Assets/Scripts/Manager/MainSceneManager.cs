@@ -53,6 +53,9 @@ public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
                 {
                     TestActionDialogFactory.Create(new TestActionDialogRequest()).Subscribe();
                 });
+
+                // スタッカブルダイアログの積みなおし
+                PMStackableDialogManager.Instance.Restack();
             })
             .Subscribe();
     }

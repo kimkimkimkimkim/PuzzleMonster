@@ -1,8 +1,9 @@
 ﻿
 using GameBase;
 using System.Linq;
+using UniRx;
 
-public class PMStackableDialogManager : StackableDialogManager
+public class PMStackableDialogManager : SingletonMonoBehaviour<PMStackableDialogManager>
 {
 
     /// <summary>
@@ -15,32 +16,36 @@ public class PMStackableDialogManager : StackableDialogManager
         userLoginBonusIdList.ForEach(id =>
         {
             var userLoginBonus = ApplicationContext.userData.userLoginBonusList.FirstOrDefault(u => u.id == id);
-            if (userLoginBonus == null) return;
+            if (userLoginBonus == null)
+            {
+                SaveDataUtil.StackableDialog.RemoveUserLoginBonusId(id);
+                return;
+            }
 
             // 今日のでなければスキップ
             var lastDate = userLoginBonus.loginDateList.MaxOrDefault();
             var isSameGameDate = DateTimeUtil.IsSameGameDate(lastDate, DateTimeUtil.Now);
-            if (!isSameGameDate) return;
+            if (!isSameGameDate)
+            {
+                SaveDataUtil.StackableDialog.RemoveUserLoginBonusId(id);
+                return;
+            }
 
             // スタックに積む
-            StackLoginBonusDialog(userLoginBonus.loginBonusId, userLoginBonus.loginDateList.Count);
+            StackLoginBonusDialog(userLoginBonus);
         });
     }
 
-    public void StackLoginBonusDialog(long loginBonusId, int loginDateNum)
+    public void StackLoginBonusDialog(UserLoginBonusInfo userLoginBonus)
     {
-        /*
-         // まだスタックされていないときだけダイアログをスタックする
-        if (TaskClearDialogFactory.IsStacked(shareUserId)) return;
-        TaskClearDialogFactory.Push(new TaskClearDialogRequest() { shareUserId = shareUserId })
+        // まだスタックされていないときだけダイアログをスタックする
+        if (LoginBonusDialogFactory.IsStacked(userLoginBonus.id)) return;
+
+        LoginBonusDialogFactory.Push(new LoginBonusDialogRequest() { userLoginBonus = userLoginBonus })
             .Do(res => {
                 // 再生が終わったらPrefsから対象ユーザーに関する表示済みのidを削除
-                PlayerPrefsUtil.StackableDialog.RemoveClearedTaskId(shareUserId, res.taskIdList);
-            })
-            .Do(res => {
-                if (!UIManager.Instance.isSkipTutorial) TutorialManager.Instance.taskTriggered.PlayIfNeededByShareUserClearedTask(res.taskIdList);
+                SaveDataUtil.StackableDialog.RemoveUserLoginBonusId(userLoginBonus.id);
             })
             .Subscribe(); 
-        */
     }
 }
