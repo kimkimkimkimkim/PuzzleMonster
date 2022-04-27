@@ -74,6 +74,9 @@ public static class ClientItemUtil
             case ItemType.Monster:
                 var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(item.itemId);
                 return monster.name;
+            case ItemType.Property:
+                var property = MasterRecord.GetMasterOf<PropertyMB>().Get(item.itemId);
+                return property.name;
             default:
                 return "";
         }
