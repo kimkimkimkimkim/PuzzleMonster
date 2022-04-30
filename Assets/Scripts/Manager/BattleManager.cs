@@ -183,7 +183,19 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     // ウェーブ進行アニメーション
                     case BattleLogType.MoveWave:
                         battleWindow.SetBattleMonsterList(battleLog.enemyBattleMonsterList);
-                        return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount);
+                        return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount)
+                            .SelectMany(res =>
+                            {
+                                var isPlayBossWaveEffect = battleLog.waveCount == maxWaveCount;
+                                if (isPlayBossWaveEffect)
+                                {
+                                    return battleWindow.PlayBossWaveAnimationObservable();
+                                }
+                                else
+                                {
+                                    return Observable.ReturnUnit();
+                                }
+                            });
 
                     // ターン進行アニメーション
                     case BattleLogType.MoveTurn:

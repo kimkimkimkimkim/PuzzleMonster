@@ -29,6 +29,12 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected GameObject _playerWholeSkillEffectBase;
     [SerializeField] protected GameObject _enemyWholeSkillEffectBase;
     [SerializeField] protected GameObject _skillCutInBase;
+    [SerializeField] protected GameObject _headerBase;
+    [SerializeField] protected GameObject _bossWaveEffectBase;
+    [SerializeField] protected Transform _topWaveBase;
+    [SerializeField] protected Transform _bottomWaveBase;
+    [SerializeField] protected CanvasGroup _bossWaveBaseCanvasGroup;
+    [SerializeField] protected CanvasGroup _bossWaveTitleCanvasGroup;
     [SerializeField] protected SkillFxItem _skillFxItem;
     [SerializeField] protected Sprite _playerSkillCutInSprite;
     [SerializeField] protected Sprite _enemySkillCutInSprite;
@@ -374,7 +380,67 @@ public class BattleWindowUIScript : DummyWindowBase
 
     public IObservable<Unit> PlayLoseAnimationObservable()
     {
-        return VisualFxManager.Instance.PlayLoseBattleFxObservable(_fxParent).Delay(TimeSpan.FromSeconds(1)); ;
+        return VisualFxManager.Instance.PlayLoseBattleFxObservable(_fxParent).Delay(TimeSpan.FromSeconds(1));
+    }
+
+    public IObservable<Unit> PlayBossWaveAnimationObservable()
+    {
+        const float BOSS_WAVE_BASE_ANIMATION_TIME = 3.0f;
+        const float BOSS_WAVE_BASE_FADE_ANIMATION_TIME = 0.15f;
+        const float BOSS_WAVE_BASE_FADE_OUT_DELAY_TIME = BOSS_WAVE_BASE_ANIMATION_TIME - (BOSS_WAVE_BASE_FADE_ANIMATION_TIME * 2);
+        const float WARNING_TEXT_ANIMATION_DISTANCE = 500.0f;
+        const float WARNING_TEXT_ANIMATION_TIME = BOSS_WAVE_BASE_ANIMATION_TIME;
+        const float TITLE_TEXT_ANIMATION_DELAY_TIME = 0.5f;
+        const float TITLE_TEXT_FADE_ANIMATION_TOTAL_TIME = BOSS_WAVE_BASE_FADE_ANIMATION_TIME - TITLE_TEXT_ANIMATION_DELAY_TIME;
+        const int TITLE_TEXT_FADE_COUNT = 3;
+        const float TITLE_TEXT_FADE_ANIMATION_TIME = (TITLE_TEXT_FADE_ANIMATION_TOTAL_TIME / TITLE_TEXT_FADE_COUNT) / 2;
+
+        return Observable.ReturnUnit()
+            .Do(_ =>
+            {
+                // 準備
+                _bossWaveEffectBase.SetActive(true);
+                _headerBase.SetActive(false);
+                _topWaveBase.DOLocalMoveX(0.0f, 0.0f);
+                _bottomWaveBase.DOLocalMoveX(0.0f, 0.0f);
+                _bossWaveTitleCanvasGroup.DOFade(0.0f, 0.0f);
+                _bossWaveBaseCanvasGroup.DOFade(0.0f, 0.0f);
+            })
+            .SelectMany(_ =>
+            {
+                var bossWaveBaseAnimationSequence = DOTween.Sequence()
+                    .Append(_bossWaveBaseCanvasGroup.DOFade(1.0f, BOSS_WAVE_BASE_FADE_ANIMATION_TIME))
+                    .AppendInterval(BOSS_WAVE_BASE_FADE_OUT_DELAY_TIME)
+                    .Append(_bossWaveBaseCanvasGroup.DOFade(0.0f, BOSS_WAVE_BASE_FADE_ANIMATION_TIME));
+
+                var topWarningTextAnimationSequence = DOTween.Sequence()
+                    .Append(_topWaveBase.DOLocalMoveX(-WARNING_TEXT_ANIMATION_DISTANCE, WARNING_TEXT_ANIMATION_TIME));
+
+                var bottomWarningTextAnimationSequence = DOTween.Sequence()
+                    .Append(_bottomWaveBase.DOLocalMoveX(WARNING_TEXT_ANIMATION_DISTANCE, WARNING_TEXT_ANIMATION_TIME));
+
+                var titleTextAnimationSequence = DOTween.Sequence()
+                    .AppendInterval(TITLE_TEXT_ANIMATION_DELAY_TIME)
+                    .Append(_bossWaveTitleCanvasGroup.DOFade(1.0f, TITLE_TEXT_FADE_ANIMATION_TIME))
+                    .Append(_bossWaveTitleCanvasGroup.DOFade(0.0f, TITLE_TEXT_FADE_ANIMATION_TIME))
+                    .Append(_bossWaveTitleCanvasGroup.DOFade(1.0f, TITLE_TEXT_FADE_ANIMATION_TIME))
+                    .Append(_bossWaveTitleCanvasGroup.DOFade(0.0f, TITLE_TEXT_FADE_ANIMATION_TIME))
+                    .Append(_bossWaveTitleCanvasGroup.DOFade(1.0f, TITLE_TEXT_FADE_ANIMATION_TIME))
+                    .Append(_bossWaveTitleCanvasGroup.DOFade(0.0f, TITLE_TEXT_FADE_ANIMATION_TIME));
+
+                return Observable.WhenAll(
+                    bossWaveBaseAnimationSequence.PlayAsObservable().AsUnitObservable(),
+                    topWarningTextAnimationSequence.PlayAsObservable().AsUnitObservable(),
+                    bottomWarningTextAnimationSequence.PlayAsObservable().AsUnitObservable(),
+                    titleTextAnimationSequence.PlayAsObservable().AsUnitObservable()
+                );
+            })
+            .Do(_ =>
+            {
+                // 片付け
+                _bossWaveEffectBase.SetActive(false);
+                _headerBase.SetActive(true);
+            });
     }
 
     public void RefreshBattleCondition(BattleMonsterInfo battleMonster)
