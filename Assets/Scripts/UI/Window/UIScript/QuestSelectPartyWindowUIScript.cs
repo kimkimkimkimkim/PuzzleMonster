@@ -17,6 +17,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
     [SerializeField] protected InfiniteScroll _infiniteScroll;
     [SerializeField] protected ToggleGroup _toggleGroup;
 
+    private QuestMB quest;
     private int currentPartyIndex = 0;
     private int selectedPartyMonsterIndex = -1;
     private string selectedUserMonsterId = null;
@@ -56,7 +57,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         base.Init(info);
 
         var questId = (long)info.param["questId"];
-        var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
+        quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
         currentUserMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == currentPartyIndex)?.Clone();
         userMonsterList = ApplicationContext.userData.userMonsterList.OrderBy(u => u.monsterId).ToList();
 
@@ -238,7 +239,8 @@ public class QuestSelectPartyWindowUIScript : WindowBase
     private void RefreshGrayoutPanel()
     {
         var existsMonster = currentUserMonsterParty.userMonsterIdList.Any(id => id != null);
-        _okButtonGrayoutPanel.SetActive(!existsMonster);
+        var enoughStamina = ApplicationContext.userData.stamina >= quest.consumeStamina;
+        _okButtonGrayoutPanel.SetActive(!existsMonster || !enoughStamina);
     }
 
     public override void Open(WindowInfo info)
