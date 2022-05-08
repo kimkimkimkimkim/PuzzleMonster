@@ -12,8 +12,8 @@ public partial class BattleDataProcessor
     private int currentTurnCount;
     private QuestMB quest;
     private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
-    private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>();
-    private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>();
+    private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
+    private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
     private List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>();
     private List<BattleChainParticipantInfo> battleChainParticipantList = new List<BattleChainParticipantInfo>();
     private WinOrLose currentWinOrLose;
@@ -920,11 +920,11 @@ public partial class BattleDataProcessor
     {
         if (monsterIndex.isPlayer)
         {
-            return playerBattleMonsterList[monsterIndex.index];
+            return playerBattleMonsterList.First(battleMonster => battleMonster.index.IsSame(monsterIndex));
         }
         else
         {
-            return enemyBattleMonsterList[monsterIndex.index];
+            return enemyBattleMonsterList.First(battleMonster => battleMonster.index.IsSame(monsterIndex));
         }
     }
 

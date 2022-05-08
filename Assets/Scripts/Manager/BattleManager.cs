@@ -336,11 +336,11 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     {
         if (monsterIndex.isPlayer)
         {
-            return playerBattleMonsterList[monsterIndex.index];
+            return playerBattleMonsterList.First(battleMonster => battleMonster.index.IsSame(monsterIndex));
         }
         else
         {
-            return enemyBattleMonsterList[monsterIndex.index];
+            return enemyBattleMonsterList.First(battleMonster => battleMonster.index.IsSame(monsterIndex));
         }
     }
 }

@@ -182,7 +182,8 @@ public class BattleWindowUIScript : DummyWindowBase
     public void UpdateBattleMonster(BattleMonsterInfo battleMonster)
     {
         var targetBattleMonsterList = battleMonster.index.isPlayer ? playerBattleMonsterList : enemyBattleMonsterList;
-        targetBattleMonsterList[battleMonster.index.index] = battleMonster;
+        var index = targetBattleMonsterList.FindIndex(b => b.index.IsSame(battleMonster.index));
+        targetBattleMonsterList[index] = battleMonster;
     }
 
     public void UpdateBattleMonster(List<BattleMonsterInfo> battleMonsterList)
