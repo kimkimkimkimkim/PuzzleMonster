@@ -386,15 +386,17 @@ public class BattleWindowUIScript : DummyWindowBase
 
     public IObservable<Unit> PlayBossWaveAnimationObservable()
     {
-        const float BOSS_WAVE_BASE_ANIMATION_TIME = 3.0f;
+        const float BOSS_WAVE_BASE_ANIMATION_TIME = 4.0f;
         const float BOSS_WAVE_BASE_FADE_ANIMATION_TIME = 0.15f;
         const float BOSS_WAVE_BASE_FADE_OUT_DELAY_TIME = BOSS_WAVE_BASE_ANIMATION_TIME - (BOSS_WAVE_BASE_FADE_ANIMATION_TIME * 2);
         const float WARNING_TEXT_ANIMATION_DISTANCE = 500.0f;
         const float WARNING_TEXT_ANIMATION_TIME = BOSS_WAVE_BASE_ANIMATION_TIME;
-        const float TITLE_TEXT_ANIMATION_DELAY_TIME = 0.5f;
-        const float TITLE_TEXT_FADE_ANIMATION_TOTAL_TIME = BOSS_WAVE_BASE_FADE_ANIMATION_TIME - TITLE_TEXT_ANIMATION_DELAY_TIME;
+        const float TITLE_TEXT_ANIMATION_DELAY_TIME = 0.25f;
+        const float TITLE_TEXT_FADE_ANIMATION_TOTAL_TIME = BOSS_WAVE_BASE_ANIMATION_TIME - TITLE_TEXT_ANIMATION_DELAY_TIME;
         const int TITLE_TEXT_FADE_COUNT = 3;
         const float TITLE_TEXT_FADE_ANIMATION_TIME = (TITLE_TEXT_FADE_ANIMATION_TOTAL_TIME / TITLE_TEXT_FADE_COUNT) / 2;
+
+        Debug.Log($"delay:{TITLE_TEXT_ANIMATION_DELAY_TIME}, fade:{TITLE_TEXT_FADE_ANIMATION_TIME}");
 
         return Observable.ReturnUnit()
             .Do(_ =>
@@ -415,10 +417,10 @@ public class BattleWindowUIScript : DummyWindowBase
                     .Append(_bossWaveBaseCanvasGroup.DOFade(0.0f, BOSS_WAVE_BASE_FADE_ANIMATION_TIME));
 
                 var topWarningTextAnimationSequence = DOTween.Sequence()
-                    .Append(_topWaveBase.DOLocalMoveX(-WARNING_TEXT_ANIMATION_DISTANCE, WARNING_TEXT_ANIMATION_TIME));
+                    .Append(_topWaveBase.DOLocalMoveX(-WARNING_TEXT_ANIMATION_DISTANCE, WARNING_TEXT_ANIMATION_TIME).SetEase(Ease.Linear));
 
                 var bottomWarningTextAnimationSequence = DOTween.Sequence()
-                    .Append(_bottomWaveBase.DOLocalMoveX(WARNING_TEXT_ANIMATION_DISTANCE, WARNING_TEXT_ANIMATION_TIME));
+                    .Append(_bottomWaveBase.DOLocalMoveX(WARNING_TEXT_ANIMATION_DISTANCE, WARNING_TEXT_ANIMATION_TIME).SetEase(Ease.Linear));
 
                 var titleTextAnimationSequence = DOTween.Sequence()
                     .AppendInterval(TITLE_TEXT_ANIMATION_DELAY_TIME)
