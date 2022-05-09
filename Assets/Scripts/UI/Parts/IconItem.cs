@@ -22,6 +22,7 @@ public class IconItem : MonoBehaviour
     [SerializeField] protected TextMeshProUGUI _numText;
     [SerializeField] protected TextMeshProUGUI _grayoutText;
     [SerializeField] protected TextMeshProUGUI _labelText;
+    [SerializeField] protected TextMeshProUGUI _text;
     [SerializeField] protected List<Sprite> _frameSpriteList;
     [SerializeField] protected List<Color> _backgroundColorList;
     [SerializeField] protected Toggle _toggle;
@@ -31,6 +32,11 @@ public class IconItem : MonoBehaviour
     public Toggle toggle { get { return _toggle; } private set { _toggle = value; } }
 
     private IDisposable onClickButtonObservable;
+
+    public void ShowIcon(bool isShow)
+    {
+        _iconImage.gameObject.SetActive(isShow);
+    }
 
     public void SetIcon(ItemMI item, bool showNumTextAtOne = false)
     {
@@ -109,6 +115,12 @@ public class IconItem : MonoBehaviour
         _labelPanel.SetActive(isShow);
         _labelText.gameObject.SetActive(!string.IsNullOrWhiteSpace(text));
         _labelText.text = text;
+    }
+
+    public void ShowText(bool isShow, string text = "")
+    {
+        _text.gameObject.SetActive(isShow);
+        _text.text = text;
     }
 
     public void ShowCheckImage(bool isShow)

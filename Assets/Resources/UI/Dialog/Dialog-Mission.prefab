@@ -637,7 +637,7 @@ GameObject:
   - component: {fileID: 6681174645295942860}
   - component: {fileID: 704400185815181595}
   m_Layer: 5
-  m_Name: OkButton
+  m_Name: AllReceiveButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1845,7 +1845,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: OK
+  m_Text: "\u4E00\u62EC\u53D7\u3051\u53D6\u308A"
 --- !u!1 &4241207760326438326
 GameObject:
   m_ObjectHideFlags: 0
@@ -2430,11 +2430,13 @@ MonoBehaviour:
   _dialogFrame: {fileID: 2530176902536765202}
   _grayOutImage: {fileID: 8613636741266123044}
   _closeButton: {fileID: 2029057508345143857}
+  _allReceiveButton: {fileID: 704400185815181595}
   _infiniteScroll: {fileID: 1048855399424641772}
   _tabList:
   - {fileID: 3227666570497348005}
   - {fileID: 9005762783489897285}
   - {fileID: 4789206597534109550}
+  _allReceiveButtonGrayoutPanel: {fileID: 2790838353697390040}
   _dailyMissionBadge: {fileID: 2902639434188520849}
   _mainMissionBadge: {fileID: 501392641810190114}
   _eventMissionBadge: {fileID: 4264350432554505575}
@@ -2852,12 +2854,12 @@ GameObject:
   m_Component:
   - component: {fileID: 3301123710513388688}
   m_Layer: 5
-  m_Name: OkButtonBase
+  m_Name: AllReceiveButtonBase
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3301123710513388688
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2874,8 +2876,8 @@ RectTransform:
   m_Father: {fileID: 8038158811854876716}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 720, y: -111}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 420, y: 111}
   m_Pivot: {x: 0.5, y: 0}

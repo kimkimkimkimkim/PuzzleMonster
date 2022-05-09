@@ -304,7 +304,15 @@ public partial class ApiConnection
     {
         return SendRequest<ClearMissionApiRequest, ClearMissionApiResponse>(ClearMissionApiInterface.functionName, new ClearMissionApiRequest()
         {
-            missionId = missionId,
+            missionIdList = new List<long>() { missionId },
+        });
+    }
+
+    public static IObservable<ClearMissionApiResponse> ClearMission(List<long> missionIdList)
+    {
+        return SendRequest<ClearMissionApiRequest, ClearMissionApiResponse>(ClearMissionApiInterface.functionName, new ClearMissionApiRequest()
+        {
+            missionIdList = missionIdList,
         });
     }
 

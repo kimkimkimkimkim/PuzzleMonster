@@ -61,6 +61,9 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         currentUserMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == currentPartyIndex)?.Clone();
         userMonsterList = ApplicationContext.userData.userMonsterList.OrderBy(u => u.monsterId).ToList();
 
+        // はずすアイコンようにnullデータを先頭に追加
+        userMonsterList.Insert(0, null);
+
         _titleText.text = quest.name;
 
         _okButton.OnClickIntentAsObservable()
@@ -124,7 +127,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         {
             var isOutOfIndex = index >= currentUserMonsterParty.userMonsterIdList.Count;
             var userMonsterId = isOutOfIndex ? null : currentUserMonsterParty.userMonsterIdList[index];
-            var userMonster = userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
+            var userMonster = userMonsterList.FirstOrDefault(u => u?.id == userMonsterId);
 
             if (userMonster == null)
             {
@@ -197,18 +200,33 @@ public class QuestSelectPartyWindowUIScript : WindowBase
 
         var scrollItem = item.GetComponent<IconItem>();
         var userMonster = userMonsterList[index];
-        var itemMI = ItemUtil.GetItemMI(userMonster);
-        var isIncludedParty = currentUserMonsterParty.userMonsterIdList.Contains(userMonster.id);
+        var userMonsterId = userMonster?.id;
 
-        scrollItem.SetIcon(itemMI);
+        if(userMonster == null)
+        {
+            // はずすアイコン
+            scrollItem.ShowIcon(false);
+            scrollItem.ShowText(true, "はずす");
+        }
+        else
+        {
+            // モンスターアイコン
+            var itemMI = ItemUtil.GetItemMI(userMonster);
+            var isIncludedParty = currentUserMonsterParty.userMonsterIdList.Contains(userMonster.id);
+
+            scrollItem.ShowText(true);
+            scrollItem.SetIcon(itemMI);
+            scrollItem.ShowText(false);
+            scrollItem.ShowGrayoutPanel(isIncludedParty, "編成中");
+        }
+
         scrollItem.SetToggleGroup(_toggleGroup);
-        scrollItem.ShowGrayoutPanel(isIncludedParty, "編成中");
         scrollItem.SetOnClickAction(() =>
         { 
             if(selectedPartyMonsterIndex != -1)
             {
                 // 編成中のモンスターを選択中
-                currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = userMonster.id;
+                currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
 
                 _toggleGroup.SetAllTogglesOff();
                 selectedPartyMonsterIndex = -1;
@@ -224,7 +242,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 if (scrollItem.toggle.isOn)
                 {
                     selectedPartyMonsterIndex = -1;
-                    selectedUserMonsterId = userMonster.id;
+                    selectedUserMonsterId = userMonsterId;
                 }
                 else
                 {

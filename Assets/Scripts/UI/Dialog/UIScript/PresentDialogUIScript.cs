@@ -12,6 +12,8 @@ using PM.Enum.UI;
 public class PresentDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
+    [SerializeField] protected Button _allReceiveButton;
+    [SerializeField] protected GameObject _allReceiveButtonGrayoutPanel;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
 
     private List<UserPresentInfo> userPresentList;
@@ -31,6 +33,16 @@ public class PresentDialogUIScript : DialogBase
             })
             .Subscribe();
 
+        _allReceiveButton.OnClickIntentAsObservable()
+            .SelectMany(_ =>
+            {
+                var userPresentIdList = userPresentList.Select(u => u.id).ToList();
+                return ApiConnection.ReceivePresent(userPresentIdList);
+            })
+            .SelectMany(res => CommonReceiveDialogFactory.Create(new CommonReceiveDialogRequest() { itemList = res.userPresentList.Select(u => u.item).ToList() }))
+            .Do(_ => RefreshScroll())
+            .Subscribe();
+
         RefreshScroll();
     }
 
@@ -39,6 +51,7 @@ public class PresentDialogUIScript : DialogBase
         _infiniteScroll.Clear();
 
         userPresentList = ApplicationContext.userData.userPresentList.Where(u => u.IsValid()).ToList();
+        _allReceiveButtonGrayoutPanel.SetActive(!userPresentList.Any());
 
         _infiniteScroll.Init(userPresentList.Count, OnUpdateItem);
     }

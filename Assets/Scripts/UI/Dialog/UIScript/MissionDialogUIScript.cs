@@ -13,8 +13,10 @@ using PM.Enum.Mission;
 public class MissionDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
+    [SerializeField] protected Button _allReceiveButton;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
     [SerializeField] protected List<ToggleWithValue> _tabList;
+    [SerializeField] protected GameObject _allReceiveButtonGrayoutPanel;
     [SerializeField] protected GameObject _dailyMissionBadge;
     [SerializeField] protected GameObject _mainMissionBadge;
     [SerializeField] protected GameObject _eventMissionBadge;
@@ -38,6 +40,20 @@ public class MissionDialogUIScript : DialogBase
                     onClickClose();
                     onClickClose = null;
                 }
+            })
+            .Subscribe();
+
+        _allReceiveButton.OnClickIntentAsObservable()
+            .SelectMany(_ =>
+            {
+                var missionIdList = targetMissionList.Where(m => IsReceivable(m)).Select(m => m.id).ToList();
+                return ApiConnection.ClearMission(missionIdList);
+            })
+            .SelectMany(res => CommonReceiveDialogFactory.Create(new CommonReceiveDialogRequest() { itemList = res.rewardItemList }))
+            .Do(_ =>
+            {
+                ActivateBadge();
+                RefreshScroll();
             })
             .Subscribe();
 
@@ -70,6 +86,7 @@ public class MissionDialogUIScript : DialogBase
             .Where(m => ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList))
             .OrderBy(m => m.id)
             .ToList();
+        _allReceiveButtonGrayoutPanel.SetActive(!targetMissionList.Where(m => IsReceivable(m)).Any());
 
         _infiniteScroll.Init(targetMissionList.Count, OnUpdateItem);
     }
@@ -120,30 +137,29 @@ public class MissionDialogUIScript : DialogBase
         }
     }
 
+    private bool IsReceivable(MissionMB mission)
+    {
+        // 表示可能でなければ受け取り不可
+        if (!ConditionUtil.IsValid(ApplicationContext.userData, mission.displayConditionList)) return false;
+
+        // クリア可能でなければ受け取り不可
+        if (!ConditionUtil.IsValid(ApplicationContext.userData, mission.canClearConditionList)) return false;
+
+        // 受け取り済みなら受け取り不可
+        var isReceived = ApplicationContext.userData.userMissionList
+            .Where(u => u.missionId == mission.id)
+            .Where(u => u.completedDate > DateTimeUtil.Epoch)
+            .Where(u => (u.startExpirationDate <= DateTimeUtil.Epoch && u.endExpirationDate <= DateTimeUtil.Epoch) || (u.startExpirationDate > DateTimeUtil.Epoch && u.endExpirationDate > DateTimeUtil.Epoch && u.startExpirationDate <= DateTimeUtil.Now && DateTimeUtil.Now < u.endExpirationDate))
+            .Any();
+        if (isReceived) return false;
+
+        return true;
+    }
+
     private void ActivateBadge()
     {
         // ミッションタイプに関わらずクリア可能かつ未クリアのミッションリストを取得
-        var canClearMissionList = MasterRecord.GetMasterOf<MissionMB>().GetAll()
-            .Where(m =>
-            {
-                // 表示可能なものに絞る
-                return ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList);
-            })
-            .Where(m =>
-            {
-                // クリア可能なものに絞る
-                return ConditionUtil.IsValid(ApplicationContext.userData, m.canClearConditionList);
-            })
-            .Where(m =>
-            {
-                // 未クリアのものに絞る
-                return !ApplicationContext.userData.userMissionList
-                    .Where(u => u.missionId == m.id)
-                    .Where(u => u.completedDate > DateTimeUtil.Epoch)
-                    .Where(u => (u.startExpirationDate <= DateTimeUtil.Epoch && u.endExpirationDate <= DateTimeUtil.Epoch) || (u.startExpirationDate > DateTimeUtil.Epoch && u.endExpirationDate > DateTimeUtil.Epoch && u.startExpirationDate <= DateTimeUtil.Now && DateTimeUtil.Now < u.endExpirationDate))
-                    .Any();
-            })
-            .ToList();
+        var canClearMissionList = MasterRecord.GetMasterOf<MissionMB>().GetAll().Where(m => IsReceivable(m)).ToList();
         var isShowDailyMissionBadge = canClearMissionList.Any(m => m.missionType == GetMissionTypeFromTabValue(DAILY_MISSION_TAB_VALUE));
         var isShowMainMissionBadge = canClearMissionList.Any(m => m.missionType == GetMissionTypeFromTabValue(MAIN_MISSION_TAB_VALUE));
         var isShowEventMissionBadge = canClearMissionList.Any(m => m.missionType == GetMissionTypeFromTabValue(EVENT_MISSION_TAB_VALUE));
