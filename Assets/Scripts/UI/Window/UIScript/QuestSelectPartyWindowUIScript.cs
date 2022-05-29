@@ -5,18 +5,21 @@ using UnityEngine.UI;
 using UniRx;
 using System.Collections.Generic;
 using System.Linq;
+using PM.Enum.UI;
 
 [ResourcePath("UI/Window/Window-QuestSelectParty")]
 public class QuestSelectPartyWindowUIScript : WindowBase
 {
     [SerializeField] protected TextMeshProUGUI _titleText;
     [SerializeField] protected Button _okButton;
+    [SerializeField] protected Button _grayoutButton;
     [SerializeField] protected GameObject _okButtonGrayoutPanel;
     [SerializeField] protected List<ToggleWithValue> _tabList;
     [SerializeField] protected List<PartyMonsterIconItem> _partyMonsterIconList;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
     [SerializeField] protected ToggleGroup _toggleGroup;
 
+    private GrayoutReason grayoutReason;
     private QuestMB quest;
     private int currentPartyIndex = 0;
     private int selectedPartyMonsterIndex = -1;
@@ -86,6 +89,36 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             .SelectMany(_ =>
             {
                 return BattleManager.Instance.BattleStartObservable(questId, currentUserMonsterParty.id);
+            })
+            .Subscribe();
+
+        _grayoutButton.OnClickAsObservable()
+            .SelectMany(_ =>
+            {
+                switch (grayoutReason)
+                {
+                    case GrayoutReason.NotExistsMonster:
+                        return CommonDialogFactory.Create(new CommonDialogRequest()
+                        {
+                            commonDialogType = CommonDialogType.YesOnly,
+                            content = "モンスターを1体以上選択してください",
+                        }).AsUnitObservable();
+                    case GrayoutReason.NotEnoughStamina:
+                        return CommonDialogFactory.Create(new CommonDialogRequest()
+                        {
+                            commonDialogType = CommonDialogType.YesOnly,
+                            content = "挑戦するためのスタミナが足りません",
+                        }).AsUnitObservable();
+                    case GrayoutReason.NotEnoughMaxStamina:
+                        var rank = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.stamina >= quest.consumeStamina)?.rank ?? 0;
+                        return CommonDialogFactory.Create(new CommonDialogRequest()
+                        {
+                            commonDialogType = CommonDialogType.YesOnly,
+                            content = $"このクエストはランク{rank}以上で挑戦することができます",
+                        }).AsUnitObservable();
+                    default:
+                        return Observable.ReturnUnit();
+                }
             })
             .Subscribe();
 
@@ -258,7 +291,17 @@ public class QuestSelectPartyWindowUIScript : WindowBase
     {
         var existsMonster = currentUserMonsterParty.userMonsterIdList.Any(id => id != null);
         var enoughStamina = ApplicationContext.userData.stamina >= quest.consumeStamina;
-        _okButtonGrayoutPanel.SetActive(!existsMonster || !enoughStamina);
+        var rank = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.rank == ApplicationContext.userData.rank);
+        var maxStamina = rank?.stamina ?? 0;
+        var enoughMaxStamina = maxStamina >= quest.consumeStamina;
+
+        grayoutReason = 
+            !existsMonster ? GrayoutReason.NotExistsMonster
+            : !enoughStamina ? GrayoutReason.NotEnoughStamina
+            : !enoughMaxStamina ? GrayoutReason.NotEnoughMaxStamina
+            : GrayoutReason.None;
+
+        _okButtonGrayoutPanel.SetActive(grayoutReason != GrayoutReason.None);
     }
 
     public override void Open(WindowInfo info)
@@ -272,5 +315,13 @@ public class QuestSelectPartyWindowUIScript : WindowBase
     public override void Close(WindowInfo info)
     {
         base.Close(info);
+    }
+
+    private enum GrayoutReason
+    {
+        None,
+        NotExistsMonster,
+        NotEnoughStamina,
+        NotEnoughMaxStamina,
     }
 }
