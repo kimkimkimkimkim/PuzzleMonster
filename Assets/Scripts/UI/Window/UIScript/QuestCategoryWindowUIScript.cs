@@ -50,8 +50,17 @@ public class QuestCategoryWindowUIScript : WindowBase
             .Where(questCategory => questCategory.questType == GetQuestTypeFromTabValue(currentTabValue))
             .Where(questCategory =>
             {
-                var questList = MasterRecord.GetMasterOf<QuestMB>().GetAll().Where(quest => quest.questCategoryId == questCategory.id).ToList();
-                return questList.Any(quest => ConditionUtil.IsValid(ApplicationContext.userData, quest.displayConditionList));
+                if(questCategory.questType == QuestType.Event)
+                {
+                    // イベントクエストはイベントクエストスケジュールマスタを参考に表示
+                    var eventQuestScheduleList = MasterRecord.GetMasterOf<EventQuestScheduleMB>().GetAll().Where(m => m.questCategoryId == questCategory.id).ToList();
+                    return eventQuestScheduleList.Any(m => DateTimeUtil.GetDateFromMasterString(m.startDate) <= DateTimeUtil.Now && DateTimeUtil.Now < DateTimeUtil.GetDateFromMasterString(m.endDate));
+                }
+                else
+                {
+                    var questList = MasterRecord.GetMasterOf<QuestMB>().GetAll().Where(quest => quest.questCategoryId == questCategory.id).ToList();
+                    return questList.Any(quest => ConditionUtil.IsValid(ApplicationContext.userData, quest.displayConditionList));
+                }
             })
             .OrderBy(m => m.id)
             .ToList();
