@@ -5290,8 +5290,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25304c254d6ef4d1baa889f583687853, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _windowFrameRT: {fileID: 1464086697502313825}
+  _windowFrame: {fileID: 6998382643575296871}
   _fullScreenBaseRT: {fileID: 5989690812647374784}
+  _backButton: {fileID: 2704762196387184180}
+  BackButtonDisabled: 0
   _tapToStartButtonBase: {fileID: 791363445556495634}
   _tapToStartButton: {fileID: 2704762196387184180}
 --- !u!1 &3262443656416312275

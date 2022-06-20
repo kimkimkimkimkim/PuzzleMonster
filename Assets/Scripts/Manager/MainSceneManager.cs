@@ -11,9 +11,11 @@ public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
     private void Start()
     {
         // タイトル画面の表示
+        /*
         titleUIScript = UIManager.Instance.CreateDummyWindow<TitleWindowUIScript>();
         titleUIScript.ShowTapToStartButton(false);
         titleUIScript.SetOnClickAction(() => StartGame());
+        */
 
         // アプリケーション起動時の処理
         ApplicationContext.EstablishSession()

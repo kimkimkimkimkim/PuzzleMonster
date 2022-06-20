@@ -13,6 +13,7 @@ namespace GameBase
         public const float HEADER_HEIGHT = 200;
         public const float FOOTER_HEIGHT = 188;
 
+        public Camera mainCamera;
         public Transform canvas;
         public Transform dialogParant;
         public Transform windowParent;

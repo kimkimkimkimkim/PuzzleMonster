@@ -1,10 +1,7 @@
 ﻿using GameBase;
-using PM.Enum.Sound;
-using PM.Enum.UI;
 using System;
 using System.Collections.Generic;
 using UniRx;
-using UnityEngine;
 
 public class MainSceneLoader : ISceneLoadable
 {
@@ -24,5 +21,7 @@ public class MainSceneLoader : ISceneLoadable
 
     public override void OnLoadComplete()
     {
+        HeaderFooterWindowFactory.Create(new HeaderFooterWindowRequest()).Subscribe();
+        HomeWindowFactory.Create(new HomeWindowRequest()).Subscribe();
     }
 }
