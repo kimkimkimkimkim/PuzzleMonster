@@ -20,18 +20,18 @@ public partial class ApiConnection
         {
             var callback = new Action<TResp>(res =>
             {
-                UIManager.Instance.TryHideTapBlocker();
+                UIManager.Instance.TryHideLoadingView();
                 o.OnNext(res);
                 o.OnCompleted();
             });
             var onErrorAction = new Action<PlayFabError>(error =>
             {
-                UIManager.Instance.TryHideTapBlocker();
+                UIManager.Instance.TryHideLoadingView();
                 OnErrorAction(error);
                 o.OnCompleted();
             });
 
-            UIManager.Instance.ShowTapBlocker();
+            UIManager.Instance.ShowLoadingView();
             ExecuteApi<TReq, TResp>(apiType, request, callback, onErrorAction);
             return Disposable.Empty;
         });
@@ -116,7 +116,7 @@ public partial class ApiConnection
                             });
 
                             // タップブロッカーを非表示に
-                            UIManager.Instance.TryHideTapBlocker();
+                            UIManager.Instance.TryHideLoadingView();
 
                             o.OnNext(response);
                             o.OnCompleted();
@@ -126,7 +126,7 @@ public partial class ApiConnection
                 else
                 {
                     // エラーが返ってきた
-                    UIManager.Instance.TryHideTapBlocker();
+                    UIManager.Instance.TryHideLoadingView();
                     OnErrorAction(response.exception);
                     o.OnCompleted();
                 }
@@ -134,12 +134,12 @@ public partial class ApiConnection
             });
             var onErrorAction = new Action<PlayFabError>(error =>
             {
-                UIManager.Instance.TryHideTapBlocker();
+                UIManager.Instance.TryHideLoadingView();
                 OnErrorAction(error);
                 o.OnCompleted();
             });
 
-            UIManager.Instance.ShowTapBlocker();
+            UIManager.Instance.ShowLoadingView();
             ExecuteCloudFunction<TReq>(functionName, request, callback, onErrorAction);
             return Disposable.Empty;
         });
