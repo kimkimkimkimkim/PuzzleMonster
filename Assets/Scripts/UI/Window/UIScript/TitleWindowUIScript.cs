@@ -4,6 +4,7 @@ using PM.Enum.Sound;
 using PM.Enum.UI;
 using UniRx;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
 
 [ResourcePath("UI/Window/Window-Title")]
@@ -11,6 +12,7 @@ public class TitleWindowUIScript : WindowBase
 {
     [SerializeField] protected GameObject _tapToStartButtonBase;
     [SerializeField] protected Button _tapToStartButton;
+    [SerializeField] protected Slider _downloadProgressSlider;
 
     private IDisposable _onClickButtonObservable;
 
@@ -58,6 +60,11 @@ public class TitleWindowUIScript : WindowBase
                 }
             })
             .Where(isOk => isOk)
+            .SelectMany(_ =>
+            {
+                // ここで事前ダウンロードを行う
+                return Addressables.InitializeAsync().AsObservable();
+            })
             .Do(_ =>
             {
                 // スタートボタンを表示
