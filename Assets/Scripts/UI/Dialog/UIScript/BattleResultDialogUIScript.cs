@@ -15,7 +15,7 @@ public class BattleResultDialogUIScript : DialogBase
     [SerializeField] protected Button _okButton;
     [SerializeField] protected Button _previousWaveButton;
     [SerializeField] protected Button _nextWaveButton;
-    [SerializeField] protected TextMeshProUGUI _waveNumText;
+    [SerializeField] protected Text _waveNumText;
     [SerializeField] protected InfiniteScroll _playerInfiniteScroll;
     [SerializeField] protected InfiniteScroll _enemyInfiniteScroll;
     [SerializeField] protected GameObject _winTitleBase;

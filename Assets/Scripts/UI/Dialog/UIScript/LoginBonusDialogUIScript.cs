@@ -15,8 +15,8 @@ public class LoginBonusDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
     [SerializeField] protected Button _fullScreenButton;
-    [SerializeField] protected TextMeshProUGUI _titleText;
-    [SerializeField] protected TextMeshProUGUI _contentText;
+    [SerializeField] protected Text _titleText;
+    [SerializeField] protected Text _contentText;
     [SerializeField] protected GameObject _closeButtonBase;
     [SerializeField] protected GameObject _fullScreenButtonBase;
     [SerializeField] protected GameObject _contentTextBase;

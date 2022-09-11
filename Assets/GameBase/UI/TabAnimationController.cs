@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 namespace GameBase
 {
     public class TabAnimationController : MonoBehaviour
     {
-        [SerializeField] protected List<TextMeshProUGUI> _tabTextList;
+        [SerializeField] protected List<Text> _tabTextList;
         [SerializeField] protected List<ToggleWithValue> _tabList;
         [SerializeField] protected Transform _tabBar;
 

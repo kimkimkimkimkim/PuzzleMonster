@@ -12,7 +12,7 @@ using TMPro;
 public class BattleConditionListDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
-    [SerializeField] protected TextMeshProUGUI _monsterNameText;
+    [SerializeField] protected Text _monsterNameText;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
 
     private List<BattleConditionInfo> targetBattleConditionList;
