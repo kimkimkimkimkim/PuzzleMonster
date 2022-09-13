@@ -1,12 +1,12 @@
 using UniRx;
 using UnityEngine;
 using GameBase;
-using TMPro;
+using UnityEngine.UI;
 
 [ResourcePath("UI/Dialog/Dialog-MonsterLevelUpFx")]
 public class MonsterLevelUpFxDialogUIScript : MonsterStrengthFxDialogBaseUIScript
 {
-    [SerializeField] TextMeshProUGUI _levelUpText;
+    [SerializeField] Text _levelUpText;
 
     public override void Init(DialogInfo info)
     {

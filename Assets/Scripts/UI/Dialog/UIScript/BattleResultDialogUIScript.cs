@@ -6,7 +6,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using GameBase;
 using PM.Enum.Battle;
-using TMPro;
 
 [ResourcePath("UI/Dialog/Dialog-BattleResult")]
 public class BattleResultDialogUIScript : DialogBase

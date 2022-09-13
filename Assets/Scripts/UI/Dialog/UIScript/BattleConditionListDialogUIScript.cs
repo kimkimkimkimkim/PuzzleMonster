@@ -1,12 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using GameBase;
-using TMPro;
 
 [ResourcePath("UI/Dialog/Dialog-BattleConditionList")]
 public class BattleConditionListDialogUIScript : DialogBase

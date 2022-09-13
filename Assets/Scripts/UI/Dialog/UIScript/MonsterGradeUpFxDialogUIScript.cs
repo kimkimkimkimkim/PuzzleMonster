@@ -1,13 +1,13 @@
 using UniRx;
 using UnityEngine;
 using GameBase;
-using TMPro;
+using UnityEngine.UI;
 
 [ResourcePath("UI/Dialog/Dialog-MonsterGradeUpFx")]
 public class MonsterGradeUpFxDialogUIScript : MonsterStrengthFxDialogBaseUIScript
 {
-    [SerializeField] protected TextMeshProUGUI _beforeGradeText;
-    [SerializeField] protected TextMeshProUGUI _afterGradeText;
+    [SerializeField] protected Text _beforeGradeText;
+    [SerializeField] protected Text _afterGradeText;
     [SerializeField] protected MonsterGradeParts _beforeMonsterGradeParts;
     [SerializeField] protected MonsterGradeParts _afterMonsterGradeParts;
 

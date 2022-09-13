@@ -1,14 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using GameBase;
-using PM.Enum.UI;
 using static LoginBonusItem;
-using TMPro;
 
 [ResourcePath("UI/Dialog/Dialog-LoginBonus")]
 public class LoginBonusDialogUIScript : DialogBase

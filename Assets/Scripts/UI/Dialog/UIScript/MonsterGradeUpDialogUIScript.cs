@@ -5,8 +5,6 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using GameBase;
-using PM.Enum.UI;
-using TMPro;
 
 [ResourcePath("UI/Dialog/Dialog-MonsterGradeUp")]
 public class MonsterGradeUpDialogUIScript : DialogBase

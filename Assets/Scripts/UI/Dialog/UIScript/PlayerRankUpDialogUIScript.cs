@@ -4,19 +4,18 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using GameBase;
-using TMPro;
 using DG.Tweening;
 
 [ResourcePath("UI/Dialog/Dialog-PlayerRankUp")]
 public class PlayerRankUpDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
-    [SerializeField] protected TextMeshProUGUI _mainRankText;
-    [SerializeField] protected TextMeshProUGUI _beforeRankText;
-    [SerializeField] protected TextMeshProUGUI _afterRankText;
-    [SerializeField] protected TextMeshProUGUI _beforeMaxStaminaText;
-    [SerializeField] protected TextMeshProUGUI _afterMaxStaminaText;
-    [SerializeField] protected TextMeshProUGUI _riseStaminaText;
+    [SerializeField] protected Text _mainRankText;
+    [SerializeField] protected Text _beforeRankText;
+    [SerializeField] protected Text _afterRankText;
+    [SerializeField] protected Text _beforeMaxStaminaText;
+    [SerializeField] protected Text _afterMaxStaminaText;
+    [SerializeField] protected Text _riseStaminaText;
     [SerializeField] protected GameObject _titleTextBase;
     [SerializeField] protected GameObject _rankIconBase;
     [SerializeField] protected GameObject _rankTextBase;

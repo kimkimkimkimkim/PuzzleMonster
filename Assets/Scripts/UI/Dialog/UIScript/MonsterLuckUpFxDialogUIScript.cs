@@ -1,12 +1,12 @@
 using UniRx;
 using UnityEngine;
 using GameBase;
-using TMPro;
+using UnityEngine.UI;
 
 [ResourcePath("UI/Dialog/Dialog-MonsterLuckUpFx")]
 public class MonsterLuckUpFxDialogUIScript : MonsterStrengthFxDialogBaseUIScript
 {
-    [SerializeField] protected TextMeshProUGUI _luckUpText;
+    [SerializeField] protected Text _luckUpText;
 
     public override void Init(DialogInfo info)
     {

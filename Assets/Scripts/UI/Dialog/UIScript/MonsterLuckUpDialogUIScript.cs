@@ -1,14 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using GameBase;
-using PM.Enum.UI;
 using PM.Enum.Item;
-using TMPro;
 
 [ResourcePath("UI/Dialog/Dialog-MonsterLuckUp")]
 public class MonsterLuckUpDialogUIScript : DialogBase
@@ -18,12 +14,12 @@ public class MonsterLuckUpDialogUIScript : DialogBase
     [SerializeField] protected Button _minusButton;
     [SerializeField] protected Button _plusButton;
     [SerializeField] protected IconItem _iconItem;
-    [SerializeField] protected TextMeshProUGUI _confirmText;
-    [SerializeField] protected TextMeshProUGUI _beforeLuckText;
-    [SerializeField] protected TextMeshProUGUI _afterLuckText;
-    [SerializeField] protected TextMeshProUGUI _beforeStackText;
-    [SerializeField] protected TextMeshProUGUI _afterStackText;
-    [SerializeField] protected TextMeshProUGUI _consumeStackNumText;
+    [SerializeField] protected Text _confirmText;
+    [SerializeField] protected Text _beforeLuckText;
+    [SerializeField] protected Text _afterLuckText;
+    [SerializeField] protected Text _beforeStackText;
+    [SerializeField] protected Text _afterStackText;
+    [SerializeField] protected Text _consumeStackNumText;
     [SerializeField] protected Slider _consumeStackSlider;
     [SerializeField] protected GameObject _luckUpButtonGrayoutPanel;
 
