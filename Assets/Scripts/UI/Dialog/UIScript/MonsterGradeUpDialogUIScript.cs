@@ -15,8 +15,8 @@ public class MonsterGradeUpDialogUIScript : DialogBase
     [SerializeField] protected Button _okButton;
     [SerializeField] protected MonsterGradeParts _beforeMonsterGradeParts;
     [SerializeField] protected MonsterGradeParts _afterMonsterGradeParts;
-    [SerializeField] protected TextMeshProUGUI _beforeMaxLevelText;
-    [SerializeField] protected TextMeshProUGUI _afterMaxLevelText;
+    [SerializeField] protected Text _beforeMaxLevelText;
+    [SerializeField] protected Text _afterMaxLevelText;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
     [SerializeField] protected GameObject _canGradeUpTextBase;
     [SerializeField] protected GameObject _canNotGradeUpTextBase;
