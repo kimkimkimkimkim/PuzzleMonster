@@ -1,12 +1,12 @@
 using GameBase;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 [ResourcePath("UI/Parts/Parts-BattleConditionScrollItem")]
 public class BattleConditionScrollItem : MonoBehaviour
 {
     [SerializeField] protected BattleConditionIconItem _battleConditionIconItem;
-    [SerializeField] protected TextMeshProUGUI _battleConditionDescriptionText;
+    [SerializeField] protected Text _battleConditionDescriptionText;
 
     public void SetInfo(BattleConditionInfo battleCondition)
     {

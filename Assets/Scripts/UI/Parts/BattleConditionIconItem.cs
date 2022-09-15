@@ -1,5 +1,4 @@
 ﻿using PM.Enum.UI;
-using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,7 +6,7 @@ using UnityEngine.UI;
 public class BattleConditionIconItem : MonoBehaviour
 {
     [SerializeField] protected Image _iconImage;
-    [SerializeField] protected TextMeshProUGUI _turnText;
+    [SerializeField] protected Text _turnText;
     [SerializeField] protected Sprite _emptySprite;
 
     private long currentBattleConditionId;

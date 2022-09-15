@@ -1,13 +1,12 @@
 using GameBase;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 [ResourcePath("UI/Parts/Parts-CommonReceiveScrollItem")]
 public class CommonReceiveScrollItem : MonoBehaviour
 {
-    [SerializeField] protected TextMeshProUGUI _nameText;
-    [SerializeField] protected TextMeshProUGUI _numText;
+    [SerializeField] protected Text _nameText;
+    [SerializeField] protected Text _numText;
     [SerializeField] protected IconItem _iconItem;
 
     public IconItem iconItem { get { return _iconItem; } }

@@ -1,6 +1,5 @@
 using GameBase;
 using PM.Enum.Item;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,9 +10,9 @@ public class BattleScoreScrollItem : MonoBehaviour
     [SerializeField] Slider _giveDamageSlider;
     [SerializeField] Slider _healingSlider;
     [SerializeField] Slider _takeDamageSlider;
-    [SerializeField] TextMeshProUGUI _giveDamageValueText;
-    [SerializeField] TextMeshProUGUI _healingValueText;
-    [SerializeField] TextMeshProUGUI _takeDamageValueText;
+    [SerializeField] Text _giveDamageValueText;
+    [SerializeField] Text _healingValueText;
+    [SerializeField] Text _takeDamageValueText;
 
     public void SetInfo(BattleMonsterInfo battleMonster, int maxValue)
     {
