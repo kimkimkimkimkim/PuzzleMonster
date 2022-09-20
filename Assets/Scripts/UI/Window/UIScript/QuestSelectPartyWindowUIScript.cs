@@ -1,6 +1,5 @@
 using GameBase;
 using UnityEngine;
-using TMPro;
 using UnityEngine.UI;
 using UniRx;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ using PM.Enum.UI;
 [ResourcePath("UI/Window/Window-QuestSelectParty")]
 public class QuestSelectPartyWindowUIScript : WindowBase
 {
-    [SerializeField] protected TextMeshProUGUI _titleText;
+    [SerializeField] protected Text _titleText;
     [SerializeField] protected Button _okButton;
     [SerializeField] protected Button _grayoutButton;
     [SerializeField] protected GameObject _okButtonGrayoutPanel;

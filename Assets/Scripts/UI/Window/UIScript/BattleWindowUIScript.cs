@@ -5,7 +5,6 @@ using PM.Enum.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,11 +12,11 @@ using UnityEngine.UI;
 [ResourcePath("UI/Window/Window-Battle")]
 public class BattleWindowUIScript : DummyWindowBase
 {
-    [SerializeField] protected TextMeshProUGUI _turnText;
-    [SerializeField] protected TextMeshProUGUI _waveText;
-    [SerializeField] protected TextMeshProUGUI _skillNameText;
-    [SerializeField] protected TextMeshProUGUI _actionDescriptionTitleText;
-    [SerializeField] protected TextMeshProUGUI _actionDescriptionContentText;
+    [SerializeField] protected Text _turnText;
+    [SerializeField] protected Text _waveText;
+    [SerializeField] protected Text _skillNameText;
+    [SerializeField] protected Text _actionDescriptionTitleText;
+    [SerializeField] protected Text _actionDescriptionContentText;
     [SerializeField] protected List<BattleMonsterBase> _playerMonsterBaseList;
     [SerializeField] protected List<BattleMonsterBase> _enemyMonsterBaseList;
     [SerializeField] protected Image _fxParentImage;
@@ -268,7 +267,7 @@ public class BattleWindowUIScript : DummyWindowBase
             {
                 var actionName = GetActionName(actionType);
                 _actionDescriptionTitleText.text = $"{actionName}の効果";
-                _actionDescriptionContentText.text = $"{skillNameAndDescription.skillName}が発動！\n<color=\"yellow\">{skillNameAndDescription.skillDescription}";
+                _actionDescriptionContentText.text = $"{skillNameAndDescription.skillName}が発動！\n<color=\"yellow\">{skillNameAndDescription.skillDescription}</color>";
                 _actionDescriptionBase.SetActive(true);
             })
             .Delay(TimeSpan.FromSeconds(SHOW_TIME))

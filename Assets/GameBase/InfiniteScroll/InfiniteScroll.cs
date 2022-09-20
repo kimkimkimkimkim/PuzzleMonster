@@ -6,7 +6,6 @@ using System.Linq;
 using System;
 using UniRx;
 using DG.Tweening;
-using TMPro;
 
 namespace GameBase
 {
@@ -27,7 +26,7 @@ namespace GameBase
         #region inspector properties
 
         public RectTransform itemPrototype;
-        public TextMeshProUGUI noDataText;
+        public Text noDataText;
 
         //表示するアイテム最大行数
         public int lineCount = 9;

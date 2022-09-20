@@ -1,24 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using PM.Enum.Item;
-using PM.Enum.UI;
 using GameBase;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
-using TMPro;
 
 [ResourcePath("UI/Window/Window-HeaderFooter")]
 public class HeaderFooterWindowUIScript : WindowBase
 {
-    [SerializeField] protected TextMeshProUGUI _orbText;
-    [SerializeField] protected TextMeshProUGUI _coinText;
-    [SerializeField] protected TextMeshProUGUI _staminaText;
-    [SerializeField] protected TextMeshProUGUI _staminaCountdownText;
-    [SerializeField] protected TextMeshProUGUI _userRankText;
-    [SerializeField] protected TextMeshProUGUI _userNameText;
-    [SerializeField] protected TextMeshProUGUI _userExpText;
+    [SerializeField] protected Text _orbText;
+    [SerializeField] protected Text _coinText;
+    [SerializeField] protected Text _staminaText;
+    [SerializeField] protected Text _staminaCountdownText;
+    [SerializeField] protected Text _userRankText;
+    [SerializeField] protected Text _userNameText;
+    [SerializeField] protected Text _userExpText;
     [SerializeField] protected Slider _userExpSlider;
     [SerializeField] protected Slider _staminaSlider;
     [SerializeField] protected Toggle _homeToggle;
