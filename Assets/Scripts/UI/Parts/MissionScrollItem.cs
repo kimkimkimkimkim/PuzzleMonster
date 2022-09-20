@@ -1,11 +1,11 @@
 using GameBase;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 [ResourcePath("UI/Parts/Parts-MissionScrollItem")]
 public class MissionScrollItem : ScrollItem
 {
-    [SerializeField] protected TextMeshProUGUI _nameText;
+    [SerializeField] protected Text _nameText;
     [SerializeField] protected GameObject _grayoutPanel;
     [SerializeField] protected GameObject _clearedPanel;
     [SerializeField] protected IconItem _iconItem;

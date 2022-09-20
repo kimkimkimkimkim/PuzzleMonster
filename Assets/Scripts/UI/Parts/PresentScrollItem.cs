@@ -1,12 +1,12 @@
 using GameBase;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 [ResourcePath("UI/Parts/Parts-PresentScrollItem")]
 public class PresentScrollItem : ScrollItem
 {
-    [SerializeField] protected TextMeshProUGUI _nameText;
-    [SerializeField] protected TextMeshProUGUI _descriptionText;
+    [SerializeField] protected Text _nameText;
+    [SerializeField] protected Text _descriptionText;
     [SerializeField] protected GameObject _grayoutPanel;
     [SerializeField] protected IconItem _iconItem;
 

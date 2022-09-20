@@ -1,7 +1,6 @@
 using GameBase;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using System.Collections.Generic;
 using PM.Enum.Item;
 using PM.Enum.UI;
@@ -17,9 +16,9 @@ public class IconItemRounded : MonoBehaviour
     [SerializeField] protected GameObject _focusPanel;
     [SerializeField] protected GameObject _grayoutPanel;
     [SerializeField] protected GameObject _labelPanel;
-    [SerializeField] protected TextMeshProUGUI _numText;
-    [SerializeField] protected TextMeshProUGUI _grayoutText;
-    [SerializeField] protected TextMeshProUGUI _labelText;
+    [SerializeField] protected Text _numText;
+    [SerializeField] protected Text _grayoutText;
+    [SerializeField] protected Text _labelText;
     [SerializeField] protected List<Sprite> _frameSpriteList;
     [SerializeField] protected List<Color> _backgroundColorList;
     [SerializeField] protected Toggle _toggle;

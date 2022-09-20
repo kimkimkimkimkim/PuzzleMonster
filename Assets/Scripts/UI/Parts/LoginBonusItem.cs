@@ -1,6 +1,5 @@
 using GameBase;
 using System;
-using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,8 +7,8 @@ using UnityEngine.UI;
 [ResourcePath("UI/Parts/Parts-LoginBonusItem")]
 public class LoginBonusItem : MonoBehaviour
 {
-    [SerializeField] TextMeshProUGUI _dayText;
-    [SerializeField] TextMeshProUGUI _numText;
+    [SerializeField] Text _dayText;
+    [SerializeField] Text _numText;
     [SerializeField] Image _frameImage;
     [SerializeField] Image _itemIconImage;
     [SerializeField] Image _checkImage;
