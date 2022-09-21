@@ -3,7 +3,6 @@ using PM.Enum.Battle;
 using PM.Enum.Item;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,8 +11,8 @@ using UnityEngine.UI;
 public class QuestDetailWindowUIScript : WindowBase
 {
     [SerializeField] protected Button _okButton;
-    [SerializeField] protected TextMeshProUGUI _questNameText;
-    [SerializeField] protected TextMeshProUGUI _consumeStaminaText;
+    [SerializeField] protected Text _questNameText;
+    [SerializeField] protected Text _consumeStaminaText;
     [SerializeField] protected InfiniteScroll _monsterInfiniteScroll;
     [SerializeField] protected InfiniteScroll _normalRewardInfiniteScroll;
     [SerializeField] protected InfiniteScroll _dropRewardInfiniteScroll;

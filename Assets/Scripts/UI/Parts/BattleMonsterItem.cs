@@ -1,12 +1,10 @@
 using DG.Tweening;
 using GameBase;
 using PM.Enum.Battle;
-using PM.Enum.Monster;
 using PM.Enum.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,8 +20,8 @@ public class BattleMonsterItem : MonoBehaviour
     [SerializeField] protected Slider _hpSlider;
     [SerializeField] protected Slider _energySlider;
     [SerializeField] protected Slider _shieldSlider;
-    [SerializeField] protected TextMeshProUGUI _levelText;
-    [SerializeField] protected TextMeshProUGUI _missText;
+    [SerializeField] protected Text _levelText;
+    [SerializeField] protected Text _missText;
     [SerializeField] protected GameObject _shieldSliderBase;
     [SerializeField] protected Transform _effectBase;
     [SerializeField] protected CanvasGroup _battleConditionBaseCanvasGroup;
@@ -38,7 +36,7 @@ public class BattleMonsterItem : MonoBehaviour
     public Slider hpSlider { get { return _hpSlider; } }
     public Slider energySlider { get { return _energySlider; } }
     public Slider shieldSlider { get { return _shieldSlider; } }
-    public TextMeshProUGUI missText { get { return _missText; } }
+    public Text missText { get { return _missText; } }
     public Transform effectBase { get { return _effectBase; } }
 
     private IDisposable battleConditionAnimationObservable;
