@@ -115,6 +115,9 @@ public partial class ApiConnection
                                 NotificationManager.Instance.ExecuteNotification(userNotification);
                             });
 
+                            // ロッカブルの更新
+                            UIManager.Instance.RefreshLockableUI();
+
                             // タップブロッカーを非表示に
                             UIManager.Instance.TryHideLoadingView();
 

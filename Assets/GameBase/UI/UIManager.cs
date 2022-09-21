@@ -41,6 +41,7 @@ namespace GameBase
 
         private float topMargin;
         private float bottomMargin;
+        private List<LockableUI> lockableUIList = new List<LockableUI>();
 
         protected override void Awake()
         {
@@ -59,6 +60,23 @@ namespace GameBase
 
             //InputSource.isEnabled = true;
         }
+
+        #region Lockable
+        public void RefreshLockableUI() {
+            lockableUIList.ForEach(lockableUI => {
+                var shouldLock = ConditionUtil.IsValid(ApplicationContext.userData, lockableUI.lockable.lockConditionList);
+                lockableUI.RefreshUI(shouldLock);
+            });
+        }
+
+        public void AddLockableUI(LockableUI lockableUI) {
+            lockableUIList.Add(lockableUI);
+        }
+
+        public void RemoveLockableUI(long lockableId) {
+            lockableUIList.RemoveAll(lockableUI => lockableUI.lockable.id == lockableId);
+        }
+        #endregion
 
         #region Blocker
 
@@ -620,6 +638,7 @@ namespace GameBase
         }
         #endregion DummyWindow
 
+        #region ContentMethod
         public T CreateContent<T>(Transform parent = null) where T : MonoBehaviour
         {
             ResourcePathAttribute attr = (ResourcePathAttribute)Attribute.GetCustomAttribute(typeof(T), typeof(ResourcePathAttribute));
@@ -758,6 +777,7 @@ namespace GameBase
             var name = path.Split('/').LastOrDefault();
             return name;
         }
+        #endregion
     }
 
     #region UI Info Class
