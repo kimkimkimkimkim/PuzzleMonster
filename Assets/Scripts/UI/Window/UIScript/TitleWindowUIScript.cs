@@ -81,6 +81,8 @@ public class TitleWindowUIScript : WindowBase
                 PMStackableDialogManager.Instance.Restack();
             })
             .Subscribe();
+
+        UIManager.Instance.RefreshLockableUI();
     }
 
     public void ShowTapToStartButton(bool isShow)

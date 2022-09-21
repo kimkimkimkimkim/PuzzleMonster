@@ -13,13 +13,9 @@ public class LockableUI : MonoBehaviour
     private void Start()
     {
         var lockable = MasterRecord.GetMasterOf<LockableMB>().Get(_lockableId);
-        var shouldLock = ConditionUtil.IsValid(ApplicationContext.userData, lockable.lockConditionList);
 
-        // 現状アンロックからロックになることはないのでそもそもアンロックのものはリストに追加しない
-        if (shouldLock) {
-            this.lockable = lockable;
-            UIManager.Instance.AddLockableUI(this);
-        }
+        this.lockable = lockable;
+        UIManager.Instance.AddLockableUI(this);
     }
 
     public void RefreshUI(bool isLock) {

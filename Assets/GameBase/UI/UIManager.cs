@@ -66,6 +66,9 @@ namespace GameBase
             lockableUIList.ForEach(lockableUI => {
                 var shouldLock = ConditionUtil.IsValid(ApplicationContext.userData, lockableUI.lockable.lockConditionList);
                 lockableUI.RefreshUI(shouldLock);
+
+                // アンロックになったらリストから削除する
+                if (!shouldLock) RemoveLockableUI(lockableUI.lockable.id);
             });
         }
 
