@@ -64,12 +64,16 @@ namespace GameBase
         #region Lockable
         public void RefreshLockableUI() {
             lockableUIList.ForEach(lockableUI => {
-                var shouldLock = ConditionUtil.IsValid(ApplicationContext.userData, lockableUI.lockable.lockConditionList);
-                lockableUI.RefreshUI(shouldLock);
-
-                // アンロックになったらリストから削除する
-                if (!shouldLock) RemoveLockableUI(lockableUI.lockable.id);
+                RefreshLockableUI(lockableUI);
             });
+        }
+
+        public void RefreshLockableUI(LockableUI lockableUI) {
+            var shouldLock = ConditionUtil.IsValid(ApplicationContext.userData, lockableUI.lockable.lockConditionList);
+            lockableUI.RefreshUI(shouldLock);
+
+            // アンロックになったらリストから削除する
+            if (!shouldLock) RemoveLockableUI(lockableUI.lockable.id);
         }
 
         public void AddLockableUI(LockableUI lockableUI) {

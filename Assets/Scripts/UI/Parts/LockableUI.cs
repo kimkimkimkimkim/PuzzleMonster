@@ -16,6 +16,7 @@ public class LockableUI : MonoBehaviour
 
         this.lockable = lockable;
         UIManager.Instance.AddLockableUI(this);
+        UIManager.Instance.RefreshLockableUI(this);
     }
 
     public void RefreshUI(bool isLock) {
