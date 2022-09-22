@@ -1,77 +1,19 @@
-﻿using PM.Enum.UI;
-using GameBase;
-using UniRx;
-using PM.Enum.Sound;
+﻿using GameBase;
 
 public class MainSceneManager : SingletonMonoBehaviour<MainSceneManager>
 {
-    private bool readyToShowStackDialog;
-    private TitleWindowUIScript titleUIScript;
+    private bool isReadyToShowStackableDialog = false;
 
-    private void Start()
+    public void SetIsReadyToShowStackableDialog(bool isReady)
     {
-        // タイトル画面の表示
-        /*
-        titleUIScript = UIManager.Instance.CreateDummyWindow<TitleWindowUIScript>();
-        titleUIScript.ShowTapToStartButton(false);
-        titleUIScript.SetOnClickAction(() => StartGame());
-        */
-
-        // アプリケーション起動時の処理
-        ApplicationContext.EstablishSession()
-            .SelectMany(_ =>
-            {
-                if (string.IsNullOrWhiteSpace(ApplicationContext.playerProfile.DisplayName))
-                {
-                    // 名前が未設定なので名前登録ダイアログを開く
-                    return UserNameRegistrationDialogFactory.Create(new UserNameRegistrationDialogRequest())
-                        .SelectMany(resp =>
-                        {
-                            switch (resp.dialogResponseType)
-                            {
-                                case DialogResponseType.Yes:
-                                    return ApiConnection.UpdateUserTitleDisplayName(resp.userName).Select(res => true);
-                                case DialogResponseType.No:
-                                default:
-                                    return Observable.Return<bool>(false);
-                            }
-                        });
-                }
-                else
-                {
-                    // 通常ログイン
-                    return Observable.Return<bool>(true);
-                }
-            })
-            .Where(isOk => isOk)
-            .Do(_ =>
-            {
-                // スタートボタンを表示
-                titleUIScript.ShowTapToStartButton(true);
-
-                // デバッグボタンの作成
-                var debugItem = UIManager.Instance.CreateContent<DebugItem>(UIManager.Instance.debugParent);
-                debugItem.SetOnClickAction(() =>
-                {
-                    TestActionDialogFactory.Create(new TestActionDialogRequest()).Subscribe();
-                });
-
-                // スタッカブルダイアログの積みなおし
-                PMStackableDialogManager.Instance.Restack();
-            })
-            .Subscribe();
+        isReadyToShowStackableDialog = isReady;
     }
 
-    private void StartGame()
-    {
-        // タイトル画面を消してホーム画面へ遷移
-        if (titleUIScript != null) Destroy(titleUIScript.gameObject);
-        SoundManager.Instance.bgm.Play(BGM.Main);
-        HeaderFooterWindowFactory.Create(new HeaderFooterWindowRequest()).Subscribe();
-    }
-
-    public void SetReadyToShowStackDialog(bool isReady)
-    {
-        readyToShowStackDialog = isReady;
+    private void Update() {
+        if (isReadyToShowStackableDialog) {
+            if (UIManager.Instance.currentWindowInfo?.component is HomeWindowUIScript && UIManager.Instance.currentDialogInfo == null) {
+                StackableDialogManager.Instance.Call();
+            }
+        }
     }
 }

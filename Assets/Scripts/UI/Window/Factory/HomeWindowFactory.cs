@@ -16,6 +16,8 @@ public class HomeWindowFactory
                 observer.OnCompleted();
             }));
 
+            // Home画面表示時には一度スタッカブルダイアログ表示不可にしておく
+            MainSceneManager.Instance.SetIsReadyToShowStackableDialog(false);
             UIManager.Instance.OpenWindow<HomeWindowUIScript>(param, animationType: WindowAnimationType.None);
             return Disposable.Empty;
         });

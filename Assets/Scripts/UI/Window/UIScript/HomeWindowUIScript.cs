@@ -17,7 +17,7 @@ public class HomeWindowUIScript : WindowBase
     [SerializeField] protected Transform _monsterAreaParentBase;
     [SerializeField] protected GameObject _missionIconBadge;
     [SerializeField] protected GameObject _presentIconBadge;
-
+    
     private List<Transform> monsterAreaParentList = new List<Transform>();
 
     public override void Init(WindowInfo info)
@@ -36,10 +36,33 @@ public class HomeWindowUIScript : WindowBase
             .SelectMany(_ => PresentDialogFactory.Create(new PresentDialogRequest()))
             .Subscribe();
 
-        MainSceneManager.Instance.SetReadyToShowStackDialog(true);
-
         ActivateBadge();
         SetMonsterImage();
+
+        // 実行中のバトルがあればそちらを再開
+        var resumeQuestId = SaveDataUtil.Battle.GetResumeQuestId();
+        var resumeUserMonsterPartyId = SaveDataUtil.Battle.GetResumeUserMonsterPartyId();
+        var resumeUserBattleId = SaveDataUtil.Battle.GetResumeUserBattleId();
+        var resumeBattleLogList = SaveDataUtil.Battle.GetResumeBattleLogList();
+        if (resumeQuestId > 0 && resumeUserMonsterPartyId != string.Empty && resumeUserBattleId != string.Empty && resumeBattleLogList.Any()) {
+            CommonDialogFactory.Create(new CommonDialogRequest() {
+                commonDialogType = CommonDialogType.NoAndYes,
+                title = "確認",
+                content = "実行中のバトルがあります\n再開しますか？",
+            })
+                .SelectMany(res => {
+                    if (res.dialogResponseType == DialogResponseType.No) {
+                        SaveDataUtil.Battle.ClearAllResumeSaveData();
+                        return Observable.ReturnUnit();
+                    } else {
+                        return BattleManager.Instance.ResumeBattleObservable(resumeQuestId, resumeUserMonsterPartyId, resumeUserBattleId, resumeBattleLogList);
+                    }
+                })
+                .Do(_ => MainSceneManager.Instance.SetIsReadyToShowStackableDialog(true))
+                .Subscribe();
+        } else {
+            MainSceneManager.Instance.SetIsReadyToShowStackableDialog(true);
+        }
     }
 
     private void SetMonsterImage()
@@ -95,11 +118,6 @@ public class HomeWindowUIScript : WindowBase
 
         _presentIconBadge.SetActive(isShowPresentIconBadge);
         _missionIconBadge.SetActive(isShowMissionIconBadge);
-    }
-
-    private void Update()
-    {
-        StackableDialogManager.Instance.Call();
     }
 
     public override void Open(WindowInfo info)

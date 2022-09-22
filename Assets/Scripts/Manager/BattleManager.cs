@@ -14,8 +14,8 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     private QuestMB quest;
     private int maxWaveCount;
     private string userMonsterPartyId;
+    private string userBattleId;
     private List<BattleLogInfo> battleLogList;
-    private UserBattleInfo userBattle;
 
     /// <summary>
     /// 初期化処理
@@ -31,7 +31,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// バトルを開始する
     /// フェードインまではする
     /// </summary>
-    public IObservable<Unit> BattleStartObservable(long questId, string userMonsterPartyId)
+    public IObservable<Unit> StartBattleObservable(long questId, string userMonsterPartyId)
     {
         // 初期化
         Init(questId, userMonsterPartyId);
@@ -46,103 +46,90 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             battleLogList = battleDataProcessor.GetBattleLogList(userMonsterParty, quest);
             var winOrLose = battleLogList.First(l => l.type == BattleLogType.Result).winOrLose;
 
-            return ApiConnection.ExecuteBattle(userMonsterPartyId, questId, winOrLose).Do(res => userBattle = res.userBattle).AsUnitObservable();
+            return ApiConnection.ExecuteBattle(userMonsterPartyId, questId, winOrLose)
+                .Do(res => {
+                    userBattleId = res.userBattle.id;
+
+                    // 再開用にバトル情報をクライアントに保存しておく
+                    SaveDataUtil.Battle.SetResumeQuestId(questId);
+                    SaveDataUtil.Battle.SetResumeUserMonsterPartyId(userMonsterPartyId);
+                    SaveDataUtil.Battle.SetResumeUserBattleId(res.userBattle.id);
+                    SaveDataUtil.Battle.SetResumeBattleLogList(battleLogList);
+                })
+                .AsUnitObservable();
         });
+
+        // バトルを実行
+        return PlayBattleObservable(callbackObservable);
+    }
+
+    /// <summary>
+    /// 正常に終了しなかったバトルを再開する
+    /// </summary>
+    public IObservable<Unit> ResumeBattleObservable(long questId, string userMonsterPartyId, string userBattleId, List<BattleLogInfo> battleLogList) 
+    {
+        // 初期化
+        Init(questId, userMonsterPartyId);
+        this.userBattleId = userBattleId;
+        this.battleLogList = battleLogList;
+
+        // バトルを実行
+        return PlayBattleObservable();
+    }
+
+    private IObservable<Unit> PlayBattleObservable(Func<IObservable<Unit>> callbackObservable = null) 
+    {
         var beforeRank = ApplicationContext.userData.rank;
         return FadeInObservable(callbackObservable)
-            .SelectMany(_ =>
-            {
+            .SelectMany(_ => {
                 var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
                 return Observable.ReturnUnit().Connect(observableList.ToArray());
             })
-            .SelectMany(_ => ApiConnection.EndBattle(userBattle.id))
-            .SelectMany(res =>
-            {
+            .SelectMany(_ => ApiConnection.EndBattle(userBattleId))
+            .Do(_ => {
+                // バトルが正常に終了したので再開用データを削除
+                SaveDataUtil.Battle.ClearAllResumeSaveData();
+            })
+            .SelectMany(res => {
                 var resultLog = battleLogList.First(l => l.type == BattleLogType.Result);
-                return BattleResultDialogFactory.Create(new BattleResultDialogRequest() { 
-                    winOrLose = resultLog.winOrLose, 
+                return BattleResultDialogFactory.Create(new BattleResultDialogRequest() {
+                    winOrLose = resultLog.winOrLose,
                     playerBattleMonsterList = resultLog.playerBattleMonsterList,
                     enemyBattleMonsterListByWave = resultLog.enemyBattleMonsterListByWave,
                 })
-                    .SelectMany(_ =>
-                    {
-                        if (resultLog.winOrLose == WinOrLose.Win)
-                        {
+                    .SelectMany(_ => {
+                        if (resultLog.winOrLose == WinOrLose.Win) {
                             var rewardItemList = ItemUtil.GetRewardItemList(res.userBattle);
-                            return RewardReceiveDialogFactory.Create(new RewardReceiveDialogRequest()
-                            {
+                            return RewardReceiveDialogFactory.Create(new RewardReceiveDialogRequest() {
                                 rewardItemList = rewardItemList,
                             }).AsUnitObservable();
-                        }
-                        else
-                        {
+                        } else {
                             return Observable.ReturnUnit();
                         }
                     });
             })
-            .SelectMany(_ =>
-            {
+            .SelectMany(_ => {
                 var afterRank = ApplicationContext.userData.rank;
-                if(afterRank > beforeRank)
-                {
+                if (afterRank > beforeRank) {
                     var beforeStamina = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.rank == beforeRank);
                     var afterStamina = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.rank == afterRank);
-                    if(beforeStamina != null && afterStamina != null)
-                    {
-                        return PlayerRankUpDialogFactory.Create(new PlayerRankUpDialogRequest()
-                        {
+                    if (beforeStamina != null && afterStamina != null) {
+                        return PlayerRankUpDialogFactory.Create(new PlayerRankUpDialogRequest() {
                             beforeRank = beforeRank,
                             afterRank = afterRank,
                             beforeMaxStamina = beforeStamina.stamina,
                             afterMaxStamina = afterStamina.stamina,
                         }).AsUnitObservable();
-                    }
-                    else
-                    {
+                    } else {
                         return Observable.ReturnUnit();
                     }
-                }
-                else
-                {
+                } else {
                     return Observable.ReturnUnit();
                 }
             })
             .SelectMany(_ => FadeOutObservable())
             .AsUnitObservable();
     }
-    
-    /// <summary>
-    /// 既存のバトルを途中から再開する
-    /// フェードインまではする
-    /// </summary>
-    /*
-    public IObservable<BattleResult> BattleResumeObservable(UserBattleInfo userBattle)
-    {
-        // 初期化
-        Init(userBattle.questId, userBattle.userMonsterPartyId);
-        
-        return FadeInObservable().SelectMany(_ => BattleStartObservable(userBattle));
-    }
-    */
-    
-    /// <summary>
-    /// バトルを開始する
-    /// アニメーション再生とフェードアウトまでする
-    /// </summary>
-    /*
-    private IObservable<Unit> BattleStartObservable(List<BattleLogInfo> battleLogList)
-    {
-        // アニメーションリストを作成
-        this.battleLogList = battleLogList;
-        var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
-        var winOrLose = battleLogList.First(log => log.type == BattleLogType.Result).winOrLose;
-
-        return Observable.ReturnUnit().Connect(observableList.ToArray())
-            .SelectMany(_ => ApiConnection.EndBattle(userMonsterPartyId, questId, winOrLose))
-            .SelectMany(_ => BattleResultDialogFactory.Create(new BattleResultDialogRequest()))
-            .SelectMany(_ => FadeOutObservable());
-    }
-    */
     
     /// <summary>
     /// バトルログ情報に応じたアニメーションを再生する
@@ -290,7 +277,13 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             })
             .SelectMany(_ => Observable.WhenAll(
                 VisualFxManager.Instance.PlayQuestTitleFxObservable(quest.name),
-                callbackObservable()
+                Observable.ReturnUnit().SelectMany(res => {
+                    if (callbackObservable != null) {
+                        return callbackObservable();
+                    } else {
+                        return Observable.ReturnUnit();
+                    }
+                })
             ))
             .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0));
     }

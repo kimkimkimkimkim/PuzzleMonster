@@ -87,7 +87,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             })
             .SelectMany(_ =>
             {
-                return BattleManager.Instance.BattleStartObservable(questId, currentUserMonsterParty.id);
+                return BattleManager.Instance.StartBattleObservable(questId, currentUserMonsterParty.id);
             })
             .Subscribe();
 

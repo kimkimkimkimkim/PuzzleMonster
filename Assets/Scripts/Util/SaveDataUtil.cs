@@ -95,6 +95,91 @@ public class SaveDataUtil
         #endregion
     }
 
+    public class Battle 
+    {
+        #region Key
+        /// <summary>
+        /// 再開用クエストID
+        /// </summary>
+        private static string RESUME_QUEST_ID = "battle/resumeQuestId";
+
+        /// <summary>
+        /// 再開用ユーザーモンスターパーティーID
+        /// </summary>
+        private static string RESUME_USER_MONSTER_PARTY_ID = "battle/resumeUserMonsterPartyId";
+
+        /// <summary>
+        /// 再開用ユーザーバトルID
+        /// </summary>
+        private static string RESUME_USER_BATTLE_ID = "battle/resumeUserBatleId";
+
+        /// <summary>
+        /// 再開用バトルログリスト
+        /// </summary>
+        private static string RESUME_BATTLE_LOG_LIST = "battle/resumeBattleLogList";
+        #endregion
+
+        #region DefaultValue
+        private static long resumeQuestIdDefaultValue = 0;
+        private static string resumeUserMonsterPartyIdDefaultValue = string.Empty;
+        private static string resumeUserBattleIdDefaultValue = string.Empty;
+        private static List<BattleLogInfo> resumeBattleLogListDefaultValue = new List<BattleLogInfo>();
+        #endregion
+
+        #region Get
+        public static long GetResumeQuestId() {
+            var resumeQuestId = SaveData.GetLong(RESUME_QUEST_ID, resumeQuestIdDefaultValue);
+            return resumeQuestId;
+        }
+
+        public static string GetResumeUserMonsterPartyId() {
+            var resumeUserMonsterPartyId = SaveData.GetString(RESUME_USER_MONSTER_PARTY_ID, resumeUserMonsterPartyIdDefaultValue);
+            return resumeUserMonsterPartyId;
+        }
+
+        public static string GetResumeUserBattleId() {
+            var resumeUserBattleId = SaveData.GetString(RESUME_USER_BATTLE_ID, resumeUserBattleIdDefaultValue);
+            return resumeUserBattleId;
+        }
+
+        public static List<BattleLogInfo> GetResumeBattleLogList() {
+            var resumeBattleLogList = SaveData.GetClassList(RESUME_BATTLE_LOG_LIST, resumeBattleLogListDefaultValue);
+            return resumeBattleLogList;
+        }
+        #endregion
+
+        #region Set
+        public static void SetResumeQuestId(long resumeQuestId) {
+            SaveData.SetLong(RESUME_QUEST_ID, resumeQuestId);
+            SaveData.Save();
+        }
+
+        public static void SetResumeUserMonsterPartyId(string resumeUserMonsterPartyId) {
+            SaveData.SetString(RESUME_USER_MONSTER_PARTY_ID, resumeUserMonsterPartyId);
+            SaveData.Save();
+        }
+
+        public static void SetResumeUserBattleId(string resumeUserBattleId) {
+            SaveData.SetString(RESUME_USER_BATTLE_ID, resumeUserBattleId);
+            SaveData.Save();
+        }
+
+        public static void SetResumeBattleLogList(List<BattleLogInfo> resumeBattleLogList) {
+            SaveData.SetClassList(RESUME_BATTLE_LOG_LIST, resumeBattleLogList);
+            SaveData.Save();
+        }
+        #endregion
+
+        #region Clear
+        public static void ClearAllResumeSaveData() {
+            SetResumeQuestId(resumeQuestIdDefaultValue);
+            SetResumeUserMonsterPartyId(resumeUserMonsterPartyIdDefaultValue);
+            SetResumeUserBattleId(resumeUserBattleIdDefaultValue);
+            SetResumeBattleLogList(resumeBattleLogListDefaultValue);
+        }
+        #endregion
+    }
+
     public static void Clear()
     {
         SaveData.Clear();
