@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using UnityEngine;
+using Newtonsoft.Json;
 
 namespace GameBase
 {
@@ -185,6 +186,28 @@ namespace GameBase
         }
 
         /// <summary>
+        /// 指定されたキーに関連付けられているLong型の値を取得します。
+        /// 値がない場合、_defaultの値を返します。省略した場合、0を返します。
+        /// </summary>
+        /// <param name="key">キー</param>
+        /// <param name="_default">デフォルトの値</param>
+        /// <exception cref="System.ArgumentException"></exception>
+        /// <returns></returns>
+        public static long GetLong(string key, long _default = 0) {
+            return Savedatabase.GetLong(key, _default);
+        }
+
+        /// <summary>
+        /// 指定されたキーに関連付けられているLong型の値をセーブデータに追加します。
+        /// </summary>
+        /// <param name="key">キー</param>
+        /// <param name="value">デフォルトの値</param>
+        /// <exception cref="System.ArgumentException"></exception>
+        public static void SetLong(string key, long value) {
+            Savedatabase.SetLong(key, value);
+        }
+
+        /// <summary>
         /// 指定されたキーに関連付けられているfloat型の値を取得します。
         /// 値がない場合、_defaultの値を返します。省略した場合、0.0fを返します。
         /// </summary>
@@ -340,15 +363,14 @@ namespace GameBase
                     return _default;
                 }
                 string json = saveDictionary[key];
-                Serialization<T> deserializeList = JsonUtility.FromJson<Serialization<T>>(json);
-                return deserializeList.ToList();
+                var deserializeList = JsonConvert.DeserializeObject<List<T>>(json);
+                return deserializeList;
             }
 
             public void SetList<T>(string key, List<T> list)
             {
                 keyCheck(key);
-                var serializableList = new Serialization<T>(list);
-                string json = JsonUtility.ToJson(serializableList);
+                var json = JsonConvert.SerializeObject(list);
                 saveDictionary[key] = json;
             }
 
@@ -360,14 +382,14 @@ namespace GameBase
                     return _default;
                 }
                 string json = saveDictionary[key];
-                T obj = JsonUtility.FromJson<T>(json);
+                var obj = JsonConvert.DeserializeObject<T>(json);
                 return obj;
             }
 
             public void SetClass<T>(string key, T obj) where T : class, new()
             {
                 keyCheck(key);
-                string json = JsonUtility.ToJson(obj);
+                var json = JsonConvert.SerializeObject(obj);
                 saveDictionary[key] = json;
             }
 
@@ -379,15 +401,14 @@ namespace GameBase
                     return _default;
                 }
                 string json = saveDictionary[key];
-                Serialization<T> deserializeList = JsonUtility.FromJson<Serialization<T>>(json);
+                var deserializeList = JsonConvert.DeserializeObject<List<T>>(json);
                 return deserializeList.ToList();
             }
 
             public void SetClassList<T>(string key, List<T> list) where T : class, new()
             {
                 keyCheck(key);
-                var serializableList = new Serialization<T>(list);
-                string json = JsonUtility.ToJson(serializableList);
+                var json = JsonConvert.SerializeObject(list);
                 saveDictionary[key] = json;
             }
 
@@ -444,6 +465,23 @@ namespace GameBase
                 int ret;
                 if (!int.TryParse(saveDictionary[key], out ret))
                 {
+                    ret = 0;
+                }
+                return ret;
+            }
+
+            public void SetLong(string key, long value) {
+                keyCheck(key);
+                saveDictionary[key] = value.ToString();
+            }
+
+            public long GetLong(string key, long _default) {
+                keyCheck(key);
+                if (!saveDictionary.ContainsKey(key)) {
+                    return _default;
+                }
+                long ret;
+                if (!long.TryParse(saveDictionary[key], out ret)) {
                     ret = 0;
                 }
                 return ret;
