@@ -43,7 +43,6 @@ public class LoginBonusDialogUIScript : DialogBase
             .Subscribe();
 
         _fullScreenButton.OnClickAsObservable()
-            .ThrottleFirst(TimeSpan.FromSeconds(2.0f), Scheduler.MainThreadIgnoreTimeScale)
             .Select((_,count) => count)
             .SelectMany(count =>
             {
