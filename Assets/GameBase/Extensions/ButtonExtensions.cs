@@ -23,7 +23,7 @@ namespace GameBase {
                 .AsObservable();
         }
 
-        public static IObservable<Unit> OnClickIntentAsObservable(this Button button, ButtonClickIntent intent = ButtonClickIntent.IntervalTap) {
+        public static IObservable<Unit> OnClickIntentAsObservable(this Button button, ButtonClickIntent intent = ButtonClickIntent.IntervalTap, bool isAnimation = true, bool isSE = true) {
             var clickObservable = button.onClick.AsObservable()
                 .Where(_ =>
                     Input.touchSupported == false ||
@@ -46,15 +46,18 @@ namespace GameBase {
             return clickObservable
                 .Do(_ => {
                     // 効果音
-                    SoundManager.Instance.sfx.Play(SE.Click);
+                    if(isSE) SoundManager.Instance.sfx.Play(SE.Click);
 
                     // アニメーション
-                    var scale = button.transform.localScale;
-                    var rectTransform = button.GetComponent<RectTransform>();
-                    var sequence = DOTween.Sequence();
-                    sequence.Append(rectTransform.DOScale(scale * 0.95f, 0.05f));
-                    sequence.Append(rectTransform.DOScale(scale, 0.05f));
-                    sequence.SetUpdate(true).PlayAsObservable().Subscribe();
+                    if (isAnimation) 
+                    {
+                        var scale = button.transform.localScale;
+                        var rectTransform = button.GetComponent<RectTransform>();
+                        var sequence = DOTween.Sequence();
+                        sequence.Append(rectTransform.DOScale(scale * 0.95f, 0.05f));
+                        sequence.Append(rectTransform.DOScale(scale, 0.05f));
+                        sequence.SetUpdate(true).PlayAsObservable().Subscribe();
+                    }
                 })
                 .Delay(TimeSpan.FromSeconds(0.1f), Scheduler.MainThreadIgnoreTimeScale)// アニメーション終了まで待つ
                 .AsUnitObservable();

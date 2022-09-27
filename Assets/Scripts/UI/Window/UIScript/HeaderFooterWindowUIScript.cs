@@ -5,6 +5,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using PM.Enum.UI;
 
 [ResourcePath("UI/Window/Window-HeaderFooter")]
 public class HeaderFooterWindowUIScript : WindowBase
@@ -20,12 +21,14 @@ public class HeaderFooterWindowUIScript : WindowBase
     [SerializeField] protected Slider _staminaSlider;
     [SerializeField] protected Toggle _homeToggle;
     [SerializeField] protected Toggle _monsterToggle;
+    [SerializeField] protected Toggle _arenaToggle;
     [SerializeField] protected Toggle _gachaToggle;
     [SerializeField] protected Toggle _shopToggle;
     [SerializeField] protected GameObject _headerPanel;
     [SerializeField] protected GameObject _footerPanel;
     [SerializeField] protected GameObject _homeTabBadge;
     [SerializeField] protected Button _staminaButton;
+    [SerializeField] protected Button _arenaBlockerButton;
 
     public GameObject headerPanel { get { return _headerPanel; } }
     public GameObject footerPanel { get { return _footerPanel; } }
@@ -59,6 +62,22 @@ public class HeaderFooterWindowUIScript : WindowBase
                     MonsterMenuWindowFactory.Create(new MonsterMenuWindowRequest()).Take(1).Subscribe();
                 }
             })
+            .Subscribe();
+
+        _arenaBlockerButton.OnClickIntentAsObservable(isAnimation: false)
+            .SelectMany(_ => {
+                var title = "お知らせ";
+                var content = "アリーナ機能は現在開発中です\nもうしばらくお待ちください";
+                return CommonDialogFactory.Create(new CommonDialogRequest() {
+                    commonDialogType = CommonDialogType.YesOnly,
+                    title = title,
+                    content = content,
+                });
+            })
+            .Subscribe();
+
+        _arenaToggle.OnValueChangedIntentAsObservable()
+            .Where(isOn => isOn)
             .Subscribe();
 
         _gachaToggle.OnValueChangedIntentAsObservable()
