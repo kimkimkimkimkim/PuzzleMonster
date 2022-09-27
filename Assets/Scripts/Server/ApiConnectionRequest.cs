@@ -359,5 +359,38 @@ public partial class ApiConnection
             userPresentIdList = userPresentIdList,
         });
     }
+
+    /// <summary>
+    /// 開発用:全資産を付与する
+    /// </summary>
+    public static IObservable<DevelopGrantAllPropertyApiResponse> DevelopGrantAllProperty()
+    {
+        return SendRequest<DevelopGrantAllPropertyApiRequest, DevelopGrantAllPropertyApiResponse>(DevelopGrantAllPropertyApiInterface.functionName, new DevelopGrantAllPropertyApiRequest()
+        {
+
+        });
+    }
+
+    /// <summary>
+    /// 開発用:全モンスターを付与する
+    /// </summary>
+    public static IObservable<DevelopGrantAllMonsterApiResponse> DevelopGrantAllMonster()
+    {
+        return SendRequest<DevelopGrantAllMonsterApiRequest, DevelopGrantAllMonsterApiResponse>(DevelopGrantAllMonsterApiInterface.functionName, new DevelopGrantAllMonsterApiRequest()
+        {
+
+        });
+    }
+
+    /// <summary>
+    /// 開発用:全仮想通貨を付与する
+    /// </summary>
+    public static IObservable<DevelopGrantAllVirtualCurrencyApiResponse> DevelopGrantAllVirtualCurrency()
+    {
+        return SendRequest<DevelopGrantAllVirtualCurrencyApiRequest, DevelopGrantAllVirtualCurrencyApiResponse>(DevelopGrantAllVirtualCurrencyApiInterface.functionName, new DevelopGrantAllVirtualCurrencyApiRequest()
+        {
+
+        });
+    }
     #endregion
 }

@@ -132,8 +132,6 @@ public class UserTestAction : ITestAction
             title = "モンスター付与",
             action = new Action(() =>
             {
-                var bundleIdList = new List<long>() { 9001005, 9001006, 9001007, 9001008 };
-                
                 CommonDialogFactory.Create(new CommonDialogRequest()
                 {
                     commonDialogType = CommonDialogType.NoAndYes,
@@ -141,13 +139,7 @@ public class UserTestAction : ITestAction
                     content = "モンスターを付与します"
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-                    .SelectMany(_ => {
-                        var observableList = bundleIdList.Select(bundleId => {
-                            var itemId = ItemUtil.GetItemId(ItemType.Bundle, bundleId);
-                            return ApiConnection.GrantItemsToUser(itemId).AsUnitObservable();
-                        });
-                        return Observable.ReturnUnit().Connect(observableList);
-                    })
+                    .SelectMany(_ => ApiConnection.DevelopGrantAllMonster())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
@@ -163,8 +155,6 @@ public class UserTestAction : ITestAction
             title = "資産付与",
             action = new Action(() =>
             {
-                var itemIdList = MasterRecord.GetMasterOf<PropertyMB>().GetAll().Select(m => ItemUtil.GetItemId(ItemType.Property, m.id));
-
                 CommonDialogFactory.Create(new CommonDialogRequest()
                 {
                     commonDialogType = CommonDialogType.NoAndYes,
@@ -172,14 +162,7 @@ public class UserTestAction : ITestAction
                     content = "資産を付与します"
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-                    .SelectMany(_ => {
-                        var observableList = itemIdList.Select(itemId => {
-                            var grantItemNum = 20;
-                            var grantItemIdList = Enumerable.Repeat(itemId, grantItemNum).ToList();
-                            return ApiConnection.GrantItemsToUser(grantItemIdList).AsUnitObservable();
-                        });
-                        return Observable.ReturnUnit().Connect(observableList);
-                    })
+                    .SelectMany(_ => ApiConnection.DevelopGrantAllProperty())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
