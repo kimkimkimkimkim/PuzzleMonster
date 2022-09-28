@@ -18,10 +18,12 @@ public class IconItem : MonoBehaviour
     [SerializeField] protected GameObject _focusPanel;
     [SerializeField] protected GameObject _grayoutPanel;
     [SerializeField] protected GameObject _labelPanel;
+    [SerializeField] protected GameObject _stackIconPanel;
     [SerializeField] protected Text _numText;
     [SerializeField] protected Text _grayoutText;
     [SerializeField] protected Text _labelText;
     [SerializeField] protected Text _text;
+    [SerializeField] protected Text _stackNumText;
     [SerializeField] protected List<Sprite> _frameSpriteList;
     [SerializeField] protected List<Color> _backgroundColorList;
     [SerializeField] protected Toggle _toggle;
@@ -125,5 +127,10 @@ public class IconItem : MonoBehaviour
     public void ShowCheckImage(bool isShow)
     {
         _checkImage.gameObject.SetActive(isShow);
+    }
+
+    public void ShowStack(bool isShow, int stackNum = 0) {
+        _stackIconPanel.SetActive(isShow);
+        _stackNumText.text = stackNum.ToString();
     }
 }

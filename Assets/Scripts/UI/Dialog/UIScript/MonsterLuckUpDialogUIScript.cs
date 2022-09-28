@@ -20,6 +20,7 @@ public class MonsterLuckUpDialogUIScript : DialogBase
     [SerializeField] protected Text _beforeStackText;
     [SerializeField] protected Text _afterStackText;
     [SerializeField] protected Text _consumeStackNumText;
+    [SerializeField] protected Text _cautionText;
     [SerializeField] protected Slider _consumeStackSlider;
     [SerializeField] protected GameObject _luckUpButtonGrayoutPanel;
 
@@ -138,6 +139,7 @@ public class MonsterLuckUpDialogUIScript : DialogBase
     {
         // アイコン
         _iconItem.SetIcon(ItemType.Monster, monster.id);
+        _iconItem.ShowStack(true, userMonster.GetStack());
 
         // 本文
         _confirmText.text = $"スタックを <color=#D14B39><size=46>{consumeStackNum}</size></color> 消費します\nよろしいですか？";
@@ -149,6 +151,9 @@ public class MonsterLuckUpDialogUIScript : DialogBase
         _afterLuckText.text = $"(+{luckUpNum}) {afterLuck}";
         _beforeStackText.text = userMonster.GetStack().ToString();
         _afterStackText.text = $"(-{consumeStackNum}) {Math.Max(userMonster.GetStack() - consumeStackNum, 0)}";
+
+        // 注意文言
+        _cautionText.text = $"※このモンスターは1スタックにつき{ConstManager.Monster.LUCK_UP_NUM(monster.isGachaMonster)}ラック上昇します";
 
         // 消費量テキスト
         _consumeStackNumText.text = $"スタック消費量: {consumeStackNum}";
