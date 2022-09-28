@@ -24,6 +24,7 @@ public class LoginBonusDialogUIScript : DialogBase
 
     private UserLoginBonusInfo userLoginBonus;
     private LoginBonusMB loginBonus;
+    private bool isRefreshing = true; // 念のため初期値をtrueにしておく
 
     public override void Init(DialogInfo info)
     {
@@ -43,6 +44,7 @@ public class LoginBonusDialogUIScript : DialogBase
             .Subscribe();
 
         _fullScreenButton.OnClickAsObservable()
+            .Where(_ => !isRefreshing)
             .Select((_,count) => count)
             .SelectMany(count =>
             {
@@ -58,7 +60,7 @@ public class LoginBonusDialogUIScript : DialogBase
         _fullScreenButtonBase.SetActive(true);
 
         SetContentText(false);
-        RefreshRewardUI(false);
+        RefreshRewardUIObservable(false).Subscribe();
     }
 
     /// <summary>
@@ -73,7 +75,7 @@ public class LoginBonusDialogUIScript : DialogBase
         {
             // 次の報酬にフォーカス
             SetContentText(true);
-            RefreshRewardUI(true);
+            RefreshRewardUIObservable(true).Subscribe();
         }
         else
         {
@@ -97,12 +99,12 @@ public class LoginBonusDialogUIScript : DialogBase
         _contentText.text = contentText;
     }
 
-    private void RefreshRewardUI(bool isFocusNextDay)
+    private IObservable<Unit> RefreshRewardUIObservable(bool isFocusNextDay)
     {
         var is7Day = loginBonus.rewardItemList.Count <= 7;
         var loginBonusItemList = is7Day ? _loginBonusItemList7Day : _loginBonusItemList30Day;
 
-        loginBonusItemList.ForEach((item, index) =>
+        var observableList = loginBonusItemList.Select((item, index) =>
         {
             var dateNum = index + 1;
             var focusDateNum = isFocusNextDay ? userLoginBonus.loginDateList.Count + 1 : userLoginBonus.loginDateList.Count;
@@ -115,16 +117,21 @@ public class LoginBonusDialogUIScript : DialogBase
                     dateNum == focusDateNum ? LoginBonusItemState.Today :
                     LoginBonusItemState.Future;
 
-                item.SetUIObservable(userLoginBonus, dateNum, state).Subscribe();
+                return item.SetUIObservable(userLoginBonus, dateNum, state);
             }
             else
             {
                 item.gameObject.SetActive(false);
+                return Observable.ReturnUnit();
             }
-        });
+        }).ToList();
 
-        _loginBonusItemBase7Day.SetActive(is7Day);
-        _loginBonusItemBase30Day.SetActive(!is7Day);
+        isRefreshing = true;
+        return Observable.WhenAll(observableList).Do(_ => {
+            isRefreshing = false;
+            _loginBonusItemBase7Day.SetActive(is7Day);
+            _loginBonusItemBase30Day.SetActive(!is7Day);
+        });
     }
 
     public override void Back(DialogInfo info)
