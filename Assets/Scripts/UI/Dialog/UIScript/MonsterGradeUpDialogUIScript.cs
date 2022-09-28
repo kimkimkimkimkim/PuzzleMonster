@@ -13,9 +13,13 @@ public class MonsterGradeUpDialogUIScript : DialogBase
     [SerializeField] protected Button _okButton;
     [SerializeField] protected MonsterGradeParts _beforeMonsterGradeParts;
     [SerializeField] protected MonsterGradeParts _afterMonsterGradeParts;
+    [SerializeField] protected MonsterGradeParts _maxGradeMonsterGradeParts;
     [SerializeField] protected Text _beforeMaxLevelText;
     [SerializeField] protected Text _afterMaxLevelText;
+    [SerializeField] protected Text _maxGradeMaxLevelText;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
+    [SerializeField] protected GameObject _uiBase;
+    [SerializeField] protected GameObject _maxGradeUIBase;
     [SerializeField] protected GameObject _canGradeUpTextBase;
     [SerializeField] protected GameObject _canNotGradeUpTextBase;
     [SerializeField] protected GameObject _okButtonGrayoutPanel;
@@ -61,8 +65,7 @@ public class MonsterGradeUpDialogUIScript : DialogBase
                 }).Do(res => beforeGradeForFx = userMonster.customData.grade);
             })
             .Subscribe();
-
-        RefreshScroll();
+        
         RefreshUI();
     }
 
@@ -73,39 +76,62 @@ public class MonsterGradeUpDialogUIScript : DialogBase
     {
         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
         var beforeGrade = userMonster.customData.grade;
-        var afterGrade = beforeGrade + 1;
         var beforeMaxLevel = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, beforeGrade);
-        var afterMaxLevel = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, afterGrade);
-        var canGradeUp = !requiredItemList.Any(i =>
-        {
-            // 必要素材が足りていないものが無ければ覚醒可能
-            var possessedNum = ClientItemUtil.GetPossessedNum(i.itemType, i.itemId);
-            return possessedNum < i.num;
-        });
 
-        // 上限レベルテキスト
-        _beforeMaxLevelText.text = $"上限レベル: {beforeMaxLevel}";
-        _afterMaxLevelText.text = $"上限レベル: {afterMaxLevel}";
+        if (beforeGrade < ConstManager.Monster.MAX_GRADE) {
+            // 現在のグレードが最大グレード未満だったら
+            var afterGrade = beforeGrade + 1;
+            var afterMaxLevel = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, afterGrade);
+            var gradeUpTable = MasterRecord.GetMasterOf<GradeUpTableMB>().GetAll().First(m => m.monsterAttribute == monster.attribute && m.targetGrade == userMonster.customData.grade + 1);
+            requiredItemList = gradeUpTable != null ? gradeUpTable.requiredItemList : new List<ItemMI>();
+            var canGradeUp = !requiredItemList.Any(i => {
+                // 必要素材が足りていないものが無ければ覚醒可能
+                var possessedNum = ClientItemUtil.GetPossessedNum(i.itemType, i.itemId);
+                return possessedNum < i.num;
+            });
 
-        // グレードアイコン
-        _beforeMonsterGradeParts.SetGradeImage(beforeGrade);
-        _afterMonsterGradeParts.SetGradeImage(afterGrade);
+            // UIBaseの表示非表示を更新
+            _uiBase.SetActive(true);
+            _maxGradeUIBase.SetActive(false);
 
-        // 結果テキスト
-        _canGradeUpTextBase.SetActive(canGradeUp);
-        _canNotGradeUpTextBase.SetActive(!canGradeUp);
+            // 上限レベルテキスト
+            _beforeMaxLevelText.text = $"上限レベル: {beforeMaxLevel}";
+            _afterMaxLevelText.text = $"上限レベル: {afterMaxLevel}";
 
-        // OKボタングレーアウト
-        _okButtonGrayoutPanel.SetActive(!canGradeUp);
+            // グレードアイコン
+            _beforeMonsterGradeParts.SetGradeImage(beforeGrade);
+            _afterMonsterGradeParts.SetGradeImage(afterGrade);
+
+            // 必要素材アイコン
+            RefreshScroll();
+
+            // 結果テキスト
+            _canGradeUpTextBase.SetActive(canGradeUp);
+            _canNotGradeUpTextBase.SetActive(!canGradeUp);
+
+            // OKボタングレーアウト
+            _okButtonGrayoutPanel.SetActive(!canGradeUp);
+        } else {
+            // UIBaseの表示非表示を更新
+            _uiBase.SetActive(false);
+            _maxGradeUIBase.SetActive(true);
+
+            // 上限レベルテキスト
+            _maxGradeMaxLevelText.text = $"上限レベル: {beforeMaxLevel}";
+
+            // グレードアイコン
+            _maxGradeMonsterGradeParts.SetGradeImage(beforeGrade);
+
+            // OKボタングレーアウト
+            _okButtonGrayoutPanel.SetActive(true);
+        }
     }
 
     private void RefreshScroll()
     {
         _infiniteScroll.Clear();
 
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
-        var gradeUpTable = MasterRecord.GetMasterOf<GradeUpTableMB>().GetAll().First(m => m.monsterAttribute == monster.attribute && m.targetGrade == userMonster.customData.grade + 1);
-        requiredItemList = gradeUpTable != null ? gradeUpTable.requiredItemList : new List<ItemMI>();
+        // このダイアログではRefreshUIでリストの更新をするためここでは行わない
 
         _infiniteScroll.Init(requiredItemList.Count, OnUpdate);
     }
