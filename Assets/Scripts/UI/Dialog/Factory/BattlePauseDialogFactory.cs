@@ -11,7 +11,11 @@ public class BattlePauseDialogFactory
         return Observable.Create<BattlePauseDialogResponse>(observer => {
             var param = new Dictionary<string, object>();
             param.Add("onClickClose", new Action(() => {
-                observer.OnNext(new BattlePauseDialogResponse());
+                observer.OnNext(new BattlePauseDialogResponse() { responseType = BattlePauseDialogResponseType.Close });
+                observer.OnCompleted();
+            }));
+            param.Add("onClickInterruption", new Action(() => {
+                observer.OnNext(new BattlePauseDialogResponse() { responseType = BattlePauseDialogResponseType.Interruption });
                 observer.OnCompleted();
             }));
             UIManager.Instance.OpenDialog<BattlePauseDialogUIScript>(param, true, DialogAnimationType.None);

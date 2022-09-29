@@ -20,6 +20,7 @@ public class FadeManager : SingletonMonoBehaviour<FadeManager>
     {
         UIManager.Instance.ShowTapBlocker();
         return DOVirtual.Float(_fade.Range, toValue, animationTime, value => _fade.Range = value)
+            .SetUpdate(true) // 一時停止中でも動作するように
             .OnCompleteAsObservable()
             .Do(_ => UIManager.Instance.TryHideTapBlocker())
             .AsUnitObservable();

@@ -287,6 +287,17 @@ public partial class ApiConnection
     }
 
     /// <summary>
+    /// バトル中断時に実行
+    /// </summary>
+    public static IObservable<BattleInterruptionApiResponse> BattleInterruption(string userBattleId)
+    {
+        return SendRequest<BattleInterruptionApiRequest, BattleInterruptionApiResponse>(BattleInterruptionApiInterface.functionName, new BattleInterruptionApiRequest()
+        {
+            userBattleId = userBattleId,
+        });
+    }
+
+    /// <summary>
     /// バトル終了時に実行
     /// </summary>
     public static IObservable<EndBattleApiResponse> EndBattle(string userBattleId)

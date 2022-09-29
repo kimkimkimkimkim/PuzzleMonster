@@ -46,7 +46,7 @@ public class BattleWindowUIScript : DummyWindowBase
     private IDisposable skillNameObservable;
     private IDisposable actionDescriptionObservable;
 
-    public void Init(string userMonsterPartyId, long questId)
+    public void Init(string userMonsterPartyId, long questId, string userBattleId)
     {
         userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
@@ -54,6 +54,21 @@ public class BattleWindowUIScript : DummyWindowBase
         _pauseButton.OnClickIntentAsObservable()
             .Do(_ => TimeManager.Instance.Pause())
             .SelectMany(_ => BattlePauseDialogFactory.Create(new BattlePauseDialogRequest()))
+            .SelectMany(res =>
+            {
+                switch (res.responseType)
+                {
+                    case BattlePauseDialogResponseType.Close:
+                        return Observable.ReturnUnit();
+                    case BattlePauseDialogResponseType.Interruption:
+                        return ApiConnection.BattleInterruption(userBattleId)
+                            .Do(_ => SaveDataUtil.Battle.ClearAllResumeSaveData())
+                            .SelectMany(_ => BattleManager.Instance.FadeOutObservable());
+                    case BattlePauseDialogResponseType.None:
+                    default:
+                        return Observable.ReturnUnit();
+                }
+            })
             .Do(_ => TimeManager.Instance.SpeedBy1())
             .Subscribe();
 

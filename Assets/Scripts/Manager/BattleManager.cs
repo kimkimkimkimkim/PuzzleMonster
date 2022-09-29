@@ -268,12 +268,9 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     private IObservable<Unit> FadeInObservable(Func<IObservable<Unit>> callbackObservable)
     {
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
-            .SelectMany(res =>
+            .Do(res =>
             {
-                battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
-                battleWindow.Init(userMonsterPartyId, quest.id); // TODO: 途中からの再生に対応できるように
                 HeaderFooterManager.Instance.Show(false);
-                return Observable.ReturnUnit();
             })
             .SelectMany(_ => Observable.WhenAll(
                 VisualFxManager.Instance.PlayQuestTitleFxObservable(quest.name),
@@ -285,13 +282,18 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     }
                 })
             ))
+            .Do(_ =>
+            {
+                battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
+                battleWindow.Init(userMonsterPartyId, quest.id, userBattleId);
+            })
             .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0));
     }
 
     /// <summary>
     /// 画面遷移（フェードアウト）時処理を実行
     /// </summary>
-    private IObservable<Unit> FadeOutObservable()
+    public IObservable<Unit> FadeOutObservable()
     {
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
             .Do(_ =>

@@ -53,7 +53,7 @@ public class HomeWindowUIScript : WindowBase
                 .SelectMany(res => {
                     if (res.dialogResponseType == DialogResponseType.No) {
                         SaveDataUtil.Battle.ClearAllResumeSaveData();
-                        return Observable.ReturnUnit();
+                        return ApiConnection.BattleInterruption(resumeUserBattleId).AsUnitObservable();
                     } else {
                         return BattleManager.Instance.ResumeBattleObservable(resumeQuestId, resumeUserMonsterPartyId, resumeUserBattleId, resumeBattleLogList);
                     }
