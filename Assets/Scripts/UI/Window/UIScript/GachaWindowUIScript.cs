@@ -4,6 +4,7 @@ using System.Linq;
 using GameBase;
 using PM.Enum.Gacha;
 using PM.Enum.Item;
+using PM.Enum.Monster;
 using PM.Enum.UI;
 using UniRx;
 using UnityEngine;
@@ -48,10 +49,40 @@ public class GachaWindowUIScript : WindowBase
             .Where(m => m.gachaBoxId == gachaBox.id)
             .Where(m => ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList))
             .ToList();
+        var monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().ToList();
+        var pickUpMonsterNum = gachaBox.pickUpMonsterIdList.Count;
+        var ssrMonsterWithoutPickUpNum = monsterList
+            .Where(m => m.rarity == MonsterRarity.SSR)
+            .Where(m => gachaBox.gachaBoxTypeList.Any(gachaBoxType => m.gachaBoxTypeList.Contains(gachaBoxType)))
+            .Count() 
+            - pickUpMonsterNum;
+        var eachPickUpMonsterEmissionRate = gachaBox.normalEmissionPercentByRarity.pickUpSsrPercent;
+        var eachSsrMonsterWithoutPickUpEmissionRate = (gachaBox.normalEmissionPercentByRarity.ssrAllPercent - (eachPickUpMonsterEmissionRate * pickUpMonsterNum)) / ssrMonsterWithoutPickUpNum;
+        var pickUpMonsterEmissionRateTextList = gachaBox.pickUpMonsterIdList
+            .Select(id => monsterList.First(m => m.id == id))
+            .Select(m => $"{m.name}: {eachPickUpMonsterEmissionRate}％")
+            .ToList();
+        var content =
+            "<color=\"\">■提供割合について</color>\n" +
+            $"SSR: {gachaBox.normalEmissionPercentByRarity.ssrAllPercent}％\n" +
+            $"{string.Join("\n", pickUpMonsterEmissionRateTextList)}\n" +
+            $"その他: {eachSsrMonsterWithoutPickUpEmissionRate}％\n" +
+            $"SR: {gachaBox.normalEmissionPercentByRarity.srAllPercent}％\n" +
+            $"R: {gachaBox.normalEmissionPercentByRarity.rAllPercent}％";
 
         scrollItem.SetText(gachaBox.title);
+        scrollItem.SetOnClickEmissionRateButtonAction(new Action(() =>
+        {
+            CommonDialogFactory.Create(new CommonDialogRequest()
+            {
+                commonDialogType = CommonDialogType.YesOnly,
+                title = "提供割合について",
+                content = content,
+            }).Subscribe();
+        }));
+        scrollItem.RefreshScroll(gachaBox.pickUpMonsterIdList);
         gachaBoxDetailList.ForEach(gachaBoxDetail => {
-            var gachaExecuteButton = UIManager.Instance.CreateContent<GachaExecuteButton>(scrollItem._executeButtonBase);
+            var gachaExecuteButton = UIManager.Instance.CreateContent<GachaExecuteButton>(scrollItem.executeButtonBase);
             var title = gachaBoxDetail.title;
             var canExecute = ConditionUtil.IsValid(ApplicationContext.userData, gachaBoxDetail.canExecuteConditionList);
             var cost = gachaBoxDetail.requiredItem.num;
