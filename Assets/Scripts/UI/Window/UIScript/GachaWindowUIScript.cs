@@ -49,35 +49,13 @@ public class GachaWindowUIScript : WindowBase
             .Where(m => m.gachaBoxId == gachaBox.id)
             .Where(m => ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList))
             .ToList();
-        var monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().ToList();
-        var pickUpMonsterNum = gachaBox.pickUpMonsterIdList.Count;
-        var ssrMonsterWithoutPickUpNum = monsterList
-            .Where(m => m.rarity == MonsterRarity.SSR)
-            .Where(m => gachaBox.gachaBoxTypeList.Any(gachaBoxType => m.gachaBoxTypeList.Contains(gachaBoxType)))
-            .Count() 
-            - pickUpMonsterNum;
-        var eachPickUpMonsterEmissionRate = gachaBox.normalEmissionPercentByRarity.pickUpSsrPercent;
-        var eachSsrMonsterWithoutPickUpEmissionRate = (gachaBox.normalEmissionPercentByRarity.ssrAllPercent - (eachPickUpMonsterEmissionRate * pickUpMonsterNum)) / ssrMonsterWithoutPickUpNum;
-        var pickUpMonsterEmissionRateTextList = gachaBox.pickUpMonsterIdList
-            .Select(id => monsterList.First(m => m.id == id))
-            .Select(m => $"{m.name}: {eachPickUpMonsterEmissionRate}％")
-            .ToList();
-        var content =
-            "<color=\"\">■提供割合について</color>\n" +
-            $"SSR: {gachaBox.normalEmissionPercentByRarity.ssrAllPercent}％\n" +
-            $"{string.Join("\n", pickUpMonsterEmissionRateTextList)}\n" +
-            $"その他: {eachSsrMonsterWithoutPickUpEmissionRate}％\n" +
-            $"SR: {gachaBox.normalEmissionPercentByRarity.srAllPercent}％\n" +
-            $"R: {gachaBox.normalEmissionPercentByRarity.rAllPercent}％";
 
         scrollItem.SetText(gachaBox.title);
         scrollItem.SetOnClickEmissionRateButtonAction(new Action(() =>
         {
-            CommonDialogFactory.Create(new CommonDialogRequest()
+            GachaEmissionRateDialogFactory.Create(new GachaEmissionRateDialogRequest()
             {
-                commonDialogType = CommonDialogType.YesOnly,
-                title = "提供割合について",
-                content = content,
+                gachaBoxId = gachaBox.id,
             }).Subscribe();
         }));
         scrollItem.RefreshScroll(gachaBox.pickUpMonsterIdList);
