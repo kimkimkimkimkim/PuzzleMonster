@@ -20,6 +20,13 @@ public class GachaWindowUIScript : WindowBase
     {
         base.Init(info);
 
+        RefreshScroll();
+    }
+
+    private void RefreshScroll()
+    {
+        _infiniteScroll.Clear();
+
         gachaBoxList = MasterRecord.GetMasterOf<GachaBoxMB>().GetAll()
             .Where(gachaBox =>
             {
@@ -28,13 +35,6 @@ public class GachaWindowUIScript : WindowBase
                 return gachaBoxDetailList.Any(gachaBoxDetail => ConditionUtil.IsValid(ApplicationContext.userData, gachaBoxDetail.displayConditionList));
             })
             .ToList();
-
-        RefreshScroll();
-    }
-
-    private void RefreshScroll()
-    {
-        _infiniteScroll.Clear();
 
         _infiniteScroll.Init(gachaBoxList.Count, OnUpdateItem);
     }
@@ -93,7 +93,9 @@ public class GachaWindowUIScript : WindowBase
                     {
                         var gachaAnimation = UIManager.Instance.CreateContent<GachaAnimation>(UIManager.Instance.gachaAnimationParent);
                         return gachaAnimation.PlayGachaAnimationObservable();
-                    }).Select(_ => res);
+                    })
+                    .Do(_ => RefreshScroll())
+                    .Select(_ => res);
             })
             .SelectMany(res =>
             {
