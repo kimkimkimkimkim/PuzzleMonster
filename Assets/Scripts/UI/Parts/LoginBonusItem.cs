@@ -1,5 +1,6 @@
 using GameBase;
 using System;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,9 @@ public class LoginBonusItem : MonoBehaviour
     [SerializeField] Sprite _futureFrameSprite;
     [SerializeField] Color _pastIconColor;
     [SerializeField] Color _normalIconColor;
+    [SerializeField] Button _button;
+
+    private IDisposable onLongClickButtonObservable;
 
     public IObservable<Unit> SetUIObservable(UserLoginBonusInfo userLoginBonus, int dayNum, LoginBonusItemState state)
     {
@@ -41,8 +45,30 @@ public class LoginBonusItem : MonoBehaviour
                 _checkImage.gameObject.SetActive(state == LoginBonusItemState.Past);
                 _focusImage.gameObject.SetActive(state == LoginBonusItemState.Today);
                 _itemIconImage.color = iconImageColor;
+                SetShowItemDetailDialogAction(rewardItem);
             })
             .AsUnitObservable();
+    }
+
+    /// <summary>
+    /// 長押し時にアイテム詳細ダイアログを表示するようにする
+    /// </summary>
+    public void SetShowItemDetailDialogAction(ItemMI item) {
+        if (onLongClickButtonObservable != null) {
+            onLongClickButtonObservable.Dispose();
+            onLongClickButtonObservable = null;
+        }
+        
+        onLongClickButtonObservable = _button.OnLongClickIntentAsObservable()
+            .SelectMany(_ => {
+                var itemDescription = MasterRecord.GetMasterOf<ItemDescriptionMB>().GetAll().FirstOrDefault(m => m.itemType == item.itemType && m.itemId == item.itemId);
+                if (itemDescription == null) {
+                    return Observable.ReturnUnit();
+                } else {
+                    return ItemDetailDialogFactory.Create(new ItemDetailDialogRequest() { itemDescription = itemDescription }).AsUnitObservable();
+                }
+            })
+            .Subscribe();
     }
 
     public enum LoginBonusItemState
