@@ -6,6 +6,7 @@ using PM.Enum.Item;
 using PM.Enum.UI;
 using UniRx;
 using System;
+using System.Linq;
 
 [ResourcePath("UI/Parts/Parts-IconItem")]
 public class IconItem : MonoBehaviour
@@ -32,7 +33,10 @@ public class IconItem : MonoBehaviour
 
     public Toggle toggle { get { return _toggle; } private set { _toggle = value; } }
 
+    private ItemType itemType;
+    private long itemId;
     private IDisposable onClickButtonObservable;
+    private IDisposable onLongClickButtonObservable;
 
     public void ShowIcon(bool isShow)
     {
@@ -41,6 +45,9 @@ public class IconItem : MonoBehaviour
 
     public void SetIcon(ItemMI item, bool showNumTextAtOne = false)
     {
+        itemType = item.itemType;
+        itemId = item.itemId;
+
         var iconColorType = ClientItemUtil.GetIconColorType(item);
         var iconImageType = ClientItemUtil.GetIconImageType(item.itemType);
         var numText = item.num <= 1 && !showNumTextAtOne ? "" : item.num.ToString();
@@ -48,10 +55,14 @@ public class IconItem : MonoBehaviour
         SetFrameImage(iconColorType);
         SetIconImage(iconImageType, item.itemId);
         SetNumText(numText);
+        SetShowItemDetailDialogAction(true);
     }
 
     public void SetIcon(ItemType itemType, long itemId)
     {
+        this.itemType = itemType;
+        this.itemId = itemId;
+
         var item = new ItemMI() { itemType = itemType, itemId = itemId };
         SetIcon(item);
     }
@@ -132,5 +143,28 @@ public class IconItem : MonoBehaviour
     public void ShowStack(bool isShow, int stackNum = 0) {
         _stackIconPanel.SetActive(isShow);
         _stackNumText.text = stackNum.ToString();
+    }
+
+    /// <summary>
+    /// 長押し時にアイテム詳細ダイアログを表示するようにする
+    /// </summary>
+    public void SetShowItemDetailDialogAction(bool isSet) {
+        if (onLongClickButtonObservable != null) {
+            onLongClickButtonObservable.Dispose();
+            onLongClickButtonObservable = null;
+        }
+
+        if (isSet) {
+            onLongClickButtonObservable = _button.OnLongClickIntentAsObservable()
+                .SelectMany(_ => {
+                    var itemDescription = MasterRecord.GetMasterOf<ItemDescriptionMB>().GetAll().FirstOrDefault(m => m.itemType == itemType && m.itemId == itemId);
+                    if (itemDescription == null) {
+                        return Observable.ReturnUnit();
+                    } else {
+                        return ItemDetailDialogFactory.Create(new ItemDetailDialogRequest() { itemDescription = itemDescription }).AsUnitObservable();
+                    }
+                })
+                .Subscribe();
+        }
     }
 }
