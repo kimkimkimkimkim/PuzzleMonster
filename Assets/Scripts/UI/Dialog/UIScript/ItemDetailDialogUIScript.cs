@@ -10,6 +10,7 @@ public class ItemDetailDialogUIScript : DialogBase
 {
     [SerializeField] protected Button _closeButton;
     [SerializeField] protected IconItem _iconItem;
+    [SerializeField] protected Text _nameText;
     [SerializeField] protected Text _contentText;
 
     public override void Init(DialogInfo info)
@@ -33,6 +34,7 @@ public class ItemDetailDialogUIScript : DialogBase
 
     private void SetInfo(ItemDescriptionMB itemDescription) {
         _iconItem.SetIcon(itemDescription.itemType, itemDescription.itemId);
+        _nameText.text = itemDescription.name;
         _contentText.text = itemDescription.description;
     }
 
