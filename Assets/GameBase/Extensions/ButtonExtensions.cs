@@ -10,17 +10,19 @@ using UnityEngine.UI;
 namespace GameBase {
 
     public static class ButtonExtension {
+        
+        public static IObservable<Unit> OnLongClickIntentAsObservable(this Button button, double ms = 350) {
+            DateTimeOffset pointerDownTimeStamp;
 
-        public static IObservable<long> OnHoldAsObservable(this Button button, double ms = 350, Action releaseEvent = null) {
             return button.OnPointerDownAsObservable()
+                .Timestamp()
+                .Do(t => pointerDownTimeStamp = t.Timestamp)
                 .SelectMany(_ => Observable.Timer(TimeSpan.FromMilliseconds(ms)))
-                .TakeUntil(button.OnPointerUpAsObservable().
-                    Do(_ => {
-                        if (releaseEvent != null)
-                            releaseEvent();
-                    }))
+                .TakeUntil(button.OnPointerUpAsObservable().Timestamp().Where(t => {
+                    return (t.Timestamp - pointerDownTimeStamp).TotalMilliseconds < ms;
+                }))
                 .RepeatUntilDestroy(button)
-                .AsObservable();
+                .AsUnitObservable();
         }
 
         public static IObservable<Unit> OnClickIntentAsObservable(this Button button, ButtonClickIntent intent = ButtonClickIntent.IntervalTap, bool isAnimation = true, bool isSE = true) {
