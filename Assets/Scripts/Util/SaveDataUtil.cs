@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using GameBase;
+using PM.Enum.Monster;
+using PM.Enum.SortOrder;
 using UnityEngine;
 
 public class SaveDataUtil
@@ -176,6 +179,47 @@ public class SaveDataUtil
             SetResumeUserMonsterPartyId(resumeUserMonsterPartyIdDefaultValue);
             SetResumeUserBattleId(resumeUserBattleIdDefaultValue);
             SetResumeBattleLogList(resumeBattleLogListDefaultValue);
+        }
+        #endregion
+    }
+
+    public class SortOrder {
+        #region Key
+        /// <summary>
+        /// モンスターBOX画面における属性絞り込み値
+        /// </summary>
+        private static string FILTER_ATTRIBUTE_MONSTER_BOX = "sortOrder/filterAttributeMonsterBox";
+
+        /// <summary>
+        /// モンスターBOX画面における並び順タイプ
+        /// </summary>
+        private static string SORT_ORDER_TYPE_MONSTER_BOX = "sortOrder/sortOrderTypeMonsterBox";
+        #endregion
+
+        #region DefaultValue
+        private static List<int> filterAttributeMonsterBoxDefaultValue = new List<int>();
+        private static int sortOrderMonsterBoxDefaultValue = 1;
+        #endregion
+
+        #region Get
+        public static List<MonsterAttribute> GetFilterAttributeMonsterBox() {
+            return SaveData.GetList(FILTER_ATTRIBUTE_MONSTER_BOX, filterAttributeMonsterBoxDefaultValue).Select(i => (MonsterAttribute)i).ToList();
+        }
+
+        public static SortOrderTypeMonster GetSortOrderTypeMonsterBox() {
+            return (SortOrderTypeMonster)SaveData.GetInt(SORT_ORDER_TYPE_MONSTER_BOX, sortOrderMonsterBoxDefaultValue);
+        }
+        #endregion
+
+        #region Set
+        public static void SetFilterAttriuteMonsterBox(List<MonsterAttribute> list) {
+            SaveData.SetList(FILTER_ATTRIBUTE_MONSTER_BOX, list.Select(a => (int)a).ToList());
+            SaveData.Save();
+        }
+
+        public static void SetSortOrderTypeMonster(SortOrderTypeMonster sortOrderType) {
+            SaveData.SetInt(SORT_ORDER_TYPE_MONSTER_BOX, (int)sortOrderType);
+            SaveData.Save();
         }
         #endregion
     }
