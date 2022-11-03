@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using GameBase;
 using PM.Enum.SortOrder;
@@ -11,6 +11,7 @@ using UnityEngine.UI;
 public class MonsterBoxWindowUIScript : WindowBase
 {
     [SerializeField] protected Button _sortOrderButton;
+    [SerializeField] protected Text _sortOrderButtonText;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
 
     private List<UserMonsterInfo> userMonsterList;
@@ -75,13 +76,19 @@ public class MonsterBoxWindowUIScript : WindowBase
         var filterAttribute = SaveDataUtil.SortOrder.GetFilterAttributeMonsterBox();
         var sortOrderType = SaveDataUtil.SortOrder.GetSortOrderTypeMonsterBox();
 
-        // �i�荞��
+        // ボタンのUI更新
+        var sortOrderButtonText = "";
+        sortOrderButtonText += sortOrderType.Name();
+        sortOrderButtonText += $"\n<size=20>{(!filterAttribute.Any() ? "<color=\"#FFFFFF\">絞り込みなし</color>" : "<color=\"#F4D487\">絞り込みあり</color>")}</size>";
+        _sortOrderButtonText.text = sortOrderButtonText;
+
+        // 絞り込み
         var filteredUserMonsterList = userMonsterList.Where(u => {
             var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId);
             return !filterAttribute.Any() || filterAttribute.Contains(monster.attribute);
         }).ToList();
 
-        // ���ѕς�
+        // 並び変え
         IOrderedEnumerable<UserMonsterInfo> orderedEnumerable;
         switch (sortOrderType) {
             case SortOrderTypeMonster.Id:

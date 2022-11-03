@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +68,9 @@ public class SortOrderMonsterDialogUIScript : DialogBase
 
     private List<MonsterAttribute> GetSelectedFilterAttribute() 
     {
+        // もし全属性を選択していたら空のリストを返す
+        if (_filterAttributeToggleList.All(toggle => toggle.isOn)) return new List<MonsterAttribute>();
+
         return _filterAttributeToggleList
             .Select((toggle, index) => (toggle, index))
             .Where(taple => taple.toggle.isOn)
