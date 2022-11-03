@@ -1,5 +1,6 @@
 ﻿using System;
 using GameBase;
+using PM.Enum.Item;
 using PM.Enum.Monster;
 using PM.Enum.UI;
 using UniRx;
@@ -23,6 +24,12 @@ public class PMAddressableAssetUtil
     {
         var iconImageType = ClientItemUtil.GetIconImageType(item.itemType);
         return GetIconImageSpriteObservable(iconImageType, item.itemId);
+    }
+
+    public static IObservable<Sprite> GetIconImageSpriteObservable(ItemType itemType, long itemId)
+    {
+        var iconImageType = ClientItemUtil.GetIconImageType(itemType);
+        return GetIconImageSpriteObservable(iconImageType, itemId);
     }
 
     /// <summary>

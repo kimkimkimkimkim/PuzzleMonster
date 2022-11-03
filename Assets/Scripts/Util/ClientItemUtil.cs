@@ -85,7 +85,7 @@ public static class ClientItemUtil
     /// <summary>
     /// 指定したアイテムの所持数を取得する
     /// </summary>
-    public static int GetPossessedNum(ItemType itemType, long itemId)
+    public static long GetPossessedNum(ItemType itemType, long itemId)
     {
         switch (itemType)
         {

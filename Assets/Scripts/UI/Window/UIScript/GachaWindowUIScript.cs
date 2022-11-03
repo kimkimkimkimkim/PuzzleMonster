@@ -64,10 +64,14 @@ public class GachaWindowUIScript : WindowBase
             var title = gachaBoxDetail.title;
             var canExecute = ConditionUtil.IsValid(ApplicationContext.userData, gachaBoxDetail.canExecuteConditionList);
             var cost = gachaBoxDetail.requiredItem.num;
+            var requiredItem = gachaBoxDetail.requiredItem;
+            var possessedRequiredItemNum = ClientItemUtil.GetPossessedNum(requiredItem.itemType, requiredItem.itemId);
+            var enoughRequiredItem = possessedRequiredItemNum >= cost;
 
-            gachaExecuteButton.ShowGrayoutPanel(!canExecute);
+            gachaExecuteButton.ShowGrayoutPanel(!canExecute || !enoughRequiredItem);
             gachaExecuteButton.SetText(title);
             gachaExecuteButton.SetCostText(cost.ToString());
+            gachaExecuteButton.SetCostIcon(requiredItem);
             gachaExecuteButton.SetOnClickAction(() => OnClickGachaExecuteButtonAction(gachaBoxDetail));
         });
     }
@@ -75,14 +79,15 @@ public class GachaWindowUIScript : WindowBase
     private void OnClickGachaExecuteButtonAction(GachaBoxDetailMB gachaBoxDetail) {
         const float FADE_ANIMATION_TIME = 0.3f;
 
+        var name = ClientItemUtil.GetName(gachaBoxDetail.requiredItem);
         var cost = gachaBoxDetail.requiredItem.num;
         var num = gachaBoxDetail.gachaExecuteType.Num();
 
         CommonDialogFactory.Create(new CommonDialogRequest()
         {
             commonDialogType = CommonDialogType.NoAndYes,
-            title = "開発用ガチャ",
-            content = $"オーブを{cost}個使用してガチャを{num}回まわしますか？",
+            title = "確認",
+            content = $"{name}を{cost}個使用してガチャを{num}回まわしますか？",
         })
             .Where(res => res.dialogResponseType == DialogResponseType.Yes)
             .SelectMany(_ => ApiConnection.ExecuteGacha(gachaBoxDetail.id))

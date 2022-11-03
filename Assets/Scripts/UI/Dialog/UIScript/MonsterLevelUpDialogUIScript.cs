@@ -264,7 +264,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     /// 所持経験値テキストで使用する文字列を取得
     /// </summary>
     /// <returns>The exp number text.</returns>
-    private string GetPossessionExpNumText(int currentNum,int afterNum)
+    private string GetPossessionExpNumText(long currentNum,long afterNum)
     {
         return $"{currentNum} <color=\"#EC2E41\">→ {afterNum}</color>";
     }
