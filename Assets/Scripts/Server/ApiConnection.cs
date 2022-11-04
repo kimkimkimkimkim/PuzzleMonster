@@ -104,7 +104,7 @@ public partial class ApiConnection
                         .Do(_ =>
                         {
                             // UIの更新
-                            HeaderFooterManager.Instance.UpdateVirutalCurrencyText();
+                            HeaderFooterManager.Instance.UpdatePropertyPanelText();
                             HeaderFooterManager.Instance.UpdateUserDataUI();
                             HeaderFooterManager.Instance.SetStaminaText();
                             HeaderFooterManager.Instance.ActivateBadge();

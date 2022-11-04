@@ -1,5 +1,6 @@
 ﻿using GameBase;
-using UniRx;
+using PM.Enum.UI;
+using System.Collections.Generic;
 
 public class HeaderFooterManager : SingletonMonoBehaviour<HeaderFooterManager>
 {
@@ -11,12 +12,20 @@ public class HeaderFooterManager : SingletonMonoBehaviour<HeaderFooterManager>
     }
 
     /// <summary>
-    /// 仮想通貨の所持数を更新
+    /// プロパティパネルの表示を更新
     /// </summary>
-    public void UpdateVirutalCurrencyText()
+    public void UpdatePropertyPanelText()
     {
         if (uiScript == null) return;
-        uiScript.UpdateVirtualCurrencyText();
+        uiScript.UpdatePropertyPanelText();
+    }
+
+    /// <summary>
+    /// 指定したプロパティパネルを指定した順序(右上から)で表示
+    /// </summary>
+    public void ShowPropertyPanel(List<PropertyPanelType> propertyPanelTypeList) {
+        if (uiScript == null) return;
+        uiScript.ShowPropertyPanel(propertyPanelTypeList);
     }
 
     /// <summary>

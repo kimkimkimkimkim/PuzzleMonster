@@ -6,12 +6,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using PM.Enum.UI;
+using System.Collections.Generic;
 
 [ResourcePath("UI/Window/Window-HeaderFooter")]
 public class HeaderFooterWindowUIScript : WindowBase
 {
     [SerializeField] protected Text _orbText;
     [SerializeField] protected Text _coinText;
+    [SerializeField] protected Text _gachaTicketText;
+    [SerializeField] protected Text _ssrGachaTicketText;
     [SerializeField] protected Text _staminaText;
     [SerializeField] protected Text _staminaCountdownText;
     [SerializeField] protected Text _userRankText;
@@ -27,6 +30,7 @@ public class HeaderFooterWindowUIScript : WindowBase
     [SerializeField] protected GameObject _headerPanel;
     [SerializeField] protected GameObject _footerPanel;
     [SerializeField] protected GameObject _homeTabBadge;
+    [SerializeField] protected List<GameObject> _propertyPanelBaseList;
     [SerializeField] protected Button _staminaButton;
     [SerializeField] protected Button _arenaBlockerButton;
 
@@ -47,6 +51,7 @@ public class HeaderFooterWindowUIScript : WindowBase
                 if (UIManager.Instance.currentWindowInfo == null || !(UIManager.Instance.currentWindowInfo.component is HomeWindowUIScript))
                 {
                     UIManager.Instance.CloseAllWindow(true);
+                    ShowPropertyPanel(new List<PropertyPanelType>() { PropertyPanelType.Coin, PropertyPanelType.Orb });
                     HomeWindowFactory.Create(new HomeWindowRequest()).Take(1).Subscribe();
                 }
             })
@@ -59,6 +64,7 @@ public class HeaderFooterWindowUIScript : WindowBase
                 if (UIManager.Instance.currentWindowInfo == null || !(UIManager.Instance.currentWindowInfo.component is MonsterMenuWindowUIScript))
                 {
                     UIManager.Instance.CloseAllWindow(true);
+                    ShowPropertyPanel(new List<PropertyPanelType>() { PropertyPanelType.Coin, PropertyPanelType.Orb });
                     MonsterMenuWindowFactory.Create(new MonsterMenuWindowRequest()).Take(1).Subscribe();
                 }
             })
@@ -87,6 +93,7 @@ public class HeaderFooterWindowUIScript : WindowBase
                 if (UIManager.Instance.currentWindowInfo == null || !(UIManager.Instance.currentWindowInfo.component is GachaWindowUIScript))
                 {
                     UIManager.Instance.CloseAllWindow(true);
+                    ShowPropertyPanel(new List<PropertyPanelType>() { PropertyPanelType.Coin, PropertyPanelType.Orb, PropertyPanelType.GachaTicket, PropertyPanelType.SsrGachaTicket });
                     GachaWindowFactory.Create(new GachaWindowRequest()).Take(1).Subscribe();
                 }
             })
@@ -99,6 +106,7 @@ public class HeaderFooterWindowUIScript : WindowBase
                 if (UIManager.Instance.currentWindowInfo == null || !(UIManager.Instance.currentWindowInfo.component is ShopWindowUIScript))
                 {
                     UIManager.Instance.CloseAllWindow(true);
+                    ShowPropertyPanel(new List<PropertyPanelType>() { PropertyPanelType.Coin, PropertyPanelType.Orb });
                     ShopWindowFactory.Create(new ShopWindowRequest()).Take(1).Subscribe();
                 }
             })
@@ -115,27 +123,36 @@ public class HeaderFooterWindowUIScript : WindowBase
 
         Observable.Timer(TimeSpan.FromSeconds(2)).Do(_ => UIManager.Instance.TryHideFullScreenLoadingView()).Take(1).Subscribe();
 
-        UpdateVirtualCurrencyText();
+        UpdatePropertyPanelText();
+        ShowPropertyPanel(new List<PropertyPanelType>() { PropertyPanelType.Coin, PropertyPanelType.Orb });
         SetStaminaUI();
         UpdateUserDataUI();
         ActivateBadge();
     }
 
     /// <summary>
-    /// 仮想通貨の所持数表示を更新
+    /// プロパティパネルの表示を更新
     /// </summary>
-    public void UpdateVirtualCurrencyText()
+    public void UpdatePropertyPanelText()
     {
-        ApiConnection.GetUserInventory()
-            .Do(res =>
-            {
-                foreach (var virtualCurrency in res.VirtualCurrency)
-                {
-                    if (virtualCurrency.Key == VirtualCurrencyType.OB.ToString()) _orbText.text = virtualCurrency.Value.ToString();
-                    if (virtualCurrency.Key == VirtualCurrencyType.CN.ToString()) _coinText.text = virtualCurrency.Value.ToString();
-                }
-            })
-            .Subscribe();
+        _orbText.text = ClientItemUtil.GetPossessedNum(ItemType.VirtualCurrency, (long)VirtualCurrencyType.OB).ToString();
+        _coinText.text = ClientItemUtil.GetPossessedNum(ItemType.VirtualCurrency, (long)VirtualCurrencyType.CN).ToString();
+        _gachaTicketText.text = ClientItemUtil.GetPossessedNum(ItemType.Property, (long)PropertyType.GachaTicket).ToString();
+        _ssrGachaTicketText.text = ClientItemUtil.GetPossessedNum(ItemType.Property, (long)PropertyType.SsrGachaTicket).ToString();
+    }
+
+    /// <summary>
+    /// 指定したプロパティパネルを指定した順序(右上から)で表示
+    /// </summary>
+    public void ShowPropertyPanel(List<PropertyPanelType> propertyPanelTypeList) {
+        _propertyPanelBaseList.ForEach((p,i) => {
+            var propertyPanelType = (PropertyPanelType)i;
+            var index = propertyPanelTypeList.IndexOf(propertyPanelType);
+            var siblingIndex = index >= 0 ? index : propertyPanelTypeList.Count;
+
+            p.SetActive(index >= 0);
+            p.transform.SetSiblingIndex(siblingIndex);
+        });
     }
 
     /// <summary>
