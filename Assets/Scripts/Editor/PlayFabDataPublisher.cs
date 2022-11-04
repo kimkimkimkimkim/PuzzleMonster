@@ -119,8 +119,12 @@ public partial class PlayFabDataPublisher : EditorWindow
                     return cell.StringCellValue;
             }
         }
-        catch
+        catch(Exception e)
         {
+            // 数値が入力されているセルを文字列で受け取ろうとした際のエラーは適切に回収する
+            if(e.Message == "Cannot get a text value from a numeric cell") return $"\\\"{cell.NumericCellValue.ToString()}\\\"";
+
+            // それ以外は空文字を返す
             return "";
         }
     }
