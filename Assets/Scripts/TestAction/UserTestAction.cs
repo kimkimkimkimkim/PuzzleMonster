@@ -38,7 +38,7 @@ public class UserTestAction : ITestAction
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
                     .SelectMany(_ => ApiConnection.GrantItemsToUser(itemId))
-                    .Do(res => HeaderFooterManager.Instance.UpdateVirutalCurrencyText())
+                    .Do(res => HeaderFooterManager.Instance.UpdatePropertyPanelText())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
@@ -64,7 +64,7 @@ public class UserTestAction : ITestAction
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
                     .SelectMany(_ => ApiConnection.GrantItemsToUser(itemId))
-                    .Do(res => HeaderFooterManager.Instance.UpdateVirutalCurrencyText())
+                    .Do(res => HeaderFooterManager.Instance.UpdatePropertyPanelText())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
@@ -90,7 +90,7 @@ public class UserTestAction : ITestAction
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
                     .SelectMany(_ => ApiConnection.GrantItemsToUser(itemId))
-                    .Do(res => HeaderFooterManager.Instance.UpdateVirutalCurrencyText())
+                    .Do(res => HeaderFooterManager.Instance.UpdatePropertyPanelText())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
@@ -116,7 +116,7 @@ public class UserTestAction : ITestAction
                 })
                     .Where(res => res.dialogResponseType == DialogResponseType.Yes)
                     .SelectMany(_ => ApiConnection.GrantItemsToUser(itemId))
-                    .Do(res => HeaderFooterManager.Instance.UpdateVirutalCurrencyText())
+                    .Do(res => HeaderFooterManager.Instance.UpdatePropertyPanelText())
                     .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
                     {
                         commonDialogType = CommonDialogType.YesOnly,
