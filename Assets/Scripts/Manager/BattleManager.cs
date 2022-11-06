@@ -174,7 +174,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                             .SelectMany(res =>
                             {
                                 var isPlayBossWaveEffect = battleLog.waveCount == maxWaveCount;
-                                if (isPlayBossWaveEffect)
+                                if (isPlayBossWaveEffect && quest.isLastWaveBoss)
                                 {
                                     return battleWindow.PlayBossWaveAnimationObservable();
                                 }

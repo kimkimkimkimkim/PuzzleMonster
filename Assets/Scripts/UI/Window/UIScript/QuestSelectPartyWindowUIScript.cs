@@ -1,4 +1,4 @@
-using GameBase;
+ï»¿using GameBase;
 using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
@@ -25,12 +25,12 @@ public class QuestSelectPartyWindowUIScript : WindowBase
     private string selectedUserMonsterId = null;
     private List<UserMonsterInfo> userMonsterList;
     private UserMonsterPartyInfo _currentUserMonsterParty;
-    // TODO: ƒT[ƒo[‚©‚çnull‚ª“ü‚Á‚½ó‘Ô‚Å•Ô‚Á‚Ä‚­‚é‚æ‚¤‚É‚È‚Á‚½‚ç‚±‚ÌƒvƒƒpƒeƒB‚Ííœ
+    // TODO: ã‚µãƒ¼ãƒãƒ¼ã‹ã‚‰nullãŒå…¥ã£ãŸçŠ¶æ…‹ã§è¿”ã£ã¦ãã‚‹ã‚ˆã†ã«ãªã£ãŸã‚‰ã“ã®ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã¯å‰Šé™¤
     private UserMonsterPartyInfo currentUserMonsterParty
     {
         get
         {
-            // ƒp[ƒeƒBî•ñ‚ª–³‚¯‚ê‚Îƒ_ƒ~[ƒf[ƒ^‚ğì¬
+            // ãƒ‘ãƒ¼ãƒ†ã‚£æƒ…å ±ãŒç„¡ã‘ã‚Œã°ãƒ€ãƒŸãƒ¼ãƒ‡ãƒ¼ã‚¿ã‚’ä½œæˆ
             if (_currentUserMonsterParty == null)
             {
                 _currentUserMonsterParty = new UserMonsterPartyInfo()
@@ -41,7 +41,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 };
             };
 
-            // ƒp[ƒeƒBƒƒ“ƒo[”‚É’B‚µ‚Ä‚¢‚È‚¯‚ê‚Îƒ_ƒ~[ƒf[ƒ^‚ğ’Ç‰Á
+            // ãƒ‘ãƒ¼ãƒ†ã‚£ãƒ¡ãƒ³ãƒãƒ¼æ•°ã«é”ã—ã¦ã„ãªã‘ã‚Œã°ãƒ€ãƒŸãƒ¼ãƒ‡ãƒ¼ã‚¿ã‚’è¿½åŠ 
             while(_currentUserMonsterParty.userMonsterIdList.Count < ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
             {
                 _currentUserMonsterParty.userMonsterIdList.Add(null);
@@ -63,31 +63,54 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         currentUserMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == currentPartyIndex)?.Clone();
         userMonsterList = ApplicationContext.userData.userMonsterList.OrderBy(u => u.monsterId).ToList();
 
-        // ‚Í‚¸‚·ƒAƒCƒRƒ“‚æ‚¤‚Énullƒf[ƒ^‚ğæ“ª‚É’Ç‰Á
+        // ã¯ãšã™ã‚¢ã‚¤ã‚³ãƒ³ã‚ˆã†ã«nullãƒ‡ãƒ¼ã‚¿ã‚’å…ˆé ­ã«è¿½åŠ 
         userMonsterList.Insert(0, null);
 
         _titleText.text = quest.name;
 
         _okButton.OnClickIntentAsObservable()
-            .SelectMany(_ =>
+            .SelectMany(res =>
             {
-                var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.id == currentUserMonsterParty.id);
-                if(userMonsterParty != null && userMonsterParty.IsSame(currentUserMonsterParty))
+                var isValid = ConditionUtil.IsValid(ApplicationContext.userData, quest.displayConditionList) && ConditionUtil.IsValid(ApplicationContext.userData, quest.canExecuteConditionList);
+                isValid = false;
+                if (isValid)
                 {
-                    // Œ»İ‘I‘ğ’†‚Ìƒp[ƒeƒBî•ñ‚ª‘¶İ‚µ‰½‚à•ÏX‚ª‚È‚¯‚ê‚Î‚»‚Ì‚Ü‚Üi‚Ş
-                    return Observable.ReturnUnit();
+                    // ãƒãƒˆãƒ«ã‚’å®Ÿè¡Œ
+                    return Observable.ReturnUnit()
+                        .SelectMany(_ =>
+                        {
+                            var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.id == currentUserMonsterParty.id);
+                            if (userMonsterParty != null && userMonsterParty.IsSame(currentUserMonsterParty))
+                            {
+                                // ç¾åœ¨é¸æŠä¸­ã®ãƒ‘ãƒ¼ãƒ†ã‚£æƒ…å ±ãŒå­˜åœ¨ã—ä½•ã‚‚å¤‰æ›´ãŒãªã‘ã‚Œã°ãã®ã¾ã¾é€²ã‚€
+                                return Observable.ReturnUnit();
+                            }
+                            else
+                            {
+                                // å¤‰æ›´ãŒåŠ ãˆã‚‰ã‚Œã¦ã„ãŸå ´åˆã¯ãƒ¦ãƒ¼ã‚¶ãƒ¼ãƒ‡ãƒ¼ã‚¿ã‚’æ›´æ–°ã™ã‚‹
+                                return ApiConnection.UpdateUserMosnterFormation(currentPartyIndex, currentUserMonsterParty.userMonsterIdList)
+                                    .Do(resp => currentUserMonsterParty = resp.userMonsterParty)
+                                    .AsUnitObservable();
+                            }
+                        })
+                        .SelectMany(_ => BattleManager.Instance.StartBattleObservable(questId, currentUserMonsterParty.id));
                 }
                 else
                 {
-                    // •ÏX‚ª‰Á‚¦‚ç‚ê‚Ä‚¢‚½ê‡‚Íƒ†[ƒU[ƒf[ƒ^‚ğXV‚·‚é
-                    return ApiConnection.UpdateUserMosnterFormation(currentPartyIndex, currentUserMonsterParty.userMonsterIdList)
-                        .Do(res => currentUserMonsterParty = res.userMonsterParty)
+                    // ã‚¯ã‚¨ã‚¹ãƒˆå®Ÿè¡Œæ¡ä»¶ã‚’æº€ãŸã—ã¦ã„ãªã„å ´åˆã¯ãƒ›ãƒ¼ãƒ ç”»é¢ã«æˆ»ã‚‹
+                    return CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
+                        title = "ç¢ºèª",
+                        content = "ã‚¯ã‚¨ã‚¹ãƒˆå®Ÿè¡Œæ¡ä»¶ã‚’æº€ãŸã—ã¦ã„ã¾ã›ã‚“\nãƒ›ãƒ¼ãƒ ç”»é¢ã«æˆ»ã‚Šã¾ã™",
+                        commonDialogType = CommonDialogType.YesOnly,
+                    })
+                        .Do(_ =>
+                        {
+                            UIManager.Instance.CloseAllWindow(true);
+                            HomeWindowFactory.Create(new HomeWindowRequest()).Subscribe();
+                        })
                         .AsUnitObservable();
                 }
-            })
-            .SelectMany(_ =>
-            {
-                return BattleManager.Instance.StartBattleObservable(questId, currentUserMonsterParty.id);
             })
             .Subscribe();
 
@@ -100,20 +123,20 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                         return CommonDialogFactory.Create(new CommonDialogRequest()
                         {
                             commonDialogType = CommonDialogType.YesOnly,
-                            content = "ƒ‚ƒ“ƒXƒ^[‚ğ1‘ÌˆÈã‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢",
+                            content = "ãƒ¢ãƒ³ã‚¹ã‚¿ãƒ¼ã‚’1ä½“ä»¥ä¸Šé¸æŠã—ã¦ãã ã•ã„",
                         }).AsUnitObservable();
                     case GrayoutReason.NotEnoughStamina:
                         return CommonDialogFactory.Create(new CommonDialogRequest()
                         {
                             commonDialogType = CommonDialogType.YesOnly,
-                            content = "’§í‚·‚é‚½‚ß‚ÌƒXƒ^ƒ~ƒi‚ª‘«‚è‚Ü‚¹‚ñ",
+                            content = "æŒ‘æˆ¦ã™ã‚‹ãŸã‚ã®ã‚¹ã‚¿ãƒŸãƒŠãŒè¶³ã‚Šã¾ã›ã‚“",
                         }).AsUnitObservable();
                     case GrayoutReason.NotEnoughMaxStamina:
                         var rank = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.stamina >= quest.consumeStamina)?.rank ?? 0;
                         return CommonDialogFactory.Create(new CommonDialogRequest()
                         {
                             commonDialogType = CommonDialogType.YesOnly,
-                            content = $"‚±‚ÌƒNƒGƒXƒg‚Íƒ‰ƒ“ƒN{rank}ˆÈã‚Å’§í‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·",
+                            content = $"ã“ã®ã‚¯ã‚¨ã‚¹ãƒˆã¯ãƒ©ãƒ³ã‚¯{rank}ä»¥ä¸Šã§æŒ‘æˆ¦ã™ã‚‹ã“ã¨ãŒã§ãã¾ã™",
                         }).AsUnitObservable();
                     default:
                         return Observable.ReturnUnit();
@@ -135,7 +158,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 .Where(isOn => isOn)
                 .Do(_ =>
                 {
-                    var partyIndex = tab.value; // ‚±‚±‚Å‚Íƒ^ƒu‚Ì’l‚ªƒp[ƒeƒBƒCƒ“ƒfƒbƒNƒX‚É‘Î‰‚·‚é
+                    var partyIndex = tab.value; // ã“ã“ã§ã¯ã‚¿ãƒ–ã®å€¤ãŒãƒ‘ãƒ¼ãƒ†ã‚£ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã«å¯¾å¿œã™ã‚‹
                     currentPartyIndex = partyIndex;
                     currentUserMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == currentPartyIndex)?.Clone();
                     _toggleGroup.SetAllTogglesOff();
@@ -176,7 +199,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             {
                 if(selectedPartyMonsterIndex != -1 && selectedPartyMonsterIndex != index && (selectedUserMonsterId != null || userMonsterId != null))
                 {
-                    // ‘I‘ğ’†‚Ìƒ‚ƒ“ƒXƒ^[‚ªƒp[ƒeƒB•Ò¬‚³‚ê‚Ä‚¢‚é©•ªˆÈŠO‚Ìƒ‚ƒ“ƒXƒ^[‚Ìê‡
+                    // é¸æŠä¸­ã®ãƒ¢ãƒ³ã‚¹ã‚¿ãƒ¼ãŒãƒ‘ãƒ¼ãƒ†ã‚£ç·¨æˆã•ã‚Œã¦ã„ã‚‹è‡ªåˆ†ä»¥å¤–ã®ãƒ¢ãƒ³ã‚¹ã‚¿ãƒ¼ã®å ´åˆ
                     currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
                     currentUserMonsterParty.userMonsterIdList[index] = selectedUserMonsterId;
 
@@ -184,24 +207,24 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                     selectedPartyMonsterIndex = -1;
                     selectedUserMonsterId = null;
                     RefreshPartyUI();
-                    RefreshScroll(); // TODO: ‰Šú‰»‚¹‚¸‚É•\¦’†‚ÌƒAƒCƒeƒ€‚¾‚¯XV‚µ‚½‚¢
+                    RefreshScroll(); // TODO: åˆæœŸåŒ–ã›ãšã«è¡¨ç¤ºä¸­ã®ã‚¢ã‚¤ãƒ†ãƒ ã ã‘æ›´æ–°ã—ãŸã„
                     RefreshGrayoutPanel();
                 }
                 else if(selectedUserMonsterId != null)
                 {
-                    // ‘I‘ğ’†‚Ìƒ‚ƒ“ƒXƒ^[‚ªƒp[ƒeƒB‚É•Ò¬‚³‚ê‚Ä‚¢‚È‚¢ê‡
+                    // é¸æŠä¸­ã®ãƒ¢ãƒ³ã‚¹ã‚¿ãƒ¼ãŒãƒ‘ãƒ¼ãƒ†ã‚£ã«ç·¨æˆã•ã‚Œã¦ã„ãªã„å ´åˆ
                     currentUserMonsterParty.userMonsterIdList[index] = selectedUserMonsterId;
 
                     _toggleGroup.SetAllTogglesOff();
                     selectedPartyMonsterIndex = -1;
                     selectedUserMonsterId = null;
                     RefreshPartyUI();
-                    RefreshScroll(); // TODO: ‰Šú‰»‚¹‚¸‚É•\¦’†‚ÌƒAƒCƒeƒ€‚¾‚¯XV‚µ‚½‚¢
+                    RefreshScroll(); // TODO: åˆæœŸåŒ–ã›ãšã«è¡¨ç¤ºä¸­ã®ã‚¢ã‚¤ãƒ†ãƒ ã ã‘æ›´æ–°ã—ãŸã„
                     RefreshGrayoutPanel();
                 }
                 else
                 {
-                    // ‘I‘ğ’†‚Ìƒ‚ƒ“ƒXƒ^[‚ª‘¶İ‚µ‚È‚¢‚ ‚é‚¢‚Í©•ª‚Ìê‡
+                    // é¸æŠä¸­ã®ãƒ¢ãƒ³ã‚¹ã‚¿ãƒ¼ãŒå­˜åœ¨ã—ãªã„ã‚ã‚‹ã„ã¯è‡ªåˆ†ã®å ´åˆ
                     monsterIcon.toggle.isOn = !monsterIcon.toggle.isOn;
                     if (monsterIcon.toggle.isOn)
                     {
@@ -210,7 +233,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                     }
                     else
                     {
-                        // ”ñ‘I‘ğ‚É‚·‚éê‡‚Í‘I‘ğ’†ƒ†[ƒU[ƒ‚ƒ“ƒXƒ^[ID‚ğnull‚ÉAIndex‚ğ-1‚É
+                        // éé¸æŠã«ã™ã‚‹å ´åˆã¯é¸æŠä¸­ãƒ¦ãƒ¼ã‚¶ãƒ¼ãƒ¢ãƒ³ã‚¹ã‚¿ãƒ¼IDã‚’nullã«ã€Indexã‚’-1ã«
                         selectedPartyMonsterIndex = -1;
                         selectedUserMonsterId = null;
                     }
@@ -236,20 +259,20 @@ public class QuestSelectPartyWindowUIScript : WindowBase
 
         if(userMonster == null)
         {
-            // ‚Í‚¸‚·ƒAƒCƒRƒ“
+            // ã¯ãšã™ã‚¢ã‚¤ã‚³ãƒ³
             scrollItem.ShowIcon(false);
-            scrollItem.ShowText(true, "‚Í‚¸‚·");
+            scrollItem.ShowText(true, "ã¯ãšã™");
         }
         else
         {
-            // ƒ‚ƒ“ƒXƒ^[ƒAƒCƒRƒ“
+            // ãƒ¢ãƒ³ã‚¹ã‚¿ãƒ¼ã‚¢ã‚¤ã‚³ãƒ³
             var itemMI = ItemUtil.GetItemMI(userMonster);
             var isIncludedParty = currentUserMonsterParty.userMonsterIdList.Contains(userMonster.id);
 
             scrollItem.ShowText(true);
             scrollItem.SetIcon(itemMI);
             scrollItem.ShowText(false);
-            scrollItem.ShowGrayoutPanel(isIncludedParty, "•Ò¬’†");
+            scrollItem.ShowGrayoutPanel(isIncludedParty, "ç·¨æˆä¸­");
         }
 
         scrollItem.SetToggleGroup(_toggleGroup);
@@ -257,19 +280,19 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         { 
             if(selectedPartyMonsterIndex != -1)
             {
-                // •Ò¬’†‚Ìƒ‚ƒ“ƒXƒ^[‚ğ‘I‘ğ’†
+                // ç·¨æˆä¸­ã®ãƒ¢ãƒ³ã‚¹ã‚¿ãƒ¼ã‚’é¸æŠä¸­
                 currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
 
                 _toggleGroup.SetAllTogglesOff();
                 selectedPartyMonsterIndex = -1;
                 selectedUserMonsterId = null;
                 RefreshPartyUI();
-                RefreshScroll(); // TODO: ‰Šú‰»‚¹‚¸‚É•\¦’†‚ÌƒAƒCƒeƒ€‚¾‚¯XV‚µ‚½‚¢
+                RefreshScroll(); // TODO: åˆæœŸåŒ–ã›ãšã«è¡¨ç¤ºä¸­ã®ã‚¢ã‚¤ãƒ†ãƒ ã ã‘æ›´æ–°ã—ãŸã„
                 RefreshGrayoutPanel();
             }
             else
             {
-                // ’Êí’Ê‚è‘I‘ğ
+                // é€šå¸¸é€šã‚Šé¸æŠ
                 scrollItem.toggle.isOn = !scrollItem.toggle.isOn;
                 if (scrollItem.toggle.isOn)
                 {
@@ -278,7 +301,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 }
                 else
                 {
-                    // ”ñ‘I‘ğ‚É‚·‚éê‡‚Í‘I‘ğ’†ƒ†[ƒU[ƒ‚ƒ“ƒXƒ^[ID‚ğnull‚ÉAIndex‚ğ-1‚É
+                    // éé¸æŠã«ã™ã‚‹å ´åˆã¯é¸æŠä¸­ãƒ¦ãƒ¼ã‚¶ãƒ¼ãƒ¢ãƒ³ã‚¹ã‚¿ãƒ¼IDã‚’nullã«ã€Indexã‚’-1ã«
                     selectedPartyMonsterIndex = -1;
                     selectedUserMonsterId = null;
                 }
