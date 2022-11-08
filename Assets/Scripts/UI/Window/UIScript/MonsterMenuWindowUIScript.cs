@@ -9,6 +9,7 @@ public class MonsterMenuWindowUIScript : WindowBase
 {
     [SerializeField] protected Button _boxButton;
     [SerializeField] protected Button _formationButton;
+    [SerializeField] protected Button _itemBoxButton;
 
     public override void Init(WindowInfo info)
     {
@@ -23,6 +24,10 @@ public class MonsterMenuWindowUIScript : WindowBase
 
         _formationButton.OnClickIntentAsObservable()
             .SelectMany(_ => MonsterPartyListWindowFactory.Create(new MonsterPartyListWindowRequest() { }))
+            .Subscribe();
+
+        _itemBoxButton.OnClickIntentAsObservable()
+            .SelectMany(_ => ItemBoxWindowFactory.Create(new ItemBoxWindowRequest()))
             .Subscribe();
     }
 

@@ -204,6 +204,7 @@ GameObject:
   - component: {fileID: 654485276994897359}
   - component: {fileID: 4173638232956031727}
   - component: {fileID: 646203957288277183}
+  - component: {fileID: 4401303683467693235}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -269,6 +270,49 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4401303683467693235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 413861120635379673}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 646203957288277183}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &520592499996222683
 GameObject:
   m_ObjectHideFlags: 0
@@ -499,10 +543,10 @@ RectTransform:
   m_Father: {fileID: 3364689073365048069}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 150}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 516, y: -99}
+  m_SizeDelta: {x: 1008, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1820762768753497994
 CanvasRenderer:
@@ -544,10 +588,10 @@ RectTransform:
   m_Father: {fileID: 3364689073365048069}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 150}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 516, y: -273}
+  m_SizeDelta: {x: 1008, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &778120615804778162
 CanvasRenderer:
@@ -914,7 +958,7 @@ GameObject:
   - component: {fileID: 6165126389876027433}
   - component: {fileID: 3226708724265260540}
   m_Layer: 5
-  m_Name: PicturebookButtonBase
+  m_Name: ItemBoxButtonBase
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -935,10 +979,10 @@ RectTransform:
   m_Father: {fileID: 3364689073365048069}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 150}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 516, y: -447}
+  m_SizeDelta: {x: 1008, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3226708724265260540
 CanvasRenderer:
@@ -1716,6 +1760,7 @@ MonoBehaviour:
   BackButtonDisabled: 0
   _boxButton: {fileID: 2166916681179657957}
   _formationButton: {fileID: 3742477478775132672}
+  _itemBoxButton: {fileID: 4401303683467693235}
 --- !u!1 &7816945117011132604
 GameObject:
   m_ObjectHideFlags: 0
@@ -2060,7 +2105,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u56F3\u9451"
+  m_Text: "\u6240\u6301\u30A2\u30A4\u30C6\u30E0\u4E00\u89A7"
 --- !u!1 &8918560352131850518
 GameObject:
   m_ObjectHideFlags: 0
