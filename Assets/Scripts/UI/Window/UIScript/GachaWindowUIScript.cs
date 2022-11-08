@@ -59,6 +59,9 @@ public class GachaWindowUIScript : WindowBase
             }).Subscribe();
         }));
         scrollItem.RefreshScroll(gachaBox.pickUpMonsterIdList);
+
+        // ガチャ実行ボタンの生成
+        foreach (Transform n in scrollItem.executeButtonBase.transform) GameObject.Destroy(n.gameObject);
         gachaBoxDetailList.ForEach(gachaBoxDetail => {
             var gachaExecuteButton = UIManager.Instance.CreateContent<GachaExecuteButton>(scrollItem.executeButtonBase);
             var title = gachaBoxDetail.title;
