@@ -2,6 +2,7 @@
 using PlayFab.ClientModels;
 using UniRx;
 using System.Linq;
+using PM.Enum.Loading;
 
 public static class ApplicationContext
 {
@@ -13,29 +14,33 @@ public static class ApplicationContext
     /// <summary>
     /// アプリ起動時処理
     /// </summary>
-    public static IObservable<Unit> EstablishSession()
+    public static IObservable<Unit> EstablishSession(Action<TitleLoadingPhase> setLoadingBarValue)
     {
-        return ApiConnection.LoginWithCustomID()
+        return ApiConnection.LoginWithCustomID().Do(_ => setLoadingBarValue(TitleLoadingPhase.PlayFabLogin))
             .SelectMany(res =>
             {
                 if (res.NewlyCreated)
                 {
                     // アカウントを新規作成した場合は初回ログイン処理を実行
-                    return ApiConnection.FirstLogin().AsUnitObservable();
+                    return ApiConnection.FirstLogin().Do(_ => setLoadingBarValue(TitleLoadingPhase.FirstLogin)).AsUnitObservable();
                 }
                 else
                 {
                     return Observable.ReturnUnit();
                 }
             })
-            .SelectMany(_ => ApiConnection.Login())
+            .SelectMany(_ => ApiConnection.Login().Do(res => setLoadingBarValue(TitleLoadingPhase.PMLogin)))
             .SelectMany(_ => ApiConnection.GetTitleData().Do(res =>
             {
+                setLoadingBarValue(TitleLoadingPhase.GetTitleData);
+
                 // マスタの取得と保存
                 MasterRecord.SetCacheMasterDict(res.Data);
             }))
             .SelectMany(_ => ApiConnection.GetPlayerProfile().Do(res =>
             {
+                setLoadingBarValue(TitleLoadingPhase.GetPlayerProfile);
+
                 // ユーザープロフィールの同期
                 playerProfile = res.PlayerProfile;
             }))
@@ -55,7 +60,7 @@ public static class ApplicationContext
     /// ユーザーデータを更新
     /// ユーザーデータが更新されるタイミングでは毎回これを呼ぶ
     /// </summary>
-    public static IObservable<Unit> UpdateUserDataObservable()
+    public static IObservable<Unit> UpdateUserDataObservable(Action<TitleLoadingPhase> setLoadingBarValue = null)
     {
         // 一旦初期化
         userData = new UserDataInfo();
@@ -63,12 +68,15 @@ public static class ApplicationContext
         return ApiConnection.GetUserData()
             .Do(res =>
             {
-                var r = res;
+                setLoadingBarValue?.Invoke(TitleLoadingPhase.GetUserData);
+
                 // ユーザーデータの更新
                 UpdateUserData(res);
             })
             .SelectMany(_ => ApiConnection.GetUserInventory().Do(res =>
             {
+                setLoadingBarValue?.Invoke(TitleLoadingPhase.GetUserInventory);
+
                 // 仮想通貨情報の更新
                 UpdateVirutalCurrency(res);
 

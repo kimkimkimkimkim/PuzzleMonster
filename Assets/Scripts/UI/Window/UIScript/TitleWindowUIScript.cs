@@ -1,5 +1,6 @@
 ﻿using System;
 using GameBase;
+using PM.Enum.Loading;
 using PM.Enum.Sound;
 using PM.Enum.UI;
 using UniRx;
@@ -12,7 +13,7 @@ public class TitleWindowUIScript : WindowBase
 {
     [SerializeField] protected GameObject _tapToStartButtonBase;
     [SerializeField] protected Button _tapToStartButton;
-    [SerializeField] protected Slider _downloadProgressSlider;
+    [SerializeField] protected Slider _loadingBar;
 
     private IDisposable _onClickButtonObservable;
 
@@ -32,9 +33,11 @@ public class TitleWindowUIScript : WindowBase
             .Subscribe();
 
         ShowTapToStartButton(false);
+        SetLoadingBarValue(0);
+        ShowLoadingBar(true);
 
         // アプリケーション起動時の処理
-        ApplicationContext.EstablishSession()
+        ApplicationContext.EstablishSession(SetLoadingBarValue)
             .SelectMany(_ =>
             {
                 if (string.IsNullOrWhiteSpace(ApplicationContext.playerProfile.DisplayName))
@@ -63,12 +66,21 @@ public class TitleWindowUIScript : WindowBase
             .SelectMany(_ =>
             {
                 // ここで事前ダウンロードを行う
-                return Addressables.InitializeAsync().AsObservable();
+                return Addressables.InitializeAsync().AsObservable().Do(res => SetLoadingBarValue(TitleLoadingPhase.InitializeAddressables));
+            })
+            .SelectMany(_ => 
+            {
+                // ローディングバーを100%にしてから少し待って非表示に
+                SetLoadingBarValue(TitleLoadingPhase.End);
+                return Observable.Timer(TimeSpan.FromSeconds(0.1f));
             })
             .Do(_ =>
             {
                 // スタートボタンを表示
                 ShowTapToStartButton(true);
+
+                // ローディングバーを非表示
+                ShowLoadingBar(false);
 
                 // デバッグボタンの作成
                 var debugItem = UIManager.Instance.CreateContent<DebugItem>(UIManager.Instance.debugParent);
@@ -83,24 +95,19 @@ public class TitleWindowUIScript : WindowBase
             .Subscribe();
     }
 
-    public void ShowTapToStartButton(bool isShow)
+    private void ShowTapToStartButton(bool isShow)
     {
         _tapToStartButtonBase.SetActive(isShow);
     }
 
-    public void SetOnClickAction(Action action)
+    private void ShowLoadingBar(bool isShow) 
     {
-        if (action == null) return;
+        _loadingBar.gameObject.SetActive(isShow);
+    }
 
-        if (_onClickButtonObservable != null)
-        {
-            _onClickButtonObservable.Dispose();
-            _onClickButtonObservable = null;
-        }
-
-        _onClickButtonObservable = _tapToStartButton.OnClickIntentAsObservable()
-            .Do(_ => action())
-            .Subscribe();
+    private void SetLoadingBarValue(TitleLoadingPhase phase) {
+        var value = (int)phase;
+        _loadingBar.value = value;
     }
 
     public override void Open(WindowInfo info)
