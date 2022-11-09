@@ -5,6 +5,7 @@ using UniRx;
 using System.Collections.Generic;
 using System.Linq;
 using PM.Enum.UI;
+using PM.Enum.Quest;
 
 [ResourcePath("UI/Window/Window-QuestSelectParty")]
 public class QuestSelectPartyWindowUIScript : WindowBase
@@ -71,9 +72,15 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         _okButton.OnClickIntentAsObservable()
             .SelectMany(res =>
             {
-                var isValid = ConditionUtil.IsValid(ApplicationContext.userData, quest.displayConditionList) && ConditionUtil.IsValid(ApplicationContext.userData, quest.canExecuteConditionList);
-                isValid = false;
-                if (isValid)
+                var isValidDisplayCondition = ConditionUtil.IsValid(ApplicationContext.userData, quest.displayConditionList);
+                var isValidExecuteCondition = ConditionUtil.IsValid(ApplicationContext.userData, quest.canExecuteConditionList);
+                var questCategory = MasterRecord.GetMasterOf<QuestCategoryMB>().Get(quest.questCategoryId);
+                var isEventQuest = questCategory.questType == QuestType.Event;
+                var isHolding = MasterRecord.GetMasterOf<EventQuestScheduleMB>().GetAll().Any(m => {
+                    return m.questCategoryId == questCategory.id && DateTimeUtil.GetDateFromMasterString(m.startDate) <= DateTimeUtil.Now && DateTimeUtil.Now < DateTimeUtil.GetDateFromMasterString(m.endDate);
+                });
+
+                if (isValidDisplayCondition && isValidExecuteCondition && (!isEventQuest || (isEventQuest && isHolding)))
                 {
                     // バトルを実行
                     return Observable.ReturnUnit()
