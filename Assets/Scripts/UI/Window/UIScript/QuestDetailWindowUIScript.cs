@@ -82,7 +82,7 @@ public class QuestDetailWindowUIScript : WindowBase
         var scrollItem = item.GetComponent<IconItem>();
         var monsterItem = monsterItemList[index];
 
-        scrollItem.SetIcon(monsterItem);
+        scrollItem.SetIcon(monsterItem, monsterItem.itemType != ItemType.Monster);
     }
 
     private void RefreshNormalRewardInfiniteScroll()
@@ -102,7 +102,7 @@ public class QuestDetailWindowUIScript : WindowBase
         var scrollItem = item.GetComponent<IconItem>();
         var normalRewardItem = normalRewardItemList[index];
 
-        scrollItem.SetIcon(normalRewardItem);
+        scrollItem.SetIcon(normalRewardItem, normalRewardItem.itemType != ItemType.Monster);
     }
 
     private void RefreshDropRewardInfiniteScroll()
@@ -122,7 +122,7 @@ public class QuestDetailWindowUIScript : WindowBase
         var scrollItem = item.GetComponent<IconItem>();
         var dropRewardItem = dropRewardItemList[index];
 
-        scrollItem.SetIcon(dropRewardItem);
+        scrollItem.SetIcon(dropRewardItem, dropRewardItem.itemType != ItemType.Monster);
     }
 
     private void RefreshFirstRewardInfiniteScroll()
@@ -141,7 +141,7 @@ public class QuestDetailWindowUIScript : WindowBase
         var scrollItem = item.GetComponent<IconItem>();
         var firstRewardItem = firstRewardItemList[index];
 
-        scrollItem.SetIcon(firstRewardItem);
+        scrollItem.SetIcon(firstRewardItem, firstRewardItem.itemType != ItemType.Monster);
         scrollItem.ShowGrayoutPanel(isCleared);
         scrollItem.ShowCheckImage(isCleared);
     }
