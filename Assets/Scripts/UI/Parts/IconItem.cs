@@ -25,11 +25,14 @@ public class IconItem : MonoBehaviour
     [SerializeField] protected Text _labelText;
     [SerializeField] protected Text _text;
     [SerializeField] protected Text _stackNumText;
+    [SerializeField] protected Text _levelText;
+    [SerializeField] protected Text _underText;
     [SerializeField] protected List<Sprite> _frameSpriteList;
     [SerializeField] protected List<Color> _backgroundColorList;
     [SerializeField] protected Toggle _toggle;
     [SerializeField] protected Button _button;
     [SerializeField] protected CanvasGroup _canvasGroup;
+    [SerializeField] protected MonsterGradeParts _monsterGradeParts;
 
     public Toggle toggle { get { return _toggle; } private set { _toggle = value; } }
 
@@ -56,15 +59,30 @@ public class IconItem : MonoBehaviour
         SetIconImage(iconImageType, item.itemId);
         SetNumText(numText);
         SetShowItemDetailDialogAction(true);
+
+        if(itemType == ItemType.Monster) {
+            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(itemId);
+            var maxGrade = MasterRecord.GetMasterOf<GradeUpTableMB>().GetAll().Max(m => m.targetGrade);
+            var maxLevel = MasterRecord.GetMasterOf<MaxMonsterLevelMB>().GetAll().First(m => m.monsterRarity == monster.rarity && m.monsterGrade == maxGrade).maxMonsterLevel;
+            var userMonsterCustomData = new UserMonsterCustomData() { level = maxLevel, grade = maxGrade };
+            var userMonster = new UserMonsterInfo() { monsterId = itemId, customData = userMonsterCustomData };
+            SetMonsterIconInfo(userMonster);
+        }
     }
 
     public void SetIcon(ItemType itemType, long itemId)
     {
-        this.itemType = itemType;
-        this.itemId = itemId;
-
         var item = new ItemMI() { itemType = itemType, itemId = itemId };
         SetIcon(item);
+    }
+
+    public void SetMonsterIconInfo(UserMonsterInfo userMonster) 
+    {
+        var action = new Action(() => { MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest() { userMonster = userMonster, canStrength = false }).Subscribe(); });
+        
+        SetLevelText(userMonster.customData.level);
+        SetGrade(userMonster.customData.grade);
+        SetLongClickAction(true, action);
     }
 
     private void SetFrameImage(IconColorType iconColor)
@@ -140,15 +158,57 @@ public class IconItem : MonoBehaviour
         _checkImage.gameObject.SetActive(isShow);
     }
 
-    public void ShowStack(bool isShow, int stackNum = 0) {
-        _stackIconPanel.SetActive(isShow);
+    public void SetStack(int stackNum) 
+    {
         _stackNumText.text = stackNum.ToString();
+    }
+
+    public void ShowStack(bool isShow) {
+        _stackIconPanel.SetActive(isShow);
+    }
+
+    public void SetLevelText(int level) 
+    {
+        _levelText.text = $"Lv.{level}";
+    }
+
+    public void ShowLevelText(bool isShow) 
+    {
+        _levelText.gameObject.SetActive(isShow);
+    }
+
+    public void SetGrade(int grade) 
+    {
+        _monsterGradeParts.SetGradeImage(grade);
+    }
+
+    public void ShowGrade(bool isShow) 
+    {
+        _monsterGradeParts.gameObject.SetActive(isShow);
+    }
+
+    public void SetUnderText(string text) 
+    {
+        _underText.text = text;
+    }
+
+    public void ShowUnderText(bool isShow) 
+    {
+        _underText.gameObject.SetActive(isShow);
     }
 
     /// <summary>
     /// 長押し時にアイテム詳細ダイアログを表示するようにする
     /// </summary>
     public void SetShowItemDetailDialogAction(bool isSet) {
+        var action = new Action(() => {
+            var itemDescription = MasterRecord.GetMasterOf<ItemDescriptionMB>().GetAll().FirstOrDefault(m => m.itemType == itemType && m.itemId == itemId);
+            if (itemDescription != null) ItemDetailDialogFactory.Create(new ItemDetailDialogRequest() { itemDescription = itemDescription }).Subscribe();
+        });
+        SetLongClickAction(isSet, action);
+    }
+
+    public void SetLongClickAction(bool isSet, Action action = null) {
         if (onLongClickButtonObservable != null) {
             onLongClickButtonObservable.Dispose();
             onLongClickButtonObservable = null;
@@ -156,14 +216,7 @@ public class IconItem : MonoBehaviour
 
         if (isSet) {
             onLongClickButtonObservable = _button.OnLongClickIntentAsObservable()
-                .SelectMany(_ => {
-                    var itemDescription = MasterRecord.GetMasterOf<ItemDescriptionMB>().GetAll().FirstOrDefault(m => m.itemType == itemType && m.itemId == itemId);
-                    if (itemDescription == null) {
-                        return Observable.ReturnUnit();
-                    } else {
-                        return ItemDetailDialogFactory.Create(new ItemDetailDialogRequest() { itemDescription = itemDescription }).AsUnitObservable();
-                    }
-                })
+                .Do(_ => action?.Invoke())
                 .Subscribe();
         }
     }

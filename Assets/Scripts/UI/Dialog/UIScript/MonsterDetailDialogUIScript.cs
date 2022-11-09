@@ -114,16 +114,16 @@ public class MonsterDetailDialogUIScript : DialogBase
 
     private void SetSliderMaxValue()
     {
-        _hpSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _hpSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _attackSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _attackSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _defenseSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _defenseSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _healSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _healSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _speedSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _speedSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _hpSliderBack.maxValue = ConstManager.Monster.MAX_HP_VALUE;
+        _hpSliderFront.maxValue = ConstManager.Monster.MAX_HP_VALUE;
+        _attackSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _attackSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _defenseSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _defenseSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _healSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _healSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _speedSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _speedSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
     }
 
     private IObservable<Unit> RefreshUIObservable()
@@ -144,16 +144,18 @@ public class MonsterDetailDialogUIScript : DialogBase
         _speedText.text = status.speed.ToString();
 
         // ゲージ
-        var level100Status = MonsterUtil.GetMonsterStatus(monster, 100);
-        _hpSliderBack.value = level100Status.hp;
+        var maxGrade = MasterRecord.GetMasterOf<GradeUpTableMB>().GetAll().Max(m => m.targetGrade);
+        var maxLevel = MasterRecord.GetMasterOf<MaxMonsterLevelMB>().GetAll().First(m => m.monsterRarity == monster.rarity && m.monsterGrade == maxGrade).maxMonsterLevel;
+        var maxLevelStatus = MonsterUtil.GetMonsterStatus(monster, maxLevel);
+        _hpSliderBack.value = maxLevelStatus.hp;
         _hpSliderFront.value = status.hp;
-        _attackSliderBack.value = level100Status.attack;
+        _attackSliderBack.value = maxLevelStatus.attack;
         _attackSliderFront.value = status.attack;
-        _defenseSliderBack.value = level100Status.defense;
+        _defenseSliderBack.value = maxLevelStatus.defense;
         _defenseSliderFront.value = status.defense;
-        _healSliderBack.value = level100Status.heal;
+        _healSliderBack.value = maxLevelStatus.heal;
         _healSliderFront.value = status.heal;
-        _speedSliderBack.value = level100Status.speed;
+        _speedSliderBack.value = maxLevelStatus.speed;
         _speedSliderFront.value = status.speed;
 
         // スキル

@@ -139,7 +139,8 @@ public class MonsterLuckUpDialogUIScript : DialogBase
     {
         // アイコン
         _iconItem.SetIcon(ItemType.Monster, monster.id);
-        _iconItem.ShowStack(true, userMonster.GetStack());
+        _iconItem.SetStack(userMonster.GetStack());
+        _iconItem.ShowStack(true);
 
         // 本文
         _confirmText.text = $"スタックを <color=#D14B39><size=46>{consumeStackNum}</size></color> 消費します\nよろしいですか？";

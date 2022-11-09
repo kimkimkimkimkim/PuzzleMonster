@@ -169,21 +169,21 @@ public class MonsterLevelUpDialogUIScript : DialogBase
 
     private void SetSliderValue() {
         // モンスター全体の最大値
-        _hpSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _hpSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _hpSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _attackSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _attackSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _attackSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _defenseSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _defenseSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _defenseSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _healSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _healSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _healSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _speedSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _speedSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
-        _speedSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_VALUE;
+        _hpSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _hpSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _hpSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _attackSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _attackSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _attackSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _defenseSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _defenseSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _defenseSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _healSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _healSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _healSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _speedSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _speedSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _speedSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
 
         // モンスター固有の最大値
         var level100MonsterStatus = MonsterUtil.GetMonsterStatus(monster, 100);
