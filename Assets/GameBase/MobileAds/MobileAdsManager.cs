@@ -1,25 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-//using GoogleMobileAds.Api;
+using GoogleMobileAds.Api;
 using System;
 
 namespace GameBase {
     public class MobileAdsManager : SingletonMonoBehaviour<MobileAdsManager>
     {
-        /*
         [SerializeField] protected bool _isTestAdUnitId = true;
-        [SerializeField] protected string BOTTOM_BANNER_AD_UNIT_ID_IOS;
-        [SerializeField] protected string BOTTOM_BANNER_AD_UNIT_ID_ANDROID;
-        [SerializeField] protected string CENTER_BANNER_AD_UNIT_ID_IOS;
-        [SerializeField] protected string CENTER_BANNER_AD_UNIT_ID_ANDROID;
-        [SerializeField] protected string INTERSTITIAL_AD_UNIT_ID_IOS;
-        [SerializeField] protected string INTERSTITIAL_AD_UNIT_ID_ANDROID;
+        //[SerializeField] protected string BOTTOM_BANNER_AD_UNIT_ID_IOS;
+        //[SerializeField] protected string BOTTOM_BANNER_AD_UNIT_ID_ANDROID;
+        //[SerializeField] protected string CENTER_BANNER_AD_UNIT_ID_IOS;
+        //[SerializeField] protected string CENTER_BANNER_AD_UNIT_ID_ANDROID;
+        //[SerializeField] protected string INTERSTITIAL_AD_UNIT_ID_IOS;
+        //[SerializeField] protected string INTERSTITIAL_AD_UNIT_ID_ANDROID;
         [SerializeField] protected string REWARD_AD_UNIT_ID_IOS;
         [SerializeField] protected string REWARD_AD_UNIT_ID_ANDROID;
 
-        private BannerView bannerView;
-        private InterstitialAd interstitial;
+        //private BannerView bannerView;
+        //private InterstitialAd interstitial;
         private RewardedAd rewardedAd;
 
         private Action rewardedCallBackAction; // 報酬受け取り時に実行する処理
@@ -38,215 +37,215 @@ namespace GameBase {
             MobileAds.Initialize(initStatus => { });
 
             // 広告取得
-            RequestBanner();
-            RequestInterstitial();
+            //RequestBanner();
+            //RequestInterstitial();
             RequestRewarded();
         }
 
-        #region Banner
-        public void RequestBanner()
-        {
-            #if UNITY_ANDROID
-                string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/6300978111" : BOTTOM_BANNER_AD_UNIT_ID_ANDROID;
-            #elif UNITY_IPHONE
-                string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/2934735716" : BOTTOM_BANNER_AD_UNIT_ID_IOS;
-            #else
-                string adUnitId = "unexpected_platform";
-            #endif
+        //#region Banner
+        //public void RequestBanner()
+        //{
+        //    #if UNITY_ANDROID
+        //        string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/6300978111" : BOTTOM_BANNER_AD_UNIT_ID_ANDROID;
+        //    #elif UNITY_IPHONE
+        //        string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/2934735716" : BOTTOM_BANNER_AD_UNIT_ID_IOS;
+        //    #else
+        //        string adUnitId = "unexpected_platform";
+        //    #endif
 
-            // Create a 320x50 banner at the top of the screen.
-            bannerView = new BannerView(adUnitId, AdSize.Banner, AdPosition.Bottom);
+        //    // Create a 320x50 banner at the top of the screen.
+        //    bannerView = new BannerView(adUnitId, AdSize.Banner, AdPosition.Bottom);
 
-            // Called when an ad request has successfully loaded.
-            bannerView.OnAdLoaded += HandleOnBannerAdLoaded;
-            // Called when an ad request failed to load.
-            bannerView.OnAdFailedToLoad += HandleOnBannerAdFailedToLoad;
-            // Called when an ad is clicked.
-            bannerView.OnAdOpening += HandleOnBannerAdOpened;
-            // Called when the user returned from the app after an ad click.
-            bannerView.OnAdClosed += HandleOnBannerAdClosed;
-            // Called when the ad click caused the user to leave the application.
-            bannerView.OnAdLeavingApplication += HandleOnBannerAdLeavingApplication;
+        //    // Called when an ad request has successfully loaded.
+        //    bannerView.OnAdLoaded += HandleOnBannerAdLoaded;
+        //    // Called when an ad request failed to load.
+        //    bannerView.OnAdFailedToLoad += HandleOnBannerAdFailedToLoad;
+        //    // Called when an ad is clicked.
+        //    bannerView.OnAdOpening += HandleOnBannerAdOpened;
+        //    // Called when the user returned from the app after an ad click.
+        //    bannerView.OnAdClosed += HandleOnBannerAdClosed;
+        //    // Called when the ad click caused the user to leave the application.
+        //    bannerView.OnAdLeavingApplication += HandleOnBannerAdLeavingApplication;
 
-            // Create an empty ad request.
-            AdRequest request = new AdRequest.Builder().Build();
+        //    // Create an empty ad request.
+        //    AdRequest request = new AdRequest.Builder().Build();
 
-            // Load the banner with the request.
-            bannerView.LoadAd(request);
-        }
+        //    // Load the banner with the request.
+        //    bannerView.LoadAd(request);
+        //}
 
-        public void HandleOnBannerAdLoaded(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdLoaded event received");
-        }
+        //public void HandleOnBannerAdLoaded(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdLoaded event received");
+        //}
 
-        public void HandleOnBannerAdFailedToLoad(object sender, AdFailedToLoadEventArgs args)
-        {
-            MonoBehaviour.print("HandleFailedToReceiveAd event received with message: "
-                                + args.Message);
-        }
+        //public void HandleOnBannerAdFailedToLoad(object sender, AdFailedToLoadEventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleFailedToReceiveAd event received with message: "
+        //                        + args.Message);
+        //}
 
-        public void HandleOnBannerAdOpened(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdOpened event received");
-        }
+        //public void HandleOnBannerAdOpened(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdOpened event received");
+        //}
 
-        public void HandleOnBannerAdClosed(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdClosed event received");
-        }
+        //public void HandleOnBannerAdClosed(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdClosed event received");
+        //}
 
-        public void HandleOnBannerAdLeavingApplication(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdLeavingApplication event received");
-        }
+        //public void HandleOnBannerAdLeavingApplication(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdLeavingApplication event received");
+        //}
 
-        public void DestroyBanner()
-        {
-            bannerView.Destroy();
-        }
+        //public void DestroyBanner()
+        //{
+        //    bannerView.Destroy();
+        //}
 
-        public void RequestCenterBanner()
-        {
-            #if UNITY_ANDROID
-                string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/6300978111" : CENTER_BANNER_AD_UNIT_ID_ANDROID;
-            #elif UNITY_IPHONE
-                string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/2934735716" : CENTER_BANNER_AD_UNIT_ID_IOS;
-            #else
-                string adUnitId = "unexpected_platform";
-            #endif
+        //public void RequestCenterBanner()
+        //{
+        //    #if UNITY_ANDROID
+        //        string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/6300978111" : CENTER_BANNER_AD_UNIT_ID_ANDROID;
+        //    #elif UNITY_IPHONE
+        //        string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/2934735716" : CENTER_BANNER_AD_UNIT_ID_IOS;
+        //    #else
+        //        string adUnitId = "unexpected_platform";
+        //    #endif
 
-            // Create a 320x50 banner at the top of the screen.
-            bannerView = new BannerView(adUnitId, AdSize.MediumRectangle, 0, 300);
+        //    // Create a 320x50 banner at the top of the screen.
+        //    bannerView = new BannerView(adUnitId, AdSize.MediumRectangle, 0, 300);
 
-            // Called when an ad request has successfully loaded.
-            bannerView.OnAdLoaded += HandleOnCenterBannerAdLoaded;
-            // Called when an ad request failed to load.
-            bannerView.OnAdFailedToLoad += HandleOnCenterBannerAdFailedToLoad;
-            // Called when an ad is clicked.
-            bannerView.OnAdOpening += HandleOnCenterBannerAdOpened;
-            // Called when the user returned from the app after an ad click.
-            bannerView.OnAdClosed += HandleOnCenterBannerAdClosed;
-            // Called when the ad click caused the user to leave the application.
-            bannerView.OnAdLeavingApplication += HandleOnCenterBannerAdLeavingApplication;
+        //    // Called when an ad request has successfully loaded.
+        //    bannerView.OnAdLoaded += HandleOnCenterBannerAdLoaded;
+        //    // Called when an ad request failed to load.
+        //    bannerView.OnAdFailedToLoad += HandleOnCenterBannerAdFailedToLoad;
+        //    // Called when an ad is clicked.
+        //    bannerView.OnAdOpening += HandleOnCenterBannerAdOpened;
+        //    // Called when the user returned from the app after an ad click.
+        //    bannerView.OnAdClosed += HandleOnCenterBannerAdClosed;
+        //    // Called when the ad click caused the user to leave the application.
+        //    bannerView.OnAdLeavingApplication += HandleOnCenterBannerAdLeavingApplication;
 
-            // Create an empty ad request.
-            AdRequest request = new AdRequest.Builder().Build();
+        //    // Create an empty ad request.
+        //    AdRequest request = new AdRequest.Builder().Build();
 
-            // Load the banner with the request.
-            bannerView.LoadAd(request);
-        }
+        //    // Load the banner with the request.
+        //    bannerView.LoadAd(request);
+        //}
 
-        public void HandleOnCenterBannerAdLoaded(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdLoaded event received");
-        }
+        //public void HandleOnCenterBannerAdLoaded(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdLoaded event received");
+        //}
 
-        public void HandleOnCenterBannerAdFailedToLoad(object sender, AdFailedToLoadEventArgs args)
-        {
-            MonoBehaviour.print("HandleFailedToReceiveAd event received with message: "
-                                + args.Message);
-        }
+        //public void HandleOnCenterBannerAdFailedToLoad(object sender, AdFailedToLoadEventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleFailedToReceiveAd event received with message: "
+        //                        + args.Message);
+        //}
 
-        public void HandleOnCenterBannerAdOpened(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdOpened event received");
-        }
+        //public void HandleOnCenterBannerAdOpened(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdOpened event received");
+        //}
 
-        public void HandleOnCenterBannerAdClosed(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdClosed event received");
-        }
+        //public void HandleOnCenterBannerAdClosed(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdClosed event received");
+        //}
 
-        public void HandleOnCenterBannerAdLeavingApplication(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdLeavingApplication event received");
-        }
+        //public void HandleOnCenterBannerAdLeavingApplication(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdLeavingApplication event received");
+        //}
 
-        public void DestroyCenterBanner()
-        {
-            bannerView.Destroy();
-        }
-        #endregion
+        //public void DestroyCenterBanner()
+        //{
+        //    bannerView.Destroy();
+        //}
+        //#endregion
 
-        #region Interstitial
-        public bool TryShowInterstitial()
-        {
-            if (interstitial.IsLoaded())
-            {
-                interstitial.Show();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        //#region Interstitial
+        //public bool TryShowInterstitial()
+        //{
+        //    if (interstitial.IsLoaded())
+        //    {
+        //        interstitial.Show();
+        //        return true;
+        //    }
+        //    else
+        //    {
+        //        return false;
+        //    }
+        //}
 
-        private void RequestInterstitial()
-        {
-            #if UNITY_ANDROID
-                string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/1033173712" : INTERSTITIAL_AD_UNIT_ID_ANDROID;
-            #elif UNITY_IPHONE
-                string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/4411468910" : INTERSTITIAL_AD_UNIT_ID_IOS;
-            #else
-                string adUnitId = "unexpected_platform";
-            #endif
+        //private void RequestInterstitial()
+        //{
+        //    #if UNITY_ANDROID
+        //        string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/1033173712" : INTERSTITIAL_AD_UNIT_ID_ANDROID;
+        //    #elif UNITY_IPHONE
+        //        string adUnitId = _isTestAdUnitId ? "ca-app-pub-3940256099942544/4411468910" : INTERSTITIAL_AD_UNIT_ID_IOS;
+        //    #else
+        //        string adUnitId = "unexpected_platform";
+        //    #endif
 
-            // Initialize an InterstitialAd.
-            interstitial = new InterstitialAd(adUnitId);
+        //    // Initialize an InterstitialAd.
+        //    interstitial = new InterstitialAd(adUnitId);
 
-            // Called when an ad request has successfully loaded.
-            this.interstitial.OnAdLoaded += HandleOnInterstitialAdLoaded;
-            // Called when an ad request failed to load.
-            this.interstitial.OnAdFailedToLoad += HandleOnInterstitialAdFailedToLoad;
-            // Called when an ad is shown.
-            this.interstitial.OnAdOpening += HandleOnInterstitialAdOpened;
-            // Called when the ad is closed.
-            this.interstitial.OnAdClosed += HandleOnInterstitialAdClosed;
-            // Called when the ad click caused the user to leave the application.
-            this.interstitial.OnAdLeavingApplication += HandleOnInterstitialAdLeavingApplication;
+        //    // Called when an ad request has successfully loaded.
+        //    this.interstitial.OnAdLoaded += HandleOnInterstitialAdLoaded;
+        //    // Called when an ad request failed to load.
+        //    this.interstitial.OnAdFailedToLoad += HandleOnInterstitialAdFailedToLoad;
+        //    // Called when an ad is shown.
+        //    this.interstitial.OnAdOpening += HandleOnInterstitialAdOpened;
+        //    // Called when the ad is closed.
+        //    this.interstitial.OnAdClosed += HandleOnInterstitialAdClosed;
+        //    // Called when the ad click caused the user to leave the application.
+        //    this.interstitial.OnAdLeavingApplication += HandleOnInterstitialAdLeavingApplication;
 
-            // Create an empty ad request.
-            AdRequest request = new AdRequest.Builder().Build();
+        //    // Create an empty ad request.
+        //    AdRequest request = new AdRequest.Builder().Build();
 
-            // Load the interstitial with the request.
-            interstitial.LoadAd(request);
-        }
+        //    // Load the interstitial with the request.
+        //    interstitial.LoadAd(request);
+        //}
 
-        public void HandleOnInterstitialAdLoaded(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdLoaded event received");
-        }
+        //public void HandleOnInterstitialAdLoaded(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdLoaded event received");
+        //}
 
-        public void HandleOnInterstitialAdFailedToLoad(object sender, AdFailedToLoadEventArgs args)
-        {
-            MonoBehaviour.print("HandleFailedToReceiveAd event received with message: "
-                                + args.Message);
-        }
+        //public void HandleOnInterstitialAdFailedToLoad(object sender, AdFailedToLoadEventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleFailedToReceiveAd event received with message: "
+        //                        + args.Message);
+        //}
 
-        public void HandleOnInterstitialAdOpened(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdOpened event received");
-        }
+        //public void HandleOnInterstitialAdOpened(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdOpened event received");
+        //}
 
-        public void HandleOnInterstitialAdClosed(object sender, EventArgs args)
-        {
-            DestroyInterstitial();
-            RequestInterstitial();
-            MonoBehaviour.print("HandleAdClosed event received");
-        }
+        //public void HandleOnInterstitialAdClosed(object sender, EventArgs args)
+        //{
+        //    DestroyInterstitial();
+        //    RequestInterstitial();
+        //    MonoBehaviour.print("HandleAdClosed event received");
+        //}
 
-        public void HandleOnInterstitialAdLeavingApplication(object sender, EventArgs args)
-        {
-            MonoBehaviour.print("HandleAdLeavingApplication event received");
-        }
+        //public void HandleOnInterstitialAdLeavingApplication(object sender, EventArgs args)
+        //{
+        //    MonoBehaviour.print("HandleAdLeavingApplication event received");
+        //}
 
-        public void DestroyInterstitial()
-        {
-            interstitial.Destroy();
-        }
-        #endregion
+        //public void DestroyInterstitial()
+        //{
+        //    interstitial.Destroy();
+        //}
+        //#endregion
 
         #region Rewarded
         public bool IsRewardAdLoaded()
@@ -305,11 +304,11 @@ namespace GameBase {
             MonoBehaviour.print("HandleRewardedAdLoaded event received");
         }
 
-        public void HandleRewardedAdFailedToLoad(object sender, AdErrorEventArgs args)
+        public void HandleRewardedAdFailedToLoad(object sender, AdFailedToLoadEventArgs args)
         {
             MonoBehaviour.print(
                 "HandleRewardedAdFailedToLoad event received with message: "
-                                 + args.Message);
+                                 + args.LoadAdError.GetMessage());
         }
 
         public void HandleRewardedAdOpening(object sender, EventArgs args)
@@ -344,6 +343,5 @@ namespace GameBase {
         }
 
         #endregion
-        */      
     }
 }
