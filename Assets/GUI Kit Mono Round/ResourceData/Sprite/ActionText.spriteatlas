@@ -28,10 +28,14 @@ SpriteAtlas:
       allowAlphaSplitting: 0
       enableRotation: 1
       enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
     variantMultiplier: 1
     packables:
     - {fileID: 102900000, guid: d10167461883f4e7481609ea84a0ed88, type: 3}
     bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: 0035e590d2238451384e382649b97e96, type: 3}
@@ -71,5 +75,6 @@ SpriteAtlas:
   - txt_levelup
   - txt_bonustime
   - txt_mission_clear
+  m_RenderDataMap: {}
   m_Tag: ActionText
   m_IsVariant: 0

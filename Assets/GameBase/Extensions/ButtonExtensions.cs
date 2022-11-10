@@ -12,7 +12,7 @@ namespace GameBase {
     public static class ButtonExtension {
         
         public static IObservable<Unit> OnLongClickIntentAsObservable(this Button button, double ms = 350) {
-            DateTimeOffset pointerDownTimeStamp;
+            var pointerDownTimeStamp = new DateTimeOffset();
 
             return button.OnPointerDownAsObservable()
                 .Timestamp()

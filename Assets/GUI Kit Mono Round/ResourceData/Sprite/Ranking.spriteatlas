@@ -28,10 +28,14 @@ SpriteAtlas:
       allowAlphaSplitting: 0
       enableRotation: 1
       enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
     variantMultiplier: 1
     packables:
     - {fileID: 102900000, guid: 892d4e9c927a74ec3ab99442393922b9, type: 3}
     bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: 5c986ba182caa40cc860b2a196ee34fa, type: 3}
@@ -47,5 +51,6 @@ SpriteAtlas:
   - icon_rank_bn
   - ranking_list_me_bg
   - icon_rank_sr
+  m_RenderDataMap: {}
   m_Tag: Ranking
   m_IsVariant: 0

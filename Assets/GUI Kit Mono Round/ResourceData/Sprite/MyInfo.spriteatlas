@@ -28,10 +28,14 @@ SpriteAtlas:
       allowAlphaSplitting: 0
       enableRotation: 1
       enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
     variantMultiplier: 1
     packables:
     - {fileID: 102900000, guid: c3e7769362b1a47d8a289bc2b43705e7, type: 3}
     bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: f73480107c1a04aca94aab3b8ccdcb83, type: 3}
@@ -83,5 +87,6 @@ SpriteAtlas:
   - inventory_item_scroll
   - btn_modify_n
   - stat_info_ic_defense
+  m_RenderDataMap: {}
   m_Tag: MyInfo
   m_IsVariant: 0
