@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using PM.Enum.UI;
 using GameBase;
@@ -7,6 +6,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using PM.Enum.Item;
 
 [ResourcePath("UI/Window/Window-Home")]
 public class HomeWindowUIScript : WindowBase
@@ -14,7 +14,7 @@ public class HomeWindowUIScript : WindowBase
     [SerializeField] protected Button _questButton;
     [SerializeField] protected Button _missionButton;
     [SerializeField] protected Button _presentButton;
-    [SerializeField] protected Button _rewardAdButton;
+    [SerializeField] protected RewardAdButton _rewardAdButton;
     [SerializeField] protected Transform _monsterAreaParentBase;
     [SerializeField] protected GameObject _missionIconBadge;
     [SerializeField] protected GameObject _presentIconBadge;
@@ -38,7 +38,17 @@ public class HomeWindowUIScript : WindowBase
             .Subscribe();
 
         _rewardAdButton.OnClickIntentAsObservable()
-            .Do(_ => MobileAdsManager.Instance.TryShowRewarded(new Action(() => { Debug.Log($"Get Reward"); } )))
+            .SelectMany(_ => MobileAdsManager.Instance.ShowRewardObservable())
+            .SelectMany(_=> ApiConnection.RewardAdGrantReward(_rewardAdButton.rewardAdId))
+            .SelectMany(res =>
+            {
+                var itemList = MasterRecord.GetMasterOf<RewardAdMB>().Get(_rewardAdButton.rewardAdId).itemList.Select(i => (ItemMI)i).ToList();
+                return RouletteDialogFactory.Create(new RouletteDialogRequest()
+                {
+                    itemList = itemList,
+                    electedIndex = res.electedIndex,
+                });
+            })
             .Subscribe();
 
         ActivateBadge();

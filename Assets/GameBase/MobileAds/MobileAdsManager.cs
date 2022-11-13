@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using GoogleMobileAds.Api;
 using System;
+using PM.Enum.UI;
+using UniRx;
 
 namespace GameBase {
     public class MobileAdsManager : SingletonMonoBehaviour<MobileAdsManager>
@@ -253,17 +255,36 @@ namespace GameBase {
             return this.rewardedAd.IsLoaded();
         }
 
-        public bool TryShowRewarded(Action action)
+        public IObservable<Unit> ShowRewardObservable()
         {
             if (this.rewardedAd.IsLoaded())
             {
-                rewardedCallBackAction = action;
-                this.rewardedAd.Show();
-                return true;
+                return Observable.Create<Unit>(observer => {
+                    rewardedCallBackAction = new Action(() =>
+                    {
+                        observer.OnNext(Unit.Default);
+                        observer.OnCompleted();
+                    });
+                    this.rewardedAd.Show();
+                    return Disposable.Empty;
+                });
             }
             else
-            { 
-                return false;
+            {
+                return CommonDialogFactory.Create(new CommonDialogRequest()
+                {
+                    commonDialogType = CommonDialogType.YesOnly,
+                    title = "エラー",
+                    content = "広告の読み込みに失敗しました\n時間を開けて再度お試しください",
+                })
+                    .SelectMany(_ =>
+                    {
+                        return Observable.Create<Unit>(observer => {
+                            observer.OnCompleted();
+                            return Disposable.Empty;
+                        });
+                    })
+                    .AsUnitObservable();
             }
         }
 
@@ -309,6 +330,12 @@ namespace GameBase {
             MonoBehaviour.print(
                 "HandleRewardedAdFailedToLoad event received with message: "
                                  + args.LoadAdError.GetMessage());
+            CommonDialogFactory.Create(new CommonDialogRequest()
+            {
+                commonDialogType = CommonDialogType.YesOnly,
+                title = "エラー",
+                content = "広告の読み込みに失敗しました\n時間を開けて再度お試しください",
+            }).Subscribe();
         }
 
         public void HandleRewardedAdOpening(object sender, EventArgs args)
@@ -321,6 +348,12 @@ namespace GameBase {
             MonoBehaviour.print(
                 "HandleRewardedAdFailedToShow event received with message: "
                                  + args.Message);
+            CommonDialogFactory.Create(new CommonDialogRequest()
+            {
+                commonDialogType = CommonDialogType.YesOnly,
+                title = "エラー",
+                content = "広告の表示に失敗しました\n時間を開けて再度お試しください",
+            }).Subscribe();
         }
 
         public void HandleRewardedAdClosed(object sender, EventArgs args)

@@ -372,6 +372,17 @@ public partial class ApiConnection
     }
 
     /// <summary>
+    /// リワード広告の報酬を付与する
+    /// </summary>
+    public static IObservable<RewardAdGrantRewardApiResponse> RewardAdGrantReward(long rewardAdId)
+    {
+        return SendRequest<RewardAdGrantRewardApiRequest, RewardAdGrantRewardApiResponse>(RewardAdGrantRewardApiInterface.functionName, new RewardAdGrantRewardApiRequest()
+        {
+            rewardAdId = rewardAdId,
+        });
+    }
+
+    /// <summary>
     /// 開発用:全資産を付与する
     /// </summary>
     public static IObservable<DevelopGrantAllPropertyApiResponse> DevelopGrantAllProperty()

@@ -871,7 +871,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3134007636103551427
 RectTransform:
   m_ObjectHideFlags: 0
@@ -21431,7 +21431,7 @@ GameObject:
   - component: {fileID: 4471112998274508420}
   - component: {fileID: 6270302222908984544}
   - component: {fileID: 3183938912425533461}
-  - component: {fileID: 2803769633696667537}
+  - component: {fileID: 570972166595541975}
   m_Layer: 5
   m_Name: RewardAdButton
   m_TagString: Untagged
@@ -21500,7 +21500,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &2803769633696667537
+--- !u!114 &570972166595541975
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -21509,7 +21509,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8746633326446657622}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: f47ed6a849775a24e903af62ca104702, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
@@ -21544,6 +21544,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+  _rewardAdId: 1
 --- !u!1 &8855279384046204266
 GameObject:
   m_ObjectHideFlags: 0
@@ -21612,7 +21613,7 @@ MonoBehaviour:
   _questButton: {fileID: 8246310671003791598}
   _missionButton: {fileID: 1218697356047953378}
   _presentButton: {fileID: 6615896491277995024}
-  _rewardAdButton: {fileID: 2803769633696667537}
+  _rewardAdButton: {fileID: 570972166595541975}
   _monsterAreaParentBase: {fileID: 635700752688566619}
   _missionIconBadge: {fileID: 8104333042040742028}
   _presentIconBadge: {fileID: 834173872671663486}
