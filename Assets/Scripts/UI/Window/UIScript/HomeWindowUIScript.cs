@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using PM.Enum.Item;
+using PM.Enum.Date;
 
 [ResourcePath("UI/Window/Window-Home")]
 public class HomeWindowUIScript : WindowBase
@@ -38,6 +39,13 @@ public class HomeWindowUIScript : WindowBase
             .Subscribe();
 
         _rewardAdButton.OnClickIntentAsObservable()
+            .SelectMany(_ =>
+            {
+                var title = "確認";
+                var content = $"広告を視聴することで限定アイテムを獲得します\n{GetRewardAdRemainNumText(_rewardAdButton.rewardAdId)}";
+                return CommonDialogFactory.Create(new CommonDialogRequest() { commonDialogType = CommonDialogType.NoAndYes, title = title, content = content });
+            })
+            .Where(res => res.dialogResponseType == DialogResponseType.Yes)
             .SelectMany(_ => MobileAdsManager.Instance.ShowRewardObservable())
             .SelectMany(_=> ApiConnection.RewardAdGrantReward(_rewardAdButton.rewardAdId))
             .SelectMany(res =>
@@ -49,8 +57,10 @@ public class HomeWindowUIScript : WindowBase
                     electedIndex = res.electedIndex,
                 });
             })
+            .Do(_ => RefreshRewardAdButton())
             .Subscribe();
 
+        RefreshRewardAdButton();
         ActivateBadge();
         SetMonsterImage();
 
@@ -106,6 +116,29 @@ public class HomeWindowUIScript : WindowBase
         }
     }
 
+    private string GetRewardAdRemainNumText(long rewardAdId)
+    {
+        var rewardAd = MasterRecord.GetMasterOf<RewardAdMB>().Get(rewardAdId);
+        var grantedNum = DateTimeUtil.GetTermValidUserRewardAdList(rewardAd.termType, ApplicationContext.userData.userRewardAdList).Count;
+        var termText = "";
+        switch (rewardAd.termType) 
+        {
+            case TermType.Day:
+                termText = "本日の残り回数";
+                break;
+
+        }
+
+        return $"{termText}:{rewardAd.limitNum - grantedNum}/{rewardAd.limitNum}";
+    }
+
+    private void RefreshRewardAdButton()
+    {
+        var rewardAd = MasterRecord.GetMasterOf<RewardAdMB>().Get(_rewardAdButton.rewardAdId);
+        var isShowRewardAdButton = DateTimeUtil.GetTermValidUserRewardAdList(rewardAd.termType, ApplicationContext.userData.userRewardAdList).Where(u => u.rewardAdId == rewardAd.id).Count() < rewardAd.limitNum;
+        _rewardAdButton.gameObject.SetActive(isShowRewardAdButton);
+    }
+
     private void ActivateBadge()
     {
         var isShowPresentIconBadge = ApplicationContext.userData.userPresentList.Any(u => u.IsValid());
@@ -137,6 +170,7 @@ public class HomeWindowUIScript : WindowBase
 
     public override void Open(WindowInfo info)
     {
+        RefreshRewardAdButton();
         ActivateBadge();
         HeaderFooterManager.Instance.ActivateBadge();
     }

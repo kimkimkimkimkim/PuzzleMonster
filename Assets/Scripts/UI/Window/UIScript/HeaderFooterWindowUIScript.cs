@@ -33,6 +33,7 @@ public class HeaderFooterWindowUIScript : WindowBase
     [SerializeField] protected List<GameObject> _propertyPanelBaseList;
     [SerializeField] protected Button _staminaButton;
     [SerializeField] protected Button _arenaBlockerButton;
+    [SerializeField] protected long _rewardAdButtonRewardAdId;
 
     public GameObject headerPanel { get { return _headerPanel; } }
     public GameObject footerPanel { get { return _footerPanel; } }
@@ -248,7 +249,16 @@ public class HeaderFooterWindowUIScript : WindowBase
     public void ActivateBadge()
     {
         // HomeTab
+        _homeTabBadge.SetActive(IsShowHomeTabBadge());
+    }
+
+    private bool IsShowHomeTabBadge()
+    {
+        // プレゼントボックスボタン
         var isShowPresentIconBadge = ApplicationContext.userData.userPresentList.Any(u => u.IsValid());
+        if (isShowPresentIconBadge) return true;
+
+        // ミッションボタン
         var isShowMissionIconBadge = MasterRecord.GetMasterOf<MissionMB>().GetAll()
             .Where(m =>
             {
@@ -270,8 +280,14 @@ public class HeaderFooterWindowUIScript : WindowBase
                 return canClear && !isCleared;
             })
             .Any();
-        var isShowHomeTabBadge = isShowPresentIconBadge || isShowMissionIconBadge;
-        _homeTabBadge.SetActive(isShowHomeTabBadge);
+        if (isShowMissionIconBadge) return true;
+
+        // リワード広告
+        var rewardAd = MasterRecord.GetMasterOf<RewardAdMB>().Get(_rewardAdButtonRewardAdId);
+        var isShowRewardAdButton = DateTimeUtil.GetTermValidUserRewardAdList(rewardAd.termType, ApplicationContext.userData.userRewardAdList).Where(u => u.rewardAdId == rewardAd.id).Count() < rewardAd.limitNum;
+        if (isShowRewardAdButton) return true;
+
+        return false;
     }
 
     public override void Open(WindowInfo info)
