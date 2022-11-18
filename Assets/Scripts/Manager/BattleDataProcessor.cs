@@ -18,7 +18,7 @@ public partial class BattleDataProcessor
     private List<BattleChainParticipantInfo> battleChainParticipantList = new List<BattleChainParticipantInfo>();
     private WinOrLose currentWinOrLose;
 
-    private void Init(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
+    private void Init(List<UserMonsterInfo> userMonsterList, QuestMB quest)
     {
         this.quest = quest;
 
@@ -26,12 +26,12 @@ public partial class BattleDataProcessor
         currentTurnCount = 0;
         currentWinOrLose = WinOrLose.Continue;
 
-        SetPlayerBattleMonsterList(userMonsterParty);
+        SetPlayerBattleMonsterList(userMonsterList);
     }
 
-    public List<BattleLogInfo> GetBattleLogList(UserMonsterPartyInfo userMonsterParty, QuestMB quest)
+    public List<BattleLogInfo> GetBattleLogList(List<UserMonsterInfo> userMonsterList, QuestMB quest)
     {
-        Init(userMonsterParty, quest);
+        Init(userMonsterList, quest);
 
         // バトル処理を開始する
         while (currentWinOrLose == WinOrLose.Continue)
@@ -1182,14 +1182,9 @@ public partial class BattleDataProcessor
         return ConstManager.Battle.BACK_INDEX_LIST.Contains(battleMonsterIndex.index);
     }
 
-    private void SetPlayerBattleMonsterList(UserMonsterPartyInfo userMonsterParty)
-    {
-        playerBattleMonsterList.Clear();
-        userMonsterParty.userMonsterIdList.ForEach((userMonsterId, index) =>
-        {
-            var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
-            if (userMonster != null)
-            {
+    private void SetPlayerBattleMonsterList(List<UserMonsterInfo> userMonsterList) {
+        userMonsterList.ForEach((userMonster, index) => {
+            if (userMonster != null) {
                 var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
                 var battleMonster = BattleUtil.GetBattleMonster(monster, userMonster.customData.level, true, index);
                 playerBattleMonsterList.Add(battleMonster);

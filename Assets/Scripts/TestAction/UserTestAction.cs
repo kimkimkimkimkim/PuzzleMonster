@@ -199,6 +199,13 @@ public class UserTestAction : ITestAction
             })
         });
 
+        testActionDataList.Add(new TestActionData() {
+            title = "バトルシミュレーション",
+            action = new Action(() => {
+                DevelopInputBattleSimulationInfoWindowFactory.Create(new DevelopInputBattleSimulationInfoWindowRequest()).Subscribe();
+            }),
+        });
+
         testActionDataList.Add(new TestActionData()
         {
             title = "作業用",

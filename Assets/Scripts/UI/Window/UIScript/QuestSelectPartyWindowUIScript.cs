@@ -214,7 +214,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                     selectedPartyMonsterIndex = -1;
                     selectedUserMonsterId = null;
                     RefreshPartyUI();
-                    RefreshScroll(); // TODO: 初期化せずに表示中のアイテムだけ更新したい
+                    ReloadScroll();
                     RefreshGrayoutPanel();
                 }
                 else if(selectedUserMonsterId != null)
@@ -226,7 +226,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                     selectedPartyMonsterIndex = -1;
                     selectedUserMonsterId = null;
                     RefreshPartyUI();
-                    RefreshScroll(); // TODO: 初期化せずに表示中のアイテムだけ更新したい
+                    ReloadScroll();
                     RefreshGrayoutPanel();
                 }
                 else
@@ -249,11 +249,22 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         });
     }
 
+    /// <summary>
+    /// 初期化（スクロールアイテムの削除・生成）を行う
+    /// </summary>
     private void RefreshScroll()
     {
         _infiniteScroll.Clear();
 
         _infiniteScroll.Init(userMonsterList.Count, OnUpdateItem);
+    }
+
+    /// <summary>
+    /// 初期化せず表示のみ変更する
+    /// </summary>
+    private void ReloadScroll() {
+        _infiniteScroll.ChangeMaxDataCount(userMonsterList.Count);
+        _infiniteScroll.UpdateCurrentDisplayItems();
     }
 
     private void OnUpdateItem(int index, GameObject item)
@@ -294,7 +305,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 selectedPartyMonsterIndex = -1;
                 selectedUserMonsterId = null;
                 RefreshPartyUI();
-                RefreshScroll(); // TODO: 初期化せずに表示中のアイテムだけ更新したい
+                ReloadScroll();
                 RefreshGrayoutPanel();
             }
             else

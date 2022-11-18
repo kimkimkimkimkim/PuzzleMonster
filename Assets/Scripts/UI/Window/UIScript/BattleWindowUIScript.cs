@@ -41,15 +41,15 @@ public class BattleWindowUIScript : DummyWindowBase
 
     private List<BattleMonsterInfo> playerBattleMonsterList;
     private List<BattleMonsterInfo> enemyBattleMonsterList;
-    private UserMonsterPartyInfo userMonsterParty;
+    private List<UserMonsterInfo> playerUserMonsterList;
     private QuestMB quest;
     private IDisposable skillNameObservable;
     private IDisposable actionDescriptionObservable;
 
-    public void Init(string userMonsterPartyId, long questId, string userBattleId)
+    public void Init(List<UserMonsterInfo> playerUserMonsterList, QuestMB quest, string userBattleId)
     {
-        userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
-        quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
+        this.playerUserMonsterList = playerUserMonsterList;
+        this.quest = quest;
 
         _pauseButton.OnClickIntentAsObservable()
             .Do(_ => TimeManager.Instance.Pause())
@@ -75,7 +75,7 @@ public class BattleWindowUIScript : DummyWindowBase
         SetPlayerMonsterImage();
         SetTurnText(1);
         SetWaveText(1, quest.questMonsterListByWave.Count);
-        SetBattleMonsterInfoItem(userMonsterParty);
+        SetBattleMonsterInfoItem(playerUserMonsterList);
     }
 
     public void StartSkillTest()
@@ -124,9 +124,8 @@ public class BattleWindowUIScript : DummyWindowBase
 
     private void SetPlayerMonsterImage()
     {
-        userMonsterParty.userMonsterIdList.ForEach((userMonsterId, index) =>
+        playerUserMonsterList.ForEach((userMonster, index) =>
         {
-            var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
             if (userMonster != null) {
                 var parent = _playerMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
@@ -218,11 +217,10 @@ public class BattleWindowUIScript : DummyWindowBase
         }
     }
 
-    private void SetBattleMonsterInfoItem(UserMonsterPartyInfo userMonsterParty)
+    private void SetBattleMonsterInfoItem(List<UserMonsterInfo> playerUserMonsterList)
     {
-        userMonsterParty.userMonsterIdList.ForEach(userMonsterId =>
+        playerUserMonsterList.ForEach(userMonster =>
         {
-            var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
             var battleMonsterInfoItem = UIManager.Instance.CreateContent<BattleMonsterInfoItem>(_battleMonsterInfoItemBase);
             battleMonsterInfoItem.Set(userMonster);
             battleMonsterInfoItem.SetOnClickAction(() =>
