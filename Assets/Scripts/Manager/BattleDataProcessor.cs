@@ -1044,8 +1044,8 @@ public partial class BattleDataProcessor
             case SkillTargetType.EnemyAllHPLowest4:
                 battleMonsterIndexList = enemyBattleMonsterList.OrderBy(b => b.currentHp).Take(4).Select(b => b.index).ToList();
                 break;
-            case SkillTargetType.Target:
-                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValidActivateCondition(battleIndex, skillEffect.activateConditionType)).Select(battleIndex => battleIndex).ToList();
+            case SkillTargetType.JustBeforeElementTarget:
+                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValidActivateCondition(battleIndex, skillEffect.activateConditionType)).ToList();
                 break;
             case SkillTargetType.AllyFrontRandom1:
                 {
