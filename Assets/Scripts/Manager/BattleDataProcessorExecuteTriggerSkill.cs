@@ -30,18 +30,30 @@ public partial class BattleDataProcessor
         // チェーンの状況を元に発動可能か判断
         if (!IsValidChain(triggerType, battleMonsterIndex, 0, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount)) return;
 
-        // 発動条件を満たしていなければだめ
+        // パッシブスキルを取得していない場合は何もしない
         var targetBattleMonster = GetBattleMonster(battleMonsterIndex);
         var targetMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(targetBattleMonster.monsterId);
         var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(targetMonster.id, targetBattleMonster.level);
         var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
-        if (passiveSkill == null || !IsValidActivateCondition(battleMonsterIndex, passiveSkill.activateConditionType)) return;
+        if (passiveSkill == null) return;
 
-        // 発動回数制限に達していたらだめ
-        if (passiveSkill.limitExecuteNum > 0 && targetBattleMonster.passiveSkillExecuteCount >= passiveSkill.limitExecuteNum) return;
+        // 発動条件をみたしたスキルが存在していれば発動
+        var skillEffectList = passiveSkill.effectList
+            .Where(effect =>
+            {
+                // 実行者条件を満たしているか
+                if (!IsValidActivateCondition(battleMonsterIndex, effect.activateConditionType, effect.activateConditionValue)) return false;
 
-        // 指定したトリガータイプのパッシブスキルを保持していれば発動
-        var skillEffectList = passiveSkill.effectList.Where(effect => effect.triggerType == triggerType && effect.triggerTypeOptionValue == triggerTypeOptionValue).Select(effect => (SkillEffectMI)effect).ToList();
+                // TODO: 発動回数条件を満たしているか
+                if (passiveSkill.limitExecuteNum > 0 && targetBattleMonster.passiveSkillExecuteCount >= passiveSkill.limitExecuteNum) return false;
+
+                // トリガータイプがあっているか
+                if (effect.triggerType != triggerType || effect.triggerTypeOptionValue != triggerTypeOptionValue) return false;
+
+                return true;
+            })
+            .Select(effect => (SkillEffectMI)effect)
+            .ToList();
         if (skillEffectList.Any())
         {
             var battleChainParticipant = new BattleChainParticipantInfo()
@@ -62,7 +74,7 @@ public partial class BattleDataProcessor
         var targetBattleMonster = GetBattleMonster(battleMonsterIndex);
         var targetBattleConditionList = targetBattleMonster.battleConditionList
             .Where(c => c.battleCondition.triggerType == triggerType)
-            .Where(c => IsValidActivateCondition(battleMonsterIndex, c.battleCondition.activateConditionType))
+            .Where(c => IsValidActivateCondition(battleMonsterIndex, c.battleCondition.activateConditionType, c.battleCondition.activateConditionValue))
             .ToList();
 
         targetBattleConditionList.ForEach(battleCondition =>

@@ -208,6 +208,108 @@ public class UserTestAction : ITestAction
 
         testActionDataList.Add(new TestActionData()
         {
+            title = "バトルテスト",
+            action = new Action(() =>
+            {
+                try
+                {
+                    var monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().OrderBy(m => m.id).ToList();
+                    var allMonsterNum = 10;
+                    var repeatNum = (int)Math.Ceiling(monsterList.Count / (float)allMonsterNum);
+                    var monsterLevelList = new List<int>() { 50, 60, 70, 80, 90, 100 };
+
+                    Observable.Interval(TimeSpan.FromSeconds(1.0f))
+                        .Do(count =>
+                        {
+
+                            var selectMonsterIndex = (int)Math.Floor((float)count / monsterLevelList.Count);
+                            var monsterLevelListIndex = (int)(count % monsterLevelList.Count);
+
+                            var initialId = selectMonsterIndex * allMonsterNum + 1;
+                            var lastId = Math.Min((selectMonsterIndex + 1) * allMonsterNum, monsterList.Count);
+                            var monsterNum = lastId - initialId + 1;
+                            if (monsterNum < 2) throw new Exception();
+
+                            var allyMonsterNum = (int)Math.Ceiling(monsterNum / 2.0f);
+                            var allyMonsterList = monsterList.Where(m => initialId <= m.id && m.id < initialId + allyMonsterNum).ToList();
+                            var enemyMonsterList = monsterList.Where(m => initialId + allyMonsterNum <= m.id && m.id <= lastId).ToList();
+
+                            var level = monsterLevelList[monsterLevelListIndex];
+                            var allyUserMonsterList = allyMonsterList.Select(m => new UserMonsterInfo()
+                            {
+                                id = "",
+                                monsterId = m.id,
+                                num = 1,
+                                customData = new UserMonsterCustomData()
+                                {
+                                    level = level,
+                                    exp = 0,
+                                    grade = 0,
+                                    luck = 0,
+                                },
+                            }).ToList();
+                            var enemyQuestMonsterList = enemyMonsterList.Select(m => new QuestMonsterMI()
+                            {
+                                monsterId = m.id,
+                                level = level,
+                            }).ToList();
+                            var quest = new QuestMB()
+                            {
+                                id = 0,
+                                name = "バトルテスト",
+                                questCategoryId = 0,
+                                firstRewardItemList = new List<ItemMI>(),
+                                dropItemList = new List<ProbabilityItemMI>(),
+                                questMonsterListByWave = new List<List<QuestMonsterMI>>() { enemyQuestMonsterList },
+                                displayConditionList = new List<ConditionMI>(),
+                                canExecuteConditionList = new List<ConditionMI>(),
+                                consumeStamina = 0,
+                                limitTurnNum = 99,
+                                isLastWaveBoss = true,
+                            };
+                            var battleDataProcessor = new BattleDataProcessor();
+                            var battleLogList = battleDataProcessor.GetBattleLogList(allyUserMonsterList, quest);
+
+                            // ログ出力
+                            battleLogList.ForEach(battleLog =>
+                            {
+                                Debug.Log($"--------- {battleLog.type} ---------");
+                                Debug.Log(battleLog.log);
+
+                                if (battleLog.playerBattleMonsterList != null && battleLog.enemyBattleMonsterList != null)
+                                {
+                                    var playerMonsterHpLogList = battleLog.playerBattleMonsterList.Select(m =>
+                                    {
+                                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                                        return $"{monster.name}: {m.currentHp}";
+                                    });
+                                    var enemyMonsterHpLogList = battleLog.enemyBattleMonsterList.Select(m =>
+                                    {
+                                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                                        return $"{monster.name}: {m.currentHp}";
+                                    });
+                                    Debug.Log("===================================================");
+                                    Debug.Log($"【味方】{string.Join(",", playerMonsterHpLogList)}");
+                                    Debug.Log($"　【敵】{string.Join(",", enemyMonsterHpLogList)}");
+                                    Debug.Log("===================================================");
+                                }
+                            });
+                        })
+                        .Take(repeatNum * monsterLevelList.Count)
+                        .Catch((Exception e) =>
+                        {
+                            return Observable.ReturnUnit().Do(_ => Debug.Log($"ERROR: {e}")).Select(_ => 0L);
+                        })
+                        .Subscribe();
+                }catch(Exception e)
+                {
+                    Debug.Log($"ERROR: {e}");
+                }
+            }),
+        });
+
+        testActionDataList.Add(new TestActionData()
+        {
             title = "作業用",
             action = new Action(() =>
             {

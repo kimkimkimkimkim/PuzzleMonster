@@ -157,7 +157,7 @@ public partial class BattleDataProcessor
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
 
         // アクションアニメーションを開始する
-        var isCounter = actionType == BattleActionType.PassiveSkill && skillEffectList.Any(effect => effect.type == SkillType.Damage); // パッシブかつ攻撃のスキルは反撃と判定
+        var isCounter = actionType == BattleActionType.PassiveSkill && skillEffectList.Any(effect => effect.type == SkillType.Attack); // パッシブかつ攻撃のスキルは反撃と判定
         if(actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill || isCounter) StartActionAnimation(actionMonsterIndex, actionType);
 
         // 各効果の実行
@@ -387,7 +387,7 @@ public partial class BattleDataProcessor
 
         var skillType = skillEffect.type;
         switch (skillType) {
-            case SkillType.Damage:
+            case SkillType.Attack:
                 ExecuteAttack(doMonsterIndex,actionType, beDoneMonsterList, skillEffect);
                 break;
             case SkillType.Heal:
@@ -420,7 +420,7 @@ public partial class BattleDataProcessor
             var effectValue = m.ChangeHp(actionValue.value);
             
             // スコア計算
-            AddScore(doMonsterIndex, m.index, SkillType.Damage, effectValue);
+            AddScore(doMonsterIndex, m.index, SkillType.Attack, effectValue);
 
             // エネルギーを上昇させる
             if(actionType != BattleActionType.BattleCondition) m.ChangeEnergy(ConstManager.Battle.ENERGY_RISE_VALUE_ON_TAKE_DAMAGE);
@@ -933,8 +933,8 @@ public partial class BattleDataProcessor
         var isDoMonsterPlayer = doMonsterIndex.isPlayer;
         var allyBattleMonsterList = isDoMonsterPlayer ? this.playerBattleMonsterList : this.enemyBattleMonsterList;
         var enemyBattleMonsterList = isDoMonsterPlayer ? this.enemyBattleMonsterList : this.playerBattleMonsterList;
-        allyBattleMonsterList = allyBattleMonsterList.Where(b => IsValidActivateCondition(b, skillEffect.activateConditionType)).ToList();
-        enemyBattleMonsterList = enemyBattleMonsterList.Where(b => IsValidActivateCondition(b, skillEffect.activateConditionType)).ToList();
+        allyBattleMonsterList = allyBattleMonsterList.Where(b => IsValidActivateCondition(b, skillEffect.activateConditionType, skillEffect.activateConditionValue)).ToList();
+        enemyBattleMonsterList = enemyBattleMonsterList.Where(b => IsValidActivateCondition(b, skillEffect.activateConditionType, skillEffect.activateConditionValue)).ToList();
 
         var battleMonsterIndexList = new List<BattleMonsterIndex>();
         switch (skillEffect.skillTargetType)
@@ -980,11 +980,11 @@ public partial class BattleDataProcessor
                 break;
             case SkillTargetType.DoAttack:
                 var doMonster = GetBattleMonster(doMonsterIndex);
-                var isBeAttackedValid = IsValidActivateCondition(doMonster.currentBeDoneAttackedMonsterIndex, skillEffect.activateConditionType);
+                var isBeAttackedValid = IsValidActivateCondition(doMonster.currentBeDoneAttackedMonsterIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue);
                 battleMonsterIndexList = isBeAttackedValid ? new List<BattleMonsterIndex>() { doMonster.currentBeDoneAttackedMonsterIndex } : new List<BattleMonsterIndex>();
                 break;
             case SkillTargetType.BeAttacked:
-                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValidActivateCondition(battleIndex, skillEffect.activateConditionType)).Select(battleIndex => battleIndex).ToList();
+                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValidActivateCondition(battleIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue)).Select(battleIndex => battleIndex).ToList();
                 break;
             case SkillTargetType.AllyFrontAll:
                 {
@@ -1045,7 +1045,7 @@ public partial class BattleDataProcessor
                 battleMonsterIndexList = enemyBattleMonsterList.OrderBy(b => b.currentHp).Take(4).Select(b => b.index).ToList();
                 break;
             case SkillTargetType.JustBeforeElementTarget:
-                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValidActivateCondition(battleIndex, skillEffect.activateConditionType)).ToList();
+                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValidActivateCondition(battleIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue)).ToList();
                 break;
             case SkillTargetType.AllyFrontRandom1:
                 {
@@ -1141,28 +1141,25 @@ public partial class BattleDataProcessor
         return random <= activateProbability;
     }
 
-    private bool IsValidActivateCondition(BattleMonsterIndex battleMonsterIndex, ActivateConditionType activateConditionType)
+    private bool IsValidActivateCondition(BattleMonsterIndex battleMonsterIndex, ActivateConditionType activateConditionType, int activateConditionValue)
     {
         var battleMonster = GetBattleMonster(battleMonsterIndex);
-        return IsValidActivateCondition(battleMonster, activateConditionType);
+        return IsValidActivateCondition(battleMonster, activateConditionType, activateConditionValue);
     }
 
-    private bool IsValidActivateCondition(BattleMonsterInfo battleMonster, ActivateConditionType activateConditionType)
+    private bool IsValidActivateCondition(BattleMonsterInfo battleMonster, ActivateConditionType activateConditionType, int activateConditionValue)
     {
         switch (activateConditionType)
         {
-            case ActivateConditionType.Under50PercentHP:
+            case ActivateConditionType.UnderPercentHP:
                 // HPが50%未満ならOK
-                return !battleMonster.isDead && battleMonster.currentHp < battleMonster.maxHp * (50.0f / 100.0f);
+                return !battleMonster.isDead && battleMonster.currentHp < battleMonster.maxHp * (activateConditionValue / 100.0f);
             case ActivateConditionType.Alive:
                 // HPが0より多ければOK
                 return !battleMonster.isDead && battleMonster.currentHp > 0;
             case ActivateConditionType.Dead:
                 // 戦闘不能ならOK
                 return battleMonster.isDead;
-            case ActivateConditionType.Under30PercentHP:
-                // HPが30%未満ならOK
-                return !battleMonster.isDead && battleMonster.currentHp < battleMonster.maxHp * (30.0f / 100.0f);
             case ActivateConditionType.Healable:
                 // 回復可能ならOK
                 return !battleMonster.isDead && battleMonster.currentHp < battleMonster.maxHp;

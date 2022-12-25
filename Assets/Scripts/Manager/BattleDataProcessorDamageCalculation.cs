@@ -15,7 +15,7 @@ public partial class BattleDataProcessor
 
 		switch (skillEffect.type)
 		{
-			case SkillType.Damage:
+			case SkillType.Attack:
 				switch (skillEffect.valueTargetType)
 				{
 					// HPを基準にする攻撃は他の要素を含まないダメージで計算
@@ -271,14 +271,14 @@ public partial class BattleDataProcessor
 	
 	private int GetValueCoefficient(SkillEffectMI skillEffect){
 		switch(skillEffect.type){
-			case SkillType.Damage:
+			case SkillType.Attack:
 				return -1;
 			case SkillType.Heal:
 				return 1;
 			case SkillType.ConditionAdd:
 				var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
 				switch(battleCondition.skillType){
-					case SkillType.Damage:
+					case SkillType.Attack:
 						return -1;
 					case SkillType.Heal:
 						return 1;

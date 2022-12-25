@@ -16,7 +16,7 @@ public partial class BattleDataProcessor
 		var beDoneBattleMonster = GetBattleMonster(beDoneBattleMonsterIndex);
 		switch(skillType)
 		{
-			case SkillType.Damage:
+			case SkillType.Attack:
 				// 与ダメージ
 				doBattleMonster.totalGiveDamage += effectValue;
 
