@@ -162,20 +162,19 @@ public partial class BattleDataProcessor
 
         // 各効果の実行
         var currentBeDoneMonsterIndexList = new List<BattleMonsterIndex>();
-        skillEffectList.ForEach(skillEffect => {
+        skillEffectList.ForEach((skillEffect, index) => {
             // アクションの対象を選択する
             currentBeDoneMonsterIndexList = GetBeDoneMonsterIndexList(actionMonsterIndex, currentBeDoneMonsterIndexList, skillEffect);
 
             // アクション処理を実行する
             ExecuteAction(actionMonsterIndex, actionType, currentBeDoneMonsterIndexList, skillEffect);
-        });
 
-        // パッシブスキル発動回数を計上
-        if(actionType == BattleActionType.PassiveSkill)
-        {
-            var actionMonster = GetBattleMonster(actionMonsterIndex);
-            actionMonster.passiveSkillExecuteCount++;
-        }
+            // パッシブスキル発動回数を計上
+            if (actionType == BattleActionType.PassiveSkill) {
+                var actionMonster = GetBattleMonster(actionMonsterIndex);
+                actionMonster.passiveSkillExecuteCount++;
+            }
+        });
 
         if (actionType == BattleActionType.NormalSkill)
         {
