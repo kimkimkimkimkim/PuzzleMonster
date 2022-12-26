@@ -235,6 +235,20 @@ public class UserTestAction : ITestAction
                             var enemyMonsterList = monsterList.Where(m => initialId + allyMonsterNum <= m.id && m.id <= lastId).ToList();
 
                             var level = monsterLevelList[monsterLevelListIndex];
+                            var getMaxLevel = new Func<MonsterMB, int>(monster =>
+                            {
+                                switch (monster.rarity)
+                                {
+                                    case PM.Enum.Monster.MonsterRarity.R:
+                                        return 80;
+                                    case PM.Enum.Monster.MonsterRarity.SR:
+                                        return 90;
+                                    case PM.Enum.Monster.MonsterRarity.SSR:
+                                        return 100;
+                                    default:
+                                        return 10;
+                                }
+                            });
                             var allyUserMonsterList = allyMonsterList.Select(m => new UserMonsterInfo()
                             {
                                 id = "",
@@ -242,7 +256,7 @@ public class UserTestAction : ITestAction
                                 num = 1,
                                 customData = new UserMonsterCustomData()
                                 {
-                                    level = level,
+                                    level = Math.Min(level, getMaxLevel(m)),
                                     exp = 0,
                                     grade = 0,
                                     luck = 0,
@@ -251,7 +265,7 @@ public class UserTestAction : ITestAction
                             var enemyQuestMonsterList = enemyMonsterList.Select(m => new QuestMonsterMI()
                             {
                                 monsterId = m.id,
-                                level = level,
+                                level = Math.Min(level, getMaxLevel(m)),
                             }).ToList();
                             var quest = new QuestMB()
                             {
@@ -288,10 +302,12 @@ public class UserTestAction : ITestAction
                                         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
                                         return $"{monster.name}: {m.currentHp}";
                                     });
+                                    /*
                                     Debug.Log("===================================================");
                                     Debug.Log($"【味方】{string.Join(",", playerMonsterHpLogList)}");
                                     Debug.Log($"　【敵】{string.Join(",", enemyMonsterHpLogList)}");
                                     Debug.Log("===================================================");
+                                    */
                                 }
                             });
                         })

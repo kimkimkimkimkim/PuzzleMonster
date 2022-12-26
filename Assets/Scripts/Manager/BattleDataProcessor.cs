@@ -115,7 +115,7 @@ public partial class BattleDataProcessor
         battleLogList.Add(battleLog);
 
         // バトル開始時トリガースキルを発動する
-        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().Select(m => m.index).ToList());
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed()).Select(m => m.index).ToList());
         battleChainParticipantList.Clear();
     }
 
@@ -401,7 +401,19 @@ public partial class BattleDataProcessor
                 break;
             case SkillType.Revive:
                 ExecuteRevive(doMonsterIndex, beDoneMonsterList, skillEffect);
-                break; 
+                break;
+            case SkillType.EnergyUp:
+                ExecuteEnergyUp(doMonsterIndex, beDoneMonsterList, skillEffect);
+                break;
+            case SkillType.EnergyDown:
+                ExecuteEnergyDown(doMonsterIndex, beDoneMonsterList, skillEffect);
+                break;
+            case SkillType.Status:
+                ExecuteStatus(doMonsterIndex, beDoneMonsterList, skillEffect);
+                break;
+            case SkillType.Damage:
+                ExecuteAttack(doMonsterIndex, actionType, beDoneMonsterList, skillEffect);
+                break;
             default:
                 break;
         }
@@ -633,6 +645,117 @@ public partial class BattleDataProcessor
     private void ExecuteRevive(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
     {
 
+    }
+
+    private void ExecuteEnergyUp(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
+    {
+
+    }
+
+    private void ExecuteEnergyDown(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
+    {
+
+    }
+
+    private void ExecuteStatus(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
+    {
+        // ステータスの変更
+        var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
+        var value = battleCondition.buffType == BuffType.Buff ? skillEffect.value : -skillEffect.value;
+        var beDoneMonsterDataList = beDoneMonsterList.Select(battleMonster =>
+        {
+            switch (battleCondition.targetBattleMonsterStatusType)
+            {
+                case BattleMonsterStatusType.Hp:
+                    battleMonster.maxHp += value;
+                    break;
+                case BattleMonsterStatusType.Attack:
+                    battleMonster.baseAttack += value;
+                    break;
+                case BattleMonsterStatusType.Defense:
+                    battleMonster.baseDefense += value;
+                    break;
+                case BattleMonsterStatusType.Speed:
+                    battleMonster.baseSpeed += value;
+                    break;
+                case BattleMonsterStatusType.Sheild:
+                    battleMonster.baseSheild += value;
+                    break;
+                case BattleMonsterStatusType.UltimateSkillDamageRate:
+                    battleMonster.baseUltimateSkillDamageRate += value;
+                    break;
+                case BattleMonsterStatusType.BlockRate:
+                    battleMonster.baseBlockRate += value;
+                    break;
+                case BattleMonsterStatusType.CriticalRate:
+                    battleMonster.baseCriticalRate += value;
+                    break;
+                case BattleMonsterStatusType.CriticalDamage:
+                    battleMonster.baseCriticalDamage += value;
+                    break;
+                case BattleMonsterStatusType.BuffResistRate:
+                    battleMonster.baseBuffResistRate += value;
+                    break;
+                case BattleMonsterStatusType.DebuffResistRate:
+                    battleMonster.baseDebuffResistRate += value;
+                    break;
+                case BattleMonsterStatusType.DamageResistRate:
+                    battleMonster.baseDamageResistRate += value;
+                    break;
+                case BattleMonsterStatusType.LuckDamageRate:
+                    battleMonster.baseLuckDamageRate += value;
+                    break;
+                case BattleMonsterStatusType.HolyDamageRate:
+                    battleMonster.baseHolyDamageRate += value;
+                    break;
+                case BattleMonsterStatusType.EnergyUpRate:
+                    battleMonster.baseEnergyUpRate += value;
+                    break;
+                case BattleMonsterStatusType.HealedRate:
+                    battleMonster.baseHealedRate += value;
+                    break;
+                case BattleMonsterStatusType.AttackAccuracy:
+                    battleMonster.baseAttackAccuracy += value;
+                    break;
+                case BattleMonsterStatusType.Armor:
+                    battleMonster.baseArmor += value;
+                    break;
+                case BattleMonsterStatusType.ArmorBreakRate:
+                    battleMonster.baseArmorBreakRate += value;
+                    break;
+                case BattleMonsterStatusType.HealingRate:
+                    battleMonster.baseHealingRate += value;
+                    break;
+            }
+
+            return new BeDoneBattleMonsterData()
+            {
+                battleMonsterIndex = battleMonster.index,
+            };
+        }).ToList();
+        var logList = beDoneMonsterDataList.Select(d => {
+
+            var battleMonster = GetBattleMonster(d.battleMonsterIndex);
+            var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
+            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+            var changeText = battleCondition.buffType == BuffType.Buff ? "上昇" : "減少";
+
+            return $"{possess}{monster.name}の{battleCondition.targetBattleMonsterStatusType}を{Math.Abs(value)}だけ{changeText}";
+        }).ToList();
+        var log = string.Join("\n", logList);
+
+        // アクション実行ログの差し込み
+        var battleLog = new BattleLogInfo()
+        {
+            type = BattleLogType.TakeBattleConditionAdd,
+            doBattleMonsterIndex = doMonsterIndex,
+            beDoneBattleMonsterDataList = beDoneMonsterDataList,
+            playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
+            enemyBattleMonsterList = this.enemyBattleMonsterList.Clone(),
+            skillFxId = skillEffect.skillFxId,
+            log = log,
+        };
+        battleLogList.Add(battleLog);
     }
 
     private void ExecuteDieIfNeeded()
