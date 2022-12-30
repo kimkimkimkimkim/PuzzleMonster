@@ -106,13 +106,7 @@ public partial class BattleDataProcessor
         if (currentWaveCount > 0) return;
 
         // バトル開始ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.StartBattle,
-            playerBattleMonsterList = playerBattleMonsterList.Clone(),
-            log = "バトルを開始します",
-        };
-        battleLogList.Add(battleLog);
+        AddStartBattleLog();
 
         // バトル開始時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed()).Select(m => m.index).ToList());
@@ -201,21 +195,12 @@ public partial class BattleDataProcessor
     }
     
     private void ActionFailed(BattleMonsterIndex actionMonsterIndex){
-        var battleMonster = GetBattleMonster(actionMonsterIndex);
-        var possess = actionMonsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
-
         // 行動済みフラグは立てる
+        var battleMonster = GetBattleMonster(actionMonsterIndex);
         battleMonster.isActed = true;
-        
+
         // アクション失敗ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.ActionFailed,
-            doBattleMonsterIndex = actionMonsterIndex,
-            log = $"{possess}{monster.name}は動けない",
-        };
-        battleLogList.Add(battleLog);
+        AddActionFailedLog(actionMonsterIndex);
     }
 
     /// <summary>
@@ -247,15 +232,7 @@ public partial class BattleDataProcessor
         var beDoneBattleMonsterDataList = new List<BeDoneBattleMonsterData>() { new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonsterIndex } };
         
         // 状態異常ターン進行ログの差し込み
-        var progressBattleConditionTurnBattleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.ProgressBattleConditionTurn,
-            beDoneBattleMonsterDataList = beDoneBattleMonsterDataList,
-            playerBattleMonsterList = playerBattleMonsterList.Clone(),
-            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
-            log = "状態異常のターンを進行しました",
-        };
-        battleLogList.Add(progressBattleConditionTurnBattleLog);
+        AddProgressBattleConditionTurnLog(beDoneBattleMonsterDataList);
 
         // 何も解除されなかったら何もしない
         if (!isRemoved) return;
@@ -264,15 +241,7 @@ public partial class BattleDataProcessor
         battleMonster.battleConditionList = battleMonster.battleConditionList.Where(battleCondition => battleCondition.remainingTurnNum != 0).ToList();
 
         // 状態異常解除ログの差し込み
-        var takeBattleConditionRemoveBattleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.TakeBattleConditionRemove,
-            beDoneBattleMonsterDataList = beDoneBattleMonsterDataList,
-            playerBattleMonsterList = playerBattleMonsterList.Clone(),
-            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
-            log = "状態異常を解除しました",
-        };
-        battleLogList.Add(takeBattleConditionRemoveBattleLog);
+        AddTakeBattleConditionRemoveLog(beDoneBattleMonsterDataList);
     }
 
     /// <summary>
@@ -294,14 +263,7 @@ public partial class BattleDataProcessor
         RefreshEnemyBattleMonsterList(currentWaveCount);
 
         // ウェーブ進行ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.MoveWave,
-            waveCount = currentWaveCount,
-            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
-            log = $"ウェーブ{currentWaveCount}を開始します",
-        };
-        battleLogList.Add(battleLog);
+        AddMoveWaveLog();
 
         // ウェーブ開始時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().Select(m => m.index).ToList());
@@ -323,13 +285,7 @@ public partial class BattleDataProcessor
         allMonsterList.ForEach(m => m.isActed = false);
 
         // ターン進行ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.MoveTurn,
-            turnCount = currentTurnCount,
-            log = $"ターン{currentTurnCount}を開始します",
-        };
-        battleLogList.Add(battleLog);
+        AddMoveTurnLog();
 
         // ターン開始時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTurnStart, GetAllMonsterList().Select(m => m.index).ToList());
@@ -338,42 +294,14 @@ public partial class BattleDataProcessor
 
     private void StartAction(BattleMonsterIndex monsterIndex, BattleActionType actionType)
     {
-        var battleMonster = GetBattleMonster(monsterIndex);
-        var possess = monsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
-        var skillName = GetSkillName(battleMonster, actionType);
-
         // アクション開始ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.StartAction,
-            playerBattleMonsterList = playerBattleMonsterList.Clone(),
-            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
-            doBattleMonsterIndex = monsterIndex,
-            actionType = actionType,
-            log = $"{possess}{monster.name}が{skillName}を発動",
-        };
-        battleLogList.Add(battleLog);
+        AddStartActionLog(monsterIndex, actionType);
     }
     
     private void StartActionAnimation(BattleMonsterIndex monsterIndex, BattleActionType actionType)
     {
-        var battleMonster = GetBattleMonster(monsterIndex);
-        var possess = monsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
-        var skillName = GetSkillName(battleMonster, actionType);
-
-        // アクション開始ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.StartActionAnimation,
-            playerBattleMonsterList = playerBattleMonsterList.Clone(),
-            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
-            doBattleMonsterIndex = monsterIndex,
-            actionType = actionType,
-            log = $"{possess}{monster.name}が{skillName}を実行",
-        };
-        battleLogList.Add(battleLog);
+        // アクションアニメーション開始ログの差し込み
+        AddStartActionAnimationLog(monsterIndex, actionType);
     }
 
     private void ExecuteAction(BattleMonsterIndex doMonsterIndex,BattleActionType actionType, List<BattleMonsterIndex> beDoneMonsterIndexList, SkillEffectMI skillEffect)
@@ -420,6 +348,7 @@ public partial class BattleDataProcessor
 
     private void ExecuteAttack(BattleMonsterIndex doMonsterIndex,BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
     {
+        // スキル効果処理
         var beDoneMonsterDataList = beDoneMonsterList.Select(m => {
             var actionValue = GetActionValue(doMonsterIndex, m.index, skillEffect);
 
@@ -444,27 +373,9 @@ public partial class BattleDataProcessor
                 isBlocked = actionValue.isBlocked,
             };
         }).ToList();
-        var logList = beDoneMonsterDataList.Select(d => {
-            var battleMonster = GetBattleMonster(d.battleMonsterIndex);
-            var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
 
-            return $"{possess}{monster.name}に{Math.Abs(d.hpChanges)}ダメージ";
-        }).ToList();
-        var log = string.Join("\n", logList);
-
-        // アクション実行ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.TakeDamage,
-            doBattleMonsterIndex = doMonsterIndex,
-            beDoneBattleMonsterDataList = beDoneMonsterDataList,
-            playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
-            enemyBattleMonsterList = this.enemyBattleMonsterList.Clone(),
-            skillFxId = skillEffect.skillFxId,
-            log = log,
-        };
-        battleLogList.Add(battleLog);
+        // 被ダメージログの差し込み
+        AddTakeDamageLog(doMonsterIndex, beDoneMonsterDataList, skillEffect.skillFxId);
 
         // トリガースキルを発動する
         var beDoneBattleMonsterIndexList = beDoneMonsterDataList.Select(d => d.battleMonsterIndex).ToList();
@@ -541,27 +452,9 @@ public partial class BattleDataProcessor
                 hpChanges = actionValue.value,
             };
         }).ToList();
-        var logList = beDoneMonsterDataList.Select(d => {
-            var battleMonster = GetBattleMonster(d.battleMonsterIndex);
-            var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
 
-            return $"{possess}{monster.name}の体力を{Math.Abs(d.hpChanges)}回復";
-        }).ToList();
-        var log = string.Join("\n", logList);
-
-        // アクション実行ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.TakeHeal,
-            doBattleMonsterIndex = doMonsterIndex,
-            beDoneBattleMonsterDataList = beDoneMonsterDataList,
-            playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
-            enemyBattleMonsterList = this.enemyBattleMonsterList.Clone(),
-            skillFxId = skillEffect.skillFxId,
-            log = log,
-        };
-        battleLogList.Add(battleLog);
+        // 被回復ログの差し込み
+        AddTakeHealLog(doMonsterIndex, beDoneMonsterDataList, skillEffect.skillFxId);
     }
 
     private void ExecuteBattleConditionAdd(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
@@ -590,30 +483,9 @@ public partial class BattleDataProcessor
                 isMissed = !isSucceeded,
             };
         }).ToList();
-        var logList = beDoneMonsterDataList.Select(d => {
-             
-            var battleMonster = GetBattleMonster(d.battleMonsterIndex);
-            var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
-
-            return d.isMissed ?
-                $"{possess}{monster.name}への{battleConditionMB.name}の付与が失敗" :
-                $"{possess}{monster.name}に{battleConditionMB.name}を付与";
-        }).ToList();
-        var log = string.Join("\n", logList);
 
         // アクション実行ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.TakeBattleConditionAdd,
-            doBattleMonsterIndex = doMonsterIndex,
-            beDoneBattleMonsterDataList = beDoneMonsterDataList,
-            playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
-            enemyBattleMonsterList = this.enemyBattleMonsterList.Clone(),
-            skillFxId = skillEffect.skillFxId,
-            log = log,
-        };
-        battleLogList.Add(battleLog);
+        AddTakeBattleConditionAddLog(doMonsterIndex, beDoneMonsterDataList, skillEffect);
 
         // 状態異常付与時トリガースキルを発動する
         var beAddedBattleMonsterIndexList = beDoneMonsterDataList.Where(d => !d.isMissed).Select(d => d.battleMonsterIndex).ToList();
@@ -732,29 +604,9 @@ public partial class BattleDataProcessor
                 battleMonsterIndex = battleMonster.index,
             };
         }).ToList();
-        var logList = beDoneMonsterDataList.Select(d => {
-
-            var battleMonster = GetBattleMonster(d.battleMonsterIndex);
-            var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
-            var changeText = battleCondition.buffType == BuffType.Buff ? "上昇" : "減少";
-
-            return $"{possess}{monster.name}の{battleCondition.targetBattleMonsterStatusType}を{Math.Abs(value)}だけ{changeText}";
-        }).ToList();
-        var log = string.Join("\n", logList);
 
         // アクション実行ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.TakeBattleConditionAdd,
-            doBattleMonsterIndex = doMonsterIndex,
-            beDoneBattleMonsterDataList = beDoneMonsterDataList,
-            playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
-            enemyBattleMonsterList = this.enemyBattleMonsterList.Clone(),
-            skillFxId = skillEffect.skillFxId,
-            log = log,
-        };
-        battleLogList.Add(battleLog);
+        AddTakeStatusChangeLog(doMonsterIndex, beDoneMonsterDataList, skillEffect, value);
     }
 
     private void ExecuteDieIfNeeded()
@@ -771,23 +623,8 @@ public partial class BattleDataProcessor
         // ログに渡す用のリストを作成
         var beDoneBattleMonsterDataList = dieBattleMonsterList.Clone().Select(m => new BeDoneBattleMonsterData() { battleMonsterIndex = m.index }).ToList();
 
-        var logList = dieBattleMonsterList.Select(m => {
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
-            var possess = m.index.isPlayer ? "味方の" : "敵の";
-            return $"{possess}{monster.name}が倒れた";
-        }).ToList();
-        var log = string.Join("\n", logList);
-
         // 死亡ログを差し込む
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.Die,
-            playerBattleMonsterList = playerBattleMonsterList.Clone(),
-            enemyBattleMonsterList = enemyBattleMonsterList.Clone(),
-            beDoneBattleMonsterDataList = beDoneBattleMonsterDataList,
-            log = log,
-        };
-        battleLogList.Add(battleLog);
+        AddDieLog(beDoneBattleMonsterDataList);
 
         // 戦闘不能時トリガースキルを発動する
         var existsPlayer = dieBattleMonsterList.Any(m => m.index.isPlayer);
@@ -813,8 +650,6 @@ public partial class BattleDataProcessor
     private void EndAction(BattleMonsterIndex doMonsterIndex, BattleActionType actionType)
     {
         var battleMonster = GetBattleMonster(doMonsterIndex);
-        var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
 
         // 行動済みフラグを立てる
         battleMonster.isActed = true;
@@ -833,15 +668,7 @@ public partial class BattleDataProcessor
         }
 
         // アクション終了ログを差し込む
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.EndAction,
-            doBattleMonsterIndex = doMonsterIndex,
-            playerBattleMonsterList = this.playerBattleMonsterList.Clone(),
-            enemyBattleMonsterList = this.enemyBattleMonsterList.Clone(),
-            log = $"{possess}{monster.name}のアクションが終了しました",
-        };
-        battleLogList.Add(battleLog);
+        AddEndActionLog(doMonsterIndex);
     }
 
     /// <summary>
@@ -855,12 +682,7 @@ public partial class BattleDataProcessor
         if (isNotEnd) return false;;
 
         // ターン終了ログを差し込む
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.None,
-            log = $"ターン{currentTurnCount}が終了しました",
-        };
-        battleLogList.Add(battleLog);
+        AddEndTurnLog();
 
         // ターン終了時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTurnEnd, GetAllMonsterList().Select(m => m.index).ToList());
@@ -876,12 +698,7 @@ public partial class BattleDataProcessor
         if (existsEnemy) return;
 
         // ウェーブ終了ログを差し込む
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.None,
-            log = $"ウェーブ{currentWaveCount}が終了しました",
-        };
-        battleLogList.Add(battleLog);
+        AddEndWaveLog();
         
         // Wave毎の敵情報リストの更新
         enemyBattleMonsterListByWave.Add(enemyBattleMonsterList);
@@ -890,7 +707,7 @@ public partial class BattleDataProcessor
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveEnd, GetAllMonsterList().Select(m => m.index).ToList());
         battleChainParticipantList.Clear();
     }
-    
+
     private void EndBattleIfNeeded(bool isTurnEnd)
     {
         // 味方が全滅あるいは最終ウェーブで敵が全滅ならバトル終了
@@ -899,31 +716,23 @@ public partial class BattleDataProcessor
         var isEndBattle = !existsAlly || (!existsEnemy && currentWaveCount >= quest.questMonsterListByWave.Count);
 
         // バトルが終了していなければ続行、バトル終了かつ味方が残っていれば勝利
-        currentWinOrLose = 
-            !isEndBattle ? WinOrLose.Continue 
-            : existsAlly ? WinOrLose.Win 
+        currentWinOrLose =
+            !isEndBattle ? WinOrLose.Continue
+            : existsAlly ? WinOrLose.Win
             : WinOrLose.Lose;
-        
+
         // このタイミングでターンが終了しかつ現在のターンが上限ターンかつ決着がついていなければ敗北
         if (isTurnEnd && currentWinOrLose == WinOrLose.Continue && currentTurnCount >= quest.limitTurnNum) currentWinOrLose = WinOrLose.Lose;
-        
+
         // バトル続行なら何もしない
         if (currentWinOrLose == WinOrLose.Continue) return;
-        
+
         // Wave毎の敵情報リストの更新
         // 敵が全滅していない場合はそのWaveの敵情報リストは未更新なのでここで更新する
         if (existsEnemy) enemyBattleMonsterListByWave.Add(enemyBattleMonsterList);
 
         // バトル終了ログの差し込み
-        var battleLog = new BattleLogInfo()
-        {
-            type = BattleLogType.Result,
-            winOrLose = currentWinOrLose,
-            log = currentWinOrLose == WinOrLose.Win ? "バトルに勝利しました" : "バトルに敗北しました",
-            playerBattleMonsterList = playerBattleMonsterList,
-            enemyBattleMonsterListByWave = enemyBattleMonsterListByWave,
-        };
-        battleLogList.Add(battleLog);
+        AddEndBattleLog();
     }
 
     /// <summary>
