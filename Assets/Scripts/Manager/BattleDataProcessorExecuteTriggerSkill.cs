@@ -118,11 +118,13 @@ public partial class BattleDataProcessor
             SkillTriggerType.OnMeActionStart,
             SkillTriggerType.OnMeActionEnd,
         };
+
+        // TODO: 発動回数制限処理
         // 対象のトリガータイプがこのリスト内に存在しかつすでに同じ条件のスキルを発動していた場合発動不可
-        if (limitExecute1InChainTriggerTypeList.Contains(triggerType) && battleChainParticipantList.Any(p => p.IsSame(battleChainParticipant))) return false;
+        // if (limitExecute1InChainTriggerTypeList.Contains(triggerType) && battleChainParticipantList.Any(p => p.IsSame(battleChainParticipant))) return false;
 
         // 反撃系は同じモンスターの同じスキルを起因とするものは同一チェイン内で2回以上発動できない
-        if (triggerType == SkillTriggerType.OnMeBeExecutedNormalOrUltimateSkill && battleChainParticipantList.Any(p => p.IsSame(battleChainParticipant))) return false;
+        // if (triggerType == SkillTriggerType.OnMeBeExecutedNormalOrUltimateSkill && battleChainParticipantList.Any(p => p.IsSame(battleChainParticipant))) return false;
 
         return true;
     }

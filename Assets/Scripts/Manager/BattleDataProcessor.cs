@@ -15,7 +15,6 @@ public partial class BattleDataProcessor
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
     private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
     private List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>();
-    private List<BattleChainParticipantInfo> battleChainParticipantList = new List<BattleChainParticipantInfo>();
     private WinOrLose currentWinOrLose;
 
     private void Init(List<UserMonsterInfo> userMonsterList, QuestMB quest)
@@ -74,7 +73,6 @@ public partial class BattleDataProcessor
                     battleActionType = actionType,
                 };
                 StartActionStream(actionMonsterIndex, actionType, skillEffectList, battleChainParticipant);
-                battleChainParticipantList.Clear();
             }
             else
             {
@@ -83,7 +81,6 @@ public partial class BattleDataProcessor
 
                 // アクション失敗してもアクション終了時トリガースキルを発動する
                 ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
-                battleChainParticipantList.Clear();
             }
 
             // 状態異常のターンを経過させる
@@ -110,7 +107,6 @@ public partial class BattleDataProcessor
 
         // バトル開始時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed()).Select(m => m.index).ToList());
-        battleChainParticipantList.Clear();
     }
 
     // 通常アクション実行者を取得
@@ -137,36 +133,36 @@ public partial class BattleDataProcessor
     // アクション実行者とアクション内容を受け取りアクションを実行する
     private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, List<SkillEffectMI> skillEffectList, BattleChainParticipantInfo battleChainParticipant)
     {
-        // 状態異常付与以外のスキル効果はこのタイミングで発動確率判定を行う
-        skillEffectList = skillEffectList.Where(effect => effect.type == SkillType.ConditionAdd || ExecuteProbability(effect.activateProbability)).ToList();
-        if (!skillEffectList.Any()) return;
-
-        // チェーン参加者リストに追加
-        battleChainParticipantList.Add(battleChainParticipant);
-
         // アクションを開始する
         StartAction(actionMonsterIndex, actionType);
 
         // アクション開始時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
 
-        // アクションアニメーションを開始する
-        var isCounter = actionType == BattleActionType.PassiveSkill && skillEffectList.Any(effect => effect.type == SkillType.Attack); // パッシブかつ攻撃のスキルは反撃と判定
-        if(actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill || isCounter) StartActionAnimation(actionMonsterIndex, actionType);
-
         // 各効果の実行
         var currentBeDoneMonsterIndexList = new List<BattleMonsterIndex>();
         skillEffectList.ForEach((skillEffect, index) => {
-            // アクションの対象を選択する
-            currentBeDoneMonsterIndexList = GetBeDoneMonsterIndexList(actionMonsterIndex, currentBeDoneMonsterIndexList, skillEffect);
+            // スキル効果の発動確率判定
+            // 発動確率が0の場合は直前のスキル効果要素の発動状態を参照
+            var isExecutedBeforeEffect = battleLogList
+                .Where(l => l.doBattleMonsterIndex.IsSame(actionMonsterIndex))
+                .Where(l => l.waveCount == currentWaveCount && l.turnCount == currentTurnCount)
+                .Where(l => l.actionType == actionType && l.skillEffectIndex == index - 1)
+                .Any(l => l.type == BattleLogType.StartSkillEffect);
+            var isExecute = (skillEffect.activateProbability > 0 && ExecuteProbability(skillEffect.activateProbability)) || (skillEffect.activateProbability <= 0 && isExecutedBeforeEffect);
 
-            // アクション処理を実行する
-            ExecuteAction(actionMonsterIndex, actionType, currentBeDoneMonsterIndexList, skillEffect);
+            if (isExecute)
+            {
+                // アクションの対象を選択する
+                currentBeDoneMonsterIndexList = GetBeDoneMonsterIndexList(actionMonsterIndex, currentBeDoneMonsterIndexList, skillEffect);
 
-            // パッシブスキル発動回数を計上
-            if (actionType == BattleActionType.PassiveSkill) {
-                var actionMonster = GetBattleMonster(actionMonsterIndex);
-                actionMonster.passiveSkillExecuteCount++;
+                // アクション処理を実行する
+                ExecuteAction(actionMonsterIndex, actionType, currentBeDoneMonsterIndexList, skillEffect, index);
+            }
+            else
+            {
+                // 確率による失敗ログの追加
+                AddSkillEffectFailedOfProbabilityMissLog(actionMonsterIndex, actionType, index);
             }
         });
 
@@ -267,7 +263,6 @@ public partial class BattleDataProcessor
 
         // ウェーブ開始時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().Select(m => m.index).ToList());
-        battleChainParticipantList.Clear();
 
         return true;
     }
@@ -289,7 +284,6 @@ public partial class BattleDataProcessor
 
         // ターン開始時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTurnStart, GetAllMonsterList().Select(m => m.index).ToList());
-        battleChainParticipantList.Clear();
     }
 
     private void StartAction(BattleMonsterIndex monsterIndex, BattleActionType actionType)
@@ -304,7 +298,7 @@ public partial class BattleDataProcessor
         AddStartActionAnimationLog(monsterIndex, actionType);
     }
 
-    private void ExecuteAction(BattleMonsterIndex doMonsterIndex,BattleActionType actionType, List<BattleMonsterIndex> beDoneMonsterIndexList, SkillEffectMI skillEffect)
+    private void ExecuteAction(BattleMonsterIndex doMonsterIndex,BattleActionType actionType, List<BattleMonsterIndex> beDoneMonsterIndexList, SkillEffectMI skillEffect, int skillEffectIndex)
     {
         // 対象モンスターが存在しない場合はなにもしない
         if (!beDoneMonsterIndexList.Any()) return;
@@ -312,6 +306,10 @@ public partial class BattleDataProcessor
         var allMonsterList = GetAllMonsterList();
         var beDoneMonsterList = allMonsterList.Where(m => beDoneMonsterIndexList.Any(index => index.isPlayer == m.index.isPlayer && index.index == m.index.index)).ToList();
 
+        // スキル効果ログの差し込み
+        AddStartSkillEffectLog(doMonsterIndex, actionType, skillEffectIndex);
+
+        // スキル効果の実行
         var skillType = skillEffect.type;
         switch (skillType) {
             case SkillType.Attack:
@@ -348,6 +346,9 @@ public partial class BattleDataProcessor
 
     private void ExecuteAttack(BattleMonsterIndex doMonsterIndex,BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
     {
+        // アタックアニメーションを実行
+        StartActionAnimation(doMonsterIndex, actionType);
+
         // スキル効果処理
         var beDoneMonsterDataList = beDoneMonsterList.Select(m => {
             var actionValue = GetActionValue(doMonsterIndex, m.index, skillEffect);
@@ -686,7 +687,6 @@ public partial class BattleDataProcessor
 
         // ターン終了時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTurnEnd, GetAllMonsterList().Select(m => m.index).ToList());
-        battleChainParticipantList.Clear();
         
         return true;
     }
@@ -705,7 +705,6 @@ public partial class BattleDataProcessor
 
         // ウェーブ終了時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveEnd, GetAllMonsterList().Select(m => m.index).ToList());
-        battleChainParticipantList.Clear();
     }
 
     private void EndBattleIfNeeded(bool isTurnEnd)

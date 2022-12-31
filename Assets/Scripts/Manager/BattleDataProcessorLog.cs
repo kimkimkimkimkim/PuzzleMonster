@@ -87,6 +87,25 @@ public partial class BattleDataProcessor
     }
 
     /// <summary>
+    /// 発動確率によるスキル効果未発動ログの追加
+    /// </summary>
+    private void AddSkillEffectFailedOfProbabilityMissLog(BattleMonsterIndex doBattleMonsterIndex, BattleActionType actionType, int skillEffectIndex)
+    {
+        var battleMonster = GetBattleMonster(doBattleMonsterIndex);
+        var possess = doBattleMonsterIndex.isPlayer ? "味方の" : "敵の";
+        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+
+        var battleLog = GetDefaultLog();
+        battleLog.type = BattleLogType.SkillEffectFailedOfProbabilityMiss;
+        battleLog.doBattleMonsterIndex = doBattleMonsterIndex;
+        battleLog.actionType = actionType;
+        battleLog.skillEffectIndex = skillEffectIndex;
+        battleLog.log = $"{possess}{monster.name}の行動は発動しなかった";
+
+        battleLogList.Add(battleLog);
+    }
+
+    /// <summary>
     /// 状態異常ターン進行ログの追加
     /// </summary>
     private void AddProgressBattleConditionTurnLog(List<BeDoneBattleMonsterData> beDoneBattleMonsterDataList)
@@ -127,6 +146,25 @@ public partial class BattleDataProcessor
         battleLog.doBattleMonsterIndex = doMonsterIndex;
         battleLog.actionType = actionType;
         battleLog.log = $"{possess}{monster.name}が{skillName}を発動";
+
+        battleLogList.Add(battleLog);
+    }
+
+    /// <summary>
+    /// スキル効果開始ログの追加
+    /// </summary>
+    private void AddStartSkillEffectLog(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, int skillEffectIndex)
+    {
+        var battleMonster = GetBattleMonster(doMonsterIndex);
+        var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
+        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        var skillName = GetSkillName(battleMonster, actionType);
+
+        var battleLog = GetDefaultLog();
+        battleLog.type = BattleLogType.StartSkillEffect;
+        battleLog.doBattleMonsterIndex = doMonsterIndex;
+        battleLog.actionType = actionType;
+        battleLog.log = $"{possess}{monster.name}が{skillName}のインデックス{skillEffectIndex}の効果を発動";
 
         battleLogList.Add(battleLog);
     }
