@@ -238,7 +238,10 @@ public partial class BattleDataProcessor
         if (!isRemoved) return;
 
         // ターンが切れている状態異常を削除する
-        battleMonster.battleConditionList = battleMonster.battleConditionList.Where(battleCondition => battleCondition.remainingTurnNum != 0).ToList();
+        while(battleMonster.battleConditionList.Any(battleCondition => battleCondition.remainingTurnNum == 0)) {
+            var order = battleMonster.battleConditionList.First(battleCondition => battleCondition.remainingTurnNum == 0).order;
+            RemoveBattleCondition(battleMonster.index, order);
+        }
 
         // 状態異常解除ログの差し込み
         AddTakeBattleConditionRemoveLog(beDoneBattleMonsterDataList);
@@ -484,7 +487,7 @@ public partial class BattleDataProcessor
             };
         }).ToList();
 
-        // アクション実行ログの差し込み
+        // 状態異常付与ログの差し込み
         AddTakeBattleConditionAddLog(doMonsterIndex, beDoneMonsterDataList, skillEffect);
 
         // 状態異常付与時トリガースキルを発動する
@@ -510,7 +513,30 @@ public partial class BattleDataProcessor
 
     private void ExecuteBattleConditionRemove(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
     {
+        var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
 
+        var beDoneMonsterDataList = beDoneMonsterList
+            .Where(battleMonster => {
+                var isRemoved = false;
+
+                var battleCondition = battleMonster.battleConditionList.OrderBy(c => c.order).FirstOrDefault(c => c.skillEffect.battleConditionId == skillEffect.battleConditionId && c.skillEffect.canRemove);
+                var isAll = skillEffect.removeBattleConsitionNum == 0;
+                var count = 0;
+                while ((isAll && battleCondition != null) || (battleCondition != null && count < skillEffect.removeBattleConsitionNum)) {
+                    RemoveBattleCondition(battleMonster.index, battleCondition.order);
+
+                    isRemoved = true;
+                    count++;
+                    battleCondition = battleMonster.battleConditionList.OrderBy(c => c.order).FirstOrDefault(c => c.skillEffect.battleConditionId == skillEffect.battleConditionId && c.skillEffect.canRemove);
+                }
+
+                return isRemoved;
+            })
+            .Select(battleMonster => new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonster.index })
+            .ToList();
+
+        // 状態異常解除ログの差し込み
+        if(beDoneMonsterDataList.Any()) AddTakeBattleConditionRemoveLog(beDoneMonsterDataList);
     }
 
     private void ExecuteRevive(BattleMonsterIndex doMonsterIndex, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect)
@@ -794,6 +820,19 @@ public partial class BattleDataProcessor
             order = order,
         };
         return battleCondition.Clone();
+    }
+
+    /// <summary>
+    /// 状態異常を解除する
+    /// </summary>
+    private void RemoveBattleCondition(BattleMonsterIndex battleMonsterIndex, int order) {
+        var battleMonster = GetBattleMonster(battleMonsterIndex);
+
+        // 状態異常を解除する
+        battleMonster.battleConditionList = battleMonster.battleConditionList.Where(c => !c.skillEffect.canRemove || c.order != order).ToList();
+
+        // 順序情報を更新する
+        battleMonster.battleConditionList.ForEach(c => { if (c.order > order) c.order--; });
     }
 
     private List<BattleMonsterInfo> GetAllMonsterList()
