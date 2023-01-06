@@ -113,6 +113,38 @@ public partial class BattleDataProcessor
     }
 
     /// <summary>
+    /// ターンアクション開始ログの追加
+    /// </summary>
+    private void AddStartTurnActionLog(BattleMonsterIndex doMonsterIndex) {
+        var battleMonster = GetBattleMonster(doMonsterIndex);
+        var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
+        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+
+        var battleLog = GetDefaultLog();
+        battleLog.type = BattleLogType.StartTurnAction;
+        battleLog.doBattleMonsterIndex = doMonsterIndex;
+        battleLog.log = $"{possess}{monster.name}がターンアクションを開始";
+
+        battleLogList.Add(battleLog);
+    }
+
+    /// <summary>
+    /// ターンアクション終了ログの追加
+    /// </summary>
+    private void AddEndTurnActionLog(BattleMonsterIndex doMonsterIndex) {
+        var battleMonster = GetBattleMonster(doMonsterIndex);
+        var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
+        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+
+        var battleLog = GetDefaultLog();
+        battleLog.type = BattleLogType.EndTurnAction;
+        battleLog.doBattleMonsterIndex = doMonsterIndex;
+        battleLog.log = $"{possess}{monster.name}がターンアクションを終了";
+
+        battleLogList.Add(battleLog);
+    }
+
+    /// <summary>
     /// アクション開始ログの追加
     /// </summary>
     private void AddStartActionLog(BattleMonsterIndex doMonsterIndex, BattleActionType actionType)

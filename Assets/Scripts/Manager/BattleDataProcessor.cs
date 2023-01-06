@@ -61,6 +61,12 @@ public partial class BattleDataProcessor
         {
             var actionType = GetNormalActionerActionType(actionMonsterIndex);
 
+            // ターンアクション開始ログの追加
+            AddStartTurnActionLog(actionMonsterIndex);
+
+            // ターンアクション開始時トリガースキルの発動
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeTurnActionStart, actionMonsterIndex);
+
             // 状態異常を確認して行動できるかチェック
             var canAction = CanAction(actionMonsterIndex, actionType);
 
@@ -85,6 +91,13 @@ public partial class BattleDataProcessor
                 ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
                 battleChainParticipantList.Clear();
             }
+
+            // ターンアクション終了ログの追加
+            AddEndTurnActionLog(actionMonsterIndex);
+
+            // ターンアクション終了時トリガースキルの発動
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeTurnActionEnd, actionMonsterIndex);
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTargetBattleConditionAddedAndMeTurnActionEnd, actionMonsterIndex);
 
             // 状態異常のターンを経過させる
             ProgressBattleConditionTurnIfNeeded(actionMonsterIndex);
