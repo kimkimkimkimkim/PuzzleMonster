@@ -73,8 +73,8 @@ public partial class BattleDataProcessor
     {
         var targetBattleMonster = GetBattleMonster(battleMonsterIndex);
         var targetBattleConditionList = targetBattleMonster.battleConditionList
-            .Where(c => c.battleCondition.triggerType == triggerType)
-            .Where(c => IsValidActivateCondition(battleMonsterIndex, c.battleCondition.activateConditionType, c.battleCondition.activateConditionValue))
+            .Where(c => c.battleCondition.skillEffect.triggerType == triggerType)
+            .Where(c => IsValidActivateCondition(battleMonsterIndex, c.battleCondition.skillEffect.activateConditionType, c.battleCondition.skillEffect.activateConditionValue))
             .ToList();
 
         targetBattleConditionList.ForEach(battleCondition =>

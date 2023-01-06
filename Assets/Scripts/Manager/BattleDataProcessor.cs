@@ -805,9 +805,10 @@ public partial class BattleDataProcessor
         // アクション状態異常の場合はスキル効果を修正する
         if(battleConditionMB.battleConditionType == BattleConditionType.Action)
         {
-            skillEffect = skillEffect.Clone();
-            skillEffect.type = battleConditionMB.skillType;
-            skillEffect.skillTargetType = SkillTargetType.Myself;
+            skillEffect = battleConditionMB.skillEffect.Clone();
+
+            // 特定要素のみ元スキル側のスキル効果を参照する
+            skillEffect.canRemove = skillEffect.canRemove;
         }
 
         var battleCondition = new BattleConditionInfo()
