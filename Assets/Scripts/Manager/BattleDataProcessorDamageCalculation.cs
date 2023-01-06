@@ -277,7 +277,7 @@ public partial class BattleDataProcessor
 				return 1;
 			case SkillType.ConditionAdd:
 				var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
-				switch(battleCondition.skillType){
+				switch(battleCondition.skillEffect.type){
 					case SkillType.Attack:
 						return -1;
 					case SkillType.Heal:
