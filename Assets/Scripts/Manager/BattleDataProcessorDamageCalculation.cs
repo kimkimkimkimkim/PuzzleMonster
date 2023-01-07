@@ -57,7 +57,7 @@ public partial class BattleDataProcessor
 				* (1 - GetRate(beDoneBattleMonster.damageResistRate()))						// ダメージ軽減分ダメージを軽減
 				* (
 					(1 - ArmorMitigation(beDoneBattleMonster))								// 防御力分ダメージを軽減
-					* (1 - GetRate(doBattleMonster.armorBreakRate()))						// 防御貫通率分防御力を無視
+					* (1 - GetRate(doBattleMonster.defensePenetratingRate()))				// 防御貫通率分防御力を無視
 					+ HOLY_DAMAGE_MAGNIFICATION * GetRate(doBattleMonster.holyDamageRate()) // 神聖ダメージを加算
 					+ LUCK_DAMAGE_MAGNIFICATION * GetRate(doBattleMonster.luckDamageRate()) // ラックダメージを加算
 				)

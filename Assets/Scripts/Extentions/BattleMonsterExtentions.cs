@@ -401,4 +401,20 @@ public static class BattleMonsterInfoExtentions
             .Sum(c => c.skillEffect.value);
         return monster.baseHealingRate + up - down;
     }
+
+    /// <summary>
+    /// 防御貫通率
+    /// </summary>
+    public static int defensePenetratingRate(this BattleMonsterInfo monster)
+    {
+        var up = monster.battleConditionList
+            .Where(c => c.battleCondition.battleConditionType == BattleConditionType.StatusUp)
+            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.skillEffect.battleConditionId).targetBattleMonsterStatusType == BattleMonsterStatusType.DefensePenetratingRate)
+            .Sum(c => c.skillEffect.value);
+        var down = monster.battleConditionList
+            .Where(c => c.battleCondition.battleConditionType == BattleConditionType.StatusDown)
+            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.skillEffect.battleConditionId).targetBattleMonsterStatusType == BattleMonsterStatusType.DefensePenetratingRate)
+            .Sum(c => c.skillEffect.value);
+        return monster.baseDefensePenetratingRate + up - down;
+    }
 }
