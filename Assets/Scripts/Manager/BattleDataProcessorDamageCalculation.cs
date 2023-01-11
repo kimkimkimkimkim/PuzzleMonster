@@ -24,8 +24,14 @@ public partial class BattleDataProcessor
 					case ValueTargetType.TargetCurrentHP:
 					case ValueTargetType.TargetMaxHp:
 						return new BattleActionValueData(){ value = GetHpRateDamageValue(doBattleMonster, beDoneBattleMonster, skillEffect) };
-					// それ以外のダメージの場合は含めて計算
-					default:
+                    // 何かのダメージを参照する系の場合は他の要素を含まないダメージで計算
+                    case ValueTargetType.FirstElementDamage:
+                    case ValueTargetType.JustBeforeElementDamage:
+                    case ValueTargetType.JustBeforeElementRemoveBattleConditionRemainDamage:
+                    case ValueTargetType.AllBeforeElementRemoveBattleConditionRemainDamage:
+
+                    // それ以外のダメージの場合は含めて計算
+                    default:
 						return GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
 				}
 			case SkillType.Heal:
@@ -260,6 +266,14 @@ public partial class BattleDataProcessor
 				return beDoneMonster.currentSpeed();
 			case ValueTargetType.TargetMaxHp:
 				return beDoneMonster.maxHp;
+            case ValueTargetType.FirstElementDamage:
+                return 0.0f;
+            case ValueTargetType.JustBeforeElementDamage:
+                return 0.0f;
+            case ValueTargetType.JustBeforeElementRemoveBattleConditionRemainDamage:
+                return 0.0f;
+            case ValueTargetType.AllBeforeElementRemoveBattleConditionRemainDamage:
+                return 0.0f;
 			default:
 				return 0.0f;
 		}
