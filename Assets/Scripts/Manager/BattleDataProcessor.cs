@@ -201,6 +201,7 @@ public partial class BattleDataProcessor
 
         // アクション終了時トリガースキルを発動する
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.EveryTimeEnd, GetAllMonsterList().OrderByDescending(m => m.currentSpeed()).Select(m => m.index).ToList());
     }
     
     private void ActionFailed(BattleMonsterIndex actionMonsterIndex){
@@ -325,6 +326,9 @@ public partial class BattleDataProcessor
         // スキル効果ログの差し込み
         AddStartSkillEffectLog(doMonsterIndex, actionType, skillEffectIndex);
 
+        // スキル効果処理前トリガースキルの発動
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeTakeActionBefore, beDoneMonsterList.OrderByDescending(m => m.currentSpeed()).Select(m => m.index).ToList());
+
         // スキル効果の実行
         var skillType = skillEffect.type;
         switch (skillType) {
@@ -411,34 +415,51 @@ public partial class BattleDataProcessor
         // ブロックされた時
         if (beDoneMonsterDataList.Any(d => d.isBlocked)) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeBlocked, doMonsterIndex);
 
+        // クリティカルを受けた時
+        beDoneMonsterDataList.Where(d => d.isCritical).ToList().ForEach(d =>
+        {
+            // 自身がクリティカルを受けた時
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAttackedCritical, d.battleMonsterIndex, 0, doMonsterIndex, actionType, 0);
+        });
+
+        // ブロックした時
         beDoneMonsterDataList.Where(d => d.isBlocked).ToList().ForEach(d =>
         {
             // 自身がブロックした時
-            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBlocked, d.battleMonsterIndex);
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBlocked, d.battleMonsterIndex, 0, doMonsterIndex, actionType, 0);
 
             // 味方がブロックした時
             if (d.battleMonsterIndex.isPlayer) 
             {
-                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBlocked, playerBattleMonsterIndexList);
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBlocked, playerBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0);
             }
             else
             {
-                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBlocked, enemyBattleMonsterIndexList);
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBlocked, enemyBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0);
             }
 
             // 敵がブロックした時
             if (d.battleMonsterIndex.isPlayer)
             {
-                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBlocked, enemyBattleMonsterIndexList);
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBlocked, enemyBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0);
             }
             else
             {
-                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBlocked, playerBattleMonsterIndexList);
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBlocked, playerBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0);
             }
         });
 
+        // 攻撃した時
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeAttacked, doMonsterIndex);
+
         // 通常攻撃またはウルトを発動したとき
         if (actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeExecuteNormalOrUltimateSkill, doMonsterIndex);
+
+        // 通常攻撃を発動した時
+        if (actionType == BattleActionType.NormalSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeExecuteNormalSkill, doMonsterIndex);
+
+        // 攻撃された時
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAttacked, beDoneBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0);
 
         // 通常攻撃またはウルトを受けたとき
         if (actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill)
@@ -446,6 +467,11 @@ public partial class BattleDataProcessor
             // 反撃系はトリガー発動の要因も渡す
             ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeExecutedNormalOrUltimateSkill, beDoneBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0);
         }
+
+        // 通常攻撃を発動した時
+        if (actionType == BattleActionType.NormalSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeExecutedNormalSkill, beDoneBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0);
+
+
 
         // ダメージを受けたとき
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeTakeDamageEnd, beDoneBattleMonsterIndexList);
