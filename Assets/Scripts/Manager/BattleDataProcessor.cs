@@ -167,7 +167,7 @@ public partial class BattleDataProcessor
             if (isExecute)
             {
                 // アクションの対象を選択する
-                currentBeDoneMonsterIndexList = GetBeDoneMonsterIndexList(actionMonsterIndex, currentBeDoneMonsterIndexList, skillEffect);
+                currentBeDoneMonsterIndexList = GetBeDoneMonsterIndexList(actionMonsterIndex, currentBeDoneMonsterIndexList, skillEffect, index, actionType);
 
                 // アクション処理を実行する
                 ExecuteAction(actionMonsterIndex, actionType, currentBeDoneMonsterIndexList, skillEffect, index);
@@ -324,7 +324,7 @@ public partial class BattleDataProcessor
         var beDoneMonsterList = allMonsterList.Where(m => beDoneMonsterIndexList.Any(index => index.isPlayer == m.index.isPlayer && index.index == m.index.index)).ToList();
 
         // スキル効果ログの差し込み
-        AddStartSkillEffectLog(doMonsterIndex, actionType, skillEffectIndex);
+        AddStartSkillEffectLog(doMonsterIndex, actionType, skillEffectIndex, beDoneMonsterIndexList);
 
         // スキル効果処理前トリガースキルの発動
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeTakeActionBefore, beDoneMonsterList.OrderByDescending(m => m.currentSpeed()).Select(m => m.index).ToList());
@@ -981,7 +981,7 @@ public partial class BattleDataProcessor
         }
     }
 
-    private List<BattleMonsterIndex> GetBeDoneMonsterIndexList(BattleMonsterIndex doMonsterIndex,List<BattleMonsterIndex> currentBeDoneMonsterIndexList , SkillEffectMI skillEffect)
+    private List<BattleMonsterIndex> GetBeDoneMonsterIndexList(BattleMonsterIndex doMonsterIndex,List<BattleMonsterIndex> currentBeDoneMonsterIndexList , SkillEffectMI skillEffect, int index, BattleActionType actionType)
     {
         var isDoMonsterPlayer = doMonsterIndex.isPlayer;
         var allyBattleMonsterList = isDoMonsterPlayer ? this.playerBattleMonsterList : this.enemyBattleMonsterList;
@@ -1097,9 +1097,17 @@ public partial class BattleDataProcessor
             case SkillTargetType.EnemyAllHPLowest4:
                 battleMonsterIndexList = enemyBattleMonsterList.OrderBy(b => b.currentHp).Take(4).Select(b => b.index).ToList();
                 break;
-            case SkillTargetType.JustBeforeElementTarget:
-                battleMonsterIndexList = currentBeDoneMonsterIndexList.Where(battleIndex => IsValidActivateCondition(battleIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue)).ToList();
-                break;
+            case SkillTargetType.JustBeforeElementTarget: 
+                {
+                    var targetLog = battleLogList
+                        .Where(log => log.waveCount == currentWaveCount && log.turnCount == currentTurnCount)
+                        .Where(log => log.doBattleMonsterIndex.IsSame(doMonsterIndex))
+                        .Where(log => log.actionType == actionType)
+                        .Where(log => log.skillEffectIndex == index - 1)
+                        .FirstOrDefault();
+                    if (targetLog != null) battleMonsterIndexList = targetLog.beDoneBattleMonsterDataList.Select(d => d.battleMonsterIndex).ToList();
+                    break;
+                }
             case SkillTargetType.AllyFrontRandom1:
                 {
                     // 前衛のモンスターが1体もいない場合は後衛全体を対象とする
@@ -1180,6 +1188,17 @@ public partial class BattleDataProcessor
                     battleMonsterIndexList = targetList.Shuffle().Take(3).ToList();
                     break;
                 }
+            case SkillTargetType.FirstElementTarget: {
+                    var targetLog = battleLogList
+                        .Where(log => log.waveCount == currentWaveCount && log.turnCount == currentTurnCount)
+                        .Where(log => log.doBattleMonsterIndex.IsSame(doMonsterIndex))
+                        .Where(log => log.actionType == actionType)
+                        .Where(log => log.skillEffectIndex == 0)
+                        .FirstOrDefault();
+                    if (targetLog != null) battleMonsterIndexList = targetLog.beDoneBattleMonsterDataList.Select(d => d.battleMonsterIndex).ToList();
+                    break;
+                }
+                break;
             case SkillTargetType.None:
             default:
                 battleMonsterIndexList = new List<BattleMonsterIndex>();

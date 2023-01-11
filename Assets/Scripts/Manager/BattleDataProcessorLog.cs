@@ -185,7 +185,7 @@ public partial class BattleDataProcessor
     /// <summary>
     /// スキル効果開始ログの追加
     /// </summary>
-    private void AddStartSkillEffectLog(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, int skillEffectIndex)
+    private void AddStartSkillEffectLog(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, int skillEffectIndex, List<BattleMonsterIndex> beDoneMonsterIndexList)
     {
         var battleMonster = GetBattleMonster(doMonsterIndex);
         var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
@@ -196,6 +196,7 @@ public partial class BattleDataProcessor
         battleLog.type = BattleLogType.StartSkillEffect;
         battleLog.doBattleMonsterIndex = doMonsterIndex;
         battleLog.actionType = actionType;
+        battleLog.beDoneBattleMonsterDataList = beDoneMonsterIndexList.Select(index => new BeDoneBattleMonsterData() { battleMonsterIndex = index }).ToList();
         battleLog.log = $"{possess}{monster.name}が{skillName}のインデックス{skillEffectIndex}の効果を発動";
 
         battleLogList.Add(battleLog);
