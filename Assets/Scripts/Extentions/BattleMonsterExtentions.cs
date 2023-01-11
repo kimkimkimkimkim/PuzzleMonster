@@ -418,8 +418,54 @@ public static class BattleMonsterInfoExtentions
         return monster.baseDefensePenetratingRate + up - down;
     }
 
-    public static int GetStatus(this BattleMonsterInfo monster, BattleMonsterStatusType type) {
+    public static float GetStatus(this BattleMonsterInfo monster, BattleMonsterStatusType type) {
         switch (type) {
+            case BattleMonsterStatusType.Hp:
+                return monster.maxHp;
+            case BattleMonsterStatusType.Attack:
+                return monster.currentAttack();
+            case BattleMonsterStatusType.Defense:
+                return monster.currentDefense();
+            case BattleMonsterStatusType.Heal:
+                return monster.currentHeal();
+            case BattleMonsterStatusType.Speed:
+                return monster.currentSpeed();
+            case BattleMonsterStatusType.Sheild:
+                return monster.shield();
+            case BattleMonsterStatusType.UltimateSkillDamageRate:
+                return monster.ultimateSkillDamageRate();
+            case BattleMonsterStatusType.BlockRate:
+                return monster.blockRate();
+            case BattleMonsterStatusType.CriticalRate:
+                return monster.criticalRate();
+            case BattleMonsterStatusType.CriticalDamage:
+                return monster.criticalDamage();
+            case BattleMonsterStatusType.BuffResistRate:
+                return monster.buffResistRate();
+            case BattleMonsterStatusType.DebuffResistRate:
+                return monster.debuffResistRate();
+            case BattleMonsterStatusType.DamageResistRate:
+                return monster.damageResistRate();
+            case BattleMonsterStatusType.LuckDamageRate:
+                return monster.luckDamageRate();
+            case BattleMonsterStatusType.HolyDamageRate:
+                return monster.holyDamageRate();
+            case BattleMonsterStatusType.EnergyUpRate:
+                return monster.energyUpRate();
+            case BattleMonsterStatusType.HealedRate:
+                return monster.healedRate();
+            case BattleMonsterStatusType.AttackAccuracy:
+                return monster.attackAccuracy();
+            case BattleMonsterStatusType.Armor:
+                return monster.armor();
+            case BattleMonsterStatusType.ArmorBreakRate:
+                return monster.armorBreakRate();
+            case BattleMonsterStatusType.HealingRate:
+                return monster.healingRate();
+            case BattleMonsterStatusType.DefensePenetratingRate:
+                return monster.defensePenetratingRate();
+            case BattleMonsterStatusType.CurrentHp:
+                return monster.currentHp;
             default:
                 return 0;
         }
