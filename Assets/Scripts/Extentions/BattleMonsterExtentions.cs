@@ -417,4 +417,11 @@ public static class BattleMonsterInfoExtentions
             .Sum(c => c.skillEffect.value);
         return monster.baseDefensePenetratingRate + up - down;
     }
+
+    public static int GetStatus(this BattleMonsterInfo monster, BattleMonsterStatusType type) {
+        switch (type) {
+            default:
+                return 0;
+        }
+    }
 }

@@ -65,4 +65,14 @@ public partial class BattleDataProcessor
                 return 0;
         }
     }
+
+    /// <summary>
+    /// ブロックした回数の取得
+    /// </summary>
+    private int GetBlockCount(BattleMonsterIndex battleMonsterIndex) {
+        // TODO: ブロックした回数取得
+        return battleLogList.Where(log => {
+            return true;
+        }).Count();
+    }
 }

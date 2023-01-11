@@ -399,6 +399,7 @@ public partial class BattleDataProcessor
         AddTakeDamageLog(doMonsterIndex, beDoneMonsterDataList, skillEffect.skillFxId);
 
         // トリガースキルを発動する
+        var doBattleMonster = GetBattleMonster(doMonsterIndex);
         var beDoneBattleMonsterIndexList = beDoneMonsterDataList.Select(d => d.battleMonsterIndex).ToList();
         var allBattleMonsterList = GetAllMonsterList();
         var playerBattleMonsterIndexList = allBattleMonsterList.Where(m => m.index.isPlayer).Select(m => m.index).ToList();
@@ -428,6 +429,9 @@ public partial class BattleDataProcessor
             // 自身がブロックした時
             ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBlocked, d.battleMonsterIndex, 0, doMonsterIndex, actionType, 0);
 
+            // 自身が指定回数ブロックしたとき
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBlocked, d.battleMonsterIndex, GetBlockCount(d.battleMonsterIndex), doMonsterIndex, actionType, 0);
+
             // 味方がブロックした時
             if (d.battleMonsterIndex.isPlayer) 
             {
@@ -452,14 +456,55 @@ public partial class BattleDataProcessor
         // 攻撃した時
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeAttacked, doMonsterIndex);
 
+        // 攻撃した時をもっと詳しく
+        beDoneBattleMonsterIndexList.Select(m => GetBattleMonster(m)).ToList().ForEach(m => {
+            // 特定状態異常の相手に攻撃したとき
+            m.battleConditionList.ForEach(c => ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeAttackBattleCondition, doMonsterIndex , (int)c.battleCondition.id));
+
+            // 特定ステータスの高低によるトリガー
+            foreach(BattleMonsterStatusType type in Enum.GetValues(typeof(BattleMonsterStatusType))) {
+                if(doBattleMonster.GetStatus(type) >= GetBattleMonster(m.index).GetStatus(type)) {
+                    ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeAttackLowerStatus, doMonsterIndex, (int)type, m.index);
+                } else {
+                    ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeAttackUpperStatus, doMonsterIndex, (int)type, m.index);
+                }
+            }
+        });
+
         // 通常攻撃またはウルトを発動したとき
         if (actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeExecuteNormalOrUltimateSkill, doMonsterIndex);
+
+        // ウルトを発動したとき
+        if (actionType == BattleActionType.UltimateSkill) {
+            // 味方
+            if (doMonsterIndex.isPlayer) {
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyUltimateSkill, playerBattleMonsterIndexList, targetBattleMonsterIndex: doMonsterIndex);
+            } else {
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyUltimateSkill, enemyBattleMonsterIndexList, targetBattleMonsterIndex: doMonsterIndex);
+            }
+        }
 
         // 通常攻撃を発動した時
         if (actionType == BattleActionType.NormalSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeExecuteNormalSkill, doMonsterIndex);
 
         // 攻撃された時
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAttacked, beDoneBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0);
+
+        // 特定状態異常の相手に攻撃されたとき
+        GetBattleMonster(doMonsterIndex).battleConditionList.ForEach(c => {
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAttackedBattleCondition, beDoneBattleMonsterIndexList, (int)c.battleCondition.id, doMonsterIndex);
+        });
+
+        // 特定ステータスの高低によるトリガー
+        beDoneBattleMonsterIndexList.ForEach(index => {
+            foreach (BattleMonsterStatusType type in Enum.GetValues(typeof(BattleMonsterStatusType))) {
+                if (doBattleMonster.GetStatus(type) >= GetBattleMonster(index).GetStatus(type)) {
+                    ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAttackedLowerStatus, index, (int)type, doMonsterIndex);
+                } else {
+                    ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAttackedUpperStatus, index, (int)type, doMonsterIndex);
+                }
+            }
+        });
 
         // 通常攻撃またはウルトを受けたとき
         if (actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill)
@@ -470,9 +515,7 @@ public partial class BattleDataProcessor
 
         // 通常攻撃を発動した時
         if (actionType == BattleActionType.NormalSkill) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeExecutedNormalSkill, beDoneBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0);
-
-
-
+        
         // ダメージを受けたとき
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeTakeDamageEnd, beDoneBattleMonsterIndexList);
     }
@@ -540,6 +583,7 @@ public partial class BattleDataProcessor
         {
             // 自身が付与された時
             ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAddedBattleCondition, battleMonsterIndex, (int)battleConditionMB.id);
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTargetBattleConditionAddedAndMeTurnActionEnd, battleMonsterIndex, (int)battleConditionMB.id);
 
             // 味方が付与された時
             if (battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, playerBattleMonsterIndexList, (int)battleConditionMB.id);
