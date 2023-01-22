@@ -27,6 +27,7 @@ public partial class BattleDataProcessor
             winOrLose = currentWinOrLose,
             log = "",
             skillFxId = 0,
+            skillGuid = "",
             actionType = BattleActionType.None,
             skillEffectIndex = 0,
             enemyBattleMonsterListByWave = enemyBattleMonsterListByWave.Clone(),
@@ -121,11 +122,14 @@ public partial class BattleDataProcessor
     /// <summary>
     /// 状態異常解除ログの追加
     /// </summary>
-    private void AddTakeBattleConditionRemoveLog(List<BeDoneBattleMonsterData> beDoneBattleMonsterDataList)
+    private void AddTakeBattleConditionRemoveLog(List<BeDoneBattleMonsterData> beDoneBattleMonsterDataList, string skillGuid, BattleActionType actionType, int skillEffectIndex)
     {
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.TakeBattleConditionRemove;
         battleLog.beDoneBattleMonsterDataList = beDoneBattleMonsterDataList.Clone();
+        battleLog.skillGuid = skillGuid;
+        battleLog.actionType = actionType;
+        battleLog.skillEffectIndex = skillEffectIndex;
         battleLog.log = "状態異常を解除しました";
 
         battleLogList.Add(battleLog);
@@ -185,7 +189,7 @@ public partial class BattleDataProcessor
     /// <summary>
     /// スキル効果開始ログの追加
     /// </summary>
-    private void AddStartSkillEffectLog(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, int skillEffectIndex, List<BattleMonsterIndex> beDoneMonsterIndexList)
+    private void AddStartSkillEffectLog(BattleMonsterIndex doMonsterIndex,string skillGuid, BattleActionType actionType, int skillEffectIndex, List<BattleMonsterIndex> beDoneMonsterIndexList)
     {
         var battleMonster = GetBattleMonster(doMonsterIndex);
         var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
@@ -195,6 +199,7 @@ public partial class BattleDataProcessor
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.StartSkillEffect;
         battleLog.doBattleMonsterIndex = doMonsterIndex;
+        battleLog.skillGuid = skillGuid;
         battleLog.actionType = actionType;
         battleLog.beDoneBattleMonsterDataList = beDoneMonsterIndexList.Select(index => new BeDoneBattleMonsterData() { battleMonsterIndex = index }).ToList();
         battleLog.log = $"{possess}{monster.name}が{skillName}のインデックス{skillEffectIndex}の効果を発動";
@@ -224,7 +229,7 @@ public partial class BattleDataProcessor
     /// <summary>
     /// 被ダメージログの追加
     /// </summary>
-    private void AddTakeDamageLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, long skillFxId)
+    private void AddTakeDamageLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, long skillFxId, string skillGuid, BattleActionType actionType, int skillEffectIndex)
     {
         var logList = beDoneMonsterDataList.Select(d => {
             var battleMonster = GetBattleMonster(d.battleMonsterIndex);
@@ -240,6 +245,9 @@ public partial class BattleDataProcessor
         battleLog.doBattleMonsterIndex = doMonsterIndex;
         battleLog.beDoneBattleMonsterDataList = beDoneMonsterDataList.Clone();
         battleLog.skillFxId = skillFxId;
+        battleLog.skillGuid = skillGuid;
+        battleLog.actionType = actionType;
+        battleLog.skillEffectIndex = skillEffectIndex;
         battleLog.log = log;
 
         battleLogList.Add(battleLog);
@@ -248,7 +256,7 @@ public partial class BattleDataProcessor
     /// <summary>
     /// 被回復ログの追加
     /// </summary>
-    private void AddTakeHealLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, long skillFxId)
+    private void AddTakeHealLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, long skillFxId, string skillGuid, BattleActionType actionType, int skillEffectIndex)
     {
         var logList = beDoneMonsterDataList.Select(d => {
             var battleMonster = GetBattleMonster(d.battleMonsterIndex);
@@ -264,6 +272,9 @@ public partial class BattleDataProcessor
         battleLog.doBattleMonsterIndex = doMonsterIndex;
         battleLog.beDoneBattleMonsterDataList = beDoneMonsterDataList.Clone();
         battleLog.skillFxId = skillFxId;
+        battleLog.skillGuid = skillGuid;
+        battleLog.actionType = actionType;
+        battleLog.skillEffectIndex = skillEffectIndex;
         battleLog.log = log;
 
         battleLogList.Add(battleLog);
@@ -272,7 +283,7 @@ public partial class BattleDataProcessor
     /// <summary>
     /// 状態異常付与ログの追加
     /// </summary>
-    private void AddTakeBattleConditionAddLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, SkillEffectMI skillEffect)
+    private void AddTakeBattleConditionAddLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, SkillEffectMI skillEffect, string skillGuid, BattleActionType actionType, int skillEffectIndex)
     {
         var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
         var logList = beDoneMonsterDataList.Select(d => {
@@ -292,6 +303,9 @@ public partial class BattleDataProcessor
         battleLog.doBattleMonsterIndex = doMonsterIndex;
         battleLog.beDoneBattleMonsterDataList = beDoneMonsterDataList.Clone();
         battleLog.skillFxId = skillEffect.skillFxId;
+        battleLog.skillGuid = skillGuid;
+        battleLog.actionType = actionType;
+        battleLog.skillEffectIndex = skillEffectIndex;
         battleLog.log = log;
 
         battleLogList.Add(battleLog);
@@ -300,7 +314,7 @@ public partial class BattleDataProcessor
     /// <summary>
     /// ステータス変化ログの追加
     /// </summary>
-    private void AddTakeStatusChangeLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, SkillEffectMI skillEffect, int value)
+    private void AddTakeStatusChangeLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, SkillEffectMI skillEffect, int value, string skillGuid, BattleActionType actionType, int skillEffectIndex)
     {
         var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
         var logList = beDoneMonsterDataList.Select(d => {
@@ -319,6 +333,9 @@ public partial class BattleDataProcessor
         battleLog.doBattleMonsterIndex = doMonsterIndex;
         battleLog.beDoneBattleMonsterDataList = beDoneMonsterDataList.Clone();
         battleLog.skillFxId = skillEffect.skillFxId;
+        battleLog.skillGuid = skillGuid;
+        battleLog.actionType = actionType;
+        battleLog.skillEffectIndex = skillEffectIndex;
         battleLog.log = log;
 
         battleLogList.Add(battleLog);

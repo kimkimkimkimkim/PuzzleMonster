@@ -18,20 +18,18 @@ public partial class BattleDataProcessor
 			case SkillType.Attack:
 				switch (skillEffect.valueTargetType)
 				{
-					// HPを基準にする攻撃は他の要素を含まないダメージで計算
+					// HPを基準にする攻撃と何かのダメージを参照する系は他の要素を含まないダメージで計算
 					case ValueTargetType.MyCurrentHP:
 					case ValueTargetType.MyMaxHp:
 					case ValueTargetType.TargetCurrentHP:
 					case ValueTargetType.TargetMaxHp:
-						return new BattleActionValueData(){ value = GetHpRateDamageValue(doBattleMonster, beDoneBattleMonster, skillEffect) };
-                    // 何かのダメージを参照する系の場合は他の要素を含まないダメージで計算
                     case ValueTargetType.FirstElementDamage:
                     case ValueTargetType.JustBeforeElementDamage:
                     case ValueTargetType.JustBeforeElementRemoveBattleConditionRemainDamage:
                     case ValueTargetType.AllBeforeElementRemoveBattleConditionRemainDamage:
-
-                    // それ以外のダメージの場合は含めて計算
-                    default:
+						return new BattleActionValueData() { value = GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect) };
+					// それ以外のダメージの場合は含めて計算
+					default:
 						return GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
 				}
 			case SkillType.Heal:
@@ -81,9 +79,9 @@ public partial class BattleDataProcessor
 	}
 
 	/// <summary>
-	/// HP割合攻撃によるダメージを取得する
+	/// 様々な要因を加味しないアクション値を取得する
 	/// </summary>
-	private int GetHpRateDamageValue(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
+	private int GetActionValueWithoutFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
 	{
 		var coefficient = GetValueCoefficient(skillEffect);
 		return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
@@ -267,6 +265,7 @@ public partial class BattleDataProcessor
 			case ValueTargetType.TargetMaxHp:
 				return beDoneMonster.maxHp;
             case ValueTargetType.FirstElementDamage:
+
                 return 0.0f;
             case ValueTargetType.JustBeforeElementDamage:
                 return 0.0f;
