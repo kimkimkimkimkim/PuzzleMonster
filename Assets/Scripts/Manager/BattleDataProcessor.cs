@@ -378,7 +378,7 @@ public partial class BattleDataProcessor
 
         // スキル効果処理
         var beDoneMonsterDataList = beDoneMonsterList.Select(m => {
-            var actionValue = GetActionValue(doMonsterIndex, m.index, skillEffect);
+            var actionValue = GetActionValue(doMonsterIndex, m.index, skillEffect, actionType, skillGuid, skillEffectIndex);
 
             // 攻撃してきたモンスターの更新
             if (actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill) m.currentBeDoneAttackedMonsterIndex = doMonsterIndex;
@@ -530,7 +530,7 @@ public partial class BattleDataProcessor
     private void ExecuteHeal(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
     {
         var beDoneMonsterDataList = beDoneMonsterList.Select(m => {
-            var actionValue = GetActionValue(doMonsterIndex, m.index, skillEffect);
+            var actionValue = GetActionValue(doMonsterIndex, m.index, skillEffect, actionType, skillGuid, skillEffectIndex);
 
             // 効果量を反映
             // 攻撃でも回復でも加算
@@ -568,7 +568,7 @@ public partial class BattleDataProcessor
             if (isSucceeded)
             {
                 // 状態異常を付与
-                var battleCondition = AddBattleCondition(doMonsterIndex, battleMonster.index, skillEffect, battleConditionMB);
+                var battleCondition = AddBattleCondition(doMonsterIndex, battleMonster.index, skillEffect, battleConditionMB, actionType, skillGuid, skillEffectIndex);
                 battleConditionList.Add(battleCondition);
             }
 
@@ -883,10 +883,10 @@ public partial class BattleDataProcessor
     /// <summary>
     /// 状態異常情報を付与する
     /// </summary>
-    private BattleConditionInfo AddBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleConditionMB battleConditionMB)
+    private BattleConditionInfo AddBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleConditionMB battleConditionMB, BattleActionType actionType, string skillGuid, int skillEffectIndex)
     {
         var beDoneBattleMonster = GetBattleMonster(beDoneMonsterIndex);
-        var battleCondition = GetBattleCondition(doMonsterIndex, beDoneMonsterIndex, skillEffect, battleConditionMB, beDoneBattleMonster.battleConditionCount);
+        var battleCondition = GetBattleCondition(doMonsterIndex, beDoneMonsterIndex, skillEffect, battleConditionMB, beDoneBattleMonster.battleConditionCount, actionType, skillGuid, skillEffectIndex);
         
         // 状態異常を付与しカウントをインクリメント
         beDoneBattleMonster.battleConditionList.Add(battleCondition.Clone());
@@ -898,10 +898,10 @@ public partial class BattleDataProcessor
     /// <summary>
     /// 状態異常情報を作成して返す
     /// </summary>
-    private BattleConditionInfo GetBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleConditionMB battleConditionMB, int order)
+    private BattleConditionInfo GetBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleConditionMB battleConditionMB, int order, BattleActionType actionType, string skillGuid, int skillEffectIndex)
     {
 
-        var calculatedValue = battleConditionMB.battleConditionType == BattleConditionType.Action ? GetActionValue(doMonsterIndex, beDoneMonsterIndex, skillEffect).value : 0;
+        var calculatedValue = battleConditionMB.battleConditionType == BattleConditionType.Action ? GetActionValue(doMonsterIndex, beDoneMonsterIndex, skillEffect, actionType, skillGuid, skillEffectIndex).value : 0;
         var shieldValue = battleConditionMB.battleConditionType == BattleConditionType.Shield ? skillEffect.value : 0;
 
         // アクション状態異常の場合はスキル効果を修正する
@@ -915,6 +915,7 @@ public partial class BattleDataProcessor
 
         var battleCondition = new BattleConditionInfo()
         {
+            guid = Guid.NewGuid().ToString(),
             battleCondition = battleConditionMB,
             skillEffect = skillEffect,
             remainingTurnNum = skillEffect.durationTurnNum,

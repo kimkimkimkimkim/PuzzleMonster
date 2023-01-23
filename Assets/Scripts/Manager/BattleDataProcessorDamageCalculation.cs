@@ -8,7 +8,7 @@ using UnityEngine;
 /// </summary>
 public partial class BattleDataProcessor
 {
-	private BattleActionValueData GetActionValue(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect)
+	private BattleActionValueData GetActionValue(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleActionType actionType, string skillGuid, int skillEffectIndex)
 	{
 		var doBattleMonster = GetBattleMonster(doMonsterIndex);
 		var beDoneBattleMonster = GetBattleMonster(beDoneMonsterIndex);
@@ -18,16 +18,18 @@ public partial class BattleDataProcessor
 			case SkillType.Attack:
 				switch (skillEffect.valueTargetType)
 				{
-					// HPを基準にする攻撃と何かのダメージを参照する系は他の要素を含まないダメージで計算
+					// HPを基準を参照する系は他の要素を含まないダメージで計算
 					case ValueTargetType.MyCurrentHP:
 					case ValueTargetType.MyMaxHp:
 					case ValueTargetType.TargetCurrentHP:
 					case ValueTargetType.TargetMaxHp:
+                        return new BattleActionValueData() { value = GetActionValueReferenceHp(doBattleMonster, beDoneBattleMonster, skillEffect) };
+                    // ダメージを参照する系の値を取得
                     case ValueTargetType.FirstElementDamage:
                     case ValueTargetType.JustBeforeElementDamage:
                     case ValueTargetType.JustBeforeElementRemoveBattleConditionRemainDamage:
                     case ValueTargetType.AllBeforeElementRemoveBattleConditionRemainDamage:
-						return new BattleActionValueData() { value = GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect) };
+						return new BattleActionValueData() { value = GetActionValueReferenceDamage(doBattleMonster, beDoneBattleMonster, skillEffect, actionType, skillGuid, skillEffectIndex) };
 					// それ以外のダメージの場合は含めて計算
 					default:
 						return GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
@@ -79,18 +81,70 @@ public partial class BattleDataProcessor
 	}
 
 	/// <summary>
-	/// 様々な要因を加味しないアクション値を取得する
+	/// HPを参照するタイプのアクション値を取得する
 	/// </summary>
-	private int GetActionValueWithoutFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
+	private int GetActionValueReferenceHp(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
 	{
 		var coefficient = GetValueCoefficient(skillEffect);
 		return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
 	}
 
-	/// <summary>
-	/// 回復値を取得する
+    /// <summary>
+	/// ダメージを参照するタイプのアクション値を取得する
 	/// </summary>
-	private int GetHealValue(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
+	private int GetActionValueReferenceDamage(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, BattleActionType actionType, string skillGuid, int skillEffectIndex) {
+        var coefficient = GetValueCoefficient(skillEffect);
+        var value = 0;
+        switch (skillEffect.valueTargetType) {
+            case ValueTargetType.FirstElementDamage: 
+            {
+                    var battleLog = battleLogList.FirstOrDefault(l => l.type == BattleLogType.TakeDamage && l.skillGuid == skillGuid && l.skillEffectIndex == 0);
+                    return battleLog == null ? 0 : battleLog.beDoneBattleMonsterDataList.Sum(d => d.hpChanges);
+            }
+            case ValueTargetType.JustBeforeElementDamage: 
+            {
+                var battleLog = battleLogList.FirstOrDefault(l => l.type == BattleLogType.TakeDamage && l.skillGuid == skillGuid && l.skillEffectIndex == skillEffectIndex - 1);
+                return battleLog == null ? 0 : battleLog.beDoneBattleMonsterDataList.Sum(d => d.hpChanges);
+            }
+            case ValueTargetType.JustBeforeElementRemoveBattleConditionRemainDamage: 
+                return GetRemovedBattleConditionRemainDamage(beDoneBattleMonster, skillGuid, skillEffectIndex - 1);
+            case ValueTargetType.AllBeforeElementRemoveBattleConditionRemainDamage: 
+            {
+                var v = 0;
+                for(var i = 0; i < skillEffectIndex; i++) {
+                    v += GetRemovedBattleConditionRemainDamage(beDoneBattleMonster, skillGuid, i);
+                }
+                return v;
+            }
+        }
+        return (int)(coefficient * value);
+    }
+
+    /// <summary>
+    /// 指定したスキル効果で解除した状態異常の残りダメージを取得する
+    /// </summary>
+    private int GetRemovedBattleConditionRemainDamage(BattleMonsterInfo beDoneBattleMonster, string skillGuid, int skillEffectIndex) {
+        var beforeBattleLog = battleLogList.FirstOrDefault(l => l.type == BattleLogType.TakeBattleConditionRemoveBefore && l.skillGuid == skillGuid && l.skillEffectIndex == skillEffectIndex);
+        var afterBattleLog = battleLogList.FirstOrDefault(l => l.type == BattleLogType.TakeBattleConditionRemoveAfter && l.skillGuid == skillGuid && l.skillEffectIndex == skillEffectIndex);
+        if (beforeBattleLog == null || afterBattleLog == null) return 0;
+
+        var beforeBeDoneMonterData = beforeBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex == beDoneBattleMonster.index);
+        var afterBeDoneMonterData = afterBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex == beDoneBattleMonster.index);
+        if (beforeBeDoneMonterData == null || afterBeDoneMonterData == null) return 0;
+        
+        var removedBattleConditionList = beforeBeDoneMonterData.battleConditionList
+            .Where(beforeC => {
+                // 解除後状態異常リストに存在しないものだけに絞り込む
+                return !afterBeDoneMonterData.battleConditionList.Any(afterC => afterC.guid == beforeC.guid);
+            })
+            .ToList();
+        return removedBattleConditionList.Sum(c => c.actionValue);
+    }
+
+    /// <summary>
+    /// 回復値を取得する
+    /// </summary>
+    private int GetHealValue(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
 	{
 		var coefficient = GetValueCoefficient(skillEffect);
 		return (int)(
