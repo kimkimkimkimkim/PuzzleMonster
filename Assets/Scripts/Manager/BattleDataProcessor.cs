@@ -240,7 +240,7 @@ public partial class BattleDataProcessor
         // 状態異常のターンが一つも進行しなければ何もしない
         if(!isProgress) return;
 
-        var beDoneBattleMonsterDataList = new List<BeDoneBattleMonsterData>() { new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonsterIndex } };
+        var beDoneBattleMonsterDataList = new List<BeDoneBattleMonsterData>() { new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonsterIndex, battleConditionList = battleMonster.battleConditionList } };
         
         // 状態異常ターン進行ログの差し込み
         AddProgressBattleConditionTurnLog(beDoneBattleMonsterDataList);
@@ -248,14 +248,20 @@ public partial class BattleDataProcessor
         // 何も解除されなかったら何もしない
         if (!isRemoved) return;
 
+        // 状態異常解除前ログの差し込み
+        AddTakeBattleConditionRemoveBeforeLog(beDoneBattleMonsterDataList, "", BattleActionType.ProgressBattleConditionTurn, 0);
+
         // ターンが切れている状態異常を削除する
-        while(battleMonster.battleConditionList.Any(battleCondition => battleCondition.remainingTurnNum == 0)) {
+        while (battleMonster.battleConditionList.Any(battleCondition => battleCondition.remainingTurnNum == 0)) {
             var order = battleMonster.battleConditionList.First(battleCondition => battleCondition.remainingTurnNum == 0).order;
             RemoveBattleCondition(battleMonster.index, order);
         }
 
-        // 状態異常解除ログの差し込み
-        AddTakeBattleConditionRemoveLog(beDoneBattleMonsterDataList, "", BattleActionType.ProgressBattleConditionTurn, 0);
+        battleMonster = GetBattleMonster(battleMonsterIndex);
+        beDoneBattleMonsterDataList = new List<BeDoneBattleMonsterData>() { new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonsterIndex, battleConditionList = battleMonster.battleConditionList } };
+
+        // 状態異常解除後ログの差し込み
+        AddTakeBattleConditionRemoveAfterLog(beDoneBattleMonsterDataList, "", BattleActionType.ProgressBattleConditionTurn, 0);
     }
 
     /// <summary>
@@ -547,9 +553,10 @@ public partial class BattleDataProcessor
     private void ExecuteBattleConditionAdd(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
     {
         var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
-
+        
         var beDoneMonsterDataList = beDoneMonsterList.Select(battleMonster =>
         {
+            var battleConditionList = new List<BattleConditionInfo>();
             var battleConditionResist = battleMonster.battleConditionList
                 .Where(c => {
                     var isTargetBattleConditionResist = c.battleCondition.battleConditionType == BattleConditionType.BattleConditionResist && c.battleCondition.targetBattleConditionId == battleConditionMB.id;
@@ -561,13 +568,14 @@ public partial class BattleDataProcessor
             if (isSucceeded)
             {
                 // 状態異常を付与
-                AddBattleCondition(doMonsterIndex, battleMonster.index, skillEffect, battleConditionMB);
+                var battleCondition = AddBattleCondition(doMonsterIndex, battleMonster.index, skillEffect, battleConditionMB);
+                battleConditionList.Add(battleCondition);
             }
 
-            return new BeDoneBattleMonsterData()
-            {
+            return new BeDoneBattleMonsterData() {
                 battleMonsterIndex = battleMonster.index,
                 isMissed = !isSucceeded,
+                battleConditionList = battleConditionList,
             };
         }).ToList();
 
@@ -600,6 +608,10 @@ public partial class BattleDataProcessor
     {
         var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
 
+        var beforeBeDoneMonsterDataList = beDoneMonsterList
+            .Select(battleMonster => new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonster.index, battleConditionList = battleMonster.battleConditionList })
+            .ToList();
+
         var beDoneMonsterDataList = beDoneMonsterList
             .Where(battleMonster => {
                 var isRemoved = false;
@@ -617,11 +629,16 @@ public partial class BattleDataProcessor
 
                 return isRemoved;
             })
-            .Select(battleMonster => new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonster.index })
+            .Select(battleMonster => new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonster.index, battleConditionList = battleMonster.battleConditionList })
             .ToList();
+        
+        if (beDoneMonsterDataList.Any()) {
+            // 状態異常解除前ログの差し込み
+            AddTakeBattleConditionRemoveBeforeLog(beforeBeDoneMonsterDataList, skillGuid, actionType, skillEffectIndex);
 
-        // 状態異常解除ログの差し込み
-        if(beDoneMonsterDataList.Any()) AddTakeBattleConditionRemoveLog(beDoneMonsterDataList, skillGuid, actionType, skillEffectIndex);
+            // 状態異常解除後ログの差し込み
+            AddTakeBattleConditionRemoveAfterLog(beDoneMonsterDataList, skillGuid, actionType, skillEffectIndex);
+        }
     }
 
     private void ExecuteRevive(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
@@ -866,7 +883,7 @@ public partial class BattleDataProcessor
     /// <summary>
     /// 状態異常情報を付与する
     /// </summary>
-    private void AddBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleConditionMB battleConditionMB)
+    private BattleConditionInfo AddBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, BattleConditionMB battleConditionMB)
     {
         var beDoneBattleMonster = GetBattleMonster(beDoneMonsterIndex);
         var battleCondition = GetBattleCondition(doMonsterIndex, beDoneMonsterIndex, skillEffect, battleConditionMB, beDoneBattleMonster.battleConditionCount);
@@ -874,6 +891,8 @@ public partial class BattleDataProcessor
         // 状態異常を付与しカウントをインクリメント
         beDoneBattleMonster.battleConditionList.Add(battleCondition.Clone());
         beDoneBattleMonster.battleConditionCount++;
+
+        return battleCondition.Clone();
     }
 
     /// <summary>

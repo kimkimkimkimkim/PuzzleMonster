@@ -120,12 +120,27 @@ public partial class BattleDataProcessor
     }
 
     /// <summary>
-    /// 状態異常解除ログの追加
+    /// 状態異常解除前ログの追加
     /// </summary>
-    private void AddTakeBattleConditionRemoveLog(List<BeDoneBattleMonsterData> beDoneBattleMonsterDataList, string skillGuid, BattleActionType actionType, int skillEffectIndex)
+    private void AddTakeBattleConditionRemoveBeforeLog(List<BeDoneBattleMonsterData> beDoneBattleMonsterDataList, string skillGuid, BattleActionType actionType, int skillEffectIndex)
     {
         var battleLog = GetDefaultLog();
-        battleLog.type = BattleLogType.TakeBattleConditionRemove;
+        battleLog.type = BattleLogType.TakeBattleConditionRemoveBefore;
+        battleLog.beDoneBattleMonsterDataList = beDoneBattleMonsterDataList.Clone();
+        battleLog.skillGuid = skillGuid;
+        battleLog.actionType = actionType;
+        battleLog.skillEffectIndex = skillEffectIndex;
+        battleLog.log = "状態異常を解除します";
+
+        battleLogList.Add(battleLog);
+    }
+
+    /// <summary>
+    /// 状態異常解除後ログの追加
+    /// </summary>
+    private void AddTakeBattleConditionRemoveAfterLog(List<BeDoneBattleMonsterData> beDoneBattleMonsterDataList, string skillGuid, BattleActionType actionType, int skillEffectIndex) {
+        var battleLog = GetDefaultLog();
+        battleLog.type = BattleLogType.TakeBattleConditionRemoveAfter;
         battleLog.beDoneBattleMonsterDataList = beDoneBattleMonsterDataList.Clone();
         battleLog.skillGuid = skillGuid;
         battleLog.actionType = actionType;
