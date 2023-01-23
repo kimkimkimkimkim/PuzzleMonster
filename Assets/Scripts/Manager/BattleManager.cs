@@ -227,8 +227,10 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                         
                     // 状態異常付与
                     case BattleLogType.TakeBattleConditionAdd:
-                    // 状態異常解除
-                    case BattleLogType.TakeBattleConditionRemove:
+                    // 状態異常解除前
+                    case BattleLogType.TakeBattleConditionRemoveBefore:
+                    // 状態異常解除後
+                    case BattleLogType.TakeBattleConditionRemoveAfter:
                     // 状態異常ターン進行
                     case BattleLogType.ProgressBattleConditionTurn:
                         battleLog.beDoneBattleMonsterDataList.ForEach(d => {

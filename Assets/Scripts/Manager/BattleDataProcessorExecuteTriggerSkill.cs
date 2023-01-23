@@ -42,7 +42,7 @@ public partial class BattleDataProcessor
             .Where(effect =>
             {
                 // 実行者条件を満たしているか
-                if (!IsValidActivateCondition(battleMonsterIndex, effect.activateConditionType, effect.activateConditionValue)) return false;
+                if (!IsValidActivateCondition(battleMonsterIndex, effect.activateConditionType, effect.activateConditionValue, 0)) return false;
 
                 // TODO: 発動回数条件を満たしているか
                 if (passiveSkill.limitExecuteNum > 0 && targetBattleMonster.passiveSkillExecuteCount >= passiveSkill.limitExecuteNum) return false;
@@ -64,7 +64,7 @@ public partial class BattleDataProcessor
                 targetBattleMonsterIndex = targetBattleMonsterIndex,
                 targetBattleConditionCount = targetBattleConditionCount,
             };
-            StartActionStream(battleMonsterIndex, BattleActionType.PassiveSkill, skillEffectList, battleChainParticipant);
+            StartActionStream(battleMonsterIndex, BattleActionType.PassiveSkill, 0, skillEffectList, battleChainParticipant);
         }
     }
 
@@ -73,8 +73,13 @@ public partial class BattleDataProcessor
     {
         var targetBattleMonster = GetBattleMonster(battleMonsterIndex);
         var targetBattleConditionList = targetBattleMonster.battleConditionList
-            .Where(c => c.battleCondition.skillEffect.triggerType == triggerType)
-            .Where(c => IsValidActivateCondition(battleMonsterIndex, c.battleCondition.skillEffect.activateConditionType, c.battleCondition.skillEffect.activateConditionValue))
+            .Where(c => {
+                // 状態異常効果の発動条件はマスタのスキルエフェクトを参照する
+                var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleCondition.id);
+                if ( battleCondition.skillEffect.triggerType != triggerType) return false;
+                if (!IsValidActivateCondition(battleMonsterIndex, battleCondition.skillEffect.activateConditionType, battleCondition.skillEffect.activateConditionValue, (int)battleCondition.id)) return false;
+                return true;
+            })
             .ToList();
 
         targetBattleConditionList.ForEach(battleCondition =>
@@ -92,7 +97,7 @@ public partial class BattleDataProcessor
             // どの状態異常効果が発動するかによって条件が変わるのでここで判定
             if (IsValidChain(triggerType, battleMonsterIndex, battleCondition.order, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount))
             {
-                StartActionStream(battleMonsterIndex, BattleActionType.BattleCondition, new List<SkillEffectMI>() { battleCondition.skillEffect }, battleChainParticipant);
+                StartActionStream(battleMonsterIndex, BattleActionType.BattleCondition, (int)battleCondition.battleCondition.id, new List<SkillEffectMI>() { battleCondition.skillEffect }, battleChainParticipant);
             }
         });
     }
