@@ -711,18 +711,24 @@ public partial class BattleDataProcessor
         {
             switch (battleCondition.targetBattleMonsterStatusType)
             {
+                // 実数値系のステータスは実数値を加算する
                 case BattleMonsterStatusType.Hp:
-                    battleMonster.maxHp += value;
+                    battleMonster.maxHp += (int)(value * battleMonster.maxHp / 100.0f);
                     break;
                 case BattleMonsterStatusType.Attack:
-                    battleMonster.baseAttack += value;
+                    battleMonster.baseAttack += (int)(value * battleMonster.baseAttack / 100.0f);
                     break;
                 case BattleMonsterStatusType.Defense:
-                    battleMonster.baseDefense += value;
+                    battleMonster.baseDefense += (int)(value * battleMonster.baseDefense / 100.0f);
                     break;
+                case BattleMonsterStatusType.Armor:
+                    battleMonster.baseArmor += (int)(value * battleMonster.baseArmor / 100.0f);
+                    break;
+                // 実数値系の中でもスピードだけはそのまま加算する
                 case BattleMonsterStatusType.Speed:
                     battleMonster.baseSpeed += value;
                     break;
+                // パーセント系のステータスはそのまま加算する
                 case BattleMonsterStatusType.Sheild:
                     battleMonster.baseSheild += value;
                     break;
@@ -735,7 +741,7 @@ public partial class BattleDataProcessor
                 case BattleMonsterStatusType.CriticalRate:
                     battleMonster.baseCriticalRate += value;
                     break;
-                case BattleMonsterStatusType.CriticalDamage:
+                case BattleMonsterStatusType.CriticalDamageRate:
                     battleMonster.baseCriticalDamage += value;
                     break;
                 case BattleMonsterStatusType.BuffResistRate:
@@ -759,11 +765,8 @@ public partial class BattleDataProcessor
                 case BattleMonsterStatusType.HealedRate:
                     battleMonster.baseHealedRate += value;
                     break;
-                case BattleMonsterStatusType.AttackAccuracy:
+                case BattleMonsterStatusType.AttackAccuracyRate:
                     battleMonster.baseAttackAccuracy += value;
-                    break;
-                case BattleMonsterStatusType.Armor:
-                    battleMonster.baseArmor += value;
                     break;
                 case BattleMonsterStatusType.ArmorBreakRate:
                     battleMonster.baseArmorBreakRate += value;

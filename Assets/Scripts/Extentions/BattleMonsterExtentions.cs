@@ -222,11 +222,11 @@ public static class BattleMonsterInfoExtentions
     {
         var up = monster.battleConditionList
             .Where(c => c.battleCondition.battleConditionType == BattleConditionType.StatusUp)
-            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.skillEffect.battleConditionId).targetBattleMonsterStatusType == BattleMonsterStatusType.CriticalDamage)
+            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.skillEffect.battleConditionId).targetBattleMonsterStatusType == BattleMonsterStatusType.CriticalDamageRate)
             .Sum(c => c.skillEffect.value);
         var down = monster.battleConditionList
             .Where(c => c.battleCondition.battleConditionType == BattleConditionType.StatusDown)
-            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.skillEffect.battleConditionId).targetBattleMonsterStatusType == BattleMonsterStatusType.CriticalDamage)
+            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.skillEffect.battleConditionId).targetBattleMonsterStatusType == BattleMonsterStatusType.CriticalDamageRate)
             .Sum(c => c.skillEffect.value);
         return monster.baseCriticalDamage + up - down;
     }
@@ -350,11 +350,11 @@ public static class BattleMonsterInfoExtentions
     {
         var up = monster.battleConditionList
             .Where(c => c.battleCondition.battleConditionType == BattleConditionType.StatusUp)
-            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.skillEffect.battleConditionId).targetBattleMonsterStatusType == BattleMonsterStatusType.AttackAccuracy)
+            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.skillEffect.battleConditionId).targetBattleMonsterStatusType == BattleMonsterStatusType.AttackAccuracyRate)
             .Sum(c => c.skillEffect.value);
         var down = monster.battleConditionList
             .Where(c => c.battleCondition.battleConditionType == BattleConditionType.StatusDown)
-            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.skillEffect.battleConditionId).targetBattleMonsterStatusType == BattleMonsterStatusType.AttackAccuracy)
+            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.skillEffect.battleConditionId).targetBattleMonsterStatusType == BattleMonsterStatusType.AttackAccuracyRate)
             .Sum(c => c.skillEffect.value);
         return monster.baseAttackAccuracy + up - down;
     }
@@ -443,7 +443,7 @@ public static class BattleMonsterInfoExtentions
                 return monster.blockRate();
             case BattleMonsterStatusType.CriticalRate:
                 return monster.criticalRate();
-            case BattleMonsterStatusType.CriticalDamage:
+            case BattleMonsterStatusType.CriticalDamageRate:
                 return monster.criticalDamage();
             case BattleMonsterStatusType.BuffResistRate:
                 return monster.buffResistRate();
@@ -459,7 +459,7 @@ public static class BattleMonsterInfoExtentions
                 return monster.energyUpRate();
             case BattleMonsterStatusType.HealedRate:
                 return monster.healedRate();
-            case BattleMonsterStatusType.AttackAccuracy:
+            case BattleMonsterStatusType.AttackAccuracyRate:
                 return monster.attackAccuracy();
             case BattleMonsterStatusType.Armor:
                 return monster.armor();
