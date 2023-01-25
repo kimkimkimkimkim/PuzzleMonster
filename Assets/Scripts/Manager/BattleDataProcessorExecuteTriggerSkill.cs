@@ -64,7 +64,7 @@ public partial class BattleDataProcessor
                 targetBattleMonsterIndex = targetBattleMonsterIndex,
                 targetBattleConditionCount = targetBattleConditionCount,
             };
-            StartActionStream(battleMonsterIndex, BattleActionType.PassiveSkill, 0, skillEffectList, battleChainParticipant);
+            StartActionStream(battleMonsterIndex, BattleActionType.PassiveSkill, null, skillEffectList, battleChainParticipant);
         }
     }
 
@@ -75,9 +75,9 @@ public partial class BattleDataProcessor
         var targetBattleConditionList = targetBattleMonster.battleConditionList
             .Where(c => {
                 // 状態異常効果の発動条件はマスタのスキルエフェクトを参照する
-                var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleCondition.id);
-                if ( battleCondition.skillEffect.triggerType != triggerType) return false;
-                if (!IsValidActivateCondition(battleMonsterIndex, battleCondition.skillEffect.activateConditionType, battleCondition.skillEffect.activateConditionValue, (int)battleCondition.id)) return false;
+                var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleCondition.id);
+                if ( battleConditionMB.skillEffect.triggerType != triggerType) return false;
+                if (!IsValidActivateCondition(battleMonsterIndex, battleConditionMB.skillEffect.activateConditionType, battleConditionMB.skillEffect.activateConditionValue, battleConditionMB.id)) return false;
                 return true;
             })
             .ToList();
@@ -97,7 +97,7 @@ public partial class BattleDataProcessor
             // どの状態異常効果が発動するかによって条件が変わるのでここで判定
             if (IsValidChain(triggerType, battleMonsterIndex, battleCondition.order, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount))
             {
-                StartActionStream(battleMonsterIndex, BattleActionType.BattleCondition, (int)battleCondition.battleCondition.id, new List<SkillEffectMI>() { battleCondition.skillEffect }, battleChainParticipant);
+                StartActionStream(battleMonsterIndex, BattleActionType.BattleCondition, battleCondition, new List<SkillEffectMI>() { battleCondition.skillEffect }, battleChainParticipant);
             }
         });
     }

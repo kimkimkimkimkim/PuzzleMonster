@@ -167,7 +167,7 @@ public class BattleWindowUIScript : DummyWindowBase
             {
                 var parent = _enemyMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
-                var battleMonsterIndex = new BattleMonsterIndex() { index = index, isPlayer = false };
+                var battleMonsterIndex = new BattleMonsterIndex() { index = index, isPlayer = false, waveCount = waveCount };
 
                 parent.SetBattleMonsterItem(item);
                 item.Init(questMonster.monsterId, questMonster.level);
