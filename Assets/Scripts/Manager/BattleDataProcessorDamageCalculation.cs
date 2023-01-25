@@ -16,7 +16,8 @@ public partial class BattleDataProcessor
 		switch (skillEffect.type)
 		{
 			case SkillType.Attack:
-				switch (skillEffect.valueTargetType)
+            case SkillType.Damage:
+                switch (skillEffect.valueTargetType)
 				{
 					// HPを基準を参照する系は他の要素を含まないダメージで計算
 					case ValueTargetType.MyCurrentHP:
@@ -36,9 +37,14 @@ public partial class BattleDataProcessor
 				}
 			case SkillType.Heal:
 				return new BattleActionValueData(){ value = GetHealValue(doBattleMonster, beDoneBattleMonster, skillEffect) };
-			case SkillType.ConditionAdd:
+            case SkillType.Revive:
+                return new BattleActionValueData() { value = GetActionValueRevive(doBattleMonster, beDoneBattleMonster, skillEffect) };
+            case SkillType.EnergyUp:
+            case SkillType.EnergyDown:
+                return new BattleActionValueData() { value = GetActionValueEnergy(doBattleMonster, beDoneBattleMonster, skillEffect) };
+            case SkillType.ConditionAdd:
 			case SkillType.ConditionRemove:
-			case SkillType.Revive:
+            case SkillType.Status:
 			default:
 				return new BattleActionValueData();
 		}
@@ -156,7 +162,28 @@ public partial class BattleDataProcessor
 		);
 	}
 
-	private (float damage, bool isCritical) IncomingDamage(BattleMonsterInfo doMonster, BattleMonsterInfo beDoneMonster, SkillEffectMI skillEffect)
+    /// <summary>
+	/// 蘇生時の体力を取得する
+	/// </summary>
+	private int GetActionValueRevive(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect) {
+        var coefficient = GetValueCoefficient(skillEffect);
+        return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
+    }
+
+    /// <summary>
+	/// エネルギー変動時のアクション値を取得する
+	/// </summary>
+	private int GetActionValueEnergy(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect) {
+        var coefficient = GetValueCoefficient(skillEffect);
+        return (int)(
+            coefficient 
+            * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) 
+            * GetRate(skillEffect.value)
+            * (skillEffect.type == SkillType.EnergyUp ? (1 + GetRate(beDoneBattleMonster.energyUpRate())) : 1)
+        );
+    }
+
+    private (float damage, bool isCritical) IncomingDamage(BattleMonsterInfo doMonster, BattleMonsterInfo beDoneMonster, SkillEffectMI skillEffect)
 	{
 		// 攻撃×攻撃倍率×クリ時(1.5+0.02×クリダメ)
 		const float CRITICAL_DAMAGE_MAGNIFICATION = 1.5f;
@@ -335,8 +362,13 @@ public partial class BattleDataProcessor
 	private int GetValueCoefficient(SkillEffectMI skillEffect){
 		switch(skillEffect.type){
 			case SkillType.Attack:
+            case SkillType.Damage:
+            case SkillType.EnergyDown:
 				return -1;
 			case SkillType.Heal:
+            case SkillType.Status:
+            case SkillType.Revive:
+            case SkillType.EnergyUp:
 				return 1;
 			case SkillType.ConditionAdd:
 				var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
@@ -349,7 +381,6 @@ public partial class BattleDataProcessor
 						return 0;
 				}
 			case SkillType.ConditionRemove:
-			case SkillType.Revive:
 			default:
 				return 0;
 		}

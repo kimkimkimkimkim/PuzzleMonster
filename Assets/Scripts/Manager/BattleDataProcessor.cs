@@ -644,17 +644,62 @@ public partial class BattleDataProcessor
 
     private void ExecuteRevive(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
     {
+        var beDoneMonsterDataList = beDoneMonsterList.Select(m => {
+            // 蘇生時は蘇生後のHPが返ってくる
+            var hp = GetActionValue(doMonsterIndex, m.index, skillEffect, actionType, skillGuid, skillEffectIndex);
 
+            // 効果量を反映
+            var effectValue = m.ChangeHp(hp.value);
+
+            // 死亡フラグを折る
+            m.isDead = false;
+
+            return new BeDoneBattleMonsterData() {
+                battleMonsterIndex = m.index,
+                hpChanges = effectValue,
+            };
+        }).ToList();
+
+        // 蘇生ログの差し込み
+        AddTakeReviveLog(doMonsterIndex, beDoneMonsterDataList, skillEffect, skillGuid, actionType, skillEffectIndex);
     }
 
     private void ExecuteEnergyUp(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
     {
+        var beDoneMonsterDataList = beDoneMonsterList.Select(m => {
+            // アクション値を取得
+            var actionValue = GetActionValue(doMonsterIndex, m.index, skillEffect, actionType, skillGuid, skillEffectIndex);
 
+            // 効果量を反映
+            var effectValue = m.ChangeEnergy(actionValue.value);
+
+            return new BeDoneBattleMonsterData() {
+                battleMonsterIndex = m.index,
+                energyChanges = effectValue,
+            };
+        }).ToList();
+
+        // エネルギー上昇ログの差し込み
+        AddEnergyUpLog(doMonsterIndex, beDoneMonsterDataList, skillEffect.skillFxId, skillGuid, actionType, skillEffectIndex);
     }
 
     private void ExecuteEnergyDown(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
     {
+        var beDoneMonsterDataList = beDoneMonsterList.Select(m => {
+            // アクション値を取得
+            var actionValue = GetActionValue(doMonsterIndex, m.index, skillEffect, actionType, skillGuid, skillEffectIndex);
 
+            // 効果量を反映
+            var effectValue = m.ChangeEnergy(actionValue.value);
+
+            return new BeDoneBattleMonsterData() {
+                battleMonsterIndex = m.index,
+                energyChanges = effectValue,
+            };
+        }).ToList();
+
+        // エネルギー上昇ログの差し込み
+        AddEnergyDownLog(doMonsterIndex, beDoneMonsterDataList, skillEffect.skillFxId, skillGuid, actionType, skillEffectIndex);
     }
 
     private void ExecuteStatus(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
