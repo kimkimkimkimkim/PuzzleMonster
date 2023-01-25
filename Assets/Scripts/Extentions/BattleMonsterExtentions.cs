@@ -10,6 +10,7 @@ public static class BattleMonsterInfoExtentions
     /// </summary>
     public static int ChangeHp(this BattleMonsterInfo monster, int value)
     {
+        var defaultHp = monster.currentHp;
         var existsShield = monster.shield() > 0;
 
         if (existsShield && value < 0)
@@ -22,7 +23,7 @@ public static class BattleMonsterInfoExtentions
 
             // ダメージかつシールドを保持していたら、体力ではなくシールドを削る
             monster.battleConditionList
-                .Where(c => c.battleCondition.battleConditionType == BattleConditionType.Shield)
+                .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleCondition.id).battleConditionType == BattleConditionType.Shield)
                 .OrderBy(c => c.order)
                 .ToList()
                 .ForEach(c => {
@@ -40,13 +41,11 @@ public static class BattleMonsterInfoExtentions
 
             // 耐久値が0になったシールドを解除する
             monster.battleConditionList = monster.battleConditionList.Where(c => {
-                var isNotShield = c.battleCondition.battleConditionType != BattleConditionType.Shield;
-                var isValidShield = c.battleCondition.battleConditionType == BattleConditionType.Shield && c.shieldValue > 0;
+                var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleCondition.id);
+                var isNotShield = battleCondition.battleConditionType != BattleConditionType.Shield;
+                var isValidShield = battleCondition.battleConditionType == BattleConditionType.Shield && c.shieldValue > 0;
                 return isNotShield || isValidShield;
             }).ToList();
-
-            // 最初の効果量からシールド削り後の効果値を引いたものが実際の影響値
-            return initialValue - value;
         }
         else
         {
@@ -54,23 +53,27 @@ public static class BattleMonsterInfoExtentions
             if (tempHp > monster.maxHp)
             {
                 monster.currentHp = monster.maxHp;
-                return value - (tempHp - monster.maxHp);
             }
             else if (tempHp < 0)
             {
                 monster.currentHp = 0;
-                return value - tempHp;
             }
             else
             {
                 monster.currentHp = tempHp;
-                return value;
             }
         }
+
+        return monster.currentHp - defaultHp;
     }
 
-    public static void ChangeEnergy(this BattleMonsterInfo monster, int value)
+    /// <summary>
+    /// エネルギー値変更は毎回ここを通す
+    /// 実際に影響を与えた値を返す
+    /// </summary>
+    public static int ChangeEnergy(this BattleMonsterInfo monster, int value)
     {
+        var defaultEnergy = monster.currentEnergy;
         var tempEnergy = monster.currentEnergy + value;
         if (tempEnergy > ConstManager.Battle.MAX_ENERGY_VALUE)
         {
@@ -84,6 +87,8 @@ public static class BattleMonsterInfoExtentions
         {
             monster.currentEnergy = tempEnergy;
         }
+
+        return monster.currentEnergy - defaultEnergy;
     }
 
     /// <summary>
