@@ -107,9 +107,10 @@ public partial class BattleDataProcessor
     /// ブロックした回数の取得
     /// </summary>
     private int GetBlockCount(BattleMonsterIndex battleMonsterIndex) {
-        // TODO: ブロックした回数取得
-        return battleLogList.Where(log => {
-            return true;
-        }).Count();
+        return battleLogList
+            .Where(log => log.type == BattleLogType.TakeDamage)
+            .Where(log => log.actionType == BattleActionType.NormalSkill || log.actionType == BattleActionType.UltimateSkill || log.actionType == BattleActionType.PassiveSkill)
+            .Where(log => log.beDoneBattleMonsterDataList.Any(data => data.battleMonsterIndex.IsSame(battleMonsterIndex) && data.isBlocked))
+            .Count();
     }
 }
