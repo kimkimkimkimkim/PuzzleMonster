@@ -73,12 +73,7 @@ public partial class BattleDataProcessor
             {
                 // アクション開始
                 var skillEffectList = GetSkillEffectList(actionMonsterIndex, actionType);
-                var battleChainParticipant = new BattleChainParticipantInfo()
-                {
-                    battleMonsterIndex = actionMonsterIndex,
-                    battleActionType = actionType,
-                };
-                StartActionStream(actionMonsterIndex, actionType, null, skillEffectList, battleChainParticipant);
+                StartActionStream(actionMonsterIndex, actionType, null, skillEffectList);
             }
             else
             {
@@ -144,7 +139,7 @@ public partial class BattleDataProcessor
     }
 
     // アクション実行者とアクション内容を受け取りアクションを実行する
-    private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, BattleConditionInfo battleCondition, List<SkillEffectMI> skillEffectList, BattleChainParticipantInfo battleChainParticipant)
+    private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, BattleConditionInfo battleCondition, List<SkillEffectMI> skillEffectList)
     {
         // アクションを開始する
         StartAction(actionMonsterIndex, actionType, battleCondition);

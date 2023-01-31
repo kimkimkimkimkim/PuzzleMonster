@@ -56,15 +56,7 @@ public partial class BattleDataProcessor
             .ToList();
         if (skillEffectList.Any())
         {
-            var battleChainParticipant = new BattleChainParticipantInfo()
-            {
-                battleMonsterIndex = battleMonsterIndex,
-                battleActionType = BattleActionType.PassiveSkill,
-                targetBattleActionType = targetBattleActionType,
-                targetBattleMonsterIndex = targetBattleMonsterIndex,
-                targetBattleConditionCount = targetBattleConditionCount,
-            };
-            StartActionStream(battleMonsterIndex, BattleActionType.PassiveSkill, null, skillEffectList, battleChainParticipant);
+            StartActionStream(battleMonsterIndex, BattleActionType.PassiveSkill, null, skillEffectList);
         }
     }
 
@@ -84,20 +76,10 @@ public partial class BattleDataProcessor
 
         targetBattleConditionList.ForEach(battleCondition =>
         {
-            var battleChainParticipant = new BattleChainParticipantInfo()
-            {
-                battleMonsterIndex = battleMonsterIndex,
-                battleActionType = BattleActionType.PassiveSkill,
-                battleConditionCount = battleCondition.order,
-                targetBattleActionType = targetBattleActionType,
-                targetBattleMonsterIndex = targetBattleMonsterIndex,
-                targetBattleConditionCount = targetBattleConditionCount,
-            };
-
             // どの状態異常効果が発動するかによって条件が変わるのでここで判定
             if (IsValidChain(triggerType, battleMonsterIndex, battleCondition.order, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount))
             {
-                StartActionStream(battleMonsterIndex, BattleActionType.BattleCondition, battleCondition, new List<SkillEffectMI>() { battleCondition.skillEffect }, battleChainParticipant);
+                StartActionStream(battleMonsterIndex, BattleActionType.BattleCondition, battleCondition, new List<SkillEffectMI>() { battleCondition.skillEffect });
             }
         });
     }
