@@ -35,6 +35,8 @@ public partial class BattleDataProcessor
 					default:
 						return GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
 				}
+			case SkillType.WithoutFactorDamage:
+				return new BattleActionValueData() { value = GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect) };
 			case SkillType.Heal:
 				return new BattleActionValueData(){ value = GetHealValue(doBattleMonster, beDoneBattleMonster, skillEffect) };
             case SkillType.Revive:
@@ -95,7 +97,16 @@ public partial class BattleDataProcessor
 		return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
 	}
 
-    /// <summary>
+	/// <summary>
+	/// 様々な要因を加味しないアクション値を取得する
+	/// </summary>
+	private int GetActionValueWithoutFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
+	{
+		var coefficient = GetValueCoefficient(skillEffect);
+		return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
+	}
+
+	/// <summary>
 	/// ダメージを参照するタイプのアクション値を取得する
 	/// </summary>
 	private int GetActionValueReferenceDamage(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, BattleActionType actionType, string skillGuid, int skillEffectIndex) {
