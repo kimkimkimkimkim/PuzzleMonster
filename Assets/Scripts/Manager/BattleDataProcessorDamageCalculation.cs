@@ -24,7 +24,7 @@ public partial class BattleDataProcessor
 					case ValueTargetType.MyMaxHp:
 					case ValueTargetType.TargetCurrentHP:
 					case ValueTargetType.TargetMaxHp:
-                        return new BattleActionValueData() { value = GetActionValueReferenceHp(doBattleMonster, beDoneBattleMonster, skillEffect) };
+                        return new BattleActionValueData() { value = GetActionValueReferenceHp(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) };
                     // ダメージを参照する系の値を取得
                     case ValueTargetType.FirstElementDamage:
                     case ValueTargetType.JustBeforeElementDamage:
@@ -33,17 +33,17 @@ public partial class BattleDataProcessor
 						return new BattleActionValueData() { value = GetActionValueReferenceDamage(doBattleMonster, beDoneBattleMonster, skillEffect, actionType, skillGuid, skillEffectIndex) };
 					// それ以外のダメージの場合は含めて計算
 					default:
-						return GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect);
+						return GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex);
 				}
 			case SkillType.WithoutFactorDamage:
-				return new BattleActionValueData() { value = GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect) };
+				return new BattleActionValueData() { value = GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) };
 			case SkillType.Heal:
-				return new BattleActionValueData(){ value = GetHealValue(doBattleMonster, beDoneBattleMonster, skillEffect) };
+				return new BattleActionValueData(){ value = GetHealValue(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) };
             case SkillType.Revive:
-                return new BattleActionValueData() { value = GetActionValueRevive(doBattleMonster, beDoneBattleMonster, skillEffect) };
+                return new BattleActionValueData() { value = GetActionValueRevive(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) };
             case SkillType.EnergyUp:
             case SkillType.EnergyDown:
-                return new BattleActionValueData() { value = GetActionValueEnergy(doBattleMonster, beDoneBattleMonster, skillEffect) };
+                return new BattleActionValueData() { value = GetActionValueEnergy(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) };
             case SkillType.ConditionAdd:
 			case SkillType.ConditionRemove:
             case SkillType.Status:
@@ -55,7 +55,7 @@ public partial class BattleDataProcessor
 	/// <summary>
 	/// 様々な要因を加味したアクション値を取得する
 	/// </summary>
-	private BattleActionValueData GetActionValueWithFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
+	private BattleActionValueData GetActionValueWithFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
 	{
 		// Incoming Damage × (1 – Reduce Damage %) × [((1 – Armor Mitigation %) × (1 - Armor Break %))  + 70% × Holy Damage % + 30% × Luck Damage % ]
 		const float HOLY_DAMAGE_MAGNIFICATION = 70.0f;
@@ -63,7 +63,7 @@ public partial class BattleDataProcessor
 		const float BLOCK_DAMAGE_REDUCE_RATE = 33.0f;
 		
 		var coefficient = GetValueCoefficient(skillEffect);
-		var incomingDamage = IncomingDamage(doBattleMonster,beDoneBattleMonster, skillEffect);
+		var incomingDamage = IncomingDamage(doBattleMonster,beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex);
 		var isBlocked = ExecuteProbability(beDoneBattleMonster.blockRate() - doBattleMonster.attackAccuracy());
 		var damage =
 			(int)(
@@ -91,19 +91,19 @@ public partial class BattleDataProcessor
 	/// <summary>
 	/// HPを参照するタイプのアクション値を取得する
 	/// </summary>
-	private int GetActionValueReferenceHp(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
+	private int GetActionValueReferenceHp(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
 	{
 		var coefficient = GetValueCoefficient(skillEffect);
-		return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
+		return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) * GetRate(skillEffect.value));
 	}
 
 	/// <summary>
 	/// 様々な要因を加味しないアクション値を取得する
 	/// </summary>
-	private int GetActionValueWithoutFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
+	private int GetActionValueWithoutFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
 	{
 		var coefficient = GetValueCoefficient(skillEffect);
-		return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
+		return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) * GetRate(skillEffect.value));
 	}
 
 	/// <summary>
@@ -161,12 +161,12 @@ public partial class BattleDataProcessor
     /// <summary>
     /// 回復値を取得する
     /// </summary>
-    private int GetHealValue(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect)
+    private int GetHealValue(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
 	{
 		var coefficient = GetValueCoefficient(skillEffect);
 		return (int)(
 			coefficient 
-			* GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect)							  // 対象のステータス値
+			* GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex)							  // 対象のステータス値
 			* GetRate(skillEffect.value)																  // ダメージ倍率
 			* (1 + GetRate(doBattleMonster.healingRate()))												  // 与回復率分回復量を上昇
 			* (1 + GetRate(beDoneBattleMonster.healedRate()))											  // 被回復率分回復量を上昇
@@ -176,25 +176,25 @@ public partial class BattleDataProcessor
     /// <summary>
 	/// 蘇生時の体力を取得する
 	/// </summary>
-	private int GetActionValueRevive(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect) {
+	private int GetActionValueRevive(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex) {
         var coefficient = GetValueCoefficient(skillEffect);
-        return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) * GetRate(skillEffect.value));
+        return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) * GetRate(skillEffect.value));
     }
 
     /// <summary>
 	/// エネルギー変動時のアクション値を取得する
 	/// </summary>
-	private int GetActionValueEnergy(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect) {
+	private int GetActionValueEnergy(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex) {
         var coefficient = GetValueCoefficient(skillEffect);
         return (int)(
             coefficient 
-            * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect) 
+            * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) 
             * GetRate(skillEffect.value)
             * (skillEffect.type == SkillType.EnergyUp ? (1 + GetRate(beDoneBattleMonster.energyUpRate())) : 1)
         );
     }
 
-    private (float damage, bool isCritical) IncomingDamage(BattleMonsterInfo doMonster, BattleMonsterInfo beDoneMonster, SkillEffectMI skillEffect)
+    private (float damage, bool isCritical) IncomingDamage(BattleMonsterInfo doMonster, BattleMonsterInfo beDoneMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
 	{
 		// 攻撃×攻撃倍率×クリ時(1.5+0.02×クリダメ)
 		const float CRITICAL_DAMAGE_MAGNIFICATION = 1.5f;
@@ -202,7 +202,7 @@ public partial class BattleDataProcessor
 
 		var isCritical = ExecuteProbability(doMonster.criticalRate());
 		var damage =
-			GetStatusValue(doMonster, beDoneMonster, skillEffect)										   // 対象のステータス値
+			GetStatusValue(doMonster, beDoneMonster, skillEffect, skillGuid, skillEffectIndex)			   // 対象のステータス値
 			* GetRate(skillEffect.value, false)															   // ダメージ倍率
 			* BattleConditionKiller(doMonster, beDoneMonster)											   // 状態異常特攻倍率
 			* BuffTypeNumKiller(doMonster, beDoneMonster)												   // 指定バフタイプの個数特攻倍率
@@ -328,7 +328,7 @@ public partial class BattleDataProcessor
 		return isClamp ? Mathf.Clamp(rate, 0.0f, 1.0f) : rate;
 	}
 
-	private float GetStatusValue(BattleMonsterInfo doMonster, BattleMonsterInfo beDoneMonster, SkillEffectMI skillEffect)
+	private float GetStatusValue(BattleMonsterInfo doMonster, BattleMonsterInfo beDoneMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
 	{
 		switch (skillEffect.valueTargetType)
 		{
@@ -356,16 +356,43 @@ public partial class BattleDataProcessor
 				return beDoneMonster.currentSpeed();
 			case ValueTargetType.TargetMaxHp:
 				return beDoneMonster.maxHp;
-            case ValueTargetType.FirstElementDamage:
-
-                return 0.0f;
-            case ValueTargetType.JustBeforeElementDamage:
-                return 0.0f;
-            case ValueTargetType.JustBeforeElementRemoveBattleConditionRemainDamage:
-                return 0.0f;
-            case ValueTargetType.AllBeforeElementRemoveBattleConditionRemainDamage:
-                return 0.0f;
-			default:
+            case ValueTargetType.FirstElementDamage: 
+                {
+                    var targetLog = battleLogList.FirstOrDefault(log => log.skillGuid == skillGuid && log.skillEffectIndex == 0);
+                    if (targetLog != null) {
+                        return Mathf.Abs(targetLog.beDoneBattleMonsterDataList.Sum(data => data.hpChanges));
+                    } else {
+                        return 0.0f;
+                    }
+                }
+            case ValueTargetType.JustBeforeElementDamage: 
+                {
+                    var targetLog = battleLogList.FirstOrDefault(log => log.skillGuid == skillGuid && log.skillEffectIndex == 0);
+                    if (targetLog != null) {
+                        return Mathf.Abs(targetLog.beDoneBattleMonsterDataList.Sum(data => data.hpChanges));
+                    } else {
+                        return 0.0f;
+                    }
+                }
+            case ValueTargetType.JustBeforeElementRemoveBattleConditionRemainDamage: 
+                {
+                    var targetLog = battleLogList.FirstOrDefault(log => log.skillGuid == skillGuid && log.skillEffectIndex == 0);
+                    if (targetLog != null) {
+                        return Mathf.Abs(targetLog.beDoneBattleMonsterDataList.Sum(data => data.battleConditionList.Sum(condition => condition.remainingTurnNum * condition.actionValue)));
+                    } else {
+                        return 0.0f;
+                    }
+                }
+            case ValueTargetType.AllBeforeElementRemoveBattleConditionRemainDamage: 
+                {
+                    var targetLog = battleLogList.FirstOrDefault(log => log.skillGuid == skillGuid && log.skillEffectIndex == 0);
+                    if (targetLog != null) {
+                        return Mathf.Abs(targetLog.beDoneBattleMonsterDataList.Sum(data => data.battleConditionList.Sum(condition => condition.remainingTurnNum * condition.actionValue)));
+                    } else {
+                        return 0.0f;
+                    }
+                }
+            default:
 				return 0.0f;
 		}
 	}
