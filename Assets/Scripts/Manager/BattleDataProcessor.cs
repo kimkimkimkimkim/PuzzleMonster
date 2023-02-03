@@ -152,11 +152,7 @@ public partial class BattleDataProcessor
         skillEffectList.ForEach((skillEffect, index) => {
             // スキル効果の発動確率判定
             // 発動確率が0の場合は直前のスキル効果要素の発動状態を参照
-            var isExecutedBeforeEffect = battleLogList
-                .Where(l => l.doBattleMonsterIndex.IsSame(actionMonsterIndex))
-                .Where(l => l.waveCount == currentWaveCount && l.turnCount == currentTurnCount)
-                .Where(l => l.skillGuid == skillGuid && l.skillEffectIndex == index - 1)
-                .Any(l => l.type == BattleLogType.StartSkillEffect);
+            var isExecutedBeforeEffect = battleLogList.Where(l => l.skillGuid == skillGuid && l.skillEffectIndex == index - 1).Any(log => log.type == BattleLogType.StartSkillEffect);
             var isExecute = (skillEffect.activateProbability > 0 && ExecuteProbability(skillEffect.activateProbability)) || (skillEffect.activateProbability <= 0 && isExecutedBeforeEffect);
 
             if (isExecute)
