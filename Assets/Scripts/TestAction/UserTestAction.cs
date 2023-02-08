@@ -221,6 +221,9 @@ public class UserTestAction : ITestAction
                     Observable.Interval(TimeSpan.FromSeconds(1.0f))
                         .Do(count =>
                         {
+                            // 計測開始
+                            var sw = new System.Diagnostics.Stopwatch();
+                            sw.Start();
 
                             var selectMonsterIndex = (int)Math.Floor((float)count / monsterLevelList.Count);
                             var monsterLevelListIndex = (int)(count % monsterLevelList.Count);
@@ -284,6 +287,10 @@ public class UserTestAction : ITestAction
                             var battleDataProcessor = new BattleDataProcessor();
                             var battleLogList = battleDataProcessor.GetBattleLogList(allyUserMonsterList, quest);
 
+                            // 計測停止
+                            sw.Stop();
+                            var ts = sw.Elapsed;
+
                             // ログ出力
                             var targetLog = battleLogList.First(log => log.winOrLose != PM.Enum.Battle.WinOrLose.Continue);
                             var targetPlayerMonsterHpLogList = targetLog.playerBattleMonsterList.Select(m =>
@@ -297,7 +304,9 @@ public class UserTestAction : ITestAction
                                 return $"{monster.name}: {m.currentHp}";
                             });
                             Debug.Log("===================================================");
-                            Debug.Log($"{count}試合目: {(targetLog.winOrLose == PM.Enum.Battle.WinOrLose.Win ? "勝利" : "敗北")}");
+                            Debug.Log($"{count+1}試合目");
+                            Debug.Log($"勝敗: {(targetLog.winOrLose == PM.Enum.Battle.WinOrLose.Win ? "勝利" : "敗北")}");
+                            Debug.Log($"処理時間: {ts.Hours}時間 {ts.Minutes}分 {ts.Seconds}秒 {ts.Milliseconds}ミリ秒");
                             Debug.Log($"【味方】{string.Join(",", targetPlayerMonsterHpLogList)}");
                             Debug.Log($"　【敵】{string.Join(",", targetEnemyMonsterHpLogList)}");
                             Debug.Log("===================================================");
