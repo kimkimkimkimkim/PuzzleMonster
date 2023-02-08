@@ -219,64 +219,63 @@ public partial class BattleDataProcessor
 
 	private float BattleConditionKiller(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster)
     {
-		var rate = doBattleMonster.battleConditionList
-			.Where(c => c.battleCondition.battleConditionType == BattleConditionType.BattleConditionKiller)
-			.GroupBy(c => c.battleCondition.targetBattleConditionId)
-			.Select(group =>
-			{
-				var targetBattleConditionId = group.Key;
-				var existsTargetBattleCondition = beDoneBattleMonster.battleConditionList.Any(c => c.battleCondition.targetBattleConditionId == targetBattleConditionId);
+        var rate = doBattleMonster.battleConditionList
+            .Sum(c => {
+                var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId);
 
-				if (!existsTargetBattleCondition)
-				{
-					// 相手が対象の状態異常を保持していなければ何もしない
-					return 0;
-				}
-				else
-				{
-					// 相手が対象の状態異常を保持していれば合計の倍率を返す
-					return group.Sum(battleCondition => battleCondition.skillEffect.value);
+                // 状態異常特攻でなければ何もしない
+                if (battleCondition.battleConditionType != BattleConditionType.BattleConditionKiller) return 0;
 
-				}
-            })
-            .Sum();
+                var existsTargetBattleCondition = beDoneBattleMonster.battleConditionList.Any(condition => condition.battleConditionId == battleCondition.targetBattleConditionId);
+                if (existsTargetBattleCondition) 
+                {
+                    // 相手が対象の状態異常を保持していれば倍率を返す
+                    return c.skillEffect.value;
+                } 
+                else 
+                {
+                    // 相手が対象の状態異常を保持していなければ何もしない
+                    return 0;
+
+                }
+            });
 		return GetRate(rate + 100);
     }
 
 	private float BuffTypeNumKiller(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster)
 	{
-		var rate = doBattleMonster.battleConditionList
-			.Where(c => c.battleCondition.battleConditionType == BattleConditionType.BuffTypeNumKiller)
-			.GroupBy(c => c.battleCondition.targetBuffType)
-			.Select(group =>
-			{
-				var targetBuffType = group.Key;
-				var existsTargetBuffType = beDoneBattleMonster.battleConditionList.Any(c => c.battleCondition.buffType == targetBuffType);
+        var rate = doBattleMonster.battleConditionList
+            .Sum(c => {
+                var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId);
 
-				if (!existsTargetBuffType)
-				{
-					// 相手が指定のバフタイプの状態異常を保持していなければ何もしない
-					return 0;
-				}
-				else
-				{
-					// 相手が指定のバフタイプの状態異常を保持していれば合計の倍率を返す
-					var num = group.Count();
-					return num * 5; // TODO: 個数バフの倍率の計算
+                // バフタイプ個数特攻でなければ何もしない
+                if (battleCondition.battleConditionType != BattleConditionType.BuffTypeNumKiller) return 0;
 
-				}
-			})
-			.Sum();
-		return GetRate(rate + 100);
+                // 対象のバフタイプの状態異常を取得して倍率を返す
+                var targetBattleConditionNum = beDoneBattleMonster.battleConditionList
+                    .Where(condition => MasterRecord.GetMasterOf<BattleConditionMB>().Get(condition.battleConditionId).buffType == battleCondition.targetBuffType)
+                    .Count();
+                return targetBattleConditionNum * 5; // TODO: 個数バフの倍率の計算
+            });
+        return GetRate(rate + 100);
 	}
 
 	private float MonsterAttributeKiller(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster)
 	{
 		var beDoneMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(beDoneBattleMonster.monsterId);
-		var rate = doBattleMonster.battleConditionList
-			.Where(c => c.battleCondition.battleConditionType == BattleConditionType.MonsterAttributeKiller && c.battleCondition.targetMonsterAttribute == beDoneMonster.attribute)
-			.Sum(battleCondition => battleCondition.skillEffect.value);
-		return GetRate(rate + 100);
+        var rate = doBattleMonster.battleConditionList
+            .Sum(c => {
+                var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId);
+
+                // 属性特攻でなければ何もしない
+                if (battleCondition.battleConditionType != BattleConditionType.MonsterAttributeKiller) return 0;
+
+                // 対象の属性でなければ何もしない
+                if (battleCondition.targetMonsterAttribute != beDoneMonster.attribute) return 0;
+
+                return c.skillEffect.value;
+            });
+        return GetRate(rate + 100);
 	}
 
 	private float MonsterAttributeCompatibility(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster)

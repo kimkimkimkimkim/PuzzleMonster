@@ -67,7 +67,7 @@ public partial class BattleDataProcessor
         var targetBattleConditionList = targetBattleMonster.battleConditionList
             .Where(c => {
                 // 状態異常効果の発動条件はマスタのスキルエフェクトを参照する
-                var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleCondition.id);
+                var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId);
                 if ( battleConditionMB.skillEffect.triggerType != triggerType) return false;
                 if (!IsValidActivateCondition(battleMonsterIndex, battleConditionMB.skillEffect.activateConditionType, battleConditionMB.skillEffect.activateConditionValue, battleConditionMB.id)) return false;
                 return true;

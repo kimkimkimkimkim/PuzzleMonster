@@ -15,9 +15,9 @@ public class BattleConditionIconItem : MonoBehaviour
 
     public void SetInfo(BattleConditionInfo battleCondition)
     {
-        currentBattleConditionId = battleCondition.battleCondition.id;
-        PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.BattleCondition, battleCondition.battleCondition.id)
-            .Where(_ => currentBattleConditionId == battleCondition.battleCondition.id)
+        currentBattleConditionId = battleCondition.battleConditionId;
+        PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.BattleCondition, battleCondition.battleConditionId)
+            .Where(_ => currentBattleConditionId == battleCondition.battleConditionId)
             .Do(sprite => _iconImage.sprite = sprite)
             .Subscribe();
 

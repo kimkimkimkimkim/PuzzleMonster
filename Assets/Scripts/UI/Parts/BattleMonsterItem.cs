@@ -74,7 +74,9 @@ public class BattleMonsterItem : MonoBehaviour
     
     public void RefreshShieldSlider(List<BattleConditionInfo> battleConditionList)
     {
-        var shieldValue = battleConditionList.Where(c => c.battleCondition.battleConditionType == BattleConditionType.Shield).Sum(c => c.shieldValue);
+        var shieldValue = battleConditionList
+            .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId).battleConditionType == BattleConditionType.Shield)
+            .Sum(c => c.shieldValue);
         if(shieldValue <= 0)
         {
             _shieldSliderBase.SetActive(false);

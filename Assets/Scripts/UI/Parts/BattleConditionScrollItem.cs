@@ -10,7 +10,8 @@ public class BattleConditionScrollItem : MonoBehaviour
 
     public void SetInfo(BattleConditionInfo battleCondition)
     {
+        var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(battleCondition.battleConditionId);
         _battleConditionIconItem.SetInfo(battleCondition);
-        _battleConditionDescriptionText.text = battleCondition.battleCondition.description;
+        _battleConditionDescriptionText.text = battleConditionMB.description;
     }
 }
