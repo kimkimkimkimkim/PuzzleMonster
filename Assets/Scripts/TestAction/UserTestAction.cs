@@ -285,41 +285,32 @@ public class UserTestAction : ITestAction
                             var battleLogList = battleDataProcessor.GetBattleLogList(allyUserMonsterList, quest);
 
                             // ログ出力
-                            battleLogList.ForEach(battleLog =>
+                            var targetLog = battleLogList.First(log => log.winOrLose != PM.Enum.Battle.WinOrLose.Continue);
+                            var targetPlayerMonsterHpLogList = targetLog.playerBattleMonsterList.Select(m =>
                             {
-                                Debug.Log($"--------- {battleLog.type} ---------");
-                                Debug.Log(battleLog.log);
-
-                                if (battleLog.playerBattleMonsterList != null && battleLog.enemyBattleMonsterList != null)
-                                {
-                                    var playerMonsterHpLogList = battleLog.playerBattleMonsterList.Select(m =>
-                                    {
-                                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
-                                        return $"{monster.name}: {m.currentHp}";
-                                    });
-                                    var enemyMonsterHpLogList = battleLog.enemyBattleMonsterList.Select(m =>
-                                    {
-                                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
-                                        return $"{monster.name}: {m.currentHp}";
-                                    });
-                                    /*
-                                    Debug.Log("===================================================");
-                                    Debug.Log($"【味方】{string.Join(",", playerMonsterHpLogList)}");
-                                    Debug.Log($"　【敵】{string.Join(",", enemyMonsterHpLogList)}");
-                                    Debug.Log("===================================================");
-                                    */
-                                }
+                                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                                return $"{monster.name}: {m.currentHp}";
                             });
+                            var targetEnemyMonsterHpLogList = targetLog.enemyBattleMonsterList.Select(m =>
+                            {
+                                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                                return $"{monster.name}: {m.currentHp}";
+                            });
+                            Debug.Log("===================================================");
+                            Debug.Log($"{count}試合目: {(targetLog.winOrLose == PM.Enum.Battle.WinOrLose.Win ? "勝利" : "敗北")}");
+                            Debug.Log($"【味方】{string.Join(",", targetPlayerMonsterHpLogList)}");
+                            Debug.Log($"　【敵】{string.Join(",", targetEnemyMonsterHpLogList)}");
+                            Debug.Log("===================================================");
                         })
                         .Take(repeatNum * monsterLevelList.Count)
-                        .Catch((Exception e) =>
+                        .Catch((PMApiException e) =>
                         {
-                            return Observable.ReturnUnit().Do(_ => Debug.Log($"ERROR: {e}")).Select(_ => 0L);
+                            return Observable.ReturnUnit().Do(_ => Debug.Log($"ERROR?: {e.message}")).Select(_ => 0L);
                         })
                         .Subscribe();
-                }catch(Exception e)
+                }catch(PMApiException e)
                 {
-                    Debug.Log($"ERROR: {e}");
+                    Debug.Log($"ERROR!: {e.message}");
                 }
             }),
         });

@@ -30,12 +30,38 @@ public partial class BattleDataProcessor
 
     public List<BattleLogInfo> GetBattleLogList(List<UserMonsterInfo> userMonsterList, QuestMB quest)
     {
-        Init(userMonsterList, quest);
+        try {
+            Init(userMonsterList, quest);
 
-        // バトル処理を開始する
-        while (currentWinOrLose == WinOrLose.Continue)
+            // バトル処理を開始する
+            while (currentWinOrLose == WinOrLose.Continue) {
+                PlayLoop();
+            }
+        } 
+        catch (Exception e) 
         {
-            PlayLoop();
+            // バトル処理中にエラーが発生したらそこまでのログを出力する
+            battleLogList.ForEach(battleLog => {
+                UnityEngine.Debug.Log($"--------- {battleLog.type} ---------");
+                UnityEngine.Debug.Log(battleLog.log);
+
+                if (battleLog.playerBattleMonsterList != null && battleLog.enemyBattleMonsterList != null) {
+                    var playerMonsterHpLogList = battleLog.playerBattleMonsterList.Select(m => {
+                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                        return $"{monster.name}: {m.currentHp}";
+                    });
+                    var enemyMonsterHpLogList = battleLog.enemyBattleMonsterList.Select(m => {
+                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                        return $"{monster.name}: {m.currentHp}";
+                    });
+                    UnityEngine.Debug.Log("===================================================");
+                    UnityEngine.Debug.Log($"【味方】{string.Join(",", playerMonsterHpLogList)}");
+                    UnityEngine.Debug.Log($"　【敵】{string.Join(",", enemyMonsterHpLogList)}");
+                    UnityEngine.Debug.Log("===================================================");
+                }
+            });
+            var pmApiException = new PMApiException() { message = e.ToString() };
+            throw pmApiException;
         }
 
         return battleLogList;
