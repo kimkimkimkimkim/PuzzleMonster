@@ -2,7 +2,7 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -10,7 +10,8 @@ Material:
   m_Name: portal_1_mat 7
   m_Shader: {fileID: -6465566751694194690, guid: c1eb8e75032c43142a788d2148623595,
     type: 3}
-  m_ShaderKeywords: 
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -32,6 +33,7 @@ Material:
         m_Texture: {fileID: 2800000, guid: 0b9a416ceaaa20b458ba6bb8b5c62ade, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
     - Vector1_22378464: 0
     - Vector1_A5E42D24: 0.2
@@ -39,3 +41,17 @@ Material:
     - Color_9673536E: {r: 8.274583, g: 6.0304165, b: 11.313703, a: 1}
     - Vector2_188C51F5: {r: 0.29, g: 0, b: 0, a: 0}
     - Vector4_DECB3CBE: {r: 0.5, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+--- !u!114 &8133932595521895130
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 5
