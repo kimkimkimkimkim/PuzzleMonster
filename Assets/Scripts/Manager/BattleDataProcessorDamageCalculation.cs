@@ -208,7 +208,7 @@ public partial class BattleDataProcessor {
     private float BattleConditionKiller(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster) {
         var rate = doBattleMonster.battleConditionList
             .Sum(c => {
-                var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId);
+                var battleCondition = battleConditionList.First(m => m.id == c.battleConditionId);
 
                 // 状態異常特攻でなければ何もしない
                 if (battleCondition.battleConditionType != BattleConditionType.BattleConditionKiller) return 0;
@@ -229,14 +229,14 @@ public partial class BattleDataProcessor {
     private float BuffTypeNumKiller(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster) {
         var rate = doBattleMonster.battleConditionList
             .Sum(c => {
-                var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId);
+                var battleCondition = battleConditionList.First(m => m.id == c.battleConditionId);
 
                 // バフタイプ個数特攻でなければ何もしない
                 if (battleCondition.battleConditionType != BattleConditionType.BuffTypeNumKiller) return 0;
 
                 // 対象のバフタイプの状態異常を取得して倍率を返す
                 var targetBattleConditionNum = beDoneBattleMonster.battleConditionList
-                    .Where(condition => MasterRecord.GetMasterOf<BattleConditionMB>().Get(condition.battleConditionId).buffType == battleCondition.targetBuffType)
+                    .Where(condition => battleConditionList.First(m => m.id == condition.battleConditionId).buffType == battleCondition.targetBuffType)
                     .Count();
                 return targetBattleConditionNum * 5; // TODO: 個数バフの倍率の計算
             });
@@ -244,10 +244,10 @@ public partial class BattleDataProcessor {
     }
 
     private float MonsterAttributeKiller(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster) {
-        var beDoneMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(beDoneBattleMonster.monsterId);
+        var beDoneMonster = monsterList.First(m => m.id == beDoneBattleMonster.monsterId);
         var rate = doBattleMonster.battleConditionList
             .Sum(c => {
-                var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId);
+                var battleCondition = battleConditionList.First(m => m.id == c.battleConditionId);
 
                 // 属性特攻でなければ何もしない
                 if (battleCondition.battleConditionType != BattleConditionType.MonsterAttributeKiller) return 0;
@@ -262,8 +262,8 @@ public partial class BattleDataProcessor {
 
     private float MonsterAttributeCompatibility(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster) {
         const int MONSTER_ATTRIBUTE_COMPATIBILITY_RATE = 30;
-        var doMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(doBattleMonster.monsterId);
-        var beDoneMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(beDoneBattleMonster.monsterId);
+        var doMonster = monsterList.First(m => m.id == doBattleMonster.monsterId);
+        var beDoneMonster = monsterList.First(m => m.id == beDoneBattleMonster.monsterId);
 
         var rate = doMonster.attribute.IsAdvantageous(beDoneMonster.attribute) ? MONSTER_ATTRIBUTE_COMPATIBILITY_RATE
             : doMonster.attribute.IsDisadvantage(beDoneMonster.attribute) ? -MONSTER_ATTRIBUTE_COMPATIBILITY_RATE
@@ -275,8 +275,8 @@ public partial class BattleDataProcessor {
     private float AttackAccuracyCompatibility(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster) {
         const float MONSTER_ATTRIBUTE_COMPATIBILITY_RATE = 0.3f; // 攻撃精度1%につき何%ダメージアップするか
         const float ADVANTAGE_PLUS_VALUE = 15.0f; // 属性有利時に攻撃精度が何%上昇するか
-        var doMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(doBattleMonster.monsterId);
-        var beDoneMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(beDoneBattleMonster.monsterId);
+        var doMonster = monsterList.First(m => m.id == doBattleMonster.monsterId);
+        var beDoneMonster = monsterList.First(m => m.id == beDoneBattleMonster.monsterId);
 
         var rate = (float)doBattleMonster.attackAccuracy();
         if (doMonster.attribute.IsAdvantageous(beDoneMonster.attribute)) rate += ADVANTAGE_PLUS_VALUE;
@@ -379,7 +379,7 @@ public partial class BattleDataProcessor {
             case SkillType.EnergyUp:
                 return 1;
             case SkillType.ConditionAdd:
-                var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
+                var battleCondition = battleConditionList.First(m => m.id == skillEffect.battleConditionId);
                 switch (battleCondition.skillEffect.type) {
                     case SkillType.Attack:
                         return -1;

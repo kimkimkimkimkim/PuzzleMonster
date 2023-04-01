@@ -77,7 +77,7 @@ public partial class BattleDataProcessor
     {
         var battleMonster = GetBattleMonster(actionMonsterIndex);
         var possess = actionMonsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        var monster = monsterList.First(m => m.id == battleMonster.monsterId);
 
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.ActionFailed;
@@ -94,7 +94,7 @@ public partial class BattleDataProcessor
     {
         var battleMonster = GetBattleMonster(doBattleMonsterIndex);
         var possess = doBattleMonsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        var monster = monsterList.First(m => m.id == battleMonster.monsterId);
 
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.SkillEffectFailedOfProbabilityMiss;
@@ -159,7 +159,7 @@ public partial class BattleDataProcessor
     private void AddStartTurnActionLog(BattleMonsterIndex doMonsterIndex) {
         var battleMonster = GetBattleMonster(doMonsterIndex);
         var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        var monster = monsterList.First(m => m.id == battleMonster.monsterId);
 
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.StartTurnAction;
@@ -175,7 +175,7 @@ public partial class BattleDataProcessor
     private void AddEndTurnActionLog(BattleMonsterIndex doMonsterIndex) {
         var battleMonster = GetBattleMonster(doMonsterIndex);
         var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        var monster = monsterList.First(m => m.id == battleMonster.monsterId);
 
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.EndTurnAction;
@@ -192,7 +192,7 @@ public partial class BattleDataProcessor
     {
         var battleMonster = GetBattleMonster(doMonsterIndex);
         var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        var monster = monsterList.First(m => m.id == battleMonster.monsterId);
         var skillName = GetSkillName(battleMonster, actionType);
 
         var battleLog = GetDefaultLog();
@@ -212,7 +212,7 @@ public partial class BattleDataProcessor
     {
         var battleMonster = GetBattleMonster(doMonsterIndex);
         var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        var monster = monsterList.First(m => m.id == battleMonster.monsterId);
         var skillName = GetSkillName(battleMonster, actionType);
 
         var battleLog = GetDefaultLog();
@@ -234,7 +234,7 @@ public partial class BattleDataProcessor
     {
         var battleMonster = GetBattleMonster(doMonsterIndex);
         var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        var monster = monsterList.First(m => m.id == battleMonster.monsterId);
         var skillName = GetSkillName(battleMonster, actionType);
 
         var battleLog = GetDefaultLog();
@@ -255,7 +255,7 @@ public partial class BattleDataProcessor
         var logList = beDoneMonsterDataList.Select(d => {
             var battleMonster = GetBattleMonster(d.battleMonsterIndex);
             var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+            var monster = monsterList.First(m => m.id == battleMonster.monsterId);
 
             return $"{possess}{monster.name}に{Math.Abs(d.hpChanges)}ダメージ";
         }).ToList();
@@ -283,7 +283,7 @@ public partial class BattleDataProcessor
         var logList = beDoneMonsterDataList.Select(d => {
             var battleMonster = GetBattleMonster(d.battleMonsterIndex);
             var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+            var monster = monsterList.First(m => m.id == battleMonster.monsterId);
 
             return $"{possess}{monster.name}の体力を{Math.Abs(d.hpChanges)}回復";
         }).ToList();
@@ -310,7 +310,7 @@ public partial class BattleDataProcessor
         var logList = beDoneMonsterDataList.Select(d => {
             var battleMonster = GetBattleMonster(d.battleMonsterIndex);
             var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+            var monster = monsterList.First(m => m.id == battleMonster.monsterId);
 
             return $"{possess}{monster.name}のエネルギーが{Math.Abs(d.energyChanges)}増加";
         }).ToList();
@@ -337,7 +337,7 @@ public partial class BattleDataProcessor
         var logList = beDoneMonsterDataList.Select(d => {
             var battleMonster = GetBattleMonster(d.battleMonsterIndex);
             var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+            var monster = monsterList.First(m => m.id == battleMonster.monsterId);
 
             return $"{possess}{monster.name}のエネルギーが{Math.Abs(d.energyChanges)}減少";
         }).ToList();
@@ -362,12 +362,12 @@ public partial class BattleDataProcessor
     /// </summary>
     private void AddTakeBattleConditionAddLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, SkillEffectMI skillEffect, string skillGuid, BattleActionType actionType, int skillEffectIndex, BattleConditionInfo battleCondition)
     {
-        var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
+        var battleConditionMB = battleConditionList.First(m => m.id == skillEffect.battleConditionId);
         var logList = beDoneMonsterDataList.Select(d => {
 
             var battleMonster = GetBattleMonster(d.battleMonsterIndex);
             var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+            var monster = monsterList.First(m => m.id == battleMonster.monsterId);
 
             return d.isMissed ?
                 $"{possess}{monster.name}への{battleConditionMB.name}の付与が失敗" :
@@ -394,12 +394,12 @@ public partial class BattleDataProcessor
     /// </summary>
     private void AddTakeStatusChangeLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, SkillEffectMI skillEffect, int value, string skillGuid, BattleActionType actionType, int skillEffectIndex, BattleConditionInfo battleCondition)
     {
-        var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
+        var battleConditionMB = battleConditionList.First(m => m.id == skillEffect.battleConditionId);
         var logList = beDoneMonsterDataList.Select(d => {
 
             var battleMonster = GetBattleMonster(d.battleMonsterIndex);
             var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+            var monster = monsterList.First(m => m.id == battleMonster.monsterId);
             var changeText = battleConditionMB.buffType == BuffType.Buff ? "上昇" : "減少";
 
             return $"{possess}{monster.name}の{battleConditionMB.targetBattleMonsterStatusType}を{Math.Abs(value)}だけ{changeText}";
@@ -426,7 +426,7 @@ public partial class BattleDataProcessor
     private void AddTakeReviveLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, SkillEffectMI skillEffect, string skillGuid, BattleActionType actionType, int skillEffectIndex, BattleConditionInfo battleCondition) {
         var logList = beDoneMonsterDataList.Select(d => {
             var battleMonster = GetBattleMonster(d.battleMonsterIndex);
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+            var monster = monsterList.First(m => m.id == battleMonster.monsterId);
             var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
             return $"{possess}{monster.name}が蘇生した";
         }).ToList();
@@ -452,7 +452,7 @@ public partial class BattleDataProcessor
     {
         var logList = beDoneMonsterDataList.Select(d => {
             var battleMonster = GetBattleMonster(d.battleMonsterIndex);
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+            var monster = monsterList.First(m => m.id == battleMonster.monsterId);
             var possess = d.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
             return $"{possess}{monster.name}が倒れた";
         }).ToList();
@@ -473,7 +473,7 @@ public partial class BattleDataProcessor
     {
         var battleMonster = GetBattleMonster(doMonsterIndex);
         var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
-        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(battleMonster.monsterId);
+        var monster = monsterList.First(m => m.id == battleMonster.monsterId);
 
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.EndAction;

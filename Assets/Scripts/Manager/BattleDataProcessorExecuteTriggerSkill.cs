@@ -27,9 +27,9 @@ public partial class BattleDataProcessor {
 
         // パッシブスキルを取得していない場合は何もしない
         var targetBattleMonster = GetBattleMonster(battleMonsterIndex);
-        var targetMonster = MasterRecord.GetMasterOf<MonsterMB>().Get(targetBattleMonster.monsterId);
+        var targetMonster = monsterList.First(m => m.id == targetBattleMonster.monsterId);
         var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(targetMonster.id, targetBattleMonster.level);
-        var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
+        var passiveSkill = passiveSkillList.First(m => m.id == passiveSkillId);
         if (passiveSkill == null) return;
 
         // 発動条件をみたしたスキルが存在していれば発動

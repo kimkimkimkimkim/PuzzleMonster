@@ -10,6 +10,11 @@ public partial class BattleDataProcessor {
     private int currentWaveCount;
     private int currentTurnCount;
     private QuestMB quest;
+    private List<MonsterMB> monsterList;
+    private List<BattleConditionMB> battleConditionList;
+    private List<NormalSkillMB> normalSkillList;
+    private List<UltimateSkillMB> ultimateSkillList;
+    private List<PassiveSkillMB> passiveSkillList;
     private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
     private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
@@ -18,6 +23,12 @@ public partial class BattleDataProcessor {
 
     private void Init(List<UserMonsterInfo> userMonsterList, QuestMB quest) {
         this.quest = quest;
+
+        monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().ToList();
+        battleConditionList = MasterRecord.GetMasterOf<BattleConditionMB>().GetAll().ToList();
+        normalSkillList = MasterRecord.GetMasterOf<NormalSkillMB>().GetAll().ToList();
+        ultimateSkillList = MasterRecord.GetMasterOf<UltimateSkillMB>().GetAll().ToList();
+        passiveSkillList = MasterRecord.GetMasterOf<PassiveSkillMB>().GetAll().ToList();
 
         currentWaveCount = 0;
         currentTurnCount = 0;
@@ -42,11 +53,11 @@ public partial class BattleDataProcessor {
 
                 if (battleLog.playerBattleMonsterList != null && battleLog.enemyBattleMonsterList != null) {
                     var playerMonsterHpLogList = battleLog.playerBattleMonsterList.Select(m => {
-                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                        var monster = monsterList.First(mons => mons.id == m.monsterId);
                         return $"{monster.name}: {m.currentHp}";
                     });
                     var enemyMonsterHpLogList = battleLog.enemyBattleMonsterList.Select(m => {
-                        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                        var monster = monsterList.First(mons => mons.id == m.monsterId);
                         return $"{monster.name}: {m.currentHp}";
                     });
                     UnityEngine.Debug.Log("===================================================");
@@ -60,7 +71,7 @@ public partial class BattleDataProcessor {
             var battleMonsterList = playerBattleMonsterList.Concat(enemyBattleMonsterList).ToList();
             battleMonsterList.ForEach(b => {
                 var possessedText = b.index.isPlayer ? "味方" : "敵";
-                var monsterName = MasterRecord.GetMasterOf<MonsterMB>().Get(b.monsterId).name;
+                var monsterName = monsterList.First(m => m.id == b.monsterId).name;
                 var json = Newtonsoft.Json.JsonConvert.SerializeObject(b, Newtonsoft.Json.Formatting.Indented);
                 UnityEngine.Debug.Log($"【{possessedText}の{monsterName}】");
                 UnityEngine.Debug.Log(json);
@@ -533,13 +544,13 @@ public partial class BattleDataProcessor {
     }
 
     private void ExecuteBattleConditionAdd(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex, BattleConditionInfo battleCondition) {
-        var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
+        var battleConditionMB = this.battleConditionList.First(m => m.id == skillEffect.battleConditionId);
 
         var beDoneMonsterDataList = beDoneMonsterList.Select(battleMonster => {
             var battleConditionList = new List<BattleConditionInfo>();
             var battleConditionResist = battleMonster.battleConditionList
                 .Where(c => {
-                    var battleConditionMaster = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId);
+                    var battleConditionMaster = this.battleConditionList.First(m => m.id == c.battleConditionId);
                     var isTargetBattleConditionResist = battleConditionMaster.battleConditionType == BattleConditionType.BattleConditionResist && battleConditionMaster.targetBattleConditionId == battleConditionMaster.id;
                     var isTargetBuffTypeResist = battleConditionMaster.battleConditionType == BattleConditionType.BuffTypeResist && battleConditionMaster.targetBuffType == battleConditionMaster.buffType;
                     return isTargetBattleConditionResist || isTargetBuffTypeResist;
@@ -584,7 +595,7 @@ public partial class BattleDataProcessor {
     }
 
     private void ExecuteBattleConditionRemove(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex, BattleConditionInfo battleCondition) {
-        var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
+        var battleConditionMB = battleConditionList.First(m => m.id == skillEffect.battleConditionId);
 
         var beforeBeDoneMonsterDataList = beDoneMonsterList
             .Select(battleMonster => new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonster.index, battleConditionList = battleMonster.battleConditionList })
@@ -678,7 +689,7 @@ public partial class BattleDataProcessor {
 
     private void ExecuteStatus(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex, BattleConditionInfo battleCondition) {
         // ステータスの変更
-        var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(skillEffect.battleConditionId);
+        var battleConditionMB = battleConditionList.First(m => m.id == skillEffect.battleConditionId);
         var value = battleConditionMB.buffType == BuffType.Buff ? skillEffect.value : -skillEffect.value;
         var beDoneMonsterDataList = beDoneMonsterList.Select(battleMonster => {
             switch (battleConditionMB.targetBattleMonsterStatusType) {
@@ -878,7 +889,6 @@ public partial class BattleDataProcessor {
     /// </summary>
     private bool CanAction(BattleMonsterIndex battleMonsterIndex, BattleActionType actionType) {
         var battleMonster = GetBattleMonster(battleMonsterIndex);
-        var battleConditionList = MasterRecord.GetMasterOf<BattleConditionMB>().GetAll().ToList();
         switch (actionType) {
             case BattleActionType.NormalSkill:
                 return !battleMonster.battleConditionList.Any(c => {
@@ -919,7 +929,7 @@ public partial class BattleDataProcessor {
     /// 状態異常情報を作成して返す
     /// </summary>
     private BattleConditionInfo GetBattleCondition(BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, SkillEffectMI skillEffect, long battleConditionId, int order, BattleActionType actionType, string skillGuid, int skillEffectIndex) {
-        var battleConditionMB = MasterRecord.GetMasterOf<BattleConditionMB>().Get(battleConditionId);
+        var battleConditionMB = battleConditionList.First(m => m.id == battleConditionId);
         var calculatedValue = battleConditionMB.battleConditionType == BattleConditionType.Action ? GetActionValue(doMonsterIndex, beDoneMonsterIndex, skillEffect, actionType, skillGuid, skillEffectIndex).value : 0;
         var shieldValue = battleConditionMB.battleConditionType == BattleConditionType.Shield ? skillEffect.value : 0;
 
@@ -961,15 +971,15 @@ public partial class BattleDataProcessor {
         switch (actionType) {
             case BattleActionType.NormalSkill:
                 var normalSkillId = ClientMonsterUtil.GetNormalSkillId(battleMonster.monsterId, battleMonster.level);
-                var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(normalSkillId);
+                var normalSkill = normalSkillList.First(m => m.id == normalSkillId);
                 return normalSkill.name;
             case BattleActionType.UltimateSkill:
                 var ultimateSkillId = ClientMonsterUtil.GetUltimateSkillId(battleMonster.monsterId, battleMonster.level);
-                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(ultimateSkillId);
+                var ultimateSkill = ultimateSkillList.First(m => m.id == ultimateSkillId);
                 return ultimateSkill.name;
             case BattleActionType.PassiveSkill:
                 var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(battleMonster.monsterId, battleMonster.level);
-                var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
+                var passiveSkill = passiveSkillList.First(m => m.id == passiveSkillId);
                 return passiveSkill?.name ?? "-";
             default:
                 return "";
@@ -981,15 +991,15 @@ public partial class BattleDataProcessor {
         switch (actionType) {
             case BattleActionType.NormalSkill:
                 var normalSkillId = ClientMonsterUtil.GetNormalSkillId(battleMonster.monsterId, battleMonster.level);
-                var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(normalSkillId);
+                var normalSkill = normalSkillList.First(m => m.id == normalSkillId);
                 return normalSkill.effectList.Select(m => (SkillEffectMI)m).ToList();
             case BattleActionType.UltimateSkill:
                 var ultimateSkillId = ClientMonsterUtil.GetUltimateSkillId(battleMonster.monsterId, battleMonster.level);
-                var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(ultimateSkillId);
+                var ultimateSkill = ultimateSkillList.First(m => m.id == ultimateSkillId);
                 return ultimateSkill.effectList.Select(m => (SkillEffectMI)m).ToList();
             case BattleActionType.PassiveSkill:
                 var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(battleMonster.monsterId, battleMonster.level);
-                var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
+                var passiveSkill = passiveSkillList.First(m => m.id == passiveSkillId);
                 return passiveSkill?.effectList.Select(m => (SkillEffectMI)m).ToList() ?? new List<SkillEffectMI>();
             default:
                 return new List<SkillEffectMI>();
@@ -1267,7 +1277,7 @@ public partial class BattleDataProcessor {
     private void SetPlayerBattleMonsterList(List<UserMonsterInfo> userMonsterList) {
         userMonsterList.ForEach((userMonster, index) => {
             if (userMonster != null) {
-                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
+                var monster = monsterList.First(m => m.id == userMonster.monsterId);
                 var battleMonster = BattleUtil.GetBattleMonster(monster, userMonster.customData.level, true, index);
                 playerBattleMonsterList.Add(battleMonster);
             }
@@ -1280,7 +1290,7 @@ public partial class BattleDataProcessor {
 
         enemyBattleMonsterList.Clear();
         questMonsterList.ForEach((questMonster, index) => {
-            var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(questMonster.monsterId);
+            var monster = monsterList.First(m => m.id == questMonster.monsterId);
             if (monster != null) {
                 var battleMonster = BattleUtil.GetBattleMonster(monster, questMonster.level, false, index, waveCount);
                 enemyBattleMonsterList.Add(battleMonster);
