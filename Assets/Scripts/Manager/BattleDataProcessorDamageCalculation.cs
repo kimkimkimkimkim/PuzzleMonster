@@ -287,8 +287,8 @@ public partial class BattleDataProcessor {
 
     private float ArmorMitigation(BattleMonsterInfo beDoneMonster) {
         // 防御/(180+22×Level)
-        const float DEFENSE_RESISTIVITY = 180.0f;
-        const float LEVEL_MAGNIFICATION = 22.0f;
+        const float DEFENSE_RESISTIVITY = 300.0f;
+        const float LEVEL_MAGNIFICATION = 260.0f;
 
         var armorMitigation = (float)beDoneMonster.currentDefense() / (DEFENSE_RESISTIVITY + LEVEL_MAGNIFICATION * beDoneMonster.level);
         return Mathf.Clamp(armorMitigation, 0.0f, 1.0f);
