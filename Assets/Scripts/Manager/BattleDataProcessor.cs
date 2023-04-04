@@ -21,9 +21,12 @@ public partial class BattleDataProcessor
     private List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>();
     private WinOrLose currentWinOrLose;
 
+    public string testLog { get; private set; } = "";
+
     private void Init(List<UserMonsterInfo> userMonsterList, QuestMB quest)
     {
         this.quest = quest;
+        this.quest.limitTurnNum = 25;
 
         monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().ToList();
         battleConditionList = MasterRecord.GetMasterOf<BattleConditionMB>().GetAll().ToList();

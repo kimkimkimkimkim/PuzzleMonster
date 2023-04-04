@@ -425,7 +425,7 @@ public class UserTestAction : ITestAction
 
                             var battleDataProcessor = new BattleDataProcessor();
                             var battleLogList = battleDataProcessor.GetBattleLogList(allyUserMonsterList, quest);
-                            testLog += battleDataProcessor.GetTestLog();
+                            testLog += battleDataProcessor.testLog;
 
                             // 計測停止
                             sw.Stop();
