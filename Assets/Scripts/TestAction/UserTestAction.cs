@@ -311,7 +311,15 @@ public class UserTestAction : ITestAction
                             Debug.Log("===================================================");
                             Debug.Log($"{count + 1}試合目");
                             Debug.Log($"勝敗: {(targetLog.winOrLose == PM.Enum.Battle.WinOrLose.Win ? "勝利" : "敗北")}");
-                            Debug.Log($"処理時間: {ts.Hours}時間 {ts.Minutes}分 {ts.Seconds}秒 {ts.Milliseconds}ミリ秒");
+                            var timeText = $"処理時間: {ts.Hours}時間 {ts.Minutes}分 {ts.Seconds}秒 {ts.Milliseconds}ミリ秒";
+                            if (ts.TotalSeconds >= 5)
+                            {
+                                Debug.LogError(timeText);
+                            }
+                            else
+                            {
+                                Debug.Log(timeText);
+                            }
                             Debug.Log($"【味方】{string.Join(",", targetPlayerMonsterHpLogList)}");
                             Debug.Log($"　【敵】{string.Join(",", targetEnemyMonsterHpLogList)}");
                             Debug.Log("===================================================");
@@ -321,6 +329,7 @@ public class UserTestAction : ITestAction
                         {
                             return Observable.ReturnUnit().Do(_ => Debug.Log($"ERROR?: {e.message}")).Select(_ => 0L);
                         })
+                        .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest() { title = "通知", content = "完了しました", commonDialogType = CommonDialogType.YesOnly }))
                         .Subscribe();
                 }
                 catch (PMApiException e)

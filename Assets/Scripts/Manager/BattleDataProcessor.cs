@@ -1234,7 +1234,7 @@ public partial class BattleDataProcessor
 
             case SkillTargetType.DoAttack:
                 var doMonster = GetBattleMonster(doMonsterIndex);
-                var isBeAttackedValid = IsValidActivateCondition(doMonster.currentBeDoneAttackedMonsterIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue, battleConditionId);
+                var isBeAttackedValid = doMonster.currentBeDoneAttackedMonsterIndex == null ? false : IsValidActivateCondition(doMonster.currentBeDoneAttackedMonsterIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue, battleConditionId);
                 battleMonsterIndexList = isBeAttackedValid ? new List<BattleMonsterIndex>() { doMonster.currentBeDoneAttackedMonsterIndex } : new List<BattleMonsterIndex>();
                 break;
 
