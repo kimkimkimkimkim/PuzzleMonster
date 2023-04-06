@@ -33,10 +33,14 @@ public class HeaderFooterWindowUIScript : WindowBase
     [SerializeField] protected List<GameObject> _propertyPanelBaseList;
     [SerializeField] protected Button _staminaButton;
     [SerializeField] protected Button _arenaBlockerButton;
+    [SerializeField] protected Button _shopBlockerButton;
     [SerializeField] protected long _rewardAdButtonRewardAdId;
 
-    public GameObject headerPanel { get { return _headerPanel; } }
-    public GameObject footerPanel { get { return _footerPanel; } }
+    public GameObject headerPanel
+    { get { return _headerPanel; } }
+
+    public GameObject footerPanel
+    { get { return _footerPanel; } }
 
     private IDisposable staminaCountDownObservable;
     private int initialStamina;
@@ -72,10 +76,12 @@ public class HeaderFooterWindowUIScript : WindowBase
             .Subscribe();
 
         _arenaBlockerButton.OnClickIntentAsObservable(isAnimation: false)
-            .SelectMany(_ => {
+            .SelectMany(_ =>
+            {
                 var title = "お知らせ";
                 var content = "アリーナ機能は現在開発中です\nもうしばらくお待ちください";
-                return CommonDialogFactory.Create(new CommonDialogRequest() {
+                return CommonDialogFactory.Create(new CommonDialogRequest()
+                {
                     commonDialogType = CommonDialogType.YesOnly,
                     title = title,
                     content = content,
@@ -113,6 +119,20 @@ public class HeaderFooterWindowUIScript : WindowBase
             })
             .Subscribe();
 
+        _shopBlockerButton.OnClickIntentAsObservable(isAnimation: false)
+            .SelectMany(_ =>
+            {
+                var title = "お知らせ";
+                var content = "ショップ機能は現在開発中です\nもうしばらくお待ちください";
+                return CommonDialogFactory.Create(new CommonDialogRequest()
+                {
+                    commonDialogType = CommonDialogType.YesOnly,
+                    title = title,
+                    content = content,
+                });
+            })
+            .Subscribe();
+
         _staminaButton.OnClickIntentAsObservable()
             .Do(_ =>
             {
@@ -145,8 +165,10 @@ public class HeaderFooterWindowUIScript : WindowBase
     /// <summary>
     /// 指定したプロパティパネルを指定した順序(右上から)で表示
     /// </summary>
-    public void ShowPropertyPanel(List<PropertyPanelType> propertyPanelTypeList) {
-        _propertyPanelBaseList.ForEach((p,i) => {
+    public void ShowPropertyPanel(List<PropertyPanelType> propertyPanelTypeList)
+    {
+        _propertyPanelBaseList.ForEach((p, i) =>
+        {
             var propertyPanelType = (PropertyPanelType)i;
             var index = propertyPanelTypeList.IndexOf(propertyPanelType);
             var siblingIndex = index >= 0 ? index : propertyPanelTypeList.Count;
@@ -166,7 +188,7 @@ public class HeaderFooterWindowUIScript : WindowBase
         var maxStamina = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.rank == ApplicationContext.userData.rank)?.stamina;
         if (maxStamina == null) return;
 
-        if(staminaCountDownObservable != null)
+        if (staminaCountDownObservable != null)
         {
             staminaCountDownObservable.Dispose();
             staminaCountDownObservable = null;
@@ -179,7 +201,7 @@ public class HeaderFooterWindowUIScript : WindowBase
         var initialSeconds = (int)((ConstManager.User.millSecondsPerStamina - elapsedTimeMilliSeconds) % 60);
 
         _staminaText.text = $"{initialStamina}/{maxStamina}";
-        _staminaCountdownText.text = initialStamina == maxStamina 
+        _staminaCountdownText.text = initialStamina == maxStamina
             ? "00:00"
             : $"あと {TextUtil.GetZeroPaddingText2Digits(initialMinutes)}:{TextUtil.GetZeroPaddingText2Digits(initialSeconds)}";
 
@@ -199,7 +221,7 @@ public class HeaderFooterWindowUIScript : WindowBase
                 var minutes = (ConstManager.User.millSecondsPerStamina - lastElapsedTimeMilliSeconds) / 1000 / 60;
                 var seconds = ((ConstManager.User.millSecondsPerStamina - lastElapsedTimeMilliSeconds) / 1000) % 60;
 
-                if(stamina < maxStamina)
+                if (stamina < maxStamina)
                 {
                     _staminaCountdownText.text = $"あと {TextUtil.GetZeroPaddingText2Digits(minutes)}:{TextUtil.GetZeroPaddingText2Digits(seconds)}";
                     _staminaText.text = $"{(int)stamina}/{maxStamina}";
@@ -229,7 +251,7 @@ public class HeaderFooterWindowUIScript : WindowBase
         _userNameText.text = playerProfile.DisplayName;
         _userRankText.text = userData.rank.ToString();
 
-        if(nextRankUpTable == null)
+        if (nextRankUpTable == null)
         {
             // 最大ランクの時
             _userExpText.text = "-";
