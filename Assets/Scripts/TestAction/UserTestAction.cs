@@ -352,23 +352,6 @@ public class UserTestAction : ITestAction
                     var ssrMonsterId = monsterList.Where(m => m.rarity == PM.Enum.Monster.MonsterRarity.SSR).Shuffle().First().id;
                     var monsterIdList = new List<long>() { rMonsterId, srMonsterId, ssrMonsterId };
                     var monsterLevelList = Enumerable.Range(0, 3).Select(i => Math.Max(1, i * 50)).ToList();
-                    var getMaxLevel = new Func<MonsterMB, int>(monster =>
-                    {
-                        switch (monster.rarity)
-                        {
-                            case PM.Enum.Monster.MonsterRarity.R:
-                                return 80;
-
-                            case PM.Enum.Monster.MonsterRarity.SR:
-                                return 90;
-
-                            case PM.Enum.Monster.MonsterRarity.SSR:
-                                return 100;
-
-                            default:
-                                return 10;
-                        }
-                    });
                     var userMonsterList = new List<UserMonsterInfo>();
                     monsterIdList.ForEach(id =>
                     {
@@ -382,7 +365,7 @@ public class UserTestAction : ITestAction
                                 num = 1,
                                 customData = new UserMonsterCustomData()
                                 {
-                                    level = Math.Min(level, getMaxLevel(monster)),
+                                    level = level,
                                     exp = 0,
                                     grade = 0,
                                     luck = 0,
