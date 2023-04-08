@@ -12,8 +12,6 @@ public class QuestSelectPartyWindowUIScript : WindowBase
 {
     [SerializeField] protected Text _titleText;
     [SerializeField] protected Button _okButton;
-    [SerializeField] protected Button _grayoutButton;
-    [SerializeField] protected GameObject _okButtonGrayoutPanel;
     [SerializeField] protected List<ToggleWithValue> _tabList;
     [SerializeField] protected List<PartyMonsterIconItem> _partyMonsterIconList;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
@@ -26,6 +24,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
     private string selectedUserMonsterId = null;
     private List<UserMonsterInfo> userMonsterList;
     private UserMonsterPartyInfo _currentUserMonsterParty;
+
     // TODO: サーバーからnullが入った状態で返ってくるようになったらこのプロパティは削除
     private UserMonsterPartyInfo currentUserMonsterParty
     {
@@ -36,14 +35,14 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             {
                 _currentUserMonsterParty = new UserMonsterPartyInfo()
                 {
-                    id = null, 
+                    id = null,
                     partyIndex = currentPartyIndex,
                     userMonsterIdList = new List<string>(),
                 };
             };
 
             // パーティメンバー数に達していなければダミーデータを追加
-            while(_currentUserMonsterParty.userMonsterIdList.Count < ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
+            while (_currentUserMonsterParty.userMonsterIdList.Count < ConstManager.Battle.MAX_PARTY_MEMBER_NUM)
             {
                 _currentUserMonsterParty.userMonsterIdList.Add(null);
             }
@@ -76,11 +75,20 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 var isValidExecuteCondition = ConditionUtil.IsValid(ApplicationContext.userData, quest.canExecuteConditionList);
                 var questCategory = MasterRecord.GetMasterOf<QuestCategoryMB>().Get(quest.questCategoryId);
                 var isEventQuest = questCategory.questType == QuestType.Event;
-                var isHolding = MasterRecord.GetMasterOf<EventQuestScheduleMB>().GetAll().Any(m => {
+                var isHolding = MasterRecord.GetMasterOf<EventQuestScheduleMB>().GetAll().Any(m =>
+                {
                     return m.questCategoryId == questCategory.id && DateTimeUtil.GetDateFromMasterString(m.startDate) <= DateTimeUtil.Now && DateTimeUtil.Now < DateTimeUtil.GetDateFromMasterString(m.endDate);
                 });
 
-                if (isValidDisplayCondition && isValidExecuteCondition && (!isEventQuest || (isEventQuest && isHolding)))
+                if (!currentUserMonsterParty.userMonsterIdList.Any(id => id != null))
+                {
+                    return CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
+                        commonDialogType = CommonDialogType.YesOnly,
+                        content = "モンスターを1体以上選択してください",
+                    }).AsUnitObservable();
+                }
+                else if (isValidDisplayCondition && isValidExecuteCondition && (!isEventQuest || (isEventQuest && isHolding)))
                 {
                     // バトルを実行
                     return Observable.ReturnUnit()
@@ -121,40 +129,9 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             })
             .Subscribe();
 
-        _grayoutButton.OnClickAsObservable()
-            .SelectMany(_ =>
-            {
-                switch (grayoutReason)
-                {
-                    case GrayoutReason.NotExistsMonster:
-                        return CommonDialogFactory.Create(new CommonDialogRequest()
-                        {
-                            commonDialogType = CommonDialogType.YesOnly,
-                            content = "モンスターを1体以上選択してください",
-                        }).AsUnitObservable();
-                    case GrayoutReason.NotEnoughStamina:
-                        return CommonDialogFactory.Create(new CommonDialogRequest()
-                        {
-                            commonDialogType = CommonDialogType.YesOnly,
-                            content = "挑戦するためのスタミナが足りません",
-                        }).AsUnitObservable();
-                    case GrayoutReason.NotEnoughMaxStamina:
-                        var rank = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.stamina >= quest.consumeStamina)?.rank ?? 0;
-                        return CommonDialogFactory.Create(new CommonDialogRequest()
-                        {
-                            commonDialogType = CommonDialogType.YesOnly,
-                            content = $"このクエストはランク{rank}以上で挑戦することができます",
-                        }).AsUnitObservable();
-                    default:
-                        return Observable.ReturnUnit();
-                }
-            })
-            .Subscribe();
-
         SetTabChangeAction();
         RefreshPartyUI();
         RefreshScroll();
-        RefreshGrayoutPanel();
     }
 
     private void SetTabChangeAction()
@@ -171,7 +148,6 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                     _toggleGroup.SetAllTogglesOff();
                     RefreshPartyUI();
                     RefreshScroll();
-                    RefreshGrayoutPanel();
                 })
                 .Subscribe();
         });
@@ -179,7 +155,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
 
     private void RefreshPartyUI()
     {
-        if(currentUserMonsterParty == null)
+        if (currentUserMonsterParty == null)
         {
             _partyMonsterIconList.ForEach(i => i.ShowIconItem(false));
             return;
@@ -204,7 +180,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
 
             monsterIcon.SetOnClickAction(() =>
             {
-                if(selectedPartyMonsterIndex != -1 && selectedPartyMonsterIndex != index && (selectedUserMonsterId != null || userMonsterId != null))
+                if (selectedPartyMonsterIndex != -1 && selectedPartyMonsterIndex != index && (selectedUserMonsterId != null || userMonsterId != null))
                 {
                     // 選択中のモンスターがパーティ編成されている自分以外のモンスターの場合
                     currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
@@ -215,9 +191,8 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                     selectedUserMonsterId = null;
                     RefreshPartyUI();
                     ReloadScroll();
-                    RefreshGrayoutPanel();
                 }
-                else if(selectedUserMonsterId != null)
+                else if (selectedUserMonsterId != null)
                 {
                     // 選択中のモンスターがパーティに編成されていない場合
                     currentUserMonsterParty.userMonsterIdList[index] = selectedUserMonsterId;
@@ -227,7 +202,6 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                     selectedUserMonsterId = null;
                     RefreshPartyUI();
                     ReloadScroll();
-                    RefreshGrayoutPanel();
                 }
                 else
                 {
@@ -262,7 +236,8 @@ public class QuestSelectPartyWindowUIScript : WindowBase
     /// <summary>
     /// 初期化せず表示のみ変更する
     /// </summary>
-    private void ReloadScroll() {
+    private void ReloadScroll()
+    {
         _infiniteScroll.ChangeMaxDataCount(userMonsterList.Count);
         _infiniteScroll.UpdateCurrentDisplayItems();
     }
@@ -275,7 +250,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         var userMonster = userMonsterList[index];
         var userMonsterId = userMonster?.id;
 
-        if(userMonster == null)
+        if (userMonster == null)
         {
             // はずすアイコン
             scrollItem.ShowIcon(false);
@@ -295,8 +270,8 @@ public class QuestSelectPartyWindowUIScript : WindowBase
 
         scrollItem.SetToggleGroup(_toggleGroup);
         scrollItem.SetOnClickAction(() =>
-        { 
-            if(selectedPartyMonsterIndex != -1)
+        {
+            if (selectedPartyMonsterIndex != -1)
             {
                 // 編成中のモンスターを選択中
                 currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
@@ -306,7 +281,6 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 selectedUserMonsterId = null;
                 RefreshPartyUI();
                 ReloadScroll();
-                RefreshGrayoutPanel();
             }
             else
             {
@@ -325,23 +299,6 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 }
             }
         });
-    }
-
-    private void RefreshGrayoutPanel()
-    {
-        var existsMonster = currentUserMonsterParty.userMonsterIdList.Any(id => id != null);
-        var enoughStamina = ApplicationContext.userData.stamina >= quest.consumeStamina;
-        var rank = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.rank == ApplicationContext.userData.rank);
-        var maxStamina = rank?.stamina ?? 0;
-        var enoughMaxStamina = maxStamina >= quest.consumeStamina;
-
-        grayoutReason = 
-            !existsMonster ? GrayoutReason.NotExistsMonster
-            : !enoughStamina ? GrayoutReason.NotEnoughStamina
-            : !enoughMaxStamina ? GrayoutReason.NotEnoughMaxStamina
-            : GrayoutReason.None;
-
-        _okButtonGrayoutPanel.SetActive(grayoutReason != GrayoutReason.None);
     }
 
     public override void Open(WindowInfo info)
