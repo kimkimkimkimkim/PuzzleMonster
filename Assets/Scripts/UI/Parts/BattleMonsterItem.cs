@@ -22,30 +22,45 @@ public class BattleMonsterItem : MonoBehaviour
     [SerializeField] protected Slider _shieldSlider;
     [SerializeField] protected Text _levelText;
     [SerializeField] protected Text _missText;
+    [SerializeField] protected GameObject _monsterImageBase;
     [SerializeField] protected GameObject _shieldSliderBase;
     [SerializeField] protected Transform _effectBase;
     [SerializeField] protected CanvasGroup _battleConditionBaseCanvasGroup;
     [SerializeField] protected List<BattleConditionIconItem> _battleConditionIconItemList;
-    
+
     private const int BATTLE_CONDITION_NUM = 4;
     private const float BATTLE_CONDITION_ANIMATION_TIME = 1.5f;
     private const float BATTLE_CONDITION_FADE_OUT_TIME = 0.3f;
 
-    public RectTransform rectTransform { get { return _rectTransform; } }
-    public Image monsterImage { get { return _monsterImage; } }
-    public Slider hpSlider { get { return _hpSlider; } }
-    public Slider energySlider { get { return _energySlider; } }
-    public Slider shieldSlider { get { return _shieldSlider; } }
-    public Text missText { get { return _missText; } }
-    public Transform effectBase { get { return _effectBase; } }
+    public RectTransform rectTransform
+    { get { return _rectTransform; } }
+
+    public GameObject monsterImageBase
+    { get { return _monsterImageBase; } }
+
+    public Slider hpSlider
+    { get { return _hpSlider; } }
+
+    public Slider energySlider
+    { get { return _energySlider; } }
+
+    public Slider shieldSlider
+    { get { return _shieldSlider; } }
+
+    public Text missText
+    { get { return _missText; } }
+
+    public Transform effectBase
+    { get { return _effectBase; } }
 
     private IDisposable battleConditionAnimationObservable;
     private IDisposable onClickButtonObservable;
 
-    public void Init(long monsterId, int level)
+    public void Init(long monsterId, int level, bool isPlayer)
     {
         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(monsterId);
         var status = MonsterUtil.GetMonsterStatus(monster, level);
+        var rotationY = isPlayer ? 0.0f : 180.0f;
 
         PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monsterId)
             .Do(sprite =>
@@ -63,6 +78,8 @@ public class BattleMonsterItem : MonoBehaviour
             .Subscribe()
             .AddTo(this);
 
+        _monsterImage.transform.rotation = Quaternion.Euler(new Vector3(0.0f, rotationY, 0.0f));
+
         _levelText.text = level.ToString();
 
         _hpSlider.maxValue = status.hp;
@@ -71,13 +88,13 @@ public class BattleMonsterItem : MonoBehaviour
         _energySlider.maxValue = ConstManager.Battle.MAX_ENERGY_VALUE;
         _energySlider.value = ConstManager.Battle.INITIAL_ENERGY_VALUE;
     }
-    
+
     public void RefreshShieldSlider(List<BattleConditionInfo> battleConditionList)
     {
         var shieldValue = battleConditionList
             .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId).battleConditionType == BattleConditionType.Shield)
             .Sum(c => c.shieldValue);
-        if(shieldValue <= 0)
+        if (shieldValue <= 0)
         {
             _shieldSliderBase.SetActive(false);
         }
@@ -91,13 +108,13 @@ public class BattleMonsterItem : MonoBehaviour
 
     public void RefreshBattleCondition(List<BattleConditionInfo> battleConditionList)
     {
-        if(battleConditionAnimationObservable != null)
+        if (battleConditionAnimationObservable != null)
         {
             battleConditionAnimationObservable.Dispose();
             battleConditionAnimationObservable = null;
         }
 
-        if(battleConditionList.Count <= BATTLE_CONDITION_NUM)
+        if (battleConditionList.Count <= BATTLE_CONDITION_NUM)
         {
             // 状態異常が4つ以下ならアニメーションなしで表示
             SetBattleConditionIcon(battleConditionList);
@@ -107,9 +124,9 @@ public class BattleMonsterItem : MonoBehaviour
             battleConditionAnimationObservable = Observable.Interval(TimeSpan.FromSeconds(BATTLE_CONDITION_ANIMATION_TIME))
                 .SelectMany(count =>
                 {
-                    var startIndex = (int)(count * BATTLE_CONDITION_NUM) % ( battleConditionList.Count + (BATTLE_CONDITION_NUM - (battleConditionList.Count % BATTLE_CONDITION_NUM)));
+                    var startIndex = (int)(count * BATTLE_CONDITION_NUM) % (battleConditionList.Count + (BATTLE_CONDITION_NUM - (battleConditionList.Count % BATTLE_CONDITION_NUM)));
                     SetBattleConditionIcon(battleConditionList, startIndex);
-                    
+
                     var fadeOutSequence = DOTween.Sequence()
                         .SetDelay(BATTLE_CONDITION_ANIMATION_TIME - BATTLE_CONDITION_FADE_OUT_TIME - 0.01f)
                         .Append(_battleConditionBaseCanvasGroup.DOFade(0, BATTLE_CONDITION_FADE_OUT_TIME));
@@ -117,24 +134,25 @@ public class BattleMonsterItem : MonoBehaviour
                 })
                 .Subscribe();
         }
-        
+
         // シールド値の更新も行う
         RefreshShieldSlider(battleConditionList);
     }
-    
+
     private void SetBattleConditionIcon(List<BattleConditionInfo> battleConditionList, int startIndex = 0)
     {
-        var loopCount = battleConditionList.Count - startIndex >= BATTLE_CONDITION_NUM ? BATTLE_CONDITION_NUM :  battleConditionList.Count - startIndex;
-        
+        var loopCount = battleConditionList.Count - startIndex >= BATTLE_CONDITION_NUM ? BATTLE_CONDITION_NUM : battleConditionList.Count - startIndex;
+
         _battleConditionIconItemList.ForEach(i => i.ResetInfo());
         _battleConditionBaseCanvasGroup.alpha = 1.0f;
-        for(var i = 0; i < loopCount; i++){
+        for (var i = 0; i < loopCount; i++)
+        {
             var battleConditionIconItem = _battleConditionIconItemList[i];
             var battleCondition = battleConditionList[startIndex + i];
             battleConditionIconItem.SetInfo(battleCondition);
         }
     }
-    
+
     public void ShowShieldSlider(bool isShow)
     {
         _shieldSliderBase.SetActive(isShow);
@@ -165,8 +183,9 @@ public class BattleMonsterItem : MonoBehaviour
             .Subscribe();
     }
 
-    private void OnDestroy() {
-        if(battleConditionAnimationObservable != null)
+    private void OnDestroy()
+    {
+        if (battleConditionAnimationObservable != null)
         {
             battleConditionAnimationObservable.Dispose();
             battleConditionAnimationObservable = null;

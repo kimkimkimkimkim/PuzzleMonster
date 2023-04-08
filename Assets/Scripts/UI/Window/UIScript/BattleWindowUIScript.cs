@@ -60,10 +60,12 @@ public class BattleWindowUIScript : DummyWindowBase
                 {
                     case BattlePauseDialogResponseType.Close:
                         return Observable.ReturnUnit();
+
                     case BattlePauseDialogResponseType.Interruption:
                         return ApiConnection.BattleInterruption(userBattleId)
                             .Do(_ => SaveDataUtil.Battle.ClearAllResumeSaveData())
                             .SelectMany(_ => BattleManager.Instance.FadeOutObservable());
+
                     case BattlePauseDialogResponseType.None:
                     default:
                         return Observable.ReturnUnit();
@@ -92,7 +94,7 @@ public class BattleWindowUIScript : DummyWindowBase
         var animationObservableList = skillFxList.Shuffle().Select(skillEffect =>
         {
             const float SHOW_TIME = 2.0f;
-            
+
             var skillNameObservable = Observable.ReturnUnit()
                 .Do(_ =>
                 {
@@ -110,7 +112,7 @@ public class BattleWindowUIScript : DummyWindowBase
                 })
                 .Delay(TimeSpan.FromSeconds(SHOW_TIME))
                 .DoOnCompleted(() => _actionDescriptionBase.SetActive(false));
-            var skillFxObservable = Observable.Timer(TimeSpan.FromSeconds(0.5f)).SelectMany(_ => VisualFxManager.Instance.PlaySkillFxObservable(skillEffect, targetMonsterBase.battleMonsterItem.effectBase,  _fxParentImage));
+            var skillFxObservable = Observable.Timer(TimeSpan.FromSeconds(0.5f)).SelectMany(_ => VisualFxManager.Instance.PlaySkillFxObservable(skillEffect, targetMonsterBase.battleMonsterItem.effectBase, _fxParentImage));
 
             return Observable.WhenAll(
                 skillNameObservable,
@@ -126,13 +128,14 @@ public class BattleWindowUIScript : DummyWindowBase
     {
         playerUserMonsterList.ForEach((userMonster, index) =>
         {
-            if (userMonster != null) {
+            if (userMonster != null)
+            {
                 var parent = _playerMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
                 var battleMonsterIndex = new BattleMonsterIndex() { index = index, isPlayer = true };
 
                 parent.SetBattleMonsterItem(item);
-                item.Init(userMonster.monsterId, userMonster.customData.level);
+                item.Init(userMonster.monsterId, userMonster.customData.level, true);
                 item.SetOnClickAction(() =>
                 {
                     var battleMonster = GetBattleMonster(battleMonsterIndex);
@@ -170,7 +173,7 @@ public class BattleWindowUIScript : DummyWindowBase
                 var battleMonsterIndex = new BattleMonsterIndex() { index = index, isPlayer = false, waveCount = waveCount };
 
                 parent.SetBattleMonsterItem(item);
-                item.Init(questMonster.monsterId, questMonster.level);
+                item.Init(questMonster.monsterId, questMonster.level, false);
                 item.SetOnClickAction(() =>
                 {
                     var battleMonster = GetBattleMonster(battleMonsterIndex);
@@ -271,7 +274,7 @@ public class BattleWindowUIScript : DummyWindowBase
                 _skillNameText.text = skillNameAndDescription.skillName;
                 _skillNameBase.SetActive(true);
             })
-            .Delay(TimeSpan.FromSeconds(SHOW_TIME/1.5f))
+            .Delay(TimeSpan.FromSeconds(SHOW_TIME / 1.5f))
             .DoOnCompleted(() => _skillNameBase.SetActive(false))
             .Subscribe();
 
@@ -354,11 +357,11 @@ public class BattleWindowUIScript : DummyWindowBase
         return VisualFxManager.Instance.PlayActionFailedAnimationObservable(monsterBase.battleMonsterItem);
     }
 
-    public IObservable<Unit> PlayTakeDamageAnimationObservable(BeDoneBattleMonsterData targetBeDoneBattleMonsterData,long skillFxId, int currentHp, int currentEnergy, int currentShield)
+    public IObservable<Unit> PlayTakeDamageAnimationObservable(BeDoneBattleMonsterData targetBeDoneBattleMonsterData, long skillFxId, int currentHp, int currentEnergy, int currentShield)
     {
         var monsterBase = GetBattleMonsterBase(targetBeDoneBattleMonsterData.battleMonsterIndex);
         var wholeSkillEffectBase = targetBeDoneBattleMonsterData.battleMonsterIndex.isPlayer ? _playerWholeSkillEffectBase : _enemyWholeSkillEffectBase;
-        return VisualFxManager.Instance.PlayTakeDamageFxObservable(targetBeDoneBattleMonsterData, monsterBase.battleMonsterItem,skillFxId, Math.Max(0, currentHp), currentEnergy, currentShield, monsterBase.battleMonsterItem.effectBase, _fxParentImage);
+        return VisualFxManager.Instance.PlayTakeDamageFxObservable(targetBeDoneBattleMonsterData, monsterBase.battleMonsterItem, skillFxId, Math.Max(0, currentHp), currentEnergy, currentShield, monsterBase.battleMonsterItem.effectBase, _fxParentImage);
     }
 
     public IObservable<Unit> PlayEnergySliderAnimationObservable(BattleMonsterIndex monsterIndex, int currentEnergy)
@@ -373,8 +376,9 @@ public class BattleWindowUIScript : DummyWindowBase
         var monsterBase = GetBattleMonsterBase(battleMonsterIndex);
         return VisualFxManager.Instance.PlayDieAnimationObservable(monsterBase.battleMonsterItem);
     }
-    
-    public IObservable<Unit> PlayWaveTitleFxObservable(int currentWaveCount, int maxWaveCount){
+
+    public IObservable<Unit> PlayWaveTitleFxObservable(int currentWaveCount, int maxWaveCount)
+    {
         SetEnemyMonsterImage(currentWaveCount);
         SetWaveText(currentWaveCount, maxWaveCount);
         return VisualFxManager.Instance.PlayWaveTitleFxObservable(_fxParent, currentWaveCount, maxWaveCount);
@@ -466,33 +470,42 @@ public class BattleWindowUIScript : DummyWindowBase
 
     private string GetActionName(BattleActionType actionType)
     {
-        switch (actionType) {
+        switch (actionType)
+        {
             case BattleActionType.PassiveSkill:
                 return "パッシブスキル";
+
             case BattleActionType.NormalSkill:
                 return "通常スキル";
+
             case BattleActionType.UltimateSkill:
                 return "アルティメットスキル";
+
             case BattleActionType.None:
             default:
                 return "";
         }
     }
+
     private (string skillName, string skillDescription) GetSkillNameAndDescription(BattleMonsterInfo battleMonster, BattleActionType actionType)
     {
-        switch (actionType) {
+        switch (actionType)
+        {
             case BattleActionType.PassiveSkill:
                 var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(battleMonster.monsterId, battleMonster.level);
                 var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
                 return (passiveSkill?.name ?? "-", passiveSkill?.description ?? "-");
+
             case BattleActionType.NormalSkill:
                 var normalSkillId = ClientMonsterUtil.GetNormalSkillId(battleMonster.monsterId, battleMonster.level);
                 var normalSkill = MasterRecord.GetMasterOf<NormalSkillMB>().Get(normalSkillId);
                 return (normalSkill.name, normalSkill.description);
+
             case BattleActionType.UltimateSkill:
                 var ultimateSkillId = ClientMonsterUtil.GetUltimateSkillId(battleMonster.monsterId, battleMonster.level);
                 var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(ultimateSkillId);
                 return (ultimateSkill.name, ultimateSkill.description);
+
             default:
                 return ("", "");
         }

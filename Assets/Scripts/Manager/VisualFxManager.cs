@@ -118,16 +118,16 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         const float MISS_TEXT_WAIT_TIME = 0.3f;
         const Ease MISS_TEXT_ANIMATION_EASE = Ease.OutQuint;
 
-        var shakeAnimationSequence = DOTween.Sequence().Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(SHAKE_DISTANCE / 2, ONE_SHAKE_ANIMATION_TIME / 2));
+        var shakeAnimationSequence = DOTween.Sequence().Append(doBattleMonsterItem.monsterImageBase.transform.DOLocalMoveX(SHAKE_DISTANCE / 2, ONE_SHAKE_ANIMATION_TIME / 2));
         for (var i = 0; i < SHAKE_TIME; i++)
         {
             shakeAnimationSequence
-                .Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(-SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME))
-                .Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME));
+                .Append(doBattleMonsterItem.monsterImageBase.transform.DOLocalMoveX(-SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME))
+                .Append(doBattleMonsterItem.monsterImageBase.transform.DOLocalMoveX(SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME));
         }
         shakeAnimationSequence
-            .Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(-SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME))
-            .Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(SHAKE_DISTANCE / 2, ONE_SHAKE_ANIMATION_TIME / 2));
+            .Append(doBattleMonsterItem.monsterImageBase.transform.DOLocalMoveX(-SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME))
+            .Append(doBattleMonsterItem.monsterImageBase.transform.DOLocalMoveX(SHAKE_DISTANCE / 2, ONE_SHAKE_ANIMATION_TIME / 2));
 
         var missTextAnimationSequence = DOTween.Sequence()
             .AppendCallback(() => doBattleMonsterItem.missText.gameObject.SetActive(true))
