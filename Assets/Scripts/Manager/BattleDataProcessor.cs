@@ -1507,9 +1507,9 @@ public partial class BattleDataProcessor
         enemyBattleMonsterList.Clear();
         questMonsterList.ForEach((questMonster, index) =>
         {
+            var monster = monsterList.FirstOrDefault(m => m.id == questMonster.monsterId);
             if (monster != null)
             {
-            var monster = monsterList.FirstOrDefault(m => m.id == questMonster.monsterId);
                 var battleMonster = BattleUtil.GetBattleMonster(monster, questMonster.level, false, index, waveCount);
                 enemyBattleMonsterList.Add(battleMonster);
             }
