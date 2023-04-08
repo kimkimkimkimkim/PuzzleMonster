@@ -22,6 +22,5 @@ public class MainSceneLoader : ISceneLoadable
     public override void OnLoadComplete()
     {
         HeaderFooterWindowFactory.Create(new HeaderFooterWindowRequest()).Subscribe();
-        HomeWindowFactory.Create(new HomeWindowRequest()).Subscribe();
     }
 }
