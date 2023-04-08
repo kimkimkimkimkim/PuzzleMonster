@@ -10,15 +10,20 @@ using System.Linq;
 using UnityEngine.UI;
 using PM.Enum.Battle;
 
-public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
+public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
+{
     // FxItemは基本的に初期状態でSetActiveがfalseにしてある
+
     #region FxItem
+
     /// <summary>
     /// クエストタイトル表示演出を実行
     /// </summary>
-    public IObservable<Unit> PlayQuestTitleFxObservable(string title) {
+    public IObservable<Unit> PlayQuestTitleFxObservable(string title)
+    {
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<QuestTitleFx>(FadeManager.Instance.GetFadeCanvasRT())
-            .SelectMany(fx => {
+            .SelectMany(fx =>
+            {
                 fx.text.SetAlpha(0);
                 fx.text.text = title;
                 fx.gameObject.SetActive(true);
@@ -28,7 +33,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
                     .AppendInterval(2.0f)
                     .Append(DOVirtual.Float(1.0f, 0.0f, 1.0f, value => fx.text.SetAlpha(value)))
                     .OnCompleteAsObservable()
-                    .Do(_ => {
+                    .Do(_ =>
+                    {
                         if (fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
                     })
                     .AsUnitObservable();
@@ -38,9 +44,11 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
     /// <summary>
     /// ウェーブ表示演出を実行
     /// </summary>
-    public IObservable<Unit> PlayWaveTitleFxObservable(Transform parent, int currentWaveCount, int maxWaveCount) {
+    public IObservable<Unit> PlayWaveTitleFxObservable(Transform parent, int currentWaveCount, int maxWaveCount)
+    {
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<WaveTitleFx>(parent)
-            .SelectMany(fx => {
+            .SelectMany(fx =>
+            {
                 var distance = 100.0f;
 
                 fx.text.SetAlpha(0);
@@ -55,7 +63,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
                     .Append(DOVirtual.Float(1.0f, 0.0f, 1.0f, value => fx.text.SetAlpha(value)))
                     .Join(fx.transform.DOLocalMoveX(-distance, 1.0f))
                     .OnCompleteAsObservable()
-                    .Do(_ => {
+                    .Do(_ =>
+                    {
                         if (fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
                     })
                     .AsUnitObservable();
@@ -66,7 +75,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
     /// 攻撃開始アニメーションの再生
     /// 攻撃するモンスターが前に出て戻るアニメーション
     /// </summary>
-    public IObservable<Unit> PlayStartAttackFxObservable(RectTransform doMonsterRT, bool isPlayer) {
+    public IObservable<Unit> PlayStartAttackFxObservable(RectTransform doMonsterRT, bool isPlayer)
+    {
         const float SCALE_ANIMATION_TIME = 0.1f;
         const float GO_ANIMATION_TIME = 0.25f;
         const float BACK_ANIMATION_TIME = 0.25f;
@@ -77,21 +87,17 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
         var defaultPivot = doMonsterRT.pivot;
 
         return Observable.ReturnUnit()
-            .SelectMany(_ => {
+            .SelectMany(_ =>
+            {
                 return DOTween.Sequence()
-                    .AppendCallback(() => doMonsterRT.SetPivot(new Vector2(0.5f, 0.0f)))
-                    .Append(doMonsterRT.DOScaleY(0.8f, SCALE_ANIMATION_TIME))
-                    .AppendCallback(() => {
-                        doMonsterRT.localScale = new Vector3(1, 1, 1);
-                        doMonsterRT.SetPivot(defaultPivot);
-                    })
                     .Append(doMonsterRT.DOLocalMoveX(isPlayer ? defaultPosition.x + MOVE_X_DISTANCE : defaultPosition.x - MOVE_X_DISTANCE, GO_ANIMATION_TIME))
                     .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y + MOVE_Y_DISTANCE, GO_ANIMATION_TIME / 2).SetEase(Ease.OutSine))
                     .Join(doMonsterRT.DOLocalMoveY(defaultPosition.y, GO_ANIMATION_TIME / 2).SetEase(Ease.OutSine).SetDelay(GO_ANIMATION_TIME / 2))
                     .OnCompleteAsObservable()
                     .AsUnitObservable();
             })
-            .Do(_ => {
+            .Do(_ =>
+            {
                 // もとに戻るアニメーションは別のストリームで行う
                 doMonsterRT.DOLocalMoveX(defaultPosition.x, BACK_ANIMATION_TIME);
             })
@@ -102,7 +108,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
     /// 攻撃不能アニメーション
     /// ぶるぶるさせてミステキストを表示
     /// </summary>
-    public IObservable<Unit> PlayActionFailedAnimationObservable(BattleMonsterItem doBattleMonsterItem) {
+    public IObservable<Unit> PlayActionFailedAnimationObservable(BattleMonsterItem doBattleMonsterItem)
+    {
         const int SHAKE_TIME = 3;
         const float SHAKE_DISTANCE = 10.0f;
         const float ONE_SHAKE_ANIMATION_TIME = 0.1f;
@@ -112,7 +119,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
         const Ease MISS_TEXT_ANIMATION_EASE = Ease.OutQuint;
 
         var shakeAnimationSequence = DOTween.Sequence().Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(SHAKE_DISTANCE / 2, ONE_SHAKE_ANIMATION_TIME / 2));
-        for (var i = 0; i < SHAKE_TIME; i++) {
+        for (var i = 0; i < SHAKE_TIME; i++)
+        {
             shakeAnimationSequence
                 .Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(-SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME))
                 .Append(doBattleMonsterItem.monsterImage.transform.DOLocalMoveX(SHAKE_DISTANCE, ONE_SHAKE_ANIMATION_TIME));
@@ -137,7 +145,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
     /// <summary>
     /// バトル勝利演出を実行
     /// </summary>
-    public IObservable<Unit> PlayWinBattleFxObservable(Transform parent) {
+    public IObservable<Unit> PlayWinBattleFxObservable(Transform parent)
+    {
         var animationTime = 0.5f;
         var delayTime = 0.1f;
         var moveXEase = Ease.InSine;
@@ -145,21 +154,25 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
         var fadeEase = Ease.InQuad;
 
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<WinBattleFx>(parent)
-            .SelectMany(fx => {
+            .SelectMany(fx =>
+            {
                 var initialPosition = fx.textInitialPositionTransform.position;
                 var toPositionList = new List<Vector3>();
-                fx.textList.ForEach(text => {
+                fx.textList.ForEach(text =>
+                {
                     text.SetAlpha(0);
                     toPositionList.Add(text.transform.position);
                     text.transform.position = initialPosition;
                 });
                 fx.gameObject.SetActive(true);
 
-                var observableList = fx.textList.Select((text, index) => {
+                var observableList = fx.textList.Select((text, index) =>
+                {
                     var toPosition = toPositionList[index];
 
                     return Observable.Timer(TimeSpan.FromSeconds(delayTime * index))
-                        .SelectMany(_ => {
+                        .SelectMany(_ =>
+                        {
                             return DOTween.Sequence()
                                 .Append(text.transform.DOMoveX(toPosition.x, animationTime).SetEase(moveXEase))
                                 .Join(text.transform.DOMoveY(toPosition.y, animationTime).SetEase(moveYEase))
@@ -173,18 +186,22 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
             });
     }
 
-    public IObservable<Unit> PlayLoseBattleFxObservable(Transform parent) {
+    public IObservable<Unit> PlayLoseBattleFxObservable(Transform parent)
+    {
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<LoseBattleFx>(parent)
-            .SelectMany(fx => {
+            .SelectMany(fx =>
+            {
                 return Observable.Timer(TimeSpan.FromSeconds(1))
-                    .Do(_ => {
+                    .Do(_ =>
+                    {
                         if (fx.gameObject != null) Addressables.ReleaseInstance(fx.gameObject);
                     })
                     .AsUnitObservable();
             });
     }
 
-    public IObservable<Unit> PlaySkillFxObservable(SkillFxMB skillFx, Transform fxParent, Image fxBackgroundImage = null) {
+    public IObservable<Unit> PlaySkillFxObservable(SkillFxMB skillFx, Transform fxParent, Image fxBackgroundImage = null)
+    {
         SkillFxItem skillFxItem = null;
         Sprite skillFxSprite = null;
 
@@ -192,7 +209,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
             PMAddressableAssetUtil.InstantiateSkillFxItemObservable(fxParent, skillFx.id).Do(item => skillFxItem = item).AsUnitObservable(),
             PMAddressableAssetUtil.GetSkillFxSpriteObservable(skillFx.id).Do(sprite => skillFxSprite = sprite).AsUnitObservable()
         )
-            .SelectMany(unit => {
+            .SelectMany(unit =>
+            {
                 const float SKILL_FX_SIZE = 1.3f;
                 const float ALPHA = 0.2f;
                 const float FADE_TIME = 0.2f;
@@ -244,7 +262,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
     /// <summary>
     /// 被ダメージ演出の再生
     /// </summary>
-    public IObservable<Unit> PlayTakeDamageFxObservable(BeDoneBattleMonsterData beDoneBattleMonsterData, BattleMonsterItem battleMonsterItem, long skillFxId, int toHp, int toEnergy, int toShield, Transform fxParent, Image fxBackgroundImage) {
+    public IObservable<Unit> PlayTakeDamageFxObservable(BeDoneBattleMonsterData beDoneBattleMonsterData, BattleMonsterItem battleMonsterItem, long skillFxId, int toHp, int toEnergy, int toShield, Transform fxParent, Image fxBackgroundImage)
+    {
         const float SLIDER_ANIMATION_TIME = 1.5f;
         const float DAMAGE_FX_BIG_SCALE = 1.5f;
         const float DAMAGE_FX_SMALL_SCALE = 1.2f;
@@ -259,9 +278,11 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
 
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<DamageFx>(battleMonsterItem.effectBase).Do(fx => damageFX = fx).AsUnitObservable()
             .SelectMany(_ => PlaySkillFxObservable(skillFx, fxParent, fxBackgroundImage))
-            .SelectMany(res => {
+            .SelectMany(res =>
+            {
                 var damageAnimationObservable = Observable.ReturnUnit()
-                    .SelectMany(_ => {
+                    .SelectMany(_ =>
+                    {
                         damageFX.SetText(beDoneBattleMonsterData);
                         damageFX.gameObject.SetActive(true);
 
@@ -272,7 +293,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
                             .Append(damageFX.transform.DOScale(DAMAGE_FX_SMALL_SCALE, DAMAGE_FX_SCALE_ANIMATION_TIME / 4))
                             .Append(damageFX.transform.DOScale(1.0f, DAMAGE_FX_SCALE_ANIMATION_TIME / 4));
                         return scaleSequence.OnCompleteAsObservable()
-                            .Do(tween => {
+                            .Do(tween =>
+                            {
                                 // ムーブアニメーションは個別で実行
                                 var moveSequence = DOTween.Sequence()
                                     .AppendInterval(DAMAGE_FX_MOVE_ANIMATION_DELAY_TIME)
@@ -298,11 +320,13 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
             });
     }
 
-    public IObservable<Unit> PlayEnergySliderAnimationObservable(Slider slider, int toEnergy) {
+    public IObservable<Unit> PlayEnergySliderAnimationObservable(Slider slider, int toEnergy)
+    {
         const float SLIDER_ANIMATION_TIME = 0.0f;
 
         return Observable.ReturnUnit()
-            .SelectMany(_ => {
+            .SelectMany(_ =>
+            {
                 return DOTween.Sequence()
                     .Append(DOVirtual.Float(slider.value, toEnergy, SLIDER_ANIMATION_TIME, value => slider.value = value))
                     .OnCompleteAsObservable();
@@ -310,7 +334,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
             .AsUnitObservable();
     }
 
-    public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterItem battleMonsterItem) {
+    public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterItem battleMonsterItem)
+    {
         const long DIE_ANIMATION_SKILL_FXID = 64;
         const float DELAY_TIME = 0.5f;
 
@@ -318,7 +343,8 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
         return Observable.ReturnUnit()
             .Do(_ => battleMonsterItem.ShowMonsterImage(false))
             .SelectMany(_ => PlaySkillFxObservable(skillFx, battleMonsterItem.effectBase))
-            .Do(_ => {
+            .Do(_ =>
+            {
                 battleMonsterItem.hpSlider.value = 0;
                 battleMonsterItem.energySlider.value = 0;
                 battleMonsterItem.shieldSlider.value = 0;
@@ -327,6 +353,6 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager> {
             })
             .Delay(TimeSpan.FromSeconds(DELAY_TIME));
     }
-    #endregion FxItem
 
+    #endregion FxItem
 }
