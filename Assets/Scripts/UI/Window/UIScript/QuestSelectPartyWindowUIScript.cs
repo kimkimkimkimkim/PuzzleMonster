@@ -17,7 +17,6 @@ public class QuestSelectPartyWindowUIScript : WindowBase
     [SerializeField] protected InfiniteScroll _infiniteScroll;
     [SerializeField] protected ToggleGroup _toggleGroup;
 
-    private GrayoutReason grayoutReason;
     private QuestMB quest;
     private int currentPartyIndex = 0;
     private int selectedPartyMonsterIndex = -1;
@@ -166,57 +165,57 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             var isOutOfIndex = index >= currentUserMonsterParty.userMonsterIdList.Count;
             var userMonsterId = isOutOfIndex ? null : currentUserMonsterParty.userMonsterIdList[index];
             var userMonster = userMonsterList.FirstOrDefault(u => u?.id == userMonsterId);
+            var isSelected = selectedPartyMonsterIndex == index;
 
             if (userMonster == null)
             {
                 monsterIcon.ShowIconItem(false);
+                monsterIcon.toggle.isOn = false;
             }
             else
             {
                 var itemMI = ItemUtil.GetItemMI(userMonster);
                 monsterIcon.ShowIconItem(true);
                 monsterIcon.iconItem.SetIcon(itemMI);
+                monsterIcon.toggle.isOn = isSelected;
             }
 
             monsterIcon.SetOnClickAction(() =>
             {
-                if (selectedPartyMonsterIndex != -1 && selectedPartyMonsterIndex != index && (selectedUserMonsterId != null || userMonsterId != null))
+                if (isSelected)
                 {
-                    // 選択中のモンスターがパーティ編成されている自分以外のモンスターの場合
-                    currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
-                    currentUserMonsterParty.userMonsterIdList[index] = selectedUserMonsterId;
-
-                    _toggleGroup.SetAllTogglesOff();
+                    // 選択中なら非選択状態に
                     selectedPartyMonsterIndex = -1;
-                    selectedUserMonsterId = null;
                     RefreshPartyUI();
-                    ReloadScroll();
-                }
-                else if (selectedUserMonsterId != null)
-                {
-                    // 選択中のモンスターがパーティに編成されていない場合
-                    currentUserMonsterParty.userMonsterIdList[index] = selectedUserMonsterId;
-
-                    _toggleGroup.SetAllTogglesOff();
-                    selectedPartyMonsterIndex = -1;
-                    selectedUserMonsterId = null;
-                    RefreshPartyUI();
-                    ReloadScroll();
                 }
                 else
                 {
-                    // 選択中のモンスターが存在しないあるいは自分の場合
-                    monsterIcon.toggle.isOn = !monsterIcon.toggle.isOn;
-                    if (monsterIcon.toggle.isOn)
+                    if (selectedUserMonsterId == null && selectedPartyMonsterIndex < 0)
                     {
+                        // スクロールモンスターを選択中じゃないかつパーティモンスターも選択中じゃないなら選択状態に
+                        monsterIcon.toggle.isOn = true;
                         selectedPartyMonsterIndex = index;
-                        selectedUserMonsterId = userMonsterId;
+                    }
+                    else if (selectedUserMonsterId == null && selectedPartyMonsterIndex >= 0)
+                    {
+                        // スクロールモンスターを選択中じゃないかつパーティモンスターを選択中なら選択中のパーティモンスターと交換
+                        currentUserMonsterParty.userMonsterIdList[index] = currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex];
+                        currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
+                        _toggleGroup.SetAllTogglesOff();
+                        selectedPartyMonsterIndex = -1;
+                        selectedUserMonsterId = null;
+                        RefreshPartyUI();
+                        ReloadScroll();
                     }
                     else
                     {
-                        // 非選択にする場合は選択中ユーザーモンスターIDをnullに、Indexを-1に
+                        // スクロールモンスターを選択中ならそのモンスターと交換
+                        currentUserMonsterParty.userMonsterIdList[index] = selectedUserMonsterId;
+                        _toggleGroup.SetAllTogglesOff();
                         selectedPartyMonsterIndex = -1;
                         selectedUserMonsterId = null;
+                        RefreshPartyUI();
+                        ReloadScroll();
                     }
                 }
             });
@@ -250,11 +249,34 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         var userMonster = userMonsterList[index];
         var userMonsterId = userMonster?.id;
 
+        scrollItem.SetToggleGroup(_toggleGroup);
         if (userMonster == null)
         {
             // はずすアイコン
             scrollItem.ShowIcon(false);
             scrollItem.ShowText(true, "はずす");
+            scrollItem.SetOnClickAction(() =>
+            {
+                if (selectedPartyMonsterIndex > 0)
+                {
+                    // パーティモンスター選択中なら外す
+                    currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = null;
+                    _toggleGroup.SetAllTogglesOff();
+                    selectedPartyMonsterIndex = -1;
+                    selectedUserMonsterId = null;
+                    RefreshPartyUI();
+                    ReloadScroll();
+                }
+                else
+                {
+                    // それ以外なら選択状態をリセット
+                    _toggleGroup.SetAllTogglesOff();
+                    selectedPartyMonsterIndex = -1;
+                    selectedUserMonsterId = null;
+                    RefreshPartyUI();
+                    ReloadScroll();
+                }
+            });
         }
         else
         {
@@ -266,39 +288,35 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             scrollItem.SetIcon(itemMI);
             scrollItem.ShowText(false);
             scrollItem.ShowGrayoutPanel(isIncludedParty, "編成中");
-        }
-
-        scrollItem.SetToggleGroup(_toggleGroup);
-        scrollItem.SetOnClickAction(() =>
-        {
-            if (selectedPartyMonsterIndex != -1)
+            scrollItem.SetOnClickAction(() =>
             {
-                // 編成中のモンスターを選択中
-                currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
-
-                _toggleGroup.SetAllTogglesOff();
-                selectedPartyMonsterIndex = -1;
-                selectedUserMonsterId = null;
-                RefreshPartyUI();
-                ReloadScroll();
-            }
-            else
-            {
-                // 通常通り選択
-                scrollItem.toggle.isOn = !scrollItem.toggle.isOn;
                 if (scrollItem.toggle.isOn)
                 {
-                    selectedPartyMonsterIndex = -1;
-                    selectedUserMonsterId = userMonsterId;
+                    // このアイテムを選択中なら非選択に
+                    scrollItem.toggle.isOn = false;
+                    selectedUserMonsterId = null;
                 }
                 else
                 {
-                    // 非選択にする場合は選択中ユーザーモンスターIDをnullに、Indexを-1に
-                    selectedPartyMonsterIndex = -1;
-                    selectedUserMonsterId = null;
+                    if (selectedPartyMonsterIndex < 0)
+                    {
+                        // 選択中じゃないかつパーティモンスター選択中じゃないなら選択状態に
+                        scrollItem.toggle.isOn = true;
+                        selectedUserMonsterId = userMonsterId;
+                    }
+                    else
+                    {
+                        // パーティモンスター選択中ならそのモンスターと交代
+                        currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
+                        _toggleGroup.SetAllTogglesOff();
+                        selectedPartyMonsterIndex = -1;
+                        selectedUserMonsterId = null;
+                        RefreshPartyUI();
+                        ReloadScroll();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     public override void Open(WindowInfo info)
