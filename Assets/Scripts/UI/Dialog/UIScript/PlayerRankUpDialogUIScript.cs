@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Linq;
 using UniRx;
 using UnityEngine;
@@ -41,7 +41,8 @@ public class PlayerRankUpDialogUIScript : DialogBase
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
-            .Do(_ => {
+            .Do(_ =>
+            {
                 if (onClickClose != null)
                 {
                     onClickClose();
@@ -68,7 +69,7 @@ public class PlayerRankUpDialogUIScript : DialogBase
             var stamina = staminaList.First(m => m.rank == rank);
             riseStamina += stamina.stamina;
         }
-        _riseStaminaText.text = $"ƒvƒŒƒCƒ„[ƒ‰ƒ“ƒN‚ªã‚ª‚èAƒXƒ^ƒ~ƒi‚ª<color=#F2548D>{riseStamina}</color>‚µ‚Ü‚µ‚½";
+        _riseStaminaText.text = $"ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ©ãƒ³ã‚¯ãŒä¸ŠãŒã‚Šã€ã‚¹ã‚¿ãƒŸãƒŠãŒ<color=#F2548D>{riseStamina}å›å¾©</color>ã—ã¾ã—ãŸ";
     }
 
     private IObservable<Unit> PlayAnimationObservable()
@@ -153,9 +154,11 @@ public class PlayerRankUpDialogUIScript : DialogBase
     public override void Back(DialogInfo info)
     {
     }
+
     public override void Close(DialogInfo info)
     {
     }
+
     public override void Open(DialogInfo info)
     {
     }
