@@ -7,9 +7,6 @@ using PM.Enum.UI;
 using UniRx;
 using System;
 using System.Linq;
-using UnityEngine.U2D;
-using UnityEditor.iOS.Xcode;
-using System.Text.RegularExpressions;
 using PM.Enum.Monster;
 
 [ResourcePath("UI/Parts/Parts-IconItem")]
@@ -17,7 +14,8 @@ public class IconItem : MonoBehaviour
 {
     [SerializeField] protected Image _backgroundImage;
     [SerializeField] protected Image _frameImage;
-    [SerializeField] protected Image _iconImage;
+    [SerializeField] private Image _iconImage;
+    [SerializeField] private Image _monsterIconImage;
     [SerializeField] protected Image _checkImage;
     [SerializeField] protected GameObject _notifyPanel;
     [SerializeField] protected GameObject _focusPanel;
@@ -41,16 +39,47 @@ public class IconItem : MonoBehaviour
     public Toggle toggle
     { get { return _toggle; } private set { _toggle = value; } }
 
+    private Image iconImage
+    {
+        get
+        {
+            if (itemType != ItemType.Monster)
+            {
+                if (_monsterIconImage != null) _monsterIconImage.gameObject.SetActive(false);
+                return _iconImage;
+            }
+            else
+            {
+                if (_iconImage != null) _iconImage.gameObject.SetActive(false);
+                return _monsterIconImage;
+            }
+        }
+
+        set
+        {
+            if (itemType != ItemType.Monster)
+            {
+                if (_monsterIconImage != null) _monsterIconImage.gameObject.SetActive(false);
+                _iconImage = value;
+            }
+            else
+            {
+                if (_iconImage != null) _iconImage.gameObject.SetActive(false);
+                _monsterIconImage = value;
+            }
+        }
+    }
+
     private ItemType itemType;
     private long itemId;
-    private List<MonsterSpriteInfo> monsterSpriteInfoList;
+    private List<MonsterSpriteDataMI> monsterSpriteDataList;
     private IDisposable onClickButtonObservable;
     private IDisposable onLongClickButtonObservable;
     private IDisposable monsterAnimationObservable;
 
     public void ShowIcon(bool isShow)
     {
-        _iconImage.gameObject.SetActive(isShow);
+        iconImage.gameObject.SetActive(isShow);
     }
 
     public void SetIcon(ItemMI item, bool showNumTextAtOne = false)
@@ -114,83 +143,39 @@ public class IconItem : MonoBehaviour
         return PMAddressableAssetUtil.GetIconImageSpriteObservable(iconImageType, itemId)
             .Do(sprite =>
             {
-                if (sprite != null) _iconImage.sprite = sprite;
+                if (sprite != null) iconImage.sprite = sprite;
             })
             .AsUnitObservable();
     }
 
     private IObservable<Unit> SetMonsterIconImageObservable(long monsterId)
     {
-        SpriteAtlas spriteAtlas = null;
-        TextAsset textAsset = null;
-        return Observable.WhenAll(
-            PMAddressableAssetUtil.GetMonsterIconSpriteAtlasObservable(monsterId).Do(sa => spriteAtlas = sa).AsUnitObservable(),
-            PMAddressableAssetUtil.GetMonsterSpriteInfoObservable(monsterId).Do(ta => textAsset = ta).AsUnitObservable()
-        )
-            .Do(_ =>
+        return PMAddressableAssetUtil.GetMonsterIconSpriteAtlasObservable(monsterId)
+            .Do(spriteAtlas =>
             {
-                if (spriteAtlas != null && textAsset != null)
+                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(monsterId);
+                monsterSpriteDataList = monster.monsterSpriteDataList;
+                monsterSpriteDataList.ForEach(m =>
                 {
-                    monsterSpriteInfoList = new List<MonsterSpriteInfo>();
-                    var textList = textAsset.text.Split('\n').ToList();
-                    var monsterStateNameList = Enum.GetNames(typeof(MonsterState)).Select(name => $"(?<name>{name})_(?<index>...).png").ToList();
-                    var monsterStatePattern = string.Join("|", monsterStateNameList);
-
-                    // スプライト情報からステイトや座標などを取得
-                    textList.ForEach((text, index) =>
-                    {
-                        var match = Regex.Match(text, monsterStatePattern, RegexOptions.IgnoreCase);
-                        if (match.Success)
-                        {
-                            var monsterState = GetMonsterState(match.Groups["name"].ToString());
-                            var success = int.TryParse(match.Groups["index"].ToString().TrimStart('0'), out int stateIndex);
-                            var posAndSizeStr = textList[index + 3];
-                            var posAndSizeMatch = Regex.Match(posAndSizeStr, "{{(?<x>.+),(?<y>.+)},{(?<w>.+),(?<h>.+)}}");
-                            if (posAndSizeMatch.Success)
-                            {
-                                var x = int.Parse(posAndSizeMatch.Groups["x"].ToString());
-                                var y = int.Parse(posAndSizeMatch.Groups["y"].ToString());
-                                var w = int.Parse(posAndSizeMatch.Groups["w"].ToString());
-                                var h = int.Parse(posAndSizeMatch.Groups["h"].ToString());
-                                var xIndex = x / (w + 1);
-                                var yIndex = y / (h + 1);
-                                var monsterSpriteInfo = new MonsterSpriteInfo()
-                                {
-                                    xIndex = xIndex,
-                                    yIndex = yIndex,
-                                    monsterState = monsterState,
-                                    stateIndex = stateIndex,
-                                };
-                                monsterSpriteInfoList.Add(monsterSpriteInfo);
-                            }
-                        }
-                    });
-
-                    // マルチプルスプライトの分割順に並び替える
-                    monsterSpriteInfoList = monsterSpriteInfoList.OrderBy(i => i.yIndex).ThenBy(i => i.xIndex).ToList();
-
-                    // スプライトとスプライトのインデックスを割り当てる
-                    monsterSpriteInfoList.ForEach((i, index) =>
-                    {
-                        i.spriteAtlasIndex = index;
-                        i.sprite = spriteAtlas.GetSprite($"{monsterId}_{index}");
-                    });
-                }
+                    var sprite = spriteAtlas.GetSprite($"{monsterId}_{m.spriteAtlasIndex}");
+                    m.sprite = sprite;
+                });
             })
-            .Do(_ => SetMonsterState(MonsterState.Idle));
+            .Do(_ => SetMonsterStateAnimation(MonsterState.Breathing))
+            .AsUnitObservable();
     }
 
     public void SetMonsterState(MonsterState state)
     {
-        if (monsterSpriteInfoList == null || !monsterSpriteInfoList.Any()) return;
+        if (monsterSpriteDataList == null || !monsterSpriteDataList.Any()) return;
 
         if (monsterAnimationObservable != null) monsterAnimationObservable.Dispose();
-        _iconImage.sprite = monsterSpriteInfoList.First(i => i.monsterState == state).sprite;
+        iconImage.sprite = monsterSpriteDataList.First(i => i.monsterState == state).sprite;
     }
 
     public void SetMonsterStateAnimation(MonsterState state)
     {
-        if (monsterSpriteInfoList == null || !monsterSpriteInfoList.Any()) return;
+        if (monsterSpriteDataList == null || !monsterSpriteDataList.Any()) return;
 
         if (monsterAnimationObservable != null) monsterAnimationObservable.Dispose();
         monsterAnimationObservable = PlayMonsterStateAnimationObservable(state, false)
@@ -201,17 +186,17 @@ public class IconItem : MonoBehaviour
 
     public IObservable<bool> PlayMonsterStateAnimationObservable(MonsterState state, bool isDispose = true)
     {
-        if (monsterSpriteInfoList == null || !monsterSpriteInfoList.Any()) return Observable.Return(false);
+        if (monsterSpriteDataList == null || !monsterSpriteDataList.Any()) return Observable.Return(false);
 
         if (isDispose && monsterAnimationObservable != null) monsterAnimationObservable.Dispose();
         return Observable.Create<bool>(observer =>
         {
-            const float INTERVAL = 0.07f;
-            var spriteList = monsterSpriteInfoList.Where(i => i.monsterState == state).OrderBy(i => i.stateIndex).ToList();
+            const float INTERVAL = 0.12f;
+            var spriteList = monsterSpriteDataList.Where(i => i.monsterState == state).OrderBy(i => i.stateIndex).ToList();
             monsterAnimationObservable = Observable.Interval(TimeSpan.FromSeconds(INTERVAL))
                 .Do(index =>
                 {
-                    _iconImage.sprite = spriteList[(int)index].sprite;
+                    if (iconImage != null) iconImage.sprite = spriteList[(int)index].sprite;
                 })
                 .Take(spriteList.Count)
                 .Buffer(spriteList.Count)
@@ -227,25 +212,6 @@ public class IconItem : MonoBehaviour
                 .Subscribe();
             return Disposable.Empty;
         });
-    }
-
-    private MonsterState GetMonsterState(string monsterStateName)
-    {
-        foreach (MonsterState state in Enum.GetValues(typeof(MonsterState)))
-        {
-            if (Regex.IsMatch(state.ToString(), monsterStateName, RegexOptions.IgnoreCase)) return state;
-        }
-        return MonsterState.None;
-    }
-
-    private class MonsterSpriteInfo
-    {
-        public int xIndex { get; set; }
-        public int yIndex { get; set; }
-        public MonsterState monsterState { get; set; }
-        public int stateIndex { get; set; }
-        public int spriteAtlasIndex { get; set; }
-        public Sprite sprite { get; set; }
     }
 
     public void SetNumText(string text)
