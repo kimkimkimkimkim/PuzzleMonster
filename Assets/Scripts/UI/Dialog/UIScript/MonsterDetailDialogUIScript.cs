@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using GameBase;
 using PM.Enum.UI;
+using PM.Enum.Item;
 
 [ResourcePath("UI/Dialog/Dialog-MonsterDetail")]
 public class MonsterDetailDialogUIScript : DialogBase
@@ -21,7 +22,7 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Text _passiveSkillNameText;
     [SerializeField] protected Text _passiveSkillDescriptionText;
     [SerializeField] protected MonsterGradeParts _monsterGradeParts;
-    [SerializeField] protected Image _monsterImage;
+    [SerializeField] protected IconItem _monsterIconItem;
     [SerializeField] protected Image _monsterAttributeImage;
     [SerializeField] protected Text _levelText;
     [SerializeField] protected Text _hpText;
@@ -56,7 +57,8 @@ public class MonsterDetailDialogUIScript : DialogBase
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
-            .Do(_ => {
+            .Do(_ =>
+            {
                 if (onClickClose != null)
                 {
                     onClickClose(isNeedRefresh);
@@ -92,7 +94,7 @@ public class MonsterDetailDialogUIScript : DialogBase
                 return RefreshUIObservable();
             })
             .Subscribe();
-        
+
         _luckUpButton.OnClickIntentAsObservable()
             .SelectMany(_ => MonsterLuckUpDialogFactory.Create(new MonsterLuckUpDialogRequest()
             {
@@ -163,8 +165,8 @@ public class MonsterDetailDialogUIScript : DialogBase
 
         // モンスター画像、属性画像の設定
         return Observable.WhenAll(
-            PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monster.id).Do(sprite => _monsterImage.sprite = sprite),
-            PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterAttribute, (int)monster.attribute).Do(sprite => _monsterAttributeImage.sprite = sprite)
+            _monsterIconItem.SetIconObservable(new ItemMI() { itemType = ItemType.Monster, itemId = monster.id }).AsUnitObservable(),
+            PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterAttribute, (int)monster.attribute).Do(sprite => _monsterAttributeImage.sprite = sprite).AsUnitObservable()
         ).AsUnitObservable();
     }
 
@@ -188,16 +190,19 @@ public class MonsterDetailDialogUIScript : DialogBase
     /// <summary>
     /// レベルテキストで指定する文字列を取得する
     /// </summary>
-    private string GetLevelText(int level) {
+    private string GetLevelText(int level)
+    {
         return $"Lv <size=64>{level.ToString()}</size>";
     }
 
     public override void Back(DialogInfo info)
     {
     }
+
     public override void Close(DialogInfo info)
     {
     }
+
     public override void Open(DialogInfo info)
     {
     }
