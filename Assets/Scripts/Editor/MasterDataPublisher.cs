@@ -87,8 +87,13 @@ public partial class PlayFabDataPublisher : EditorWindow
 
                     var monsterSpriteDataList = new List<MonsterSpriteDataMI>();
                     var textList = text.Split('\n').ToList();
-                    var monsterStateNameList = Enum.GetNames(typeof(MonsterState)).Select(name => $"(?<name>{name})_(?<index>...).png").ToList();
-                    var monsterStatePattern = string.Join("|", monsterStateNameList);
+                    var monsterStateNameList = Enum.GetNames(typeof(MonsterState)).ToList();
+
+                    // Enumの値に加えて個別に追加
+                    monsterStateNameList.Add("breathe");
+
+                    var monsterStatePatternList = monsterStateNameList.Select(name => $"(?<name>{name})_(?<index>...).png").ToList();
+                    var monsterStatePattern = string.Join("|", monsterStatePatternList);
 
                     // スプライト情報からステイトや座標などを取得
                     textList.ForEach((text, index) =>
@@ -116,6 +121,8 @@ public partial class PlayFabDataPublisher : EditorWindow
                                     stateIndex = stateIndex,
                                 };
                                 monsterSpriteDataList.Add(monsterSpriteData);
+                                m.spriteWidth = w;
+                                m.spriteHeight = h;
                             }
                         }
                     });
@@ -149,10 +156,15 @@ public partial class PlayFabDataPublisher : EditorWindow
 
     private MonsterState GetMonsterState(string monsterStateName)
     {
+        // Enumの値で検索
         foreach (MonsterState state in Enum.GetValues(typeof(MonsterState)))
         {
             if (Regex.IsMatch(state.ToString(), monsterStateName, RegexOptions.IgnoreCase)) return state;
         }
+
+        // Enumの値以外を個別で検索
+        if (monsterStateName == "breathe") return MonsterState.Breathing;
+
         return MonsterState.None;
     }
 }

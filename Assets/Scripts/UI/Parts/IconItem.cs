@@ -1,4 +1,4 @@
-using GameBase;
+ï»¿using GameBase;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
@@ -98,7 +98,6 @@ public class IconItem : MonoBehaviour
 
         SetFrameImage(iconColorType);
         SetNumText(numText);
-        SetShowItemDetailDialogAction(true);
 
         if (itemType == ItemType.Monster)
         {
@@ -153,6 +152,7 @@ public class IconItem : MonoBehaviour
         return PMAddressableAssetUtil.GetMonsterIconSpriteAtlasObservable(monsterId)
             .Do(spriteAtlas =>
             {
+                // ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®å‰²ã‚Šå½“ã¦
                 var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(monsterId);
                 monsterSpriteDataList = monster.monsterSpriteDataList;
                 monsterSpriteDataList.ForEach(m =>
@@ -160,6 +160,13 @@ public class IconItem : MonoBehaviour
                     var sprite = spriteAtlas.GetSprite($"{monsterId}_{m.spriteAtlasIndex}");
                     m.sprite = sprite;
                 });
+
+                // ç”»åƒã‚µã‚¤ã‚ºã®å¤‰æ›´
+                var width = monster.spriteWidth;
+                var height = monster.spriteHeight;
+                var xScale = width / 100.0f;
+                var yScale = height / 100.0f;
+                iconImage.transform.localScale = new Vector3(xScale, yScale, 1.0f);
             })
             .Do(_ => SetMonsterStateAnimation(MonsterState.Breathing))
             .AsUnitObservable();
@@ -310,7 +317,7 @@ public class IconItem : MonoBehaviour
     }
 
     /// <summary>
-    /// ’·‰Ÿ‚µ‚ÉƒAƒCƒeƒ€Ú×ƒ_ƒCƒAƒƒO‚ğ•\¦‚·‚é‚æ‚¤‚É‚·‚é
+    /// é•·æŠ¼ã—æ™‚ã«ã‚¢ã‚¤ãƒ†ãƒ è©³ç´°ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’è¡¨ç¤ºã™ã‚‹ã‚ˆã†ã«ã™ã‚‹
     /// </summary>
     public void SetShowItemDetailDialogAction(bool isSet)
     {
