@@ -316,6 +316,25 @@ public class IconItem : MonoBehaviour
         _underText.gameObject.SetActive(isShow);
     }
 
+    public void ShowBackground(bool isShow)
+    {
+        _backgroundImage.gameObject.SetActive(isShow);
+    }
+
+    public void ShowFrame(bool isShow)
+    {
+        _frameImage.gameObject.SetActive(isShow);
+    }
+
+    /// <summary>
+    /// アイコン画像以外の表示制御
+    /// </summary>
+    public void ShowWithoutImage(bool isShow)
+    {
+        ShowBackground(isShow);
+        ShowFrame(isShow);
+    }
+
     /// <summary>
     /// 長押し時にアイテム詳細ダイアログを表示するようにする
     /// </summary>
