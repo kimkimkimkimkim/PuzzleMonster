@@ -1,4 +1,5 @@
 using GameBase;
+using PM.Enum.Item;
 using PM.Enum.Monster;
 using PM.Enum.UI;
 using System;
@@ -9,17 +10,17 @@ using UnityEngine.UI;
 [ResourcePath("UI/Parts/Parts-BattleMonsterInfoItem")]
 public class BattleMonsterInfoItem : MonoBehaviour
 {
-    [SerializeField] GameObject _baseObject;
-    [SerializeField] Image _monsterImage;
-    [SerializeField] Image _backgroundImage;
-    [SerializeField] MonsterGradeParts _monsterGrade;
-    [SerializeField] Button _button;
+    [SerializeField] private GameObject _baseObject;
+    [SerializeField] private IconItem _iconItem;
+    [SerializeField] private Image _backgroundImage;
+    [SerializeField] private MonsterGradeParts _monsterGrade;
+    [SerializeField] private Button _button;
 
     private IDisposable onClickButtonObservable;
 
     public void Set(UserMonsterInfo userMonster)
     {
-        if(userMonster == null)
+        if (userMonster == null)
         {
             _baseObject.SetActive(false);
             return;
@@ -29,13 +30,7 @@ public class BattleMonsterInfoItem : MonoBehaviour
 
         _backgroundImage.color = monster.attribute.Color();
         _monsterGrade.SetGradeImage(userMonster.customData.grade);
-        PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, userMonster.monsterId)
-            .Do(sprite =>
-            {
-                if (sprite != null) _monsterImage.sprite = sprite;
-            })
-            .Subscribe()
-            .AddTo(this);
+        _iconItem.SetIcon(ItemType.Monster, userMonster.monsterId);
     }
 
     public void SetOnClickAction(Action action)
