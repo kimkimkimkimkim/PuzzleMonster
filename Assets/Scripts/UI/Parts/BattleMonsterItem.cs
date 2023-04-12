@@ -1,6 +1,7 @@
 using DG.Tweening;
 using GameBase;
 using PM.Enum.Battle;
+using PM.Enum.Item;
 using PM.Enum.UI;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ public class BattleMonsterItem : MonoBehaviour
 {
     [SerializeField] protected RectTransform _rectTransform;
     [SerializeField] protected Button _button;
-    [SerializeField] protected Image _monsterImage;
+    [SerializeField] protected IconItem _monsterIconItem;
     [SerializeField] protected Image _attributeImage;
     [SerializeField] protected Image _graveImage;
     [SerializeField] protected Slider _hpSlider;
@@ -62,13 +63,7 @@ public class BattleMonsterItem : MonoBehaviour
         var status = MonsterUtil.GetMonsterStatus(monster, level);
         var rotationY = isPlayer ? 0.0f : 180.0f;
 
-        PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monsterId)
-            .Do(sprite =>
-            {
-                if (sprite != null) _monsterImage.sprite = sprite;
-            })
-            .Subscribe()
-            .AddTo(this);
+        _monsterIconItem.SetIcon(ItemType.Monster, monsterId);
 
         PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterAttribute, (long)monster.attribute)
             .Do(sprite =>
@@ -78,7 +73,7 @@ public class BattleMonsterItem : MonoBehaviour
             .Subscribe()
             .AddTo(this);
 
-        _monsterImage.transform.rotation = Quaternion.Euler(new Vector3(0.0f, rotationY, 0.0f));
+        _monsterIconItem.transform.rotation = Quaternion.Euler(new Vector3(0.0f, rotationY, 0.0f));
 
         _levelText.text = level.ToString();
 
@@ -160,7 +155,7 @@ public class BattleMonsterItem : MonoBehaviour
 
     public void ShowMonsterImage(bool isShow)
     {
-        _monsterImage.gameObject.SetActive(isShow);
+        _monsterIconItem.gameObject.SetActive(isShow);
     }
 
     public void ShowGraveImage(bool isShow)
