@@ -221,6 +221,12 @@ public class IconItem : MonoBehaviour
         });
     }
 
+    public void SetSprite(Sprite sprite)
+    {
+        if (monsterAnimationObservable != null) monsterAnimationObservable.Dispose();
+        if (iconImage != null) iconImage.sprite = sprite;
+    }
+
     public void SetNumText(string text)
     {
         _numText.text = text;
