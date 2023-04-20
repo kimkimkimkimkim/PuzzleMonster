@@ -14,8 +14,10 @@ public class GachaBoxScrollItem : MonoBehaviour
     [SerializeField] protected Button _emissionRateButton;
     [SerializeField] protected Transform _executeButtonBase;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
+    [SerializeField] protected Text _limitText;
 
-    public Transform executeButtonBase { get { return _executeButtonBase; } }
+    public Transform executeButtonBase
+    { get { return _executeButtonBase; } }
 
     private List<ItemMI> itemList;
     private IDisposable onClickEmissionRateButtonObservable;
@@ -23,6 +25,11 @@ public class GachaBoxScrollItem : MonoBehaviour
     public void SetText(string text)
     {
         _titleText.text = text;
+    }
+
+    public void SetLimitText(string text)
+    {
+        _limitText.text = text;
     }
 
     public void SetOnClickEmissionRateButtonAction(Action action)
