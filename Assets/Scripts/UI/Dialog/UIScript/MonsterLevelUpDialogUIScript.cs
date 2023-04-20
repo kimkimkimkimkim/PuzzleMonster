@@ -1,13 +1,12 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using GameBase;
-using PM.Enum.UI;
 using PM.Enum.Item;
+using UnityEngine.EventSystems;
+using UniRx.Triggers;
 
 [ResourcePath("UI/Dialog/Dialog-MonsterLevelUp")]
 public class MonsterLevelUpDialogUIScript : DialogBase
@@ -22,6 +21,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     [SerializeField] protected Text _healValueText;
     [SerializeField] protected Text _speedValueText;
     [SerializeField] protected Text _levelText;
+    [SerializeField] protected Text _expNumNeededToOneLevelUpText;
     [SerializeField] protected Text _possessionExpNumText;
     [SerializeField] protected Text _consumedExpNumText;
     [SerializeField] protected Slider _hpSliderBack;
@@ -41,6 +41,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     [SerializeField] protected Slider _speedSliderFront;
     [SerializeField] protected Slider _levelSlider;
     [SerializeField] protected GameObject _levelUpButtonGrayoutPanel;
+    [SerializeField] protected ObservableEventTrigger _levelSliderEventTrigger;
 
     private bool isNeedRefresh;
     private UserMonsterInfo userMonster;
@@ -60,7 +61,8 @@ public class MonsterLevelUpDialogUIScript : DialogBase
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
-            .Do(_ => {
+            .Do(_ =>
+            {
                 if (onClickClose != null)
                 {
                     onClickClose(isNeedRefresh);
@@ -123,23 +125,25 @@ public class MonsterLevelUpDialogUIScript : DialogBase
            {
                // 強化後のレベルはスライダーの値を四捨五入した値
                afterLevel = (int)Math.Round(value, MidpointRounding.AwayFromZero);
-
-               // 最小or最大ならスライダーの値を変更
-               if (afterLevel == minAfterLevel || afterLevel == maxAfterLevel)
-               {
-                   // floatの比較は誤差があるので以下のように比較
-                   if (!Mathf.Approximately(value, afterLevel)) _levelSlider.value = afterLevel;
-               }
-
                RefreshUI();
            })
            .Subscribe();
+
+        _levelSliderEventTrigger.OnPointerUpAsObservable()
+            .Do(_ =>
+            {
+                Debug.Log("Pointer Up");
+                // スライダーから手を離したら値を固定
+                _levelSlider.value = afterLevel;
+            })
+            .Subscribe();
     }
 
     /// <summary>
     /// 強化後レベル関係のデータを設定
     /// </summary>
-    private void SetAfterLevel() {
+    private void SetAfterLevel()
+    {
         // 最小強化後レベルは現在レベル
         minAfterLevel = userMonster.customData.level;
 
@@ -153,10 +157,10 @@ public class MonsterLevelUpDialogUIScript : DialogBase
             .OrderBy(m => m.totalRequiredExp)
             .LastOrDefault(m => m.totalRequiredExp <= maxExp);
         var maxAfterLevelByExp = targetLevelUpTable == null ? minAfterLevel : targetLevelUpTable.level;
-        
+
         // モンスターのレアリティ、グレードによる最大レベルを取得
-        var maxAfterLevelByInfo = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, userMonster.customData.grade) > 0 ? 
-            ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, userMonster.customData.grade) : 
+        var maxAfterLevelByInfo = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, userMonster.customData.grade) > 0 ?
+            ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, userMonster.customData.grade) :
             minAfterLevel;
 
         // 最大強化後レベルを設定
@@ -167,7 +171,8 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         afterLevel = maxAfterLevel;
     }
 
-    private void SetSliderValue() {
+    private void SetSliderValue()
+    {
         // モンスター全体の最大値
         _hpSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
         _hpSliderAfterValue.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
@@ -233,10 +238,16 @@ public class MonsterLevelUpDialogUIScript : DialogBase
 
         // 経験値
         var targetLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll().FirstOrDefault(m => m.level == afterLevel);
-        var consumedExp = targetLevelUpTable == null ? 0 : Math.Max(targetLevelUpTable.totalRequiredExp - userMonster.customData.exp,0);
+        var consumedExp = targetLevelUpTable == null ? 0 : Math.Max(targetLevelUpTable.totalRequiredExp - userMonster.customData.exp, 0);
         var monsterExp = ApplicationContext.userData.userPropertyList.GetNum(PropertyType.MonsterExp);
         _possessionExpNumText.text = GetPossessionExpNumText(monsterExp, monsterExp - consumedExp);
         _consumedExpNumText.text = consumedExp.ToString();
+
+        // 1レベル上げるのに必要な経験値量
+        var maxMonsterLevel = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, userMonster.customData.grade);
+        var nextMonsterLevel = Math.Min(afterLevel + 1, maxMonsterLevel);
+        var nextLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll().FirstOrDefault(m => m.level == nextMonsterLevel);
+        _expNumNeededToOneLevelUpText.text = nextMonsterLevel <= maxMonsterLevel && nextLevelUpTable != null ? $"{nextMonsterLevel}まであと{nextLevelUpTable.requiredExp}" : "MAX";
 
         // グレーアウトパネル
         _levelUpButtonGrayoutPanel.SetActive(consumedExp <= 0);
@@ -245,7 +256,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     /// <summary>
     /// ステータステキストで使用する文字列を取得
     /// </summary>
-    private string GetStatusValueText(int afterValue,int increaseValue)
+    private string GetStatusValueText(int afterValue, int increaseValue)
     {
         return $"{afterValue} <color=\"blue\">+{increaseValue}</color>";
     }
@@ -254,7 +265,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     /// レベルテキストで使用する文字列を取得
     /// </summary>
     /// <returns>The level text.</returns>
-    private string GetLevelText(int currentValue,int afterValue)
+    private string GetLevelText(int currentValue, int afterValue)
     {
         var maxMonsterLevel = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, userMonster.customData.grade);
         return $"Lv.{currentValue}<color=\"blue\"> → {afterValue}/{maxMonsterLevel}</color>";
@@ -264,7 +275,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     /// 所持経験値テキストで使用する文字列を取得
     /// </summary>
     /// <returns>The exp number text.</returns>
-    private string GetPossessionExpNumText(long currentNum,long afterNum)
+    private string GetPossessionExpNumText(long currentNum, long afterNum)
     {
         return $"{currentNum} <color=\"#EC2E41\">→ {afterNum}</color>";
     }
@@ -272,9 +283,11 @@ public class MonsterLevelUpDialogUIScript : DialogBase
     public override void Back(DialogInfo info)
     {
     }
+
     public override void Close(DialogInfo info)
     {
     }
+
     public override void Open(DialogInfo info)
     {
     }
