@@ -10,16 +10,13 @@ using System.Linq;
 using Newtonsoft.Json;
 using PM.Enum.Battle;
 
-public partial class ApiConnection
-{
+public partial class ApiConnection {
     #region ClientApi
     /// <summary>
     /// カスタムIDでのログイン処理
     /// </summary>
-    public static IObservable<LoginResult> LoginWithCustomID()
-    {
-        return SendRequest<LoginWithCustomIDRequest, LoginResult>(ApiType.LoginWithCustomID, new LoginWithCustomIDRequest()
-        {
+    public static IObservable<LoginResult> LoginWithCustomID() {
+        return SendRequest<LoginWithCustomIDRequest, LoginResult>(ApiType.LoginWithCustomID, new LoginWithCustomIDRequest() {
             TitleId = PlayFabSettings.TitleId,
             CustomId = SaveDataUtil.System.GetCustomId(),
             CreateAccount = true,
@@ -29,10 +26,8 @@ public partial class ApiConnection
     /// <summary>
     /// プレイヤープロフィールを取得
     /// </summary>
-    public static IObservable<GetPlayerProfileResult> GetPlayerProfile()
-    {
-        return SendRequest<GetPlayerProfileRequest, GetPlayerProfileResult > (ApiType.GetPlayerProfile, new GetPlayerProfileRequest()
-        {
+    public static IObservable<GetPlayerProfileResult> GetPlayerProfile() {
+        return SendRequest<GetPlayerProfileRequest, GetPlayerProfileResult>(ApiType.GetPlayerProfile, new GetPlayerProfileRequest() {
             PlayFabId = PlayFabSettings.staticPlayer.PlayFabId,
         });
     }
@@ -40,10 +35,8 @@ public partial class ApiConnection
     /// <summary>
     /// ユーザー名の更新
     /// </summary>
-    public static IObservable<UpdateUserTitleDisplayNameResult> UpdateUserTitleDisplayName(string userName)
-    {
-        return SendRequest<UpdateUserTitleDisplayNameRequest, UpdateUserTitleDisplayNameResult>(ApiType.UpdateUserTitleDisplayName, new UpdateUserTitleDisplayNameRequest()
-        {
+    public static IObservable<UpdateUserTitleDisplayNameResult> UpdateUserTitleDisplayName(string userName) {
+        return SendRequest<UpdateUserTitleDisplayNameRequest, UpdateUserTitleDisplayNameResult>(ApiType.UpdateUserTitleDisplayName, new UpdateUserTitleDisplayNameRequest() {
             DisplayName = userName
         })
             .SelectMany(res => ApplicationContext.UpdateUserDataObservable().Select(_ => res)); ;
@@ -52,8 +45,7 @@ public partial class ApiConnection
     /// <summary>
     /// インベントリの取得
     /// </summary>
-    public static IObservable<GetUserInventoryResult> GetUserInventory()
-    {
+    public static IObservable<GetUserInventoryResult> GetUserInventory() {
         return SendRequest<GetUserInventoryRequest, GetUserInventoryResult>(ApiType.GetUserInventory, new GetUserInventoryRequest());
     }
 
@@ -63,10 +55,8 @@ public partial class ApiConnection
     /// <returns>The user virtual currency.</returns>
     /// <param name="type">仮想通貨タイプ</param>
     /// <param name="num">追加する量</param>
-    public static IObservable<ModifyUserVirtualCurrencyResult> AddUserVirtualCurrency(VirtualCurrencyType type,int num)
-    {
-        return SendRequest<AddUserVirtualCurrencyRequest, ModifyUserVirtualCurrencyResult>(ApiType.AddUserVirtualCurrency, new AddUserVirtualCurrencyRequest()
-        {
+    public static IObservable<ModifyUserVirtualCurrencyResult> AddUserVirtualCurrency(VirtualCurrencyType type, int num) {
+        return SendRequest<AddUserVirtualCurrencyRequest, ModifyUserVirtualCurrencyResult>(ApiType.AddUserVirtualCurrency, new AddUserVirtualCurrencyRequest() {
             Amount = num,
             VirtualCurrency = type.ToString(),
         })
@@ -76,16 +66,14 @@ public partial class ApiConnection
     /// <summary>
     /// タイトルデータを取得する
     /// </summary>
-    public static IObservable<GetTitleDataResult> GetTitleData()
-    {
+    public static IObservable<GetTitleDataResult> GetTitleData() {
         return SendRequest<GetTitleDataRequest, GetTitleDataResult>(ApiType.GetTitleData, new GetTitleDataRequest());
     }
 
     /// <summary>
     /// ユーザーデータを全取得する
     /// </summary>
-    public static IObservable<UserDataInfo> GetUserData()
-    {
+    public static IObservable<UserDataInfo> GetUserData() {
         return SendRequest<GetUserDataRequest, GetUserDataResult>(ApiType.GetUserData, new GetUserDataRequest())
             .Select(res => UserDataUtil.GetUserData(res.Data));
     }
@@ -93,19 +81,14 @@ public partial class ApiConnection
     /// <summary>
     /// ユーザーモンスターリストを取得する
     /// </summary>
-    public static IObservable<List<UserMonsterInfo>> GetUserMonsterList()
-    {
-        return SendRequest<GetUserDataRequest, GetUserDataResult>(ApiType.GetUserData, new GetUserDataRequest()
-        {
+    public static IObservable<List<UserMonsterInfo>> GetUserMonsterList() {
+        return SendRequest<GetUserDataRequest, GetUserDataResult>(ApiType.GetUserData, new GetUserDataRequest() {
             Keys = new List<string>() { UserDataKey.userMonsterList.ToString() },
         })
-            .Select(res =>
-            {
+            .Select(res => {
                 var userMonsterList = new List<UserMonsterInfo>();
-                foreach(var kvp in res.Data)
-                {
-                    if(kvp.Key == UserDataKey.userMonsterList.ToString())
-                    {
+                foreach (var kvp in res.Data) {
+                    if (kvp.Key == UserDataKey.userMonsterList.ToString()) {
                         userMonsterList = JsonConvert.DeserializeObject<List<UserMonsterInfo>>(kvp.Value.Value);
                     }
                 }
@@ -117,11 +100,9 @@ public partial class ApiConnection
     /// ユーザーデータを更新する
     /// 開発用
     /// </summary>
-    public static IObservable<UpdateUserDataResult> UpdateUserData(Dictionary<UserDataKey,object> dict)
-    {
-        var data = dict.ToDictionary(kvp => kvp.Key.ToString(),kvp => JsonConvert.SerializeObject(kvp.Value));
-        return SendRequest<UpdateUserDataRequest, UpdateUserDataResult>(ApiType.UpdateUserData, new UpdateUserDataRequest()
-        {
+    public static IObservable<UpdateUserDataResult> UpdateUserData(Dictionary<UserDataKey, object> dict) {
+        var data = dict.ToDictionary(kvp => kvp.Key.ToString(), kvp => JsonConvert.SerializeObject(kvp.Value));
+        return SendRequest<UpdateUserDataRequest, UpdateUserDataResult>(ApiType.UpdateUserData, new UpdateUserDataRequest() {
             Data = data,
         });
     }
@@ -129,10 +110,8 @@ public partial class ApiConnection
     /// <summary>
     /// ユーザーにキャラクターデータを追加する
     /// </summary>
-    public static IObservable<GrantCharacterToUserResult> GrantCharacterToUser(ItemInstance item)
-    {
-        return SendRequest<GrantCharacterToUserRequest, GrantCharacterToUserResult>(ApiType.GrantCharacterToUser, new GrantCharacterToUserRequest()
-        {
+    public static IObservable<GrantCharacterToUserResult> GrantCharacterToUser(ItemInstance item) {
+        return SendRequest<GrantCharacterToUserRequest, GrantCharacterToUserResult>(ApiType.GrantCharacterToUser, new GrantCharacterToUserRequest() {
             CharacterName = item.DisplayName,
             ItemId = item.ItemId,
         });
@@ -143,10 +122,8 @@ public partial class ApiConnection
     /// <summary>
     /// 初回ログイン時に行いたいことを実行する
     /// </summary>
-    public static IObservable<FirstLoginApiResponse> FirstLogin()
-    {
-        return SendRequest<FirstLoginApiRequest, FirstLoginApiResponse>(FirstLoginApiInterface.functionName, new FirstLoginApiRequest()
-        {
+    public static IObservable<FirstLoginApiResponse> FirstLogin() {
+        return SendRequest<FirstLoginApiRequest, FirstLoginApiResponse>(FirstLoginApiInterface.functionName, new FirstLoginApiRequest() {
 
         });
     }
@@ -154,10 +131,8 @@ public partial class ApiConnection
     /// <summary>
     /// ログイン時に行いたいことを実行する
     /// </summary>
-    public static IObservable<LoginApiResponse> Login()
-    {
-        return SendRequest<LoginApiRequest, LoginApiResponse>(LoginApiInterface.functionName, new LoginApiRequest()
-        {
+    public static IObservable<LoginApiResponse> Login() {
+        return SendRequest<LoginApiRequest, LoginApiResponse>(LoginApiInterface.functionName, new LoginApiRequest() {
 
         });
     }
@@ -165,10 +140,8 @@ public partial class ApiConnection
     /// <summary>
     /// ガチャを実行する
     /// </summary>
-    public static IObservable<DropItemApiResponse> DropItem(string dropTableId)
-    {
-        return SendRequest<DropItemApiRequest, DropItemApiResponse>(DropItemApiInterface.functionName, new DropItemApiRequest()
-        {
+    public static IObservable<DropItemApiResponse> DropItem(string dropTableId) {
+        return SendRequest<DropItemApiRequest, DropItemApiResponse>(DropItemApiInterface.functionName, new DropItemApiRequest() {
             dropTableName = dropTableId,
         });
     }
@@ -177,10 +150,8 @@ public partial class ApiConnection
     /// インベントリのアイテムをユーザーに付与する
     /// バンドルでもドロップテーブルでもOK
     /// </summary>
-    public static IObservable<GrantItemsToUserApiResponse> GrantItemsToUser(List<string> itemIdList)
-    {
-        return SendRequest<GrantItemsToUserApiRequest, GrantItemsToUserApiResponse>(GrantItemsToUserApiInterface.functionName, new GrantItemsToUserApiRequest()
-        {
+    public static IObservable<GrantItemsToUserApiResponse> GrantItemsToUser(List<string> itemIdList) {
+        return SendRequest<GrantItemsToUserApiRequest, GrantItemsToUserApiResponse>(GrantItemsToUserApiInterface.functionName, new GrantItemsToUserApiRequest() {
             itemIdList = itemIdList,
         });
     }
@@ -189,8 +160,7 @@ public partial class ApiConnection
     /// インベントリのアイテムをユーザーに付与する
     /// バンドルでもドロップテーブルでもOK
     /// </summary>
-    public static IObservable<GrantItemsToUserApiResponse> GrantItemsToUser(string itemId)
-    {
+    public static IObservable<GrantItemsToUserApiResponse> GrantItemsToUser(string itemId) {
         var itemIdList = new List<string>() { itemId };
         return GrantItemsToUser(itemIdList);
     }
@@ -198,10 +168,8 @@ public partial class ApiConnection
     /// <summary>
     /// モンスター強化
     /// </summary>
-    public static IObservable<MonsterLevelUpApiResponse> MonsterLevelUp(string userMonsterId, int exp)
-    {
-        return SendRequest<MonsterLevelUpApiRequest, MonsterLevelUpApiResponse>(MonsterLevelUpApiInterface.functionName, new MonsterLevelUpApiRequest()
-        {
+    public static IObservable<MonsterLevelUpApiResponse> MonsterLevelUp(string userMonsterId, int exp) {
+        return SendRequest<MonsterLevelUpApiRequest, MonsterLevelUpApiResponse>(MonsterLevelUpApiInterface.functionName, new MonsterLevelUpApiRequest() {
             userMonsterId = userMonsterId,
             exp = exp,
         });
@@ -210,18 +178,14 @@ public partial class ApiConnection
     /// <summary>
     /// モンスターグレードアップ
     /// </summary>
-    public static IObservable<MonsterGradeUpApiResponse> MonsterGradeUp(string userMonsterId)
-    {
-        return SendRequest<MonsterGradeUpApiRequest, MonsterGradeUpApiResponse>(MonsterGradeUpApiInterface.functionName, new MonsterGradeUpApiRequest()
-        {
+    public static IObservable<MonsterGradeUpApiResponse> MonsterGradeUp(string userMonsterId) {
+        return SendRequest<MonsterGradeUpApiRequest, MonsterGradeUpApiResponse>(MonsterGradeUpApiInterface.functionName, new MonsterGradeUpApiRequest() {
             userMonsterId = userMonsterId,
         });
     }
 
-    public static IObservable<MonsterLuckUpApiResponse> MonsterLuckUp(string userMonsterId, int consumeStackNum)
-    {
-        return SendRequest<MonsterLuckUpApiRequest, MonsterLuckUpApiResponse>(MonsterLuckUpApiInterface.functionName, new MonsterLuckUpApiRequest()
-        {
+    public static IObservable<MonsterLuckUpApiResponse> MonsterLuckUp(string userMonsterId, int consumeStackNum) {
+        return SendRequest<MonsterLuckUpApiRequest, MonsterLuckUpApiResponse>(MonsterLuckUpApiInterface.functionName, new MonsterLuckUpApiRequest() {
             userMonsterId = userMonsterId,
             consumeStackNum = consumeStackNum,
         });
@@ -231,8 +195,7 @@ public partial class ApiConnection
     /// パーティの編成情報更新
     /// </summary>
     public static IObservable<UpdateUserMonsterFormationApiResponse> UpdateUserMosnterFormation(int partyIndex, List<string> userMosnterIdList) {
-        return SendRequest<UpdateUserMonsterFormationApiRequest, UpdateUserMonsterFormationApiResponse>(UpdateUserMonsterFormationApiInterface.functionName, new UpdateUserMonsterFormationApiRequest()
-        {
+        return SendRequest<UpdateUserMonsterFormationApiRequest, UpdateUserMonsterFormationApiResponse>(UpdateUserMonsterFormationApiInterface.functionName, new UpdateUserMonsterFormationApiRequest() {
             partyIndex = partyIndex,
             userMonsterIdList = userMosnterIdList,
         });
@@ -241,10 +204,8 @@ public partial class ApiConnection
     /// <summary>
     /// 開発用:インベントリのカスタムデータ更新
     /// </summary>
-    public static IObservable<DevelopUpdateUserInventoryCustomDataApiResponse> DevelopUpdateUserInventoryCustomData(string itemInstanceId, Dictionary<string,string> data)
-    {
-        return SendRequest<DevelopUpdateUserInventoryCustomDataApiRequest, DevelopUpdateUserInventoryCustomDataApiResponse>(DevelopUpdateUserInventoryCustomDataApiInterface.functionName, new DevelopUpdateUserInventoryCustomDataApiRequest()
-        {
+    public static IObservable<DevelopUpdateUserInventoryCustomDataApiResponse> DevelopUpdateUserInventoryCustomData(string itemInstanceId, Dictionary<string, string> data) {
+        return SendRequest<DevelopUpdateUserInventoryCustomDataApiRequest, DevelopUpdateUserInventoryCustomDataApiResponse>(DevelopUpdateUserInventoryCustomDataApiInterface.functionName, new DevelopUpdateUserInventoryCustomDataApiRequest() {
             itemInstanceId = itemInstanceId,
             data = data,
         });
@@ -253,10 +214,8 @@ public partial class ApiConnection
     /// <summary>
     /// スタミナを消費する
     /// </summary>
-    public static IObservable<DevelopConsumeStaminaApiResponse> DevelopConsumeStamina(int consumeStamina)
-    {
-        return SendRequest<DevelopConsumeStaminaApiRequest, DevelopConsumeStaminaApiResponse>(DevelopConsumeStaminaApiInterface.functionName, new DevelopConsumeStaminaApiRequest()
-        {
+    public static IObservable<DevelopConsumeStaminaApiResponse> DevelopConsumeStamina(int consumeStamina) {
+        return SendRequest<DevelopConsumeStaminaApiRequest, DevelopConsumeStaminaApiResponse>(DevelopConsumeStaminaApiInterface.functionName, new DevelopConsumeStaminaApiRequest() {
             consumeStamina = consumeStamina,
         });
     }
@@ -264,10 +223,8 @@ public partial class ApiConnection
     /// <summary>
     /// バトルを実行する
     /// </summary>
-    public static IObservable<ExecuteBattleApiResponse> ExecuteBattle(string userMonsterPartyId, long questId, WinOrLose winOrLose)
-    {
-        return SendRequest<ExecuteBattleApiRequest, ExecuteBattleApiResponse>(ExecuteBattleApiInterface.functionName, new ExecuteBattleApiRequest()
-        {
+    public static IObservable<ExecuteBattleApiResponse> ExecuteBattle(string userMonsterPartyId, long questId, WinOrLose winOrLose) {
+        return SendRequest<ExecuteBattleApiRequest, ExecuteBattleApiResponse>(ExecuteBattleApiInterface.functionName, new ExecuteBattleApiRequest() {
             userMonsterPartyId = userMonsterPartyId,
             questId = questId,
             winOrLose = winOrLose,
@@ -278,10 +235,8 @@ public partial class ApiConnection
     /// 指定したバトルの報酬を受け取る
     /// 勝っても負けても実行
     /// </summary>
-    public static IObservable<ReceiveBattleRewardApiResponse> ReceiveBattleReward(UserBattleInfo userBattle)
-    {
-        return SendRequest<ReceiveBattleRewardApiRequest, ReceiveBattleRewardApiResponse>(ReceiveBattleRewardApiInterface.functionName, new ReceiveBattleRewardApiRequest()
-        {
+    public static IObservable<ReceiveBattleRewardApiResponse> ReceiveBattleReward(UserBattleInfo userBattle) {
+        return SendRequest<ReceiveBattleRewardApiRequest, ReceiveBattleRewardApiResponse>(ReceiveBattleRewardApiInterface.functionName, new ReceiveBattleRewardApiRequest() {
             userBattle = userBattle,
         });
     }
@@ -289,10 +244,8 @@ public partial class ApiConnection
     /// <summary>
     /// バトル中断時に実行
     /// </summary>
-    public static IObservable<BattleInterruptionApiResponse> BattleInterruption(string userBattleId)
-    {
-        return SendRequest<BattleInterruptionApiRequest, BattleInterruptionApiResponse>(BattleInterruptionApiInterface.functionName, new BattleInterruptionApiRequest()
-        {
+    public static IObservable<BattleInterruptionApiResponse> BattleInterruption(string userBattleId) {
+        return SendRequest<BattleInterruptionApiRequest, BattleInterruptionApiResponse>(BattleInterruptionApiInterface.functionName, new BattleInterruptionApiRequest() {
             userBattleId = userBattleId,
         });
     }
@@ -300,10 +253,8 @@ public partial class ApiConnection
     /// <summary>
     /// バトル終了時に実行
     /// </summary>
-    public static IObservable<EndBattleApiResponse> EndBattle(string userBattleId)
-    {
-        return SendRequest<EndBattleApiRequest, EndBattleApiResponse>(EndBattleApiInterface.functionName, new EndBattleApiRequest()
-        {
+    public static IObservable<EndBattleApiResponse> EndBattle(string userBattleId) {
+        return SendRequest<EndBattleApiRequest, EndBattleApiResponse>(EndBattleApiInterface.functionName, new EndBattleApiRequest() {
             userBattleId = userBattleId,
         });
     }
@@ -311,18 +262,14 @@ public partial class ApiConnection
     /// <summary>
     /// 指定したミッションをクリアする
     /// </summary>
-    public static IObservable<ClearMissionApiResponse> ClearMission(long missionId)
-    {
-        return SendRequest<ClearMissionApiRequest, ClearMissionApiResponse>(ClearMissionApiInterface.functionName, new ClearMissionApiRequest()
-        {
+    public static IObservable<ClearMissionApiResponse> ClearMission(long missionId) {
+        return SendRequest<ClearMissionApiRequest, ClearMissionApiResponse>(ClearMissionApiInterface.functionName, new ClearMissionApiRequest() {
             missionIdList = new List<long>() { missionId },
         });
     }
 
-    public static IObservable<ClearMissionApiResponse> ClearMission(List<long> missionIdList)
-    {
-        return SendRequest<ClearMissionApiRequest, ClearMissionApiResponse>(ClearMissionApiInterface.functionName, new ClearMissionApiRequest()
-        {
+    public static IObservable<ClearMissionApiResponse> ClearMission(List<long> missionIdList) {
+        return SendRequest<ClearMissionApiRequest, ClearMissionApiResponse>(ClearMissionApiInterface.functionName, new ClearMissionApiRequest() {
             missionIdList = missionIdList,
         });
     }
@@ -330,10 +277,8 @@ public partial class ApiConnection
     /// <summary>
     /// 指定したユーザーコンテナを受け取る
     /// </summary>
-    public static IObservable<UnlockContainerApiResponse> UnlockContainer(string userContainerId)
-    {
-        return SendRequest<UnlockContainerApiRequest, UnlockContainerApiResponse>(UnlockContainerApiInterface.functionName, new UnlockContainerApiRequest()
-        {
+    public static IObservable<UnlockContainerApiResponse> UnlockContainer(string userContainerId) {
+        return SendRequest<UnlockContainerApiRequest, UnlockContainerApiResponse>(UnlockContainerApiInterface.functionName, new UnlockContainerApiRequest() {
             userContainerIdList = new List<string>() { userContainerId },
         });
     }
@@ -341,10 +286,8 @@ public partial class ApiConnection
     /// <summary>
     /// 指定したユーザーコンテナを受け取る
     /// </summary>
-    public static IObservable<UnlockContainerApiResponse> UnlockContainer(List<string> userContainerIdList)
-    {
-        return SendRequest<UnlockContainerApiRequest, UnlockContainerApiResponse>(UnlockContainerApiInterface.functionName, new UnlockContainerApiRequest()
-        {
+    public static IObservable<UnlockContainerApiResponse> UnlockContainer(List<string> userContainerIdList) {
+        return SendRequest<UnlockContainerApiRequest, UnlockContainerApiResponse>(UnlockContainerApiInterface.functionName, new UnlockContainerApiRequest() {
             userContainerIdList = userContainerIdList,
         });
     }
@@ -352,21 +295,17 @@ public partial class ApiConnection
     /// <summary>
     /// 指定したガチャを実行する
     /// </summary>
-    public static IObservable<ExecuteGachaApiResponse> ExecuteGacha(long gachaBoxDetailId)
-    {
-        return SendRequest<ExecuteGachaApiRequest, ExecuteGachaApiResponse>(ExecuteGachaApiInterface.functionName, new ExecuteGachaApiRequest()
-        {
+    public static IObservable<ExecuteGachaApiResponse> ExecuteGacha(long gachaBoxDetailId) {
+        return SendRequest<ExecuteGachaApiRequest, ExecuteGachaApiResponse>(ExecuteGachaApiInterface.functionName, new ExecuteGachaApiRequest() {
             gachaBoxDetailId = gachaBoxDetailId,
         });
     }
 
     /// <summary>
-    /// 指定したガチャを実行する
+    /// 指定したプレゼントを受け取る
     /// </summary>
-    public static IObservable<ReceivePresentApiResponse> ReceivePresent(List<string> userPresentIdList)
-    {
-        return SendRequest<ReceivePresentApiRequest, ReceivePresentApiResponse>(ReceivePresentApiInterface.functionName, new ReceivePresentApiRequest()
-        {
+    public static IObservable<ReceivePresentApiResponse> ReceivePresent(List<string> userPresentIdList) {
+        return SendRequest<ReceivePresentApiRequest, ReceivePresentApiResponse>(ReceivePresentApiInterface.functionName, new ReceivePresentApiRequest() {
             userPresentIdList = userPresentIdList,
         });
     }
@@ -374,21 +313,26 @@ public partial class ApiConnection
     /// <summary>
     /// リワード広告の報酬を付与する
     /// </summary>
-    public static IObservable<RewardAdGrantRewardApiResponse> RewardAdGrantReward(long rewardAdId)
-    {
-        return SendRequest<RewardAdGrantRewardApiRequest, RewardAdGrantRewardApiResponse>(RewardAdGrantRewardApiInterface.functionName, new RewardAdGrantRewardApiRequest()
-        {
+    public static IObservable<RewardAdGrantRewardApiResponse> RewardAdGrantReward(long rewardAdId) {
+        return SendRequest<RewardAdGrantRewardApiRequest, RewardAdGrantRewardApiResponse>(RewardAdGrantRewardApiInterface.functionName, new RewardAdGrantRewardApiRequest() {
             rewardAdId = rewardAdId,
+        });
+    }
+
+    /// <summary>
+    /// スタミナ回復薬を使用する
+    /// </summary>
+    public static IObservable<UseStaminaRecoveryApiResponse> UseStaminaRecovery(int num = 1) {
+        return SendRequest<UseStaminaRecoveryApiRequest, UseStaminaRecoveryApiResponse>(UseStaminaRecoveryApiInterface.functionName, new UseStaminaRecoveryApiRequest() {
+            num = num,
         });
     }
 
     /// <summary>
     /// 開発用:全資産を付与する
     /// </summary>
-    public static IObservable<DevelopGrantAllPropertyApiResponse> DevelopGrantAllProperty()
-    {
-        return SendRequest<DevelopGrantAllPropertyApiRequest, DevelopGrantAllPropertyApiResponse>(DevelopGrantAllPropertyApiInterface.functionName, new DevelopGrantAllPropertyApiRequest()
-        {
+    public static IObservable<DevelopGrantAllPropertyApiResponse> DevelopGrantAllProperty() {
+        return SendRequest<DevelopGrantAllPropertyApiRequest, DevelopGrantAllPropertyApiResponse>(DevelopGrantAllPropertyApiInterface.functionName, new DevelopGrantAllPropertyApiRequest() {
 
         });
     }
@@ -396,10 +340,8 @@ public partial class ApiConnection
     /// <summary>
     /// 開発用:全モンスターを付与する
     /// </summary>
-    public static IObservable<DevelopGrantAllMonsterApiResponse> DevelopGrantAllMonster()
-    {
-        return SendRequest<DevelopGrantAllMonsterApiRequest, DevelopGrantAllMonsterApiResponse>(DevelopGrantAllMonsterApiInterface.functionName, new DevelopGrantAllMonsterApiRequest()
-        {
+    public static IObservable<DevelopGrantAllMonsterApiResponse> DevelopGrantAllMonster() {
+        return SendRequest<DevelopGrantAllMonsterApiRequest, DevelopGrantAllMonsterApiResponse>(DevelopGrantAllMonsterApiInterface.functionName, new DevelopGrantAllMonsterApiRequest() {
 
         });
     }
@@ -407,10 +349,8 @@ public partial class ApiConnection
     /// <summary>
     /// 開発用:全仮想通貨を付与する
     /// </summary>
-    public static IObservable<DevelopGrantAllVirtualCurrencyApiResponse> DevelopGrantAllVirtualCurrency()
-    {
-        return SendRequest<DevelopGrantAllVirtualCurrencyApiRequest, DevelopGrantAllVirtualCurrencyApiResponse>(DevelopGrantAllVirtualCurrencyApiInterface.functionName, new DevelopGrantAllVirtualCurrencyApiRequest()
-        {
+    public static IObservable<DevelopGrantAllVirtualCurrencyApiResponse> DevelopGrantAllVirtualCurrency() {
+        return SendRequest<DevelopGrantAllVirtualCurrencyApiRequest, DevelopGrantAllVirtualCurrencyApiResponse>(DevelopGrantAllVirtualCurrencyApiInterface.functionName, new DevelopGrantAllVirtualCurrencyApiRequest() {
 
         });
     }

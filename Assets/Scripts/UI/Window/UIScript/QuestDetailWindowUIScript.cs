@@ -10,8 +10,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [ResourcePath("UI/Window/Window-QuestDetail")]
-public class QuestDetailWindowUIScript : WindowBase
-{
+public class QuestDetailWindowUIScript : WindowBase {
     [SerializeField] protected Button _okButton;
     [SerializeField] protected Text _questNameText;
     [SerializeField] protected Text _consumeStaminaText;
@@ -27,16 +26,14 @@ public class QuestDetailWindowUIScript : WindowBase
     private List<ItemMI> dropRewardItemList;
     private List<ItemMI> firstRewardItemList;
 
-    public override void Init(WindowInfo info)
-    {
+    public override void Init(WindowInfo info) {
         base.Init(info);
 
         var questId = (long)info.param["questId"];
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
 
         _okButton.OnClickIntentAsObservable()
-            .SelectMany(_ =>
-            {
+            .SelectMany(_ => {
                 var userData = ApplicationContext.userData;
                 var lastCalculatedStaminaDateTime = userData.lastCalculatedStaminaDateTime;
                 var stamina = userData.stamina;
@@ -45,34 +42,49 @@ public class QuestDetailWindowUIScript : WindowBase
                 var enoughStamina = currentStamina >= quest.consumeStamina;
                 var enoughMaxStamina = maxStamina >= quest.consumeStamina;
 
-                if (!enoughMaxStamina)
-                {
+                if (!enoughMaxStamina) {
                     // 最大スタミナが足りない時
                     var rank = MasterRecord.GetMasterOf<StaminaMB>().GetAll().FirstOrDefault(m => m.stamina >= quest.consumeStamina)?.rank ?? 0;
-                    return CommonDialogFactory.Create(new CommonDialogRequest()
-                    {
+                    return CommonDialogFactory.Create(new CommonDialogRequest() {
                         commonDialogType = CommonDialogType.YesOnly,
                         content = $"このクエストはランク{rank}以上で挑戦することができます",
-                    }).AsUnitObservable();
-                }
-                else if (!enoughStamina)
-                {
+                    }).Select(res => false);
+                } else if (!enoughStamina) {
                     // 現在のスタミナが足りない時
-                    return CommonDialogFactory.Create(new CommonDialogRequest()
-                    {
-                        commonDialogType = CommonDialogType.YesOnly,
-                        content = "挑戦するためのスタミナが足りません",
-                    }).AsUnitObservable();
-                }
-                else
-                {
+                    var staminaRecovery = ApplicationContext.userData.userPropertyList.FirstOrDefault(u => u.propertyId == (long)PropertyType.StaminaRecovery);
+                    var staminaRecoveryNum = staminaRecovery != null ? staminaRecovery.num : 0;
+                    if (staminaRecoveryNum > 0) {
+                        // スタミナ回復薬がある場合
+                        var itemName = MasterRecord.GetMasterOf<PropertyMB>().Get((long)PropertyType.StaminaRecovery).name;
+                        var title = "確認";
+                        var content = $"{itemName}を使用してスタミナを回復しますか？";
+                        return CommonDialogFactory.Create(new CommonDialogRequest() {
+                            commonDialogType = CommonDialogType.NoAndYes,
+                            title = title,
+                            content = content,
+                        })
+                            .SelectMany(res => {
+                                if (res.dialogResponseType == DialogResponseType.Yes) {
+                                    // スタミナ回復してクエスト実行
+                                    return ApiConnection.UseStaminaRecovery().Select(resp => true);
+                                } else {
+                                    return Observable.Return(false);
+                                }
+                            });
+                    } else {
+                        // スタミナ回復薬がない場合
+                        return CommonDialogFactory.Create(new CommonDialogRequest() {
+                            commonDialogType = CommonDialogType.YesOnly,
+                            content = "挑戦するためのスタミナが足りません",
+                        }).Select(res => false);
+                    }
+                } else {
                     // クエスト実行可能な時
-                    return QuestSelectPartyWindowFactory.Create(new QuestSelectPartyWindowRequest()
-                    {
-                        questId = quest.id,
-                    }).AsUnitObservable();
+                    return Observable.Return(true);
                 }
             })
+            .Where(isContinued => isContinued)
+            .SelectMany(_ => QuestSelectPartyWindowFactory.Create(new QuestSelectPartyWindowRequest() { questId = quest.id }))
             .Subscribe();
 
         _questNameText.text = quest.name;
@@ -85,18 +97,15 @@ public class QuestDetailWindowUIScript : WindowBase
         RefreshFirstRewardInfiniteScroll();
     }
 
-    private void RefreshMonsterInfiniteScroll()
-    {
+    private void RefreshMonsterInfiniteScroll() {
         _monsterInfiniteScroll.Clear();
 
         monsterItemList = quest.questMonsterListByWave
             .SelectMany(questMonsterList => questMonsterList.Select(questMonster => questMonster.monsterId))
             .Where(monsterId => monsterId > 0)
             .Distinct()
-            .Select(monsterId =>
-            {
-                return new ItemMI()
-                {
+            .Select(monsterId => {
+                return new ItemMI() {
                     itemType = ItemType.Monster,
                     itemId = monsterId,
                 };
@@ -106,8 +115,7 @@ public class QuestDetailWindowUIScript : WindowBase
         _monsterInfiniteScroll.Init(monsterItemList.Count, OnUpdateMonsterItem);
     }
 
-    private void OnUpdateMonsterItem(int index, GameObject item)
-    {
+    private void OnUpdateMonsterItem(int index, GameObject item) {
         if ((monsterItemList.Count <= index) || (index < 0)) return;
 
         var scrollItem = item.GetComponent<IconItem>();
@@ -116,8 +124,7 @@ public class QuestDetailWindowUIScript : WindowBase
         scrollItem.SetIcon(monsterItem, monsterItem.itemType != ItemType.Monster);
     }
 
-    private void RefreshNormalRewardInfiniteScroll()
-    {
+    private void RefreshNormalRewardInfiniteScroll() {
         _normalRewardInfiniteScroll.Clear();
 
         // ドロップ率100%のものに絞る
@@ -126,8 +133,7 @@ public class QuestDetailWindowUIScript : WindowBase
         _normalRewardInfiniteScroll.Init(normalRewardItemList.Count, OnUpdateNormalRewardItem);
     }
 
-    private void OnUpdateNormalRewardItem(int index, GameObject item)
-    {
+    private void OnUpdateNormalRewardItem(int index, GameObject item) {
         if ((normalRewardItemList.Count <= index) || (index < 0)) return;
 
         var scrollItem = item.GetComponent<IconItem>();
@@ -136,8 +142,7 @@ public class QuestDetailWindowUIScript : WindowBase
         scrollItem.SetIcon(normalRewardItem, normalRewardItem.itemType != ItemType.Monster);
     }
 
-    private void RefreshDropRewardInfiniteScroll()
-    {
+    private void RefreshDropRewardInfiniteScroll() {
         _dropRewardInfiniteScroll.Clear();
 
         // ドロップ率100%以外のものに絞る
@@ -146,8 +151,7 @@ public class QuestDetailWindowUIScript : WindowBase
         _dropRewardInfiniteScroll.Init(dropRewardItemList.Count, OnUpdateDropRewardItem);
     }
 
-    private void OnUpdateDropRewardItem(int index, GameObject item)
-    {
+    private void OnUpdateDropRewardItem(int index, GameObject item) {
         if ((dropRewardItemList.Count <= index) || (index < 0)) return;
 
         var scrollItem = item.GetComponent<IconItem>();
@@ -156,8 +160,7 @@ public class QuestDetailWindowUIScript : WindowBase
         scrollItem.SetIcon(dropRewardItem, dropRewardItem.itemType != ItemType.Monster);
     }
 
-    private void RefreshFirstRewardInfiniteScroll()
-    {
+    private void RefreshFirstRewardInfiniteScroll() {
         _firstRewardInfiniteScroll.Clear();
 
         firstRewardItemList = quest.firstRewardItemList;
@@ -165,8 +168,7 @@ public class QuestDetailWindowUIScript : WindowBase
         _firstRewardInfiniteScroll.Init(firstRewardItemList.Count, OnUpdateFirstRewardItem);
     }
 
-    private void OnUpdateFirstRewardItem(int index, GameObject item)
-    {
+    private void OnUpdateFirstRewardItem(int index, GameObject item) {
         if ((firstRewardItemList.Count <= index) || (index < 0)) return;
 
         var scrollItem = item.GetComponent<IconItem>();
@@ -177,16 +179,13 @@ public class QuestDetailWindowUIScript : WindowBase
         scrollItem.ShowCheckImage(isCleared);
     }
 
-    public override void Open(WindowInfo info)
-    {
+    public override void Open(WindowInfo info) {
     }
 
-    public override void Back(WindowInfo info)
-    {
+    public override void Back(WindowInfo info) {
     }
 
-    public override void Close(WindowInfo info)
-    {
+    public override void Close(WindowInfo info) {
         base.Close(info);
     }
 }
