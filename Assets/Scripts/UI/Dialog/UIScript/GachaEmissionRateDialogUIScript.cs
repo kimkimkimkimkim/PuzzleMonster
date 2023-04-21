@@ -9,23 +9,20 @@ using PM.Enum.Monster;
 using PM.Enum.Gacha;
 
 [ResourcePath("UI/Dialog/Dialog-GachaEmissionRate")]
-public class GachaEmissionRateDialogUIScript : DialogBase
-{
+public class GachaEmissionRateDialogUIScript : DialogBase {
     [SerializeField] protected Button _closeButton;
     [SerializeField] protected Transform _tabItemBase;
     [SerializeField] protected ToggleGroup _toggleGroup;
     [SerializeField] protected Text _contentText;
 
-    public override void Init(DialogInfo info)
-    {
+    public override void Init(DialogInfo info) {
         var onClickClose = (Action)info.param["onClickClose"];
         var gachaBoxId = (long)info.param["gachaBoxId"];
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
             .Do(_ => {
-                if (onClickClose != null)
-                {
+                if (onClickClose != null) {
                     onClickClose();
                     onClickClose = null;
                 }
@@ -35,16 +32,14 @@ public class GachaEmissionRateDialogUIScript : DialogBase
         SetTabItem(gachaBoxId);
     }
 
-    private void SetTabItem(long gachaBoxId)
-    {
-        foreach(GameObject obj in _tabItemBase)
-        {
+    private void SetTabItem(long gachaBoxId) {
+        foreach (GameObject obj in _tabItemBase) {
             Destroy(obj);
         }
 
         var gachaBox = MasterRecord.GetMasterOf<GachaBoxMB>().Get(gachaBoxId);
-        var gachaBoxDetailList = MasterRecord.GetMasterOf<GachaBoxDetailMB>().GetAll()
-            .Where(m => m.gachaBoxId == gachaBox.id)
+        var gachaBoxDetailList = gachaBox.gachaBoxDetailIdList
+            .Select(id => MasterRecord.GetMasterOf<GachaBoxDetailMB>().Get(id))
             .Where(m => ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList))
             .ToList();
         var monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().ToList();
@@ -55,16 +50,14 @@ public class GachaEmissionRateDialogUIScript : DialogBase
             .Count()
             - pickUpMonsterNum;
         var gachaEmissionTypeList = gachaBoxDetailList
-            .SelectMany(m =>
-            {
-                switch (m.gachaExecuteType)
-                {
+            .SelectMany(m => {
+                switch (m.gachaExecuteType) {
                     case GachaExecuteType.One:
                         return new List<GachaEmissionType>() { GachaEmissionType.Normal };
                     case GachaExecuteType.OneUpperSSR1:
                         return new List<GachaEmissionType>() { GachaEmissionType.UpperSsr };
                     case GachaExecuteType.Ten:
-                        return new List<GachaEmissionType>() { GachaEmissionType.Normal};
+                        return new List<GachaEmissionType>() { GachaEmissionType.Normal };
                     case GachaExecuteType.TenUpperSR1:
                         return new List<GachaEmissionType>() { GachaEmissionType.Normal, GachaEmissionType.UpperSr };
                     case GachaExecuteType.TenUpperSSR1:
@@ -77,8 +70,7 @@ public class GachaEmissionRateDialogUIScript : DialogBase
             .OrderBy(type => (int)type)
             .ToList();
 
-        gachaEmissionTypeList.ForEach((gachaEmissionType, index) =>
-        {
+        gachaEmissionTypeList.ForEach((gachaEmissionType, index) => {
             var tabItem = UIManager.Instance.CreateContent<GachaEmissionRateTabItem>(_tabItemBase);
             var title = GetName(gachaEmissionType);
             var emissionPercentByRarity = GetEmisionPercentByRarity(gachaBox, gachaEmissionType);
@@ -98,11 +90,9 @@ public class GachaEmissionRateDialogUIScript : DialogBase
 
             tabItem.Init(title, _toggleGroup, index == 0, gachaEmissionTypeList.Count == 1);
             tabItem.toggle.OnValueChangedIntentAsObservable()
-                .Do(isOn =>
-                {
+                .Do(isOn => {
                     tabItem.OnValueChenged(isOn);
-                    if (isOn)
-                    {
+                    if (isOn) {
                         _contentText.text = content;
                     }
                 })
@@ -111,10 +101,8 @@ public class GachaEmissionRateDialogUIScript : DialogBase
         });
     }
 
-    private EmisionPercentByRarity GetEmisionPercentByRarity(GachaBoxMB gachaBox, GachaEmissionType gachaEmissionType)
-    {
-        switch (gachaEmissionType)
-        {
+    private EmisionPercentByRarity GetEmisionPercentByRarity(GachaBoxMB gachaBox, GachaEmissionType gachaEmissionType) {
+        switch (gachaEmissionType) {
             case GachaEmissionType.Normal:
                 return gachaBox.normalEmissionPercentByRarity;
             case GachaEmissionType.UpperSr:
@@ -127,7 +115,7 @@ public class GachaEmissionRateDialogUIScript : DialogBase
         }
     }
 
-    private enum GachaEmissionType { 
+    private enum GachaEmissionType {
         None = 0,
 
         /// <summary>
@@ -146,10 +134,8 @@ public class GachaEmissionRateDialogUIScript : DialogBase
         UpperSsr = 3,
     }
 
-    private string GetName(GachaEmissionType gachaEmissionType)
-    {
-        switch (gachaEmissionType)
-        {
+    private string GetName(GachaEmissionType gachaEmissionType) {
+        switch (gachaEmissionType) {
             case GachaEmissionType.Normal:
                 return "í èÌ";
             case GachaEmissionType.UpperSr:
@@ -163,13 +149,10 @@ public class GachaEmissionRateDialogUIScript : DialogBase
     }
 
 
-    public override void Back(DialogInfo info)
-    {
+    public override void Back(DialogInfo info) {
     }
-    public override void Close(DialogInfo info)
-    {
+    public override void Close(DialogInfo info) {
     }
-    public override void Open(DialogInfo info)
-    {
+    public override void Open(DialogInfo info) {
     }
 }
