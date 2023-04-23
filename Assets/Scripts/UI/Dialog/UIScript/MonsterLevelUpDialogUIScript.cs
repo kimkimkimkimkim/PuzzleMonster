@@ -132,7 +132,6 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         _levelSliderEventTrigger.OnPointerUpAsObservable()
             .Do(_ =>
             {
-                Debug.Log("Pointer Up");
                 // スライダーから手を離したら値を固定
                 _levelSlider.value = afterLevel;
             })
@@ -247,7 +246,7 @@ public class MonsterLevelUpDialogUIScript : DialogBase
         var maxMonsterLevel = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, userMonster.customData.grade);
         var nextMonsterLevel = Math.Min(afterLevel + 1, maxMonsterLevel);
         var nextLevelUpTable = MasterRecord.GetMasterOf<MonsterLevelUpTableMB>().GetAll().FirstOrDefault(m => m.level == nextMonsterLevel);
-        _expNumNeededToOneLevelUpText.text = nextMonsterLevel <= maxMonsterLevel && nextLevelUpTable != null ? $"{nextMonsterLevel}まであと{nextLevelUpTable.requiredExp}" : "MAX";
+        _expNumNeededToOneLevelUpText.text = afterLevel + 1 <= maxMonsterLevel && nextLevelUpTable != null ? $"{nextMonsterLevel}まであと{nextLevelUpTable.requiredExp}" : "MAX";
 
         // グレーアウトパネル
         _levelUpButtonGrayoutPanel.SetActive(consumedExp <= 0);
