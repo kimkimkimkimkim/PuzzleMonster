@@ -1,4 +1,4 @@
-using System.Linq;
+Ôªøusing System.Linq;
 using GameBase;
 using PM.Enum.Item;
 using PM.Enum.UI;
@@ -7,18 +7,21 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [ResourcePath("UI/Window/Window-MonsterMenu")]
-public class MonsterMenuWindowUIScript : WindowBase {
+public class MonsterMenuWindowUIScript : WindowBase
+{
     [SerializeField] protected Button _boxButton;
     [SerializeField] protected Button _formationButton;
     [SerializeField] protected Button _itemBoxButton;
     [SerializeField] protected Button _staminaHealButton;
     [SerializeField] protected IconItem _staminaHealItemIcon;
 
-    public override void Init(WindowInfo info) {
+    public override void Init(WindowInfo info)
+    {
         base.Init(info);
 
         _boxButton.OnClickIntentAsObservable()
-            .SelectMany(_ => MonsterBoxWindowFactory.Create(new MonsterBoxWindowRequest() {
+            .SelectMany(_ => MonsterBoxWindowFactory.Create(new MonsterBoxWindowRequest()
+            {
                 userMontserList = ApplicationContext.userData.userMonsterList,
             }))
             .Subscribe();
@@ -32,66 +35,101 @@ public class MonsterMenuWindowUIScript : WindowBase {
             .Subscribe();
 
         _staminaHealButton.OnClickIntentAsObservable()
-            .SelectMany(_ => {
+            .SelectMany(_ =>
+            {
                 var currentStamina = ApplicationContext.userData.stamina;
                 var maxStamina = MasterRecord.GetMasterOf<StaminaMB>().GetAll().First(m => m.rank == ApplicationContext.userData.rank).stamina;
                 var userStaminaRecovery = ApplicationContext.userData.userPropertyList.FirstOrDefault(u => u.propertyId == (long)PropertyType.StaminaRecovery);
                 var userStaminaRecoveryNum = userStaminaRecovery != null ? userStaminaRecovery.num : 0;
 
-                if (userStaminaRecoveryNum <= 0) {
-                    // ÉXÉ^É~ÉiâÒïúñÚÇ»Ç¢èÍçá
+                if (userStaminaRecoveryNum <= 0)
+                {
+                    // „Çπ„Çø„Éü„ÉäÂõûÂæ©Ëñ¨„Å™„ÅÑÂ†¥Âêà
                     var staminaRecoveryName = MasterRecord.GetMasterOf<PropertyMB>().Get((long)PropertyType.StaminaRecovery).name;
-                    var title = "ämîF";
-                    var content = $"{staminaRecoveryName}Ç™ñ≥Ç¢ÇΩÇﬂ\nÉXÉ^É~ÉiÇâÒïúÇ∑ÇÈÇ±Ç∆Ç™Ç≈Ç´Ç‹ÇπÇÒ";
-                    return CommonDialogFactory.Create(new CommonDialogRequest() {
+                    var title = "Á¢∫Ë™ç";
+                    var content = $"{staminaRecoveryName}„ÅåÁÑ°„ÅÑ„Åü„ÇÅ\n„Çπ„Çø„Éü„Éä„ÇíÂõûÂæ©„Åô„Çã„Åì„Å®„Åå„Åß„Åç„Åæ„Åõ„Çì";
+                    return CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
                         commonDialogType = CommonDialogType.YesOnly,
                         title = title,
                         content = content,
                     }).AsUnitObservable();
-                } else if (currentStamina > maxStamina) {
-                    // ÉXÉ^É~ÉiâÒïúâ¬î\èÛë‘Ç∂Ç·Ç»Ç¢
-                    var title = "ämîF";
-                    var content = "ÉXÉ^É~ÉiÇ™ÉIÅ[ÉoÅ[ÇµÇƒÇ¢ÇÈÇΩÇﬂ\nÉXÉ^É~ÉiÇâÒïúÇ∑ÇÈÇ±Ç∆Ç™Ç≈Ç´Ç‹ÇπÇÒ";
-                    return CommonDialogFactory.Create(new CommonDialogRequest() {
+                }
+                else if (currentStamina > maxStamina)
+                {
+                    // „Çπ„Çø„Éü„ÉäÂõûÂæ©ÂèØËÉΩÁä∂ÊÖã„Åò„ÇÉ„Å™„ÅÑ
+                    var title = "Á¢∫Ë™ç";
+                    var content = "„Çπ„Çø„Éü„Éä„Åå„Ç™„Éº„Éê„Éº„Åó„Å¶„ÅÑ„Çã„Åü„ÇÅ\n„Çπ„Çø„Éü„Éä„ÇíÂõûÂæ©„Åô„Çã„Åì„Å®„Åå„Åß„Åç„Åæ„Åõ„Çì";
+                    return CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
                         commonDialogType = CommonDialogType.YesOnly,
                         title = title,
                         content = content,
                     }).AsUnitObservable();
-                } else {
-                    // ÇªÇÍà»äOÇ»ÇÁÉXÉ^É~ÉiâÒïú
-                    return ApiConnection.UseStaminaRecovery()
-                        .SelectMany(res => {
-                            var title = "ämîF";
-                            var content = "ÉXÉ^É~ÉiÇ™âÒïúÇµÇ‹ÇµÇΩ";
-                            return CommonDialogFactory.Create(new CommonDialogRequest() {
-                                commonDialogType = CommonDialogType.YesOnly,
-                                title = title,
-                                content = content,
-                            });
+                }
+                else
+                {
+                    // „Åù„Çå‰ª•Â§ñ„Å™„Çâ„Çπ„Çø„Éü„ÉäÂõûÂæ©
+                    var staminaRecoveryName = MasterRecord.GetMasterOf<PropertyMB>().Get((long)PropertyType.StaminaRecovery).name;
+                    var title = "Á¢∫Ë™ç";
+                    var content = $"{staminaRecoveryName}„Çí1„Å§‰ΩøÁî®„Åó„Å¶\n„Çπ„Çø„Éü„Éä„ÇíÂõûÂæ©„Åó„Åæ„Åô";
+                    return CommonDialogFactory.Create(new CommonDialogRequest()
+                    {
+                        commonDialogType = CommonDialogType.NoAndYes,
+                        title = title,
+                        content = content,
+                    })
+                        .SelectMany(res =>
+                        {
+                            if (res.dialogResponseType == DialogResponseType.Yes)
+                            {
+                                return ApiConnection.UseStaminaRecovery()
+                                    .SelectMany(res =>
+                                    {
+                                        var title = "Á¢∫Ë™ç";
+                                        var content = "„Çπ„Çø„Éü„Éä„ÇíÂõûÂæ©„Åó„Åæ„Åó„Åü";
+                                        return CommonDialogFactory.Create(new CommonDialogRequest()
+                                        {
+                                            commonDialogType = CommonDialogType.YesOnly,
+                                            title = title,
+                                            content = content,
+                                        });
+                                    })
+                                    .Do(res => RefreshUI())
+                                    .AsUnitObservable();
+                            }
+                            else
+                            {
+                                return Observable.ReturnUnit();
+                            }
                         })
-                        .Do(res => RefreshUI())
                         .AsUnitObservable();
                 }
             })
+
             .Subscribe();
 
         RefreshUI();
     }
 
-    private void RefreshUI() {
+    private void RefreshUI()
+    {
         var staminaRecovery = ApplicationContext.userData.userPropertyList.FirstOrDefault(u => u.propertyId == (long)PropertyType.StaminaRecovery);
         var staminaRecoveryNum = staminaRecovery != null ? staminaRecovery.num : 0;
         _staminaHealItemIcon.SetIcon(ItemType.Property, (long)PropertyType.StaminaRecovery);
         _staminaHealItemIcon.SetNumText(staminaRecoveryNum.ToString());
     }
 
-    public override void Open(WindowInfo info) {
+    public override void Open(WindowInfo info)
+    {
     }
 
-    public override void Back(WindowInfo info) {
+    public override void Back(WindowInfo info)
+    {
     }
 
-    public override void Close(WindowInfo info) {
+    public override void Close(WindowInfo info)
+    {
         base.Close(info);
     }
 }
