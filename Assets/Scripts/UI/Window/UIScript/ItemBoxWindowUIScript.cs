@@ -11,7 +11,7 @@ public class ItemBoxWindowUIScript : WindowBase
 
     private List<UserPropertyInfo> userPropertyList;
 
-   public override void Init(WindowInfo info)
+    public override void Init(WindowInfo info)
     {
         base.Init(info);
 
@@ -36,6 +36,7 @@ public class ItemBoxWindowUIScript : WindowBase
 
         scrollItem.SetIcon(ItemType.Property, userProperty.propertyId);
         scrollItem.SetNumText(userProperty.num.ToString());
+        scrollItem.SetShowItemDetailDialogAction(true);
     }
 
     public override void Open(WindowInfo info)

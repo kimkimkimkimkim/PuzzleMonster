@@ -41,6 +41,7 @@ public class IconItem : MonoBehaviour
 
     private ItemType itemType;
     private long itemId;
+    private UserMonsterInfo userMonster;
     private IDisposable onClickButtonObservable;
     private IDisposable onLongClickButtonObservable;
 
@@ -61,7 +62,6 @@ public class IconItem : MonoBehaviour
         SetFrameImage(iconColorType);
         SetIconImage(iconImageType, item.itemId);
         SetNumText(numText);
-        SetShowItemDetailDialogAction(true);
 
         if (itemType == ItemType.Monster)
         {
@@ -71,6 +71,7 @@ public class IconItem : MonoBehaviour
             var userMonsterCustomData = new UserMonsterCustomData() { level = maxLevel, grade = maxGrade };
             var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.monsterId == itemId);
             if (isMaxStatus || userMonster == null) userMonster = new UserMonsterInfo() { monsterId = itemId, customData = userMonsterCustomData };
+            this.userMonster = userMonster;
             SetMonsterIconInfo(userMonster);
             SetMonsterRarityImage(monster.rarity);
         }
@@ -82,13 +83,10 @@ public class IconItem : MonoBehaviour
         SetIcon(item);
     }
 
-    public void SetMonsterIconInfo(UserMonsterInfo userMonster)
+    private void SetMonsterIconInfo(UserMonsterInfo userMonster)
     {
-        var action = new Action(() => { MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest() { userMonster = userMonster, canStrength = false }).Subscribe(); });
-
         SetLevelText(userMonster.customData.level);
         SetGrade(userMonster.customData.grade);
-        SetLongClickAction(true, action);
     }
 
     private void SetFrameImage(IconColorType iconColor)
@@ -230,6 +228,18 @@ public class IconItem : MonoBehaviour
             var itemDescription = MasterRecord.GetMasterOf<ItemDescriptionMB>().GetAll().FirstOrDefault(m => m.itemType == itemType && m.itemId == itemId);
             if (itemDescription != null) ItemDetailDialogFactory.Create(new ItemDetailDialogRequest() { itemDescription = itemDescription }).Subscribe();
         });
+        SetLongClickAction(isSet, action);
+    }
+
+    public void SetShowMonsterDetailDialogAction(bool isSet)
+    {
+        if (userMonster == null)
+        {
+            SetLongClickAction(false);
+            return;
+        }
+
+        var action = new Action(() => { MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest() { userMonster = userMonster, canStrength = false }).Subscribe(); });
         SetLongClickAction(isSet, action);
     }
 

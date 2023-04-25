@@ -172,6 +172,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 monsterIcon.ShowIconItem(false);
                 monsterIcon.iconItem.ShowRarityImage(false);
                 monsterIcon.iconItem.ShowLevelText(false);
+                monsterIcon.iconItem.SetShowMonsterDetailDialogAction(false);
                 monsterIcon.toggle.isOn = false;
             }
             else
@@ -181,10 +182,11 @@ public class QuestSelectPartyWindowUIScript : WindowBase
                 monsterIcon.iconItem.ShowRarityImage(true);
                 monsterIcon.iconItem.ShowLevelText(true);
                 monsterIcon.iconItem.SetIcon(itemMI);
+                monsterIcon.iconItem.SetShowMonsterDetailDialogAction(true);
                 monsterIcon.toggle.isOn = isSelected;
             }
 
-            monsterIcon.SetOnClickAction(() =>
+            monsterIcon.iconItem.SetOnClickAction(() =>
             {
                 if (isSelected)
                 {
@@ -261,6 +263,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             scrollItem.ShowRarityImage(false);
             scrollItem.ShowLevelText(false);
             scrollItem.ShowText(true, "はずす");
+            scrollItem.SetShowMonsterDetailDialogAction(false);
             scrollItem.SetOnClickAction(() =>
             {
                 if (selectedPartyMonsterIndex > 0)
@@ -296,6 +299,7 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             scrollItem.ShowLevelText(true);
             scrollItem.ShowText(false);
             scrollItem.ShowGrayoutPanel(isIncludedParty, "編成中");
+            scrollItem.SetShowMonsterDetailDialogAction(true);
             scrollItem.SetOnClickAction(() =>
             {
                 if (scrollItem.toggle.isOn)

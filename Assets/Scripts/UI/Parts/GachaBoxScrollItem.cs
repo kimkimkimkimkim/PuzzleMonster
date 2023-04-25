@@ -68,6 +68,7 @@ public class GachaBoxScrollItem : MonoBehaviour
         var scrollItem = item.GetComponent<IconItem>();
         var itemMI = itemList[index];
 
-        scrollItem.SetIcon(itemMI);
+        scrollItem.SetIcon(itemMI, isMaxStatus: true);
+        scrollItem.SetShowMonsterDetailDialogAction(true);
     }
 }

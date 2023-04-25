@@ -10,13 +10,13 @@ using UnityEngine.UI;
 [ResourcePath("UI/Parts/Parts-GachaResultItem")]
 public class GachaResultItem : MonoBehaviour
 {
-    [SerializeField] Image _chestImage;
-    [SerializeField] GameObject _chestBase;
-    [SerializeField] IconItem _iconItem;
-    [SerializeField] Sprite _rSprite;
-    [SerializeField] Sprite _srSprite;
-    [SerializeField] Sprite _ssrSprite;
-    [SerializeField] ParticleSystem _rayPS;
+    [SerializeField] private Image _chestImage;
+    [SerializeField] private GameObject _chestBase;
+    [SerializeField] private IconItem _iconItem;
+    [SerializeField] private Sprite _rSprite;
+    [SerializeField] private Sprite _srSprite;
+    [SerializeField] private Sprite _ssrSprite;
+    [SerializeField] private ParticleSystem _rayPS;
 
     private Vector3 CHEST_INITIAL_SCALE = Vector3.one;
     private Vector3 CHEST_DOWN_SCALE = Vector3.one * 0.8f;
@@ -30,6 +30,7 @@ public class GachaResultItem : MonoBehaviour
 
     // 時間関係
     private const float CHEST_SCALE_DOWN_ANIMATION_DELAY = 0.0f;
+
     private const float CHEST_SCALE_DOWN_ANIMATION_TIME = 0.2f;
     private const float CHEST_SCALE_UP_ANIMATION_DELAY = 0.0f;
     private const float CHEST_SCALE_UP_ANIMATION_TIME = 0.1f;
@@ -41,7 +42,7 @@ public class GachaResultItem : MonoBehaviour
     private const float RAY_SCALE_DOWN_ANIMATION_TIME = 0.2f;
     private const float ICON_ANIMATION_DELAY = CHEST_FADE_OUT_ANIMATION_DELAY + CHEST_FADE_OUT_ANIMATION_TIME;
 
-    MonsterMB monster;
+    private MonsterMB monster;
 
     public IObservable<Unit> InitObservable(ItemMI itemMI)
     {
@@ -55,6 +56,7 @@ public class GachaResultItem : MonoBehaviour
                 // 宝箱は表示、アイコンは非表示
                 _chestBase.SetActive(true);
                 _iconItem.gameObject.SetActive(false);
+                _iconItem.ShowRarityImage(false);
 
                 // 画像の設定
                 _chestImage.sprite = GetChestSprite(monster);
@@ -96,7 +98,11 @@ public class GachaResultItem : MonoBehaviour
                 // アイコンのアニメーション
                 var iconAnimationSequence = DOTween.Sequence()
                     .AppendInterval(ICON_ANIMATION_DELAY)
-                    .AppendCallback(() => _iconItem.gameObject.SetActive(true));
+                    .AppendCallback(() =>
+                    {
+                        _iconItem.gameObject.SetActive(true);
+                        _iconItem.ShowRarityImage(true);
+                    });
 
                 return Observable.WhenAll(
                     chestScaleAnimationSequence.OnCompleteAsObservable().AsUnitObservable(),
@@ -109,14 +115,17 @@ public class GachaResultItem : MonoBehaviour
 
     private Sprite GetChestSprite(MonsterMB monster)
     {
-        switch (monster.rarity) 
+        switch (monster.rarity)
         {
             case MonsterRarity.R:
                 return _rSprite;
+
             case MonsterRarity.SR:
                 return _srSprite;
+
             case MonsterRarity.SSR:
                 return _ssrSprite;
+
             case MonsterRarity.N:
             default:
                 return _rSprite;
