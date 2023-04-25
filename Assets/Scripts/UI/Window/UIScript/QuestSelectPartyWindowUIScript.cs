@@ -170,12 +170,16 @@ public class QuestSelectPartyWindowUIScript : WindowBase
             if (userMonster == null)
             {
                 monsterIcon.ShowIconItem(false);
+                monsterIcon.iconItem.ShowRarityImage(false);
+                monsterIcon.iconItem.ShowLevelText(false);
                 monsterIcon.toggle.isOn = false;
             }
             else
             {
                 var itemMI = ItemUtil.GetItemMI(userMonster);
                 monsterIcon.ShowIconItem(true);
+                monsterIcon.iconItem.ShowRarityImage(true);
+                monsterIcon.iconItem.ShowLevelText(true);
                 monsterIcon.iconItem.SetIcon(itemMI);
                 monsterIcon.toggle.isOn = isSelected;
             }
@@ -254,6 +258,8 @@ public class QuestSelectPartyWindowUIScript : WindowBase
         {
             // はずすアイコン
             scrollItem.ShowIcon(false);
+            scrollItem.ShowRarityImage(false);
+            scrollItem.ShowLevelText(false);
             scrollItem.ShowText(true, "はずす");
             scrollItem.SetOnClickAction(() =>
             {
@@ -286,6 +292,8 @@ public class QuestSelectPartyWindowUIScript : WindowBase
 
             scrollItem.ShowText(true);
             scrollItem.SetIcon(itemMI);
+            scrollItem.ShowRarityImage(true);
+            scrollItem.ShowLevelText(true);
             scrollItem.ShowText(false);
             scrollItem.ShowGrayoutPanel(isIncludedParty, "編成中");
             scrollItem.SetOnClickAction(() =>

@@ -24,13 +24,15 @@ public class MonsterBoxWindowUIScript : WindowBase
         userMonsterList = (List<UserMonsterInfo>)info.param["userMonsterList"];
 
         _sortOrderButton.OnClickIntentAsObservable()
-            .SelectMany(_ => {
+            .SelectMany(_ =>
+            {
                 var filterAttribute = SaveDataUtil.SortOrder.GetFilterAttributeMonsterBox();
                 var sortOrderType = SaveDataUtil.SortOrder.GetSortOrderTypeMonsterBox();
                 return SortOrderMonsterDialogFactory.Create(new SortOrderMonsterDialogRequest() { initialFilterAttribute = filterAttribute, initialSortOrderType = sortOrderType });
             })
             .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-            .Do(res => {
+            .Do(res =>
+            {
                 SaveDataUtil.SortOrder.SetFilterAttriuteMonsterBox(res.filterAttribute);
                 SaveDataUtil.SortOrder.SetSortOrderTypeMonster(res.sortOrderType);
                 RefreshScroll();
@@ -55,12 +57,13 @@ public class MonsterBoxWindowUIScript : WindowBase
 
         var scrollItem = item.GetComponent<MonsterBoxScrollItem>();
         var userMonster = sortedUserMonsterList[index];
+        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
 
         scrollItem.SetGradeImage(userMonster.customData.grade);
-        scrollItem.SetMonsterImage(userMonster.monsterId);
+        scrollItem.SetUI(userMonster.monsterId, monster.rarity, monster.attribute, userMonster.customData.level);
         scrollItem.SetOnClickAction(() =>
         {
-            MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest(){ userMonster = userMonster })
+            MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest() { userMonster = userMonster })
                 .Where(res => res.isNeedRefresh)
                 .Do(_ =>
                 {
@@ -71,7 +74,7 @@ public class MonsterBoxWindowUIScript : WindowBase
         });
     }
 
-    private void SortList() 
+    private void SortList()
     {
         var filterAttribute = SaveDataUtil.SortOrder.GetFilterAttributeMonsterBox();
         var sortOrderType = SaveDataUtil.SortOrder.GetSortOrderTypeMonsterBox();
@@ -83,62 +86,80 @@ public class MonsterBoxWindowUIScript : WindowBase
         _sortOrderButtonText.text = sortOrderButtonText;
 
         // 絞り込み
-        var filteredUserMonsterList = userMonsterList.Where(u => {
+        var filteredUserMonsterList = userMonsterList.Where(u =>
+        {
             var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId);
             return !filterAttribute.Any() || filterAttribute.Contains(monster.attribute);
         }).ToList();
 
         // 並び変え
         IOrderedEnumerable<UserMonsterInfo> orderedEnumerable;
-        switch (sortOrderType) {
+        switch (sortOrderType)
+        {
             case SortOrderTypeMonster.Id:
                 orderedEnumerable = filteredUserMonsterList.OrderByDescending(u => u.monsterId);
                 break;
+
             case SortOrderTypeMonster.Attribute:
-                orderedEnumerable = filteredUserMonsterList.OrderBy(u => {
+                orderedEnumerable = filteredUserMonsterList.OrderBy(u =>
+                {
                     var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId);
                     return (int)monster.attribute;
                 });
                 break;
+
             case SortOrderTypeMonster.Rarity:
-                orderedEnumerable = filteredUserMonsterList.OrderByDescending(u => {
+                orderedEnumerable = filteredUserMonsterList.OrderByDescending(u =>
+                {
                     var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId);
                     return (int)monster.rarity;
                 });
                 break;
+
             case SortOrderTypeMonster.Level:
                 orderedEnumerable = filteredUserMonsterList.OrderByDescending(u => u.customData.level);
                 break;
+
             case SortOrderTypeMonster.Grade:
                 orderedEnumerable = filteredUserMonsterList.OrderByDescending(u => u.customData.grade);
                 break;
+
             case SortOrderTypeMonster.Luck:
                 orderedEnumerable = filteredUserMonsterList.OrderByDescending(u => u.customData.luck);
                 break;
+
             case SortOrderTypeMonster.Hp:
-                orderedEnumerable = filteredUserMonsterList.OrderByDescending(u => {
+                orderedEnumerable = filteredUserMonsterList.OrderByDescending(u =>
+                {
                     var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId);
-                    return MonsterUtil.GetMonsterStatus(monster,u.customData.level).hp;
+                    return MonsterUtil.GetMonsterStatus(monster, u.customData.level).hp;
                 });
                 break;
+
             case SortOrderTypeMonster.Attack:
-                orderedEnumerable = filteredUserMonsterList.OrderByDescending(u => {
+                orderedEnumerable = filteredUserMonsterList.OrderByDescending(u =>
+                {
                     var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId);
                     return MonsterUtil.GetMonsterStatus(monster, u.customData.level).attack;
                 });
                 break;
+
             case SortOrderTypeMonster.Defense:
-                orderedEnumerable = filteredUserMonsterList.OrderByDescending(u => {
+                orderedEnumerable = filteredUserMonsterList.OrderByDescending(u =>
+                {
                     var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId);
                     return MonsterUtil.GetMonsterStatus(monster, u.customData.level).defense;
                 });
                 break;
+
             case SortOrderTypeMonster.Speed:
-                orderedEnumerable = filteredUserMonsterList.OrderByDescending(u => {
+                orderedEnumerable = filteredUserMonsterList.OrderByDescending(u =>
+                {
                     var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId);
                     return MonsterUtil.GetMonsterStatus(monster, u.customData.level).speed;
                 });
                 break;
+
             default:
                 orderedEnumerable = filteredUserMonsterList.OrderByDescending(u => u.monsterId);
                 break;

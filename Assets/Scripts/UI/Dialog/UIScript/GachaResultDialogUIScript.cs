@@ -26,7 +26,8 @@ public class GachaResultDialogUIScript : DialogBase
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
-            .Do(_ => {
+            .Do(_ =>
+            {
                 if (onClickClose != null)
                 {
                     onClickClose();
@@ -35,7 +36,7 @@ public class GachaResultDialogUIScript : DialogBase
             })
             .Subscribe();
 
-        if(itemList.Count == 1)
+        if (itemList.Count == 1)
         {
             SetOneUI();
         }
@@ -71,6 +72,7 @@ public class GachaResultDialogUIScript : DialogBase
         {
             var item = itemList[index];
             iconItem.SetIcon(item);
+            iconItem.ShowRarityImage(true);
         });
     }
 
@@ -104,9 +106,11 @@ public class GachaResultDialogUIScript : DialogBase
     public override void Back(DialogInfo info)
     {
     }
+
     public override void Close(DialogInfo info)
     {
     }
+
     public override void Open(DialogInfo info)
     {
     }

@@ -8,7 +8,8 @@ using PM.Enum.UI;
 using PM.Enum.Battle;
 
 [ResourcePath("UI/Dialog/Dialog-MonsterDetail")]
-public class MonsterDetailDialogUIScript : DialogBase {
+public class MonsterDetailDialogUIScript : DialogBase
+{
     [SerializeField] protected Button _closeButton;
     [SerializeField] protected Button _levelUpButton;
     [SerializeField] protected Button _gradeUpButton;
@@ -26,6 +27,7 @@ public class MonsterDetailDialogUIScript : DialogBase {
     [SerializeField] protected MonsterGradeParts _monsterGradeParts;
     [SerializeField] protected Image _monsterImage;
     [SerializeField] protected Image _monsterAttributeImage;
+    [SerializeField] protected Image _monsterRarityImage;
     [SerializeField] protected Text _levelText;
     [SerializeField] protected Text _hpText;
     [SerializeField] protected Text _attackText;
@@ -49,7 +51,8 @@ public class MonsterDetailDialogUIScript : DialogBase {
     private MonsterMB monster;
     private UserMonsterInfo userMonster;
 
-    public override void Init(DialogInfo info) {
+    public override void Init(DialogInfo info)
+    {
         var onClickClose = (Action<bool>)info.param["onClickClose"];
         userMonster = (UserMonsterInfo)info.param["userMonster"];
         var canStrength = (bool)info.param["canStrength"];
@@ -58,8 +61,10 @@ public class MonsterDetailDialogUIScript : DialogBase {
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
-            .Do(_ => {
-                if (onClickClose != null) {
+            .Do(_ =>
+            {
+                if (onClickClose != null)
+                {
                     onClickClose(isNeedRefresh);
                     onClickClose = null;
                 }
@@ -67,11 +72,13 @@ public class MonsterDetailDialogUIScript : DialogBase {
             .Subscribe();
 
         _levelUpButton.OnClickIntentAsObservable()
-            .SelectMany(_ => MonsterLevelUpDialogFactory.Create(new MonsterLevelUpDialogRequest() {
+            .SelectMany(_ => MonsterLevelUpDialogFactory.Create(new MonsterLevelUpDialogRequest()
+            {
                 userMonster = userMonster,
             }))
             .Where(res => res.isNeedRefresh)
-            .SelectMany(_ => {
+            .SelectMany(_ =>
+            {
                 isNeedRefresh = true;
                 userMonster = ApplicationContext.userData.userMonsterList.First(u => u.id == userMonster.id);
                 return RefreshUIObservable();
@@ -79,11 +86,13 @@ public class MonsterDetailDialogUIScript : DialogBase {
             .Subscribe();
 
         _gradeUpButton.OnClickIntentAsObservable()
-            .SelectMany(_ => MonsterGradeUpDialogFactory.Create(new MonsterGradeUpDialogRequest() {
+            .SelectMany(_ => MonsterGradeUpDialogFactory.Create(new MonsterGradeUpDialogRequest()
+            {
                 userMonster = userMonster,
             }))
             .Where(res => res.isNeedRefresh)
-            .SelectMany(_ => {
+            .SelectMany(_ =>
+            {
                 isNeedRefresh = true;
                 userMonster = ApplicationContext.userData.userMonsterList.First(u => u.id == userMonster.id);
                 return RefreshUIObservable();
@@ -91,11 +100,13 @@ public class MonsterDetailDialogUIScript : DialogBase {
             .Subscribe();
 
         _luckUpButton.OnClickIntentAsObservable()
-            .SelectMany(_ => MonsterLuckUpDialogFactory.Create(new MonsterLuckUpDialogRequest() {
+            .SelectMany(_ => MonsterLuckUpDialogFactory.Create(new MonsterLuckUpDialogRequest()
+            {
                 userMonster = userMonster,
             }))
             .Where(res => res.isNeedRefresh)
-            .SelectMany(_ => {
+            .SelectMany(_ =>
+            {
                 isNeedRefresh = true;
                 userMonster = ApplicationContext.userData.userMonsterList.First(u => u.id == userMonster.id);
                 return RefreshUIObservable();
@@ -103,21 +114,24 @@ public class MonsterDetailDialogUIScript : DialogBase {
             .Subscribe();
 
         _normalSkillDetailButton.OnClickIntentAsObservable()
-            .SelectMany(_ => MonsterSkillDetailDialogFactory.Create(new MonsterSkillDetailDialogRequest() {
+            .SelectMany(_ => MonsterSkillDetailDialogFactory.Create(new MonsterSkillDetailDialogRequest()
+            {
                 userMonster = userMonster,
                 battleActionType = BattleActionType.NormalSkill,
             }))
             .Subscribe();
 
         _ultimateSkillDetailButton.OnClickIntentAsObservable()
-            .SelectMany(_ => MonsterSkillDetailDialogFactory.Create(new MonsterSkillDetailDialogRequest() {
+            .SelectMany(_ => MonsterSkillDetailDialogFactory.Create(new MonsterSkillDetailDialogRequest()
+            {
                 userMonster = userMonster,
                 battleActionType = BattleActionType.UltimateSkill,
             }))
             .Subscribe();
 
         _passiveSkillDetailButton.OnClickIntentAsObservable()
-            .SelectMany(_ => MonsterSkillDetailDialogFactory.Create(new MonsterSkillDetailDialogRequest() {
+            .SelectMany(_ => MonsterSkillDetailDialogFactory.Create(new MonsterSkillDetailDialogRequest()
+            {
                 userMonster = userMonster,
                 battleActionType = BattleActionType.PassiveSkill,
             }))
@@ -128,7 +142,8 @@ public class MonsterDetailDialogUIScript : DialogBase {
         RefreshUIObservable().Subscribe();
     }
 
-    private void SetSliderMaxValue() {
+    private void SetSliderMaxValue()
+    {
         _hpSliderBack.maxValue = ConstManager.Monster.MAX_HP_VALUE;
         _hpSliderFront.maxValue = ConstManager.Monster.MAX_HP_VALUE;
         _attackSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
@@ -141,7 +156,8 @@ public class MonsterDetailDialogUIScript : DialogBase {
         _speedSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
     }
 
-    private IObservable<Unit> RefreshUIObservable() {
+    private IObservable<Unit> RefreshUIObservable()
+    {
         // 名前
         _nameText.text = monster.name;
 
@@ -178,11 +194,13 @@ public class MonsterDetailDialogUIScript : DialogBase {
         // モンスター画像、属性画像の設定
         return Observable.WhenAll(
             PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monster.id).Do(sprite => _monsterImage.sprite = sprite),
-            PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterAttribute, (int)monster.attribute).Do(sprite => _monsterAttributeImage.sprite = sprite)
+            PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterAttribute, (int)monster.attribute).Do(sprite => _monsterAttributeImage.sprite = sprite),
+            PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterRarity, (int)monster.rarity).Do(sprite => _monsterRarityImage.sprite = sprite)
         ).AsUnitObservable();
     }
 
-    private void SetSkillText() {
+    private void SetSkillText()
+    {
         var normalSkillId = ClientMonsterUtil.GetNormalSkillId(monster.id, userMonster.customData.level);
         var ultimateSkillId = ClientMonsterUtil.GetUltimateSkillId(monster.id, userMonster.customData.level);
         var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(monster.id, userMonster.customData.level);
@@ -201,14 +219,20 @@ public class MonsterDetailDialogUIScript : DialogBase {
     /// <summary>
     /// レベルテキストで指定する文字列を取得する
     /// </summary>
-    private string GetLevelText(int level) {
+    private string GetLevelText(int level)
+    {
         return $"Lv <size=64>{level.ToString()}</size>";
     }
 
-    public override void Back(DialogInfo info) {
+    public override void Back(DialogInfo info)
+    {
     }
-    public override void Close(DialogInfo info) {
+
+    public override void Close(DialogInfo info)
+    {
     }
-    public override void Open(DialogInfo info) {
+
+    public override void Open(DialogInfo info)
+    {
     }
 }
