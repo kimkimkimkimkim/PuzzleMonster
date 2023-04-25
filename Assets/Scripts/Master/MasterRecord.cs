@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameBase;
 using Newtonsoft.Json;
 
-static class MasterRecord
+internal static class MasterRecord
 {
     /// <summary>
     /// マスターの型とその型のCacheRecordsのディクショナリー
@@ -19,8 +18,9 @@ static class MasterRecord
     /// 取得したタイトルデータを成形してキャッシュとして保持
     /// </summary>
     /// <param name="titleData">マスター名とその値のJsonのディクショナリー</param>
-    public static void SetCacheMasterDict(Dictionary<string,string> titleData)
+    public static void SetCacheMasterDict(Dictionary<string, string> titleData)
     {
+        cacheMasterDict.Clear();
         cacheTitleData = titleData;
 
         LoadMasterData<GachaBoxMB>();

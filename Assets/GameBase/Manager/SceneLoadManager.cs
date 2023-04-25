@@ -51,20 +51,20 @@ namespace GameBase
 
                 .Do(_ =>
                 {
-                /*
-                if (param.ContainsKey("dummyCanvas"))
-                {
-                    var dummyCanvas = (DummyCanvas)param["dummyCanvas"];
-
-                    if (dummyCanvas != null)
+                    /*
+                    if (param.ContainsKey("dummyCanvas"))
                     {
-                        GameObject.Destroy(dummyCanvas.gameObject);
-                        KoiniwaLogger.Log("ChangeScene Destroy DummyCanvas: " + changeSceneType.ToString());
-                    }
+                        var dummyCanvas = (DummyCanvas)param["dummyCanvas"];
 
-                    param.Remove("dummyCanvas");
-                }
-                */
+                        if (dummyCanvas != null)
+                        {
+                            GameObject.Destroy(dummyCanvas.gameObject);
+                            KoiniwaLogger.Log("ChangeScene Destroy DummyCanvas: " + changeSceneType.ToString());
+                        }
+
+                        param.Remove("dummyCanvas");
+                    }
+                    */
                 })
 
                 .Do(_ => CommonLogger.Log("ChangeScene CleanUp: " + changeSceneType.ToString()))
@@ -78,12 +78,12 @@ namespace GameBase
                     CommonLogger.LogError($"Error ChangeScene: {ex}");
                     UIManager.Instance.TryHideLoadingView();
 
-                // 大概はAddressablesが原因なので、一旦リフレッシュする
-                // ResourceManager.Instance.RefreshAddressables();
+                    // 大概はAddressablesが原因なので、一旦リフレッシュする
+                    // ResourceManager.Instance.RefreshAddressables();
 
-                // キャッシュが原因の場合もあるので、一旦キャッシュクリアする
-                // ResourceManager.Instance.CacheClear();
-                ErrorChangeScene();
+                    // キャッシュが原因の場合もあるので、一旦キャッシュクリアする
+                    // ResourceManager.Instance.CacheClear();
+                    ErrorChangeScene();
                 });
         }
 
@@ -107,15 +107,22 @@ namespace GameBase
 
             switch (changeSceneType)
             {
+                case SceneType.Splash:
+                    sceneLoader = new SplashSceneLoader();
+                    break;
+
                 case SceneType.Title:
                     sceneLoader = new TitleSceneLoader();
                     break;
+
                 case SceneType.Tutorial:
                     sceneLoader = new TutorialSceneLoader();
                     break;
+
                 case SceneType.Main:
                     sceneLoader = new MainSceneLoader();
                     break;
+
                 default:
                     CommonLogger.LogError("The new scene must have a SceneController");
                     break;
@@ -204,7 +211,7 @@ namespace GameBase
         }
     }
 
-    public abstract class ISceneLoadable: MonoBehaviour
+    public abstract class ISceneLoadable : MonoBehaviour
     {
         public Dictionary<string, object> param = new Dictionary<string, object>();
 
