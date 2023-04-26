@@ -287,13 +287,42 @@ public partial class BattleDataProcessor {
         return battleMonster.currentEnergy >= ConstManager.Battle.MAX_ENERGY_VALUE ? BattleActionType.UltimateSkill : BattleActionType.NormalSkill;
     }
 
+    Stopwatch StartActionOneShot = new Stopwatch();
+    Stopwatch StartActionTotal = new Stopwatch();
+    Stopwatch ExecuteTriggerSkillIfNeededOnMeActionStartOneShot = new Stopwatch();
+    Stopwatch ExecuteTriggerSkillIfNeededOnMeActionStartTotal = new Stopwatch();
+    Stopwatch GetBeDoneMonsterIndexListOneShot = new Stopwatch();
+    Stopwatch GetBeDoneMonsterIndexListTotal = new Stopwatch();
+    Stopwatch ExecuteActionOneShot = new Stopwatch();
+    Stopwatch ExecuteActionTotal = new Stopwatch();
+    Stopwatch AddSkillEffectFailedOfProbabilityMissLogOneShot = new Stopwatch();
+    Stopwatch AddSkillEffectFailedOfProbabilityMissLogTotal = new Stopwatch();
+    Stopwatch ExecuteTriggerSkillIfNeededOnMeNormalSkillEndOneShot = new Stopwatch();
+    Stopwatch ExecuteTriggerSkillIfNeededOnMeNormalSkillEndTotal = new Stopwatch();
+    Stopwatch ExecuteTriggerSkillIfNeededOnMeUltimateSkillEndOneShot = new Stopwatch();
+    Stopwatch ExecuteTriggerSkillIfNeededOnMeUltimateSkillEndTotal = new Stopwatch();
+    Stopwatch ExecuteDieIfNeededOneShot = new Stopwatch();
+    Stopwatch ExecuteDieIfNeededTotal = new Stopwatch();
+    Stopwatch EndActionOneShot = new Stopwatch();
+    Stopwatch EndActionTotal = new Stopwatch();
+    Stopwatch ExecuteTriggerSkillIfNeededOnMeActionEndSuccessOneShot = new Stopwatch();
+    Stopwatch ExecuteTriggerSkillIfNeededOnMeActionEndSuccessTotal = new Stopwatch();
+    Stopwatch ExecuteTriggerSkillIfNeededEveryTimeEndOneShot = new Stopwatch();
+    Stopwatch ExecuteTriggerSkillIfNeededEveryTimeEndTotal = new Stopwatch();
+
     // アクション実行者とアクション内容を受け取りアクションを実行する
     private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, BattleConditionInfo battleCondition, List<SkillEffectMI> skillEffectList, string triggerSkillGuid, int triggerSkillEffectIndex) {
         // アクションを開始する
+        StartActionOneShot.Start();
+        StartActionTotal.Start();
         StartAction(actionMonsterIndex, actionType, battleCondition);
+        ConsoleStopwatch("StartAction", StartActionOneShot, StartActionTotal);
 
         // アクション開始時トリガースキルを発動する
+        ExecuteTriggerSkillIfNeededOnMeActionStartOneShot.Start();
+        ExecuteTriggerSkillIfNeededOnMeActionStartTotal.Start();
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionStart, actionMonsterIndex);
+        ConsoleStopwatch("ExecuteTriggerSkillIfNeededOnMeActionStart", ExecuteTriggerSkillIfNeededOnMeActionStartOneShot, ExecuteTriggerSkillIfNeededOnMeActionStartTotal);
 
         // 各効果の実行
         var skillGuid = Guid.NewGuid().ToString();
@@ -305,33 +334,61 @@ public partial class BattleDataProcessor {
 
             if (isExecute) {
                 // アクションの対象を選択する
+                GetBeDoneMonsterIndexListOneShot.Start();
+                GetBeDoneMonsterIndexListTotal.Start();
                 var beDoneMonsterIndexList = GetBeDoneMonsterIndexList(actionMonsterIndex, skillEffect, skillGuid, index, actionType, battleCondition, triggerSkillGuid, triggerSkillEffectIndex);
+                ConsoleStopwatch("GetBeDoneMonsterIndexList", GetBeDoneMonsterIndexListOneShot, GetBeDoneMonsterIndexListTotal);
 
                 // アクション処理を実行する
+                ExecuteActionOneShot.Start();
+                ExecuteActionTotal.Start();
                 ExecuteAction(actionMonsterIndex, actionType, beDoneMonsterIndexList, skillGuid, skillEffect, index, battleCondition);
+                ConsoleStopwatch("", ExecuteActionOneShot, ExecuteActionTotal);
             } else {
                 // 確率による失敗ログの追加
+                AddSkillEffectFailedOfProbabilityMissLogOneShot.Start();
+                AddSkillEffectFailedOfProbabilityMissLogTotal.Start();
                 AddSkillEffectFailedOfProbabilityMissLog(actionMonsterIndex, actionType, index, null);
+                ConsoleStopwatch("AddSkillEffectFailedOfProbabilityMissLog", AddSkillEffectFailedOfProbabilityMissLogOneShot, AddSkillEffectFailedOfProbabilityMissLogTotal);
             }
         });
 
         if (actionType == BattleActionType.NormalSkill) {
             // 通常攻撃後トリガースキルを発動する
+            ExecuteTriggerSkillIfNeededOnMeNormalSkillEndOneShot.Start();
+            ExecuteTriggerSkillIfNeededOnMeNormalSkillEndTotal.Start();
             ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeNormalSkillEnd, actionMonsterIndex);
+            ConsoleStopwatch("ExecuteTriggerSkillIfNeededOnMeNormalSkillEnd", ExecuteTriggerSkillIfNeededOnMeNormalSkillEndOneShot, ExecuteTriggerSkillIfNeededOnMeNormalSkillEndTotal);
         } else if (actionType == BattleActionType.UltimateSkill) {
             // ウルト攻撃後トリガースキルを発動する
+            ExecuteTriggerSkillIfNeededOnMeUltimateSkillEndOneShot.Start();
+            ExecuteTriggerSkillIfNeededOnMeUltimateSkillEndTotal.Start();
             ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeUltimateSkillEnd, actionMonsterIndex);
+            ConsoleStopwatch("ExecuteTriggerSkillIfNeededOnMeUltimateSkillEnd", ExecuteTriggerSkillIfNeededOnMeUltimateSkillEndOneShot, ExecuteTriggerSkillIfNeededOnMeUltimateSkillEndTotal);
         }
 
         // 死亡処理を実行
+        ExecuteDieIfNeededOneShot.Start();
+        ExecuteDieIfNeededTotal.Start();
         ExecuteDieIfNeeded();
+        ConsoleStopwatch("ExecuteDieIfNeeded", ExecuteDieIfNeededOneShot, ExecuteDieIfNeededTotal);
 
         // アクションを終了する
+        EndActionOneShot.Start();
+        EndActionTotal.Start();
         EndAction(actionMonsterIndex, actionType);
+        ConsoleStopwatch("EndAction", EndActionOneShot, EndActionTotal);
 
         // アクション終了時トリガースキルを発動する
+        ExecuteTriggerSkillIfNeededOnMeActionEndSuccessOneShot.Start();
+        ExecuteTriggerSkillIfNeededOnMeActionEndSuccessTotal.Start();
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeActionEnd, actionMonsterIndex);
+        ConsoleStopwatch("ExecuteTriggerSkillIfNeededOnMeActionEndSuccess", ExecuteTriggerSkillIfNeededOnMeActionEndSuccessOneShot, ExecuteTriggerSkillIfNeededOnMeActionEndSuccessTotal);
+
+        ExecuteTriggerSkillIfNeededEveryTimeEndOneShot.Start();
+        ExecuteTriggerSkillIfNeededEveryTimeEndTotal.Start();
         ExecuteTriggerSkillIfNeeded(SkillTriggerType.EveryTimeEnd, GetAllMonsterList().OrderByDescending(m => m.currentSpeed()).Select(m => m.index).ToList());
+        ConsoleStopwatch("ExecuteTriggerSkillIfNeededEveryTimeEnd", ExecuteTriggerSkillIfNeededEveryTimeEndOneShot, ExecuteTriggerSkillIfNeededEveryTimeEndTotal);
     }
 
     private void ActionFailed(BattleMonsterIndex actionMonsterIndex) {
