@@ -79,8 +79,8 @@ public class GachaWindowUIScript : WindowBase
             .Where(m => ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList))
             .ToList();
 
-        scrollItem.SetText(gachaBox.title);
-        scrollItem.SetLimitText(GetLimitText(gachaBox));
+        scrollItem.SetGachaBannerImage(gachaBox.id);
+        scrollItem.SetLimitText(gachaBox);
         scrollItem.SetOnClickEmissionRateButtonAction(new Action(() =>
         {
             GachaEmissionRateDialogFactory.Create(new GachaEmissionRateDialogRequest()
@@ -159,21 +159,6 @@ public class GachaWindowUIScript : WindowBase
                 return GachaResultWindowFactory.Create(new GachaResultWindowRequest() { itemList = res.rewardItemList });
             })
             .Subscribe();
-    }
-
-    private string GetLimitText(GachaBoxMB gachaBox)
-    {
-        switch (gachaBox.openType)
-        {
-            case GachaOpenType.Schedule:
-                var gachaSchedule = MasterRecord.GetMasterOf<GachaScheduleMB>().GetAll()
-                    .Where(m => DateTimeUtil.GetDateFromMasterString(m.startDate) <= DateTimeUtil.Now && DateTimeUtil.Now < DateTimeUtil.GetDateFromMasterString(m.endDate))
-                    .FirstOrDefault(m => m.gachaBoxId == gachaBox.id);
-                return gachaSchedule != null ? $"～{DateTimeUtil.GetDateFromMasterString(gachaSchedule.endDate).ToString("yyyy/MM/dd hh:mm:ss")}" : "";
-
-            default:
-                return "期限なし";
-        }
     }
 
     public override void Open(WindowInfo info)

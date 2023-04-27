@@ -1,5 +1,7 @@
 using GameBase;
+using PM.Enum.Gacha;
 using PM.Enum.Item;
+using PM.Enum.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,26 +12,49 @@ using UnityEngine.UI;
 [ResourcePath("UI/Parts/Parts-GachaBoxScrollItem")]
 public class GachaBoxScrollItem : MonoBehaviour
 {
-    [SerializeField] protected Text _titleText;
     [SerializeField] protected Button _emissionRateButton;
     [SerializeField] protected Transform _executeButtonBase;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
     [SerializeField] protected Text _limitText;
+    [SerializeField] protected Image _gachaBannerImage;
 
     public Transform executeButtonBase
     { get { return _executeButtonBase; } }
 
+    private long gachaBoxId;
     private List<ItemMI> itemList;
     private IDisposable onClickEmissionRateButtonObservable;
 
-    public void SetText(string text)
+    public void SetGachaBannerImage(long gachaBoxId)
     {
-        _titleText.text = text;
+        this.gachaBoxId = gachaBoxId;
+
+        PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.GachaBanner, gachaBoxId)
+            .Do(sprite =>
+            {
+                if (this.gachaBoxId == gachaBoxId) _gachaBannerImage.sprite = sprite;
+            })
+            .Subscribe();
     }
 
-    public void SetLimitText(string text)
+    public void SetLimitText(GachaBoxMB gachaBox)
     {
-        _limitText.text = text;
+        _limitText.text = GetLimitText(gachaBox);
+    }
+
+    private string GetLimitText(GachaBoxMB gachaBox)
+    {
+        switch (gachaBox.openType)
+        {
+            case GachaOpenType.Schedule:
+                var gachaSchedule = MasterRecord.GetMasterOf<GachaScheduleMB>().GetAll()
+                    .Where(m => DateTimeUtil.GetDateFromMasterString(m.startDate) <= DateTimeUtil.Now && DateTimeUtil.Now < DateTimeUtil.GetDateFromMasterString(m.endDate))
+                    .FirstOrDefault(m => m.gachaBoxId == gachaBox.id);
+                return gachaSchedule != null ? $"{DateTimeUtil.GetDateFromMasterString(gachaSchedule.startDate).ToString("yyyy/MM/dd hh:mm:ss")}Å`{DateTimeUtil.GetDateFromMasterString(gachaSchedule.endDate).ToString("yyyy/MM/dd hh:mm:ss")}" : "";
+
+            default:
+                return "ä˙å¿Ç»Çµ";
+        }
     }
 
     public void SetOnClickEmissionRateButtonAction(Action action)
