@@ -60,7 +60,7 @@ public class MonsterBoxWindowUIScript : WindowBase
         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(userMonster.monsterId);
 
         scrollItem.SetGradeImage(userMonster.customData.grade);
-        scrollItem.SetUI(userMonster.monsterId, monster.rarity, monster.attribute, userMonster.customData.level);
+        scrollItem.SetUI(userMonster.monsterId, monster.rarity, monster.attribute, userMonster.customData.level, userMonster.GetStack());
         scrollItem.SetOnClickAction(() =>
         {
             MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest() { userMonster = userMonster })

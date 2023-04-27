@@ -32,7 +32,7 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Text _hpText;
     [SerializeField] protected Text _attackText;
     [SerializeField] protected Text _defenseText;
-    [SerializeField] protected Text _healText;
+    [SerializeField] protected Text _luckText;
     [SerializeField] protected Text _speedText;
     [SerializeField] protected Slider _hpSliderBack;
     [SerializeField] protected Slider _hpSliderFront;
@@ -40,8 +40,8 @@ public class MonsterDetailDialogUIScript : DialogBase
     [SerializeField] protected Slider _attackSliderFront;
     [SerializeField] protected Slider _defenseSliderBack;
     [SerializeField] protected Slider _defenseSliderFront;
-    [SerializeField] protected Slider _healSliderBack;
-    [SerializeField] protected Slider _healSliderFront;
+    [SerializeField] protected Slider _luckSliderBack;
+    [SerializeField] protected Slider _luckSliderFront;
     [SerializeField] protected Slider _speedSliderBack;
     [SerializeField] protected Slider _speedSliderFront;
     [SerializeField] protected GameObject _passiveSkillBase;
@@ -150,10 +150,10 @@ public class MonsterDetailDialogUIScript : DialogBase
         _attackSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
         _defenseSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
         _defenseSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
-        _healSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
-        _healSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
         _speedSliderBack.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
         _speedSliderFront.maxValue = ConstManager.Monster.MAX_STATUS_WITHOUT_HP_VALUE;
+        _luckSliderBack.maxValue = 0; // TODO
+        _luckSliderFront.maxValue = ClientMonsterUtil.GetMaxMonsterLevel(ConstManager.Monster.MAX_RARITY, ConstManager.Monster.MAX_GRADE);
     }
 
     private IObservable<Unit> RefreshUIObservable()
@@ -170,8 +170,8 @@ public class MonsterDetailDialogUIScript : DialogBase
         _hpText.text = status.hp.ToString();
         _attackText.text = status.attack.ToString();
         _defenseText.text = status.defense.ToString();
-        _healText.text = status.heal.ToString();
         _speedText.text = status.speed.ToString();
+        _luckText.text = userMonster.customData.luck.ToString();
 
         // ゲージ
         var maxGrade = MasterRecord.GetMasterOf<GradeUpTableMB>().GetAll().Max(m => m.targetGrade);
@@ -183,10 +183,10 @@ public class MonsterDetailDialogUIScript : DialogBase
         _attackSliderFront.value = status.attack;
         _defenseSliderBack.value = maxLevelStatus.defense;
         _defenseSliderFront.value = status.defense;
-        _healSliderBack.value = maxLevelStatus.heal;
-        _healSliderFront.value = status.heal;
         _speedSliderBack.value = maxLevelStatus.speed;
         _speedSliderFront.value = status.speed;
+        _luckSliderBack.value = ClientMonsterUtil.GetMaxMonsterLevel(monster.rarity, ConstManager.Monster.MAX_GRADE);
+        _luckSliderFront.value = userMonster.customData.luck;
 
         // スキル
         SetSkillText();

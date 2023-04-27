@@ -13,15 +13,17 @@ public class MonsterBoxScrollItem : ScrollItem
     [SerializeField] protected Image _monsterRarityImage;
     [SerializeField] protected Image _monsterAttributeImage;
     [SerializeField] protected Text _monsterLevelText;
+    [SerializeField] protected Text _monsterStackNumText;
 
     public void SetGradeImage(int grade)
     {
         _monsterGradeParts.SetGradeImage(grade);
     }
 
-    public void SetUI(long monsterId, MonsterRarity monsterRarity, MonsterAttribute monsterAttribute, int monsterLevel)
+    public void SetUI(long monsterId, MonsterRarity monsterRarity, MonsterAttribute monsterAttribute, int monsterLevel, int stackNum)
     {
         _monsterLevelText.text = $"Lv {monsterLevel}";
+        _monsterStackNumText.text = stackNum.ToString();
         Observable.WhenAll(
             PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monsterId).Do(sprite => _monsterImage.sprite = sprite),
             PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterRarity, (int)monsterRarity).Do(sprite => _monsterRarityImage.sprite = sprite),
