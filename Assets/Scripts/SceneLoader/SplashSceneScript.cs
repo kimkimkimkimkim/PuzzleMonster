@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class SplashSceneScript : MonoBehaviour
 {
-    void Start()
+    private void Start()
     {
         SceneLoadManager.ChangeScene(SceneType.Title);
     }

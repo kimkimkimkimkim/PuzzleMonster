@@ -62,13 +62,17 @@ namespace GameBase
         }
 
         #region Lockable
-        public void RefreshLockableUI() {
-            lockableUIList.ForEach(lockableUI => {
+
+        public void RefreshLockableUI()
+        {
+            lockableUIList.ForEach(lockableUI =>
+            {
                 RefreshLockableUI(lockableUI);
             });
         }
 
-        public void RefreshLockableUI(LockableUI lockableUI) {
+        public void RefreshLockableUI(LockableUI lockableUI)
+        {
             var shouldLock = ConditionUtil.IsValid(ApplicationContext.userData, lockableUI.lockable.lockConditionList);
             lockableUI.RefreshUI(shouldLock);
 
@@ -76,14 +80,17 @@ namespace GameBase
             if (!shouldLock) RemoveLockableUI(lockableUI.lockable.id);
         }
 
-        public void AddLockableUI(LockableUI lockableUI) {
+        public void AddLockableUI(LockableUI lockableUI)
+        {
             lockableUIList.Add(lockableUI);
         }
 
-        public void RemoveLockableUI(long lockableId) {
+        public void RemoveLockableUI(long lockableId)
+        {
             lockableUIList.RemoveAll(lockableUI => lockableUI.lockable.id == lockableId);
         }
-        #endregion
+
+        #endregion Lockable
 
         #region Blocker
 
@@ -196,7 +203,6 @@ namespace GameBase
 
         public T OpenWindow<T>(Dictionary<string, object> param = null, bool previousActive = false, WindowAnimationType animationType = WindowAnimationType.GardenWindow) where T : WindowBase
         {
-
             /*
             if (param != null && param.ContainsKey("propertyGroupType")) {
                 var propertyGroupType = (PropertyGroupType)param["propertyGroupType"];
@@ -222,7 +228,7 @@ namespace GameBase
                 var windowFrameRT = currentUIBase._windowFrame.GetComponent<RectTransform>();
                 windowFrameRT.SetStretchedRectOffset(0, HEADER_HEIGHT, 0, FOOTER_HEIGHT);
             }
-            if(currentUIBase._fullScreenBaseRT != null)
+            if (currentUIBase._fullScreenBaseRT != null)
             {
                 currentUIBase._fullScreenBaseRT.SetStretchedRectOffset(0, -topMargin, 0, -bottomMargin);
             }
@@ -421,6 +427,7 @@ namespace GameBase
                 .Do(_ => CloseWindow(true, false, animationType))
                 .SelectMany(_ => Observable.NextFrame());
         }
+
         #endregion Window Method
 
         #region Popup Method
@@ -444,7 +451,8 @@ namespace GameBase
             obj.transform.SetAsLastSibling();
 
             // グレーアウトイメージのサイズ修正
-            if (currentUIBase._grayOutImage != null) {
+            if (currentUIBase._grayOutImage != null)
+            {
                 var grayOutImageRT = currentUIBase._grayOutImage.GetComponent<RectTransform>();
                 grayOutImageRT.SetStretchedRectOffset(0, -topMargin, 0, -bottomMargin);
             }
@@ -524,7 +532,6 @@ namespace GameBase
 
         public void CloseDialog(bool isForce = false)
         {
-
             if (currentDialogInfo == null)
             {
                 return;
@@ -559,7 +566,7 @@ namespace GameBase
             else
             {
                 currentDialogInfo = null;
-                if(currentWindowInfo != null) currentWindowInfo.component.Open(currentWindowInfo);
+                if (currentWindowInfo != null) currentWindowInfo.component.Open(currentWindowInfo);
             }
 
             // プロパティアニメーション
@@ -597,6 +604,7 @@ namespace GameBase
         }
 
         #region PopupExtension Method
+
         /*
         public void ShowInformationDialog(string title, string content, Action onClickScreen = null, bool displayingOnDialog = false) {
             Dictionary<string, object> param = new Dictionary<string, object>();
@@ -622,14 +630,15 @@ namespace GameBase
             param.Add("oneButtonText", buttonText);
             //OpenDialog<CommonDialogUIScript>(param, displayingOnDialog);
             OpenDialogAsync<CommonDialogUIScript>(param, displayingOnDialog);
-
         }
         */
+
         #endregion PopupExtension Method
 
         #endregion Popup Method
 
         #region DummyWindow
+
         public T CreateDummyWindow<T>(Transform parent = null) where T : DummyWindowBase
         {
             if (parent == null) parent = windowParent;
@@ -643,9 +652,11 @@ namespace GameBase
 
             return dummyWindow;
         }
+
         #endregion DummyWindow
 
         #region ContentMethod
+
         public T CreateContent<T>(Transform parent = null) where T : MonoBehaviour
         {
             ResourcePathAttribute attr = (ResourcePathAttribute)Attribute.GetCustomAttribute(typeof(T), typeof(ResourcePathAttribute));
@@ -761,8 +772,22 @@ namespace GameBase
 
         public void DestroyAll()
         {
-            CloseDialog(true);
-            CloseAllWindow(true);
+            foreach (Transform t in windowParent.transform)
+            {
+                Destroy(t.gameObject);
+            }
+            currentWindowInfo = null;
+
+            foreach (Transform t in dialogParant.transform)
+            {
+                Destroy(t.gameObject);
+            }
+            currentDialogInfo = null;
+
+            foreach (Transform t in headerFooterParent.transform)
+            {
+                Destroy(t.gameObject);
+            }
         }
 
         public void SetWindowBlocksRayCasts(bool isOn)
@@ -784,7 +809,8 @@ namespace GameBase
             var name = path.Split('/').LastOrDefault();
             return name;
         }
-        #endregion
+
+        #endregion ContentMethod
     }
 
     #region UI Info Class
@@ -903,5 +929,6 @@ namespace GameBase
             }
         }
     }
+
     #endregion UI Info Class
 }
