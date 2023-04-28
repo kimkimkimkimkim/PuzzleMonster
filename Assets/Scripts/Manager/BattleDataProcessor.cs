@@ -1527,6 +1527,9 @@ public partial class BattleDataProcessor {
                 enemyBattleMonsterList.Add(battleMonster);
             }
         });
+
+        // TODO: テスト用
+        if (isTest) TestSetEnemyBattleMonsterList(waveCount);
     }
 
     private NormalSkillMB GetBattleMonsterNormalSkill(long monsterId, int monsterLevel) {
