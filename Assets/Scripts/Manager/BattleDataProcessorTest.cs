@@ -57,7 +57,8 @@ public partial class BattleDataProcessor {
         List<BattleConditionInfo> battleConditionList = null,
         bool isActed = false,
         bool isDead = false,
-        int currentHp = -1
+        int currentHp = -1,
+        int baseSpeed = -1
     ) {
         var monster = monsterList.First(m => m.id == monsterId);
         var normalSkill = GetBattleMonsterNormalSkill(monster.id, monsterLevel);
@@ -70,6 +71,7 @@ public partial class BattleDataProcessor {
         battleMonster.isActed = isActed;
         battleMonster.isDead = isDead;
         if (currentHp >= 0) battleMonster.currentHp = currentHp;
+        if (baseSpeed >= 0) battleMonster.baseSpeed = baseSpeed;
 
         return battleMonster;
     }

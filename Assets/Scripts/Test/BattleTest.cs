@@ -69,6 +69,25 @@ public static class BattleTest {
             battleLogList = battleDataProcessor.TestStart(playerBattleMonsterList, enemyBattleMonsterListByWave);
             ErrorIf(monsterId, battleActionType, "HPが最も低い味方を回復したか（自分）", CheckHeal(battleLogList, playerBattleMonsterList[0].index, playerBattleMonsterList[0].index, out logText), logText);
 
+            // id:23, normal
+            monsterId = 23;
+            battleActionType = BattleActionType.NormalSkill;
+            // 対象者のエネルギーを減少させたか
+            battleDataProcessor = new BattleDataProcessor();
+            battleDataProcessor.TestInit();
+            playerBattleMonsterList = new List<BattleMonsterInfo>() {
+                battleDataProcessor.TestGetBattleMonster(monsterId, 100, true, 0),
+            };
+            enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>() {
+                new List<BattleMonsterInfo>() {
+                    battleDataProcessor.TestGetBattleMonster(monsterId, 100, false, 0, 1,currentEnergy:ConstManager.Battle.MAX_ENERGY_VALUE, baseSpeed: 0),
+                },
+            };
+            battleLogList = battleDataProcessor.TestStart(playerBattleMonsterList, enemyBattleMonsterListByWave, 2);
+            ErrorIf(monsterId, battleActionType, "対象者のエネルギーを減少させたか", CheckEnergyDown(battleLogList, playerBattleMonsterList[0].index, enemyBattleMonsterListByWave[0][0].index, out logText), logText);
+            ErrorIf(monsterId, battleActionType, "相手がアルティメットスキルを使ってないか", !CheckUltimateSkill(battleLogList, enemyBattleMonsterListByWave[0][0].index, out logText), logText);
+            ErrorIf(monsterId, battleActionType, "相手が通常スキルを使ったか", CheckNormalSkill(battleLogList, enemyBattleMonsterListByWave[0][0].index, out logText), logText);
+
         } catch {
             Debug.LogError($"{ELLIPSIS}バトルテストエラー");
         }
@@ -91,8 +110,6 @@ public static class BattleTest {
     /// <summary>
     /// 状態異常付与のスキル効果が発動しているかどうかのチェック（成功、失敗は問わない）
     /// </summary>
-    /// <param name="doMonsterIndex">状態異常付与スキルの発動者</param>
-    /// <param name="beDoneMonsterIndex">状態異常付与スキルを受ける方</param>
     private static bool CheckBattleConditionAdd(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText) {
         var battleLog = battleLogList
             .Where(l => l.type == BattleLogType.TakeBattleConditionAdd)
@@ -104,15 +121,52 @@ public static class BattleTest {
     }
 
     /// <summary>
-    /// 回復のスキル効果が発動しているかどうかのチェック（成功、失敗は問わない）
+    /// 回復のスキル効果が発動しているかどうかのチェック
     /// </summary>
-    /// <param name="doMonsterIndex">スキルの発動者</param>
-    /// <param name="beDoneMonsterIndex">スキルを受ける方</param>
     private static bool CheckHeal(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText) {
         var battleLog = battleLogList
             .Where(l => l.type == BattleLogType.TakeHeal)
             .Where(l => l.doBattleMonsterIndex.IsSame(doMonsterIndex))
             .Where(l => l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex)))
+            .FirstOrDefault();
+        logText = GetBattleLogText(battleLog);
+        return battleLog != null;
+    }
+
+    /// <summary>
+    /// エネルギー減少効果が発動しているかどうかのチェック
+    /// </summary>
+    private static bool CheckEnergyDown(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText) {
+        var battleLog = battleLogList
+            .Where(l => l.type == BattleLogType.EnergyDown)
+            .Where(l => l.doBattleMonsterIndex.IsSame(doMonsterIndex))
+            .Where(l => l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex)))
+            .FirstOrDefault();
+        logText = GetBattleLogText(battleLog);
+        return battleLog != null;
+    }
+
+    /// <summary>
+    /// 通常スキルが発動しているかどうかのチェック
+    /// </summary>
+    private static bool CheckNormalSkill(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, out string logText) {
+        var battleLog = battleLogList
+            .Where(l => l.type == BattleLogType.StartAction)
+            .Where(l => l.actionType == BattleActionType.NormalSkill)
+            .Where(l => l.doBattleMonsterIndex.IsSame(doMonsterIndex))
+            .FirstOrDefault();
+        logText = GetBattleLogText(battleLog);
+        return battleLog != null;
+    }
+
+    /// <summary>
+    /// アルティメットスキルが発動しているかどうかのチェック
+    /// </summary>
+    private static bool CheckUltimateSkill(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, out string logText) {
+        var battleLog = battleLogList
+            .Where(l => l.type == BattleLogType.StartAction)
+            .Where(l => l.actionType == BattleActionType.UltimateSkill)
+            .Where(l => l.doBattleMonsterIndex.IsSame(doMonsterIndex))
             .FirstOrDefault();
         logText = GetBattleLogText(battleLog);
         return battleLog != null;
