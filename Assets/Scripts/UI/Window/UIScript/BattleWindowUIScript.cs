@@ -38,6 +38,10 @@ public class BattleWindowUIScript : DummyWindowBase
     [SerializeField] protected Sprite _playerSkillCutInSprite;
     [SerializeField] protected Sprite _enemySkillCutInSprite;
     [SerializeField] protected Button _pauseButton;
+    [SerializeField] protected GameObject _testUIBase;
+    [SerializeField] protected Text _logText;
+    [SerializeField] protected Button _nextButton;
+    [SerializeField] protected Button _backButton;
 
     private List<BattleMonsterInfo> playerBattleMonsterList;
     private List<BattleMonsterInfo> enemyBattleMonsterList;
@@ -78,6 +82,148 @@ public class BattleWindowUIScript : DummyWindowBase
         SetTurnText(1);
         SetWaveText(1, quest.questMonsterListByWave.Count);
         SetBattleMonsterInfoItem(playerUserMonsterList);
+    }
+
+    private int battleLogIndex = 0;
+    private List<BattleLogInfo> battleLogList;
+
+    public void StartTest(List<BattleLogInfo> battleLogList)
+    {
+        this.battleLogList = battleLogList;
+
+        _testUIBase.SetActive(true);
+
+        _nextButton.OnClickIntentAsObservable()
+            .Do(_ =>
+            {
+                if (battleLogIndex + 1 < battleLogList.Count)
+                {
+                    battleLogIndex++;
+                    RefreshUI(battleLogList[battleLogIndex]);
+                }
+            })
+            .Subscribe();
+
+        _backButton.OnClickIntentAsObservable()
+            .Do(_ =>
+            {
+                if (battleLogIndex > 0)
+                {
+                    battleLogIndex--;
+                    RefreshUI(battleLogList[battleLogIndex]);
+                }
+            })
+            .Subscribe();
+
+        RefreshUI(battleLogList[0]);
+    }
+
+    public void RefreshUI(BattleLogInfo battleLog)
+    {
+        // Wave
+        SetWaveText(battleLog.waveCount, battleLog.enemyBattleMonsterListByWave.Count);
+
+        // Turn
+        SetTurnText(battleLog.turnCount);
+
+        // Log
+        _logText.text = $"{battleLogIndex}/{battleLogList.Count}\n{battleLog.log}";
+
+        // PlayerMonster
+        _playerMonsterBaseList.ForEach(monsterBase =>
+        {
+            foreach (Transform child in monsterBase.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        });
+
+        battleLog.playerBattleMonsterList.ForEach(battleMonster =>
+        {
+            if (battleMonster.monsterId > 0)
+            {
+                var parent = _playerMonsterBaseList[battleMonster.index.index];
+                var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
+
+                parent.SetBattleMonsterItem(item);
+                item.Init(battleMonster.monsterId, battleMonster.level, false);
+                item.SetOnClickAction(() =>
+                {
+                    Observable.ReturnUnit()
+                        .Do(_ => TimeManager.Instance.Pause())
+                        .SelectMany(_ => BattleConditionListDialogFactory.Create(new BattleConditionListDialogRequest() { battleMonster = battleMonster }))
+                        .Do(_ => TimeManager.Instance.SpeedBy1())
+                        .Subscribe();
+                });
+
+                if (!battleMonster.isDead)
+                {
+                    // hp
+                    item.hpSlider.value = battleMonster.currentHp;
+                    // energy
+                    item.energySlider.value = battleMonster.currentEnergy;
+                    // battleCondition
+                    RefreshBattleCondition(battleMonster);
+                }
+                else
+                {
+                    // die
+                    item.hpSlider.value = 0;
+                    item.energySlider.value = 0;
+                    item.shieldSlider.value = 0;
+                    item.RefreshBattleCondition(new List<BattleConditionInfo>());
+                    item.ShowGraveImage(true);
+                }
+            }
+        });
+
+        // EnemyMonster
+        _enemyMonsterBaseList.ForEach(monsterBase =>
+        {
+            foreach (Transform child in monsterBase.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        });
+
+        battleLog.enemyBattleMonsterList.ForEach(battleMonster =>
+        {
+            if (battleMonster.monsterId > 0)
+            {
+                var parent = _enemyMonsterBaseList[battleMonster.index.index];
+                var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
+
+                parent.SetBattleMonsterItem(item);
+                item.Init(battleMonster.monsterId, battleMonster.level, false);
+                item.SetOnClickAction(() =>
+                {
+                    Observable.ReturnUnit()
+                        .Do(_ => TimeManager.Instance.Pause())
+                        .SelectMany(_ => BattleConditionListDialogFactory.Create(new BattleConditionListDialogRequest() { battleMonster = battleMonster }))
+                        .Do(_ => TimeManager.Instance.SpeedBy1())
+                        .Subscribe();
+                });
+
+                if (!battleMonster.isDead)
+                {
+                    // hp
+                    item.hpSlider.value = battleMonster.currentHp;
+                    // energy
+                    item.energySlider.value = battleMonster.currentEnergy;
+                    // battleCondition
+                    RefreshBattleCondition(battleMonster);
+                }
+                else
+                {
+                    // die
+                    item.hpSlider.value = 0;
+                    item.energySlider.value = 0;
+                    item.shieldSlider.value = 0;
+                    item.RefreshBattleCondition(new List<BattleConditionInfo>());
+                    item.ShowGraveImage(true);
+                }
+            }
+        });
     }
 
     public void StartSkillTest()

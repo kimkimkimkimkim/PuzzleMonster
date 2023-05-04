@@ -1,18 +1,20 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public partial class BattleDataProcessor {
+public partial class BattleDataProcessor
+{
     private bool isTest;
     private List<List<BattleMonsterInfo>> testEnemyBattleMonsterListByWave;
 
-    public void TestInit(int currentWaveCount = 1, int currentTurnCount = 1) {
+    public void TestInit(int currentWaveCount = 1, int currentTurnCount = 1)
+    {
         // BattleDataProcessorではlimitTurnNumとquestMonsterListByWaveしか使用していない
-        quest = new QuestMB() {
+        quest = new QuestMB()
+        {
             limitTurnNum = 99,
             questMonsterListByWave = new List<List<QuestMonsterMI>>() {
                 new List<QuestMonsterMI>() {
                     new QuestMonsterMI() {
-
                     },
                 },
             },
@@ -28,7 +30,8 @@ public partial class BattleDataProcessor {
     /// <summary>
     /// テストを開始しログを返す
     /// </summary>
-    public List<BattleLogInfo> TestStart(List<BattleMonsterInfo> playerBattleMonsterList, List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave, int loopNum = 1) {
+    public List<BattleLogInfo> TestStart(List<BattleMonsterInfo> playerBattleMonsterList, List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave, int loopNum = 1)
+    {
         // テスト用の初期設定
         isTest = true;
         testEnemyBattleMonsterListByWave = enemyBattleMonsterListByWave;
@@ -39,7 +42,8 @@ public partial class BattleDataProcessor {
         this.enemyBattleMonsterList = enemyBattleMonsterListByWave[waveIndex];
 
         // バトル処理開始
-        for (var i = 0; i < loopNum; i++) {
+        for (var i = 0; i < loopNum; i++)
+        {
             PlayLoop();
         }
 
@@ -58,8 +62,10 @@ public partial class BattleDataProcessor {
         bool isActed = false,
         bool isDead = false,
         int currentHp = -1,
-        int baseSpeed = -1
-    ) {
+        int baseSpeed = -1,
+        int baseAttack = -1
+    )
+    {
         var monster = monsterList.First(m => m.id == monsterId);
         var normalSkill = GetBattleMonsterNormalSkill(monster.id, monsterLevel);
         var ultimateSkill = GetBattleMonsterUltimateSkill(monster.id, monsterLevel);
@@ -72,11 +78,13 @@ public partial class BattleDataProcessor {
         battleMonster.isDead = isDead;
         if (currentHp >= 0) battleMonster.currentHp = currentHp;
         if (baseSpeed >= 0) battleMonster.baseSpeed = baseSpeed;
+        if (baseAttack >= 0) battleMonster.baseAttack = baseAttack;
 
         return battleMonster;
     }
 
-    private void TestSetEnemyBattleMonsterList(int waveCount) {
+    private void TestSetEnemyBattleMonsterList(int waveCount)
+    {
         var waveIndex = waveCount - 1;
         enemyBattleMonsterList = testEnemyBattleMonsterListByWave[waveIndex];
     }
