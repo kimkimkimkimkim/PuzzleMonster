@@ -175,8 +175,8 @@ public partial class BattleDataProcessor
         var afterBattleLog = battleLogList.FirstOrDefault(l => l.type == BattleLogType.TakeBattleConditionRemoveAfter && l.skillGuid == skillGuid && l.skillEffectIndex == skillEffectIndex);
         if (beforeBattleLog == null || afterBattleLog == null) return 0;
 
-        var beforeBeDoneMonterData = beforeBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex == beDoneBattleMonster.index);
-        var afterBeDoneMonterData = afterBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex == beDoneBattleMonster.index);
+        var beforeBeDoneMonterData = beforeBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex.IsSame(beDoneBattleMonster.index));
+        var afterBeDoneMonterData = afterBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex.IsSame(beDoneBattleMonster.index));
         if (beforeBeDoneMonterData == null || afterBeDoneMonterData == null) return 0;
 
         var removedBattleConditionList = beforeBeDoneMonterData.battleConditionList

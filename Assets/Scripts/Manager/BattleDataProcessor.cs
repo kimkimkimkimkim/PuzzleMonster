@@ -521,7 +521,7 @@ public partial class BattleDataProcessor
         if (!beDoneMonsterIndexList.Any()) return;
 
         var allMonsterList = GetAllMonsterList();
-        var beDoneMonsterList = allMonsterList.Where(m => beDoneMonsterIndexList.Any(index => index.isPlayer == m.index.isPlayer && index.index == m.index.index)).ToList();
+        var beDoneMonsterList = allMonsterList.Where(m => beDoneMonsterIndexList.Any(index => index.IsSame(m.index))).ToList();
 
         // スキル効果ログの差し込み
         AddStartSkillEffectLog(doMonsterIndex, skillGuid, actionType, skillEffectIndex, beDoneMonsterIndexList, battleCondition);
@@ -781,11 +781,12 @@ public partial class BattleDataProcessor
     {
         var battleConditionMB = battleConditionList.First(m => m.id == skillEffect.battleConditionId);
 
-        var beforeBeDoneMonsterDataList = beDoneMonsterList.Clone()
+        var beforeBeDoneMonsterDataList = beDoneMonsterList
             .Select(battleMonster => new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonster.index, battleConditionList = battleMonster.battleConditionList })
-            .ToList();
+            .ToList()
+            .Clone();
 
-        var beDoneMonsterDataList = beDoneMonsterList.Clone()
+        var beDoneMonsterDataList = beDoneMonsterList
             .Where(battleMonster =>
             {
                 var isRemoved = false;
@@ -805,7 +806,8 @@ public partial class BattleDataProcessor
                 return isRemoved;
             })
             .Select(battleMonster => new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonster.index, battleConditionList = battleMonster.battleConditionList })
-            .ToList();
+            .ToList()
+            .Clone();
 
         if (beDoneMonsterDataList.Any())
         {

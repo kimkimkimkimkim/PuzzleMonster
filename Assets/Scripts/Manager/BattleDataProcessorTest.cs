@@ -32,31 +32,23 @@ public partial class BattleDataProcessor
     /// </summary>
     public List<BattleLogInfo> TestStart(List<BattleMonsterInfo> playerBattleMonsterList, List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave, int loopNum = 1)
     {
-        try
+        // テスト用の初期設定
+        isTest = true;
+        testEnemyBattleMonsterListByWave = enemyBattleMonsterListByWave;
+
+        // モンスターリストをテスト用に加工
+        var waveIndex = currentWaveCount - 1;
+        this.playerBattleMonsterList = playerBattleMonsterList;
+        this.enemyBattleMonsterList = enemyBattleMonsterListByWave[waveIndex];
+
+        // バトル処理開始
+        for (var i = 0; i < loopNum; i++)
         {
-            // テスト用の初期設定
-            isTest = true;
-            testEnemyBattleMonsterListByWave = enemyBattleMonsterListByWave;
-
-            // モンスターリストをテスト用に加工
-            var waveIndex = currentWaveCount - 1;
-            this.playerBattleMonsterList = playerBattleMonsterList;
-            this.enemyBattleMonsterList = enemyBattleMonsterListByWave[waveIndex];
-
-            // バトル処理開始
-            for (var i = 0; i < loopNum; i++)
-            {
-                PlayLoop();
-            }
-
-            // ログを出力
-            return battleLogList;
+            PlayLoop();
         }
-        catch (System.Exception e)
-        {
-            UnityEngine.Debug.LogError(Newtonsoft.Json.JsonConvert.SerializeObject(e, Newtonsoft.Json.Formatting.Indented));
-            return new List<BattleLogInfo>();
-        }
+
+        // ログを出力
+        return battleLogList;
     }
 
     public BattleMonsterInfo TestGetBattleMonster(

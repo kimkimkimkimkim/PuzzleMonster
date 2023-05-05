@@ -247,31 +247,33 @@ public static class BattleTest
     /// </summary>
     private static bool CheckBattleConditionRemoveOnly(List<BattleLogInfo> battleLogList, BattleMonsterIndex beDoneMonsterIndex, long battleConditionId, out string logText)
     {
-        var beforeBattleLog = battleLogList.FirstOrDefault(l => l.type == BattleLogType.TakeBattleConditionRemoveBefore && l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex)));
-        var afterBattleLog = battleLogList.FirstOrDefault(l => l.type == BattleLogType.TakeBattleConditionRemoveAfter && l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex)));
-        if (beforeBattleLog == null || afterBattleLog == null)
-        {
-            logText = "";
-            return false;
-        }
+        var beforeBattleLogList = battleLogList.Where(l => l.type == BattleLogType.TakeBattleConditionRemoveBefore && l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex))).ToList();
+        var afterBattleLogList = battleLogList.Where(l => l.type == BattleLogType.TakeBattleConditionRemoveAfter && l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex))).ToList();
 
-        var beforeBeDoneMonterData = beforeBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex == beDoneMonsterIndex);
-        var afterBeDoneMonterData = afterBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex == beDoneMonsterIndex);
-        if (beforeBeDoneMonterData == null || afterBeDoneMonterData == null)
+        var targetLog = beforeBattleLogList.Select((log, index) => (log, index)).Where(data =>
         {
-            logText = "";
-            return false;
-        }
+            var beforeBattleLog = data.log;
+            var afterBattleLog = afterBattleLogList[data.index];
 
-        logText = GetBattleLogText(afterBattleLog);
-        var removedBattleConditionList = beforeBeDoneMonterData.battleConditionList
-            .Where(beforeC =>
+            var beforeBeDoneMonterData = beforeBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex.IsSame(beDoneMonsterIndex));
+            var afterBeDoneMonterData = afterBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex.IsSame(beDoneMonsterIndex));
+            if (beforeBeDoneMonterData == null || afterBeDoneMonterData == null)
             {
-                // 解除後状態異常リストに存在しないものだけに絞り込む
-                return !afterBeDoneMonterData.battleConditionList.Any(afterC => afterC.guid == beforeC.guid);
-            })
-            .ToList();
-        return removedBattleConditionList.All(c => c.battleConditionId == battleConditionId);
+                return false;
+            }
+
+            var removedBattleConditionList = beforeBeDoneMonterData.battleConditionList
+                .Where(beforeC =>
+                {
+                    // 解除後状態異常リストに存在しないものだけに絞り込む
+                    return !afterBeDoneMonterData.battleConditionList.Any(afterC => afterC.guid == beforeC.guid);
+                })
+                .ToList();
+            return removedBattleConditionList.All(c => c.battleConditionId == battleConditionId);
+        }).Select(d => d.log).FirstOrDefault();
+
+        logText = targetLog == null ? "" : GetBattleLogText(targetLog);
+        return targetLog != null;
     }
 
     /// <summary>
