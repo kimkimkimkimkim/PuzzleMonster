@@ -206,12 +206,12 @@ public partial class BattleDataProcessor
                 // アクション開始
                 GetSkillEffectListOneShot.Start();
                 GetSkillEffectListTotal.Start();
-                var skillEffectList = GetSkillEffectList(actionMonsterIndex, actionType);
+                var battleSkillEffectList = GetSkillEffectList(actionMonsterIndex, actionType).Select(m => new BattleSkillEffectMI() { isActive = true, skillEffect = m }).ToList();
                 ConsoleStopwatch("GetSkillEffectList", GetSkillEffectListOneShot, GetSkillEffectListTotal);
 
                 StartActionStreamOneShot.Start();
                 StartActionStreamTotal.Start();
-                StartActionStream(actionMonsterIndex, actionType, null, skillEffectList, "", -1);
+                StartActionStream(actionMonsterIndex, actionType, null, battleSkillEffectList, "", -1);
                 ConsoleStopwatch("StartActionStream", StartActionStreamOneShot, StartActionStreamTotal);
             }
             else
@@ -323,7 +323,7 @@ public partial class BattleDataProcessor
     private Stopwatch ExecuteTriggerSkillIfNeededEveryTimeEndTotal = new Stopwatch();
 
     // アクション実行者とアクション内容を受け取りアクションを実行する
-    private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, BattleConditionInfo battleCondition, List<SkillEffectMI> skillEffectList, string triggerSkillGuid, int triggerSkillEffectIndex)
+    private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, BattleConditionInfo battleCondition, List<BattleSkillEffectMI> battleSkillEffectList, string triggerSkillGuid, int triggerSkillEffectIndex)
     {
         // アクションを開始する
         StartActionOneShot.Start();
@@ -333,34 +333,39 @@ public partial class BattleDataProcessor
 
         // 各効果の実行
         var skillGuid = Guid.NewGuid().ToString();
-        skillEffectList.ForEach((skillEffect, index) =>
+        battleSkillEffectList.ForEach((battleSkillEffect, index) =>
         {
-            // スキル効果の発動確率判定
-            // 発動確率が0の場合は直前のスキル効果要素の発動状態を参照
-            var isExecutedBeforeEffect = battleLogList.Where(l => l.skillGuid == skillGuid && l.skillEffectIndex == index - 1).Any(log => log.type == BattleLogType.StartSkillEffect);
-            var isExecute = (skillEffect.activateProbability > 0 && ExecuteProbability(skillEffect.activateProbability)) || (skillEffect.activateProbability <= 0 && isExecutedBeforeEffect);
-
-            if (isExecute)
+            if (battleSkillEffect.isActive)
             {
-                // アクションの対象を選択する
-                GetBeDoneMonsterIndexListOneShot.Start();
-                GetBeDoneMonsterIndexListTotal.Start();
-                var beDoneMonsterIndexList = GetBeDoneMonsterIndexList(actionMonsterIndex, skillEffect, skillGuid, index, actionType, battleCondition, triggerSkillGuid, triggerSkillEffectIndex);
-                ConsoleStopwatch("GetBeDoneMonsterIndexList", GetBeDoneMonsterIndexListOneShot, GetBeDoneMonsterIndexListTotal);
+                var skillEffect = battleSkillEffect.skillEffect;
 
-                // アクション処理を実行する
-                ExecuteActionOneShot.Start();
-                ExecuteActionTotal.Start();
-                ExecuteAction(actionMonsterIndex, actionType, beDoneMonsterIndexList, skillGuid, skillEffect, index, battleCondition);
-                ConsoleStopwatch("", ExecuteActionOneShot, ExecuteActionTotal);
-            }
-            else
-            {
-                // 確率による失敗ログの追加
-                AddSkillEffectFailedOfProbabilityMissLogOneShot.Start();
-                AddSkillEffectFailedOfProbabilityMissLogTotal.Start();
-                AddSkillEffectFailedOfProbabilityMissLog(actionMonsterIndex, actionType, index, null);
-                ConsoleStopwatch("AddSkillEffectFailedOfProbabilityMissLog", AddSkillEffectFailedOfProbabilityMissLogOneShot, AddSkillEffectFailedOfProbabilityMissLogTotal);
+                // スキル効果の発動確率判定
+                // 発動確率が0の場合は直前のスキル効果要素の発動状態を参照
+                var isExecutedBeforeEffect = battleLogList.Where(l => l.skillGuid == skillGuid && l.skillEffectIndex == index - 1).Any(log => log.type == BattleLogType.StartSkillEffect);
+                var isExecute = (skillEffect.activateProbability > 0 && ExecuteProbability(skillEffect.activateProbability)) || (skillEffect.activateProbability <= 0 && isExecutedBeforeEffect);
+
+                if (isExecute)
+                {
+                    // アクションの対象を選択する
+                    GetBeDoneMonsterIndexListOneShot.Start();
+                    GetBeDoneMonsterIndexListTotal.Start();
+                    var beDoneMonsterIndexList = GetBeDoneMonsterIndexList(actionMonsterIndex, skillEffect, skillGuid, index, actionType, battleCondition, triggerSkillGuid, triggerSkillEffectIndex);
+                    ConsoleStopwatch("GetBeDoneMonsterIndexList", GetBeDoneMonsterIndexListOneShot, GetBeDoneMonsterIndexListTotal);
+
+                    // アクション処理を実行する
+                    ExecuteActionOneShot.Start();
+                    ExecuteActionTotal.Start();
+                    ExecuteAction(actionMonsterIndex, actionType, beDoneMonsterIndexList, skillGuid, skillEffect, index, battleCondition);
+                    ConsoleStopwatch("", ExecuteActionOneShot, ExecuteActionTotal);
+                }
+                else
+                {
+                    // 確率による失敗ログの追加
+                    AddSkillEffectFailedOfProbabilityMissLogOneShot.Start();
+                    AddSkillEffectFailedOfProbabilityMissLogTotal.Start();
+                    AddSkillEffectFailedOfProbabilityMissLog(actionMonsterIndex, actionType, index, null);
+                    ConsoleStopwatch("AddSkillEffectFailedOfProbabilityMissLog", AddSkillEffectFailedOfProbabilityMissLogOneShot, AddSkillEffectFailedOfProbabilityMissLogTotal);
+                }
             }
         });
 
@@ -438,20 +443,20 @@ public partial class BattleDataProcessor
         if (!isRemoved) return;
 
         // 状態異常解除前ログの差し込み
-        AddTakeBattleConditionRemoveBeforeLog(beDoneBattleMonsterDataList, "", BattleActionType.ProgressBattleConditionTurn, 0);
+        AddTakeBattleConditionRemoveBeforeLog(beDoneBattleMonsterDataList.Clone(), "", BattleActionType.ProgressBattleConditionTurn, 0);
 
         // ターンが切れている状態異常を削除する
         while (battleMonster.battleConditionList.Any(battleCondition => battleCondition.remainingTurnNum == 0))
         {
-            var order = battleMonster.battleConditionList.First(battleCondition => battleCondition.remainingTurnNum == 0).order;
-            RemoveBattleCondition(battleMonster.index, order);
+            var guid = battleMonster.battleConditionList.First(battleCondition => battleCondition.remainingTurnNum == 0).guid;
+            RemoveBattleCondition(battleMonster.index, guid);
         }
 
         battleMonster = GetBattleMonster(battleMonsterIndex);
         beDoneBattleMonsterDataList = new List<BeDoneBattleMonsterData>() { new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonsterIndex, battleConditionList = battleMonster.battleConditionList } };
 
         // 状態異常解除後ログの差し込み
-        AddTakeBattleConditionRemoveAfterLog(beDoneBattleMonsterDataList, "", BattleActionType.ProgressBattleConditionTurn, 0);
+        AddTakeBattleConditionRemoveAfterLog(beDoneBattleMonsterDataList.Clone(), "", BattleActionType.ProgressBattleConditionTurn, 0);
     }
 
     /// <summary>
@@ -506,9 +511,13 @@ public partial class BattleDataProcessor
         AddStartActionAnimationLog(monsterIndex, actionType, battleCondition);
     }
 
-    private void ExecuteAction(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterIndex> beDoneMonsterIndexList, string skillGuid, SkillEffectMI skillEffect, int skillEffectIndex, BattleConditionInfo battleCondition)
+    private void ExecuteAction(BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterIndexDataSet> beDoneMonsterIndexDataSetList, string skillGuid, SkillEffectMI skillEffect, int skillEffectIndex, BattleConditionInfo battleCondition)
     {
+        // スキル対象決定ログの差し込み
+        AddSetSkillTargetLog(doMonsterIndex, skillGuid, actionType, skillEffectIndex, beDoneMonsterIndexDataSetList.Select(d => d.battleMonsterIndex).ToList(), battleCondition);
+
         // 対象モンスターが存在しない場合はなにもしない
+        var beDoneMonsterIndexList = beDoneMonsterIndexDataSetList.Where(d => d.isSkillTarget).Select(d => d.battleMonsterIndex).ToList();
         if (!beDoneMonsterIndexList.Any()) return;
 
         var allMonsterList = GetAllMonsterList();
@@ -554,7 +563,7 @@ public partial class BattleDataProcessor
                 break;
 
             case SkillType.Damage:
-                ExecuteAttack(doMonsterIndex, actionType, beDoneMonsterList, skillEffect, skillGuid, skillEffectIndex, battleCondition);
+                ExecuteDamage(SkillType.Damage, doMonsterIndex, actionType, beDoneMonsterList, skillEffect, skillGuid, skillEffectIndex, battleCondition);
                 break;
 
             default:
@@ -567,6 +576,11 @@ public partial class BattleDataProcessor
         // アタックアニメーションを実行
         StartActionAnimation(doMonsterIndex, actionType, battleCondition);
 
+        ExecuteDamage(SkillType.Attack, doMonsterIndex, actionType, beDoneMonsterList, skillEffect, skillGuid, skillEffectIndex, battleCondition);
+    }
+
+    private void ExecuteDamage(SkillType skilType, BattleMonsterIndex doMonsterIndex, BattleActionType actionType, List<BattleMonsterInfo> beDoneMonsterList, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex, BattleConditionInfo battleCondition)
+    {
         // スキル効果処理
         var beDoneMonsterDataList = beDoneMonsterList.Select(m =>
         {
@@ -580,7 +594,7 @@ public partial class BattleDataProcessor
             var effectValue = m.ChangeHp(actionValue.value);
 
             // スコア計算
-            AddScore(doMonsterIndex, m.index, SkillType.Attack, effectValue);
+            AddScore(doMonsterIndex, m.index, skilType, effectValue);
 
             // エネルギーを上昇させる
             if (actionType != BattleActionType.BattleCondition) m.ChangeEnergy(ConstManager.Battle.ENERGY_RISE_VALUE_ON_TAKE_DAMAGE);
@@ -646,14 +660,14 @@ public partial class BattleDataProcessor
 
         if (skillEffect.type == SkillType.Attack)
         {
-            // 自身以外から攻撃された時
-            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAttacked, beDoneBattleMonsterIndexWithoutDoMonsterList, 0, doMonsterIndex, actionType, 0, skillGuid, skillEffectIndex);
-
             // 自身以外から特定状態異常の相手に攻撃されたとき
             GetBattleMonster(doMonsterIndex).battleConditionList.ForEach(c =>
             {
                 ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAttackedBattleCondition, beDoneBattleMonsterIndexWithoutDoMonsterList, (int)c.battleConditionId, doMonsterIndex, actionType, 0, skillGuid, skillEffectIndex);
             });
+
+            // 自身以外から攻撃された時
+            ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAttacked, beDoneBattleMonsterIndexWithoutDoMonsterList, 0, doMonsterIndex, actionType, 0, skillGuid, skillEffectIndex);
         }
 
         // 自身以外からの特定ステータスの高低によるトリガー
@@ -767,25 +781,25 @@ public partial class BattleDataProcessor
     {
         var battleConditionMB = battleConditionList.First(m => m.id == skillEffect.battleConditionId);
 
-        var beforeBeDoneMonsterDataList = beDoneMonsterList
+        var beforeBeDoneMonsterDataList = beDoneMonsterList.Clone()
             .Select(battleMonster => new BeDoneBattleMonsterData() { battleMonsterIndex = battleMonster.index, battleConditionList = battleMonster.battleConditionList })
             .ToList();
 
-        var beDoneMonsterDataList = beDoneMonsterList
+        var beDoneMonsterDataList = beDoneMonsterList.Clone()
             .Where(battleMonster =>
             {
                 var isRemoved = false;
 
-                var battleConditionMaster = battleMonster.battleConditionList.OrderBy(c => c.order).FirstOrDefault(c => c.grantorSkillEffect.battleConditionId == skillEffect.battleConditionId && c.grantorSkillEffect.canRemove);
+                var battleConditionInfo = battleMonster.battleConditionList.OrderBy(c => c.order).FirstOrDefault(c => c.grantorSkillEffect.battleConditionId == skillEffect.battleConditionId && c.grantorSkillEffect.canRemove);
                 var isAll = skillEffect.removeBattleConsitionNum == 0;
                 var count = 0;
-                while ((isAll && battleConditionMaster != null) || (battleConditionMaster != null && count < skillEffect.removeBattleConsitionNum))
+                while (((isAll && battleConditionInfo != null) || (battleConditionInfo != null && count < skillEffect.removeBattleConsitionNum)) && count <= 20)
                 {
-                    RemoveBattleCondition(battleMonster.index, battleConditionMaster.order);
+                    RemoveBattleCondition(battleMonster.index, battleConditionInfo.guid);
 
                     isRemoved = true;
                     count++;
-                    battleConditionMaster = battleMonster.battleConditionList.OrderBy(c => c.order).FirstOrDefault(c => c.grantorSkillEffect.battleConditionId == skillEffect.battleConditionId && c.grantorSkillEffect.canRemove);
+                    battleConditionInfo = GetBattleMonster(battleMonster.index).battleConditionList.OrderBy(c => c.order).FirstOrDefault(c => c.grantorSkillEffect.battleConditionId == skillEffect.battleConditionId && c.grantorSkillEffect.canRemove);
                 }
 
                 return isRemoved;
@@ -1162,16 +1176,17 @@ public partial class BattleDataProcessor
 
     /// <summary>
     /// 状態異常を解除する
+    /// guidでは特定できないからorderで
     /// </summary>
-    private void RemoveBattleCondition(BattleMonsterIndex battleMonsterIndex, int order)
+    private void RemoveBattleCondition(BattleMonsterIndex battleMonsterIndex, string guid)
     {
         var battleMonster = GetBattleMonster(battleMonsterIndex);
 
         // 状態異常を解除する
-        battleMonster.battleConditionList = battleMonster.battleConditionList.Where(c => !c.grantorSkillEffect.canRemove || c.order != order).ToList();
+        battleMonster.battleConditionList = battleMonster.battleConditionList.Where(c => !c.grantorSkillEffect.canRemove || c.guid != guid).ToList();
 
         // 順序情報を更新する
-        battleMonster.battleConditionList.ForEach(c => { if (c.order > order) c.order--; });
+        battleMonster.battleConditionList.OrderBy(c => c.order).ForEach((c, index) => c.order = index + 1);
     }
 
     private List<BattleMonsterInfo> GetAllMonsterList()
@@ -1234,7 +1249,7 @@ public partial class BattleDataProcessor
         }
     }
 
-    private List<BattleMonsterIndex> GetBeDoneMonsterIndexList(BattleMonsterIndex doMonsterIndex, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex, BattleActionType actionType, BattleConditionInfo battleCondition, string triggerSkillGuid = "", int triggerSkillEffectIndex = -1)
+    private List<BattleMonsterIndexDataSet> GetBeDoneMonsterIndexList(BattleMonsterIndex doMonsterIndex, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex, BattleActionType actionType, BattleConditionInfo battleCondition, string triggerSkillGuid = "", int triggerSkillEffectIndex = -1)
     {
         var isDoMonsterPlayer = doMonsterIndex.isPlayer;
         var battleConditionId = battleCondition != null ? battleCondition.battleConditionId : 0;
@@ -1247,7 +1262,7 @@ public partial class BattleDataProcessor
         switch (skillEffect.skillTargetType)
         {
             case SkillTargetType.Myself:
-                battleMonsterIndexList = allyBattleMonsterList.Where(m => m.index.isPlayer == doMonsterIndex.isPlayer && m.index.index == doMonsterIndex.index).Select(b => b.index).ToList();
+                battleMonsterIndexList = allyBattleMonsterList.Where(m => m.index.IsSame(doMonsterIndex)).Select(b => b.index).ToList();
                 break;
 
             case SkillTargetType.AllyAll:
@@ -1306,13 +1321,18 @@ public partial class BattleDataProcessor
 
             case SkillTargetType.BeAttacked:
                 {
-                    var targetLog = battleLogList.FirstOrDefault(log => log.skillGuid == triggerSkillGuid && log.skillEffectIndex == triggerSkillEffectIndex);
+                    // 実際に攻撃したモンスターを取得するときはStartSkillEffectを参照する
+                    var targetLog = battleLogList.FirstOrDefault(log => log.type == BattleLogType.StartSkillEffect && log.skillGuid == triggerSkillGuid && log.skillEffectIndex == triggerSkillEffectIndex);
                     if (targetLog != null)
                     {
-                        battleMonsterIndexList = targetLog.beDoneBattleMonsterDataList
-                            .Select(data => data.battleMonsterIndex)
-                            .Where(battleIndex => IsValidActivateCondition(battleIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue, battleConditionId))
-                            .ToList();
+                        return targetLog.beDoneBattleMonsterDataList.Select(d =>
+                        {
+                            return new BattleMonsterIndexDataSet()
+                            {
+                                isSkillTarget = IsValidActivateCondition(d.battleMonsterIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue, battleConditionId),
+                                battleMonsterIndex = d.battleMonsterIndex,
+                            };
+                        }).ToList();
                     }
                     break;
                 }
@@ -1386,8 +1406,18 @@ public partial class BattleDataProcessor
 
             case SkillTargetType.JustBeforeElementTarget:
                 {
-                    var targetLog = battleLogList.FirstOrDefault(log => log.skillGuid == skillGuid && log.skillEffectIndex == skillEffectIndex - 1);
-                    if (targetLog != null) battleMonsterIndexList = targetLog.beDoneBattleMonsterDataList.Select(d => d.battleMonsterIndex).ToList();
+                    var targetLog = battleLogList.FirstOrDefault(log => log.type == BattleLogType.SetSkillTarget && log.skillGuid == skillGuid && log.skillEffectIndex == skillEffectIndex - 1);
+                    if (targetLog != null)
+                    {
+                        return targetLog.beDoneBattleMonsterDataList.Select(d =>
+                        {
+                            return new BattleMonsterIndexDataSet()
+                            {
+                                isSkillTarget = IsValidActivateCondition(d.battleMonsterIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue, battleConditionId),
+                                battleMonsterIndex = d.battleMonsterIndex,
+                            };
+                        }).ToList();
+                    }
                     break;
                 }
             case SkillTargetType.AllyFrontRandom1:
@@ -1474,8 +1504,18 @@ public partial class BattleDataProcessor
                 {
                     // すでに対象にしたモンスター
                     // リストの一番最初の要素の効果の対象
-                    var targetLog = battleLogList.FirstOrDefault(log => log.skillGuid == skillGuid && log.skillEffectIndex == 0);
-                    if (targetLog != null) battleMonsterIndexList = targetLog.beDoneBattleMonsterDataList.Select(d => d.battleMonsterIndex).ToList();
+                    var targetLog = battleLogList.FirstOrDefault(log => log.type == BattleLogType.SetSkillTarget && log.skillGuid == skillGuid && log.skillEffectIndex == 0);
+                    if (targetLog != null)
+                    {
+                        return targetLog.beDoneBattleMonsterDataList.Select(d =>
+                        {
+                            return new BattleMonsterIndexDataSet()
+                            {
+                                isSkillTarget = IsValidActivateCondition(d.battleMonsterIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue, battleConditionId),
+                                battleMonsterIndex = d.battleMonsterIndex,
+                            };
+                        }).ToList();
+                    }
                     break;
                 }
             case SkillTargetType.JustBeforeElementTargetOnlySuccess:
@@ -1483,8 +1523,18 @@ public partial class BattleDataProcessor
                     // すでに対象にしたモンスター
                     // リストの直前の要素の効果の対象
                     // その要素の効果が成功した時のみ
-                    var targetLog = battleLogList.FirstOrDefault(log => log.skillGuid == skillGuid && log.skillEffectIndex == skillEffectIndex - 1);
-                    if (targetLog != null) battleMonsterIndexList = targetLog.beDoneBattleMonsterDataList.Where(d => !d.isMissed).Select(d => d.battleMonsterIndex).ToList();
+                    var targetLog = battleLogList.FirstOrDefault(log => log.type == BattleLogType.StartSkillEffect && log.skillGuid == skillGuid && log.skillEffectIndex == skillEffectIndex - 1);
+                    if (targetLog != null)
+                    {
+                        return targetLog.beDoneBattleMonsterDataList.Select(d =>
+                        {
+                            return new BattleMonsterIndexDataSet()
+                            {
+                                isSkillTarget = !d.isMissed && IsValidActivateCondition(d.battleMonsterIndex, skillEffect.activateConditionType, skillEffect.activateConditionValue, battleConditionId),
+                                battleMonsterIndex = d.battleMonsterIndex,
+                            };
+                        }).ToList();
+                    }
                     break;
                 }
             case SkillTargetType.None:
@@ -1492,7 +1542,11 @@ public partial class BattleDataProcessor
                 battleMonsterIndexList = new List<BattleMonsterIndex>();
                 break;
         }
-        return battleMonsterIndexList;
+        return battleMonsterIndexList.Select(i => new BattleMonsterIndexDataSet()
+        {
+            isSkillTarget = true,
+            battleMonsterIndex = i,
+        }).ToList();
     }
 
     private bool ExecuteProbability(int activateProbability)

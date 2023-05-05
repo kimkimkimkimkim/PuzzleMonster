@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using System.Linq;
 
 public partial class BattleDataProcessor
@@ -8,7 +8,7 @@ public partial class BattleDataProcessor
 
     public void TestInit(int currentWaveCount = 1, int currentTurnCount = 1)
     {
-        // BattleDataProcessor‚Å‚ÍlimitTurnNum‚ÆquestMonsterListByWave‚µ‚©g—p‚µ‚Ä‚¢‚È‚¢
+        // BattleDataProcessorã§ã¯limitTurnNumã¨questMonsterListByWaveã—ã‹ä½¿ç”¨ã—ã¦ã„ãªã„
         quest = new QuestMB()
         {
             limitTurnNum = 99,
@@ -20,7 +20,7 @@ public partial class BattleDataProcessor
             },
         };
 
-        // ‰Šúİ’è
+        // åˆæœŸè¨­å®š
         Init(new List<UserMonsterInfo>(), quest);
 
         this.currentWaveCount = currentWaveCount;
@@ -28,27 +28,35 @@ public partial class BattleDataProcessor
     }
 
     /// <summary>
-    /// ƒeƒXƒg‚ğŠJn‚µƒƒO‚ğ•Ô‚·
+    /// ãƒ†ã‚¹ãƒˆã‚’é–‹å§‹ã—ãƒ­ã‚°ã‚’è¿”ã™
     /// </summary>
     public List<BattleLogInfo> TestStart(List<BattleMonsterInfo> playerBattleMonsterList, List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave, int loopNum = 1)
     {
-        // ƒeƒXƒg—p‚Ì‰Šúİ’è
-        isTest = true;
-        testEnemyBattleMonsterListByWave = enemyBattleMonsterListByWave;
-
-        // ƒ‚ƒ“ƒXƒ^[ƒŠƒXƒg‚ğƒeƒXƒg—p‚É‰ÁH
-        var waveIndex = currentWaveCount - 1;
-        this.playerBattleMonsterList = playerBattleMonsterList;
-        this.enemyBattleMonsterList = enemyBattleMonsterListByWave[waveIndex];
-
-        // ƒoƒgƒ‹ˆ—ŠJn
-        for (var i = 0; i < loopNum; i++)
+        try
         {
-            PlayLoop();
-        }
+            // ãƒ†ã‚¹ãƒˆç”¨ã®åˆæœŸè¨­å®š
+            isTest = true;
+            testEnemyBattleMonsterListByWave = enemyBattleMonsterListByWave;
 
-        // ƒƒO‚ğo—Í
-        return battleLogList;
+            // ãƒ¢ãƒ³ã‚¹ã‚¿ãƒ¼ãƒªã‚¹ãƒˆã‚’ãƒ†ã‚¹ãƒˆç”¨ã«åŠ å·¥
+            var waveIndex = currentWaveCount - 1;
+            this.playerBattleMonsterList = playerBattleMonsterList;
+            this.enemyBattleMonsterList = enemyBattleMonsterListByWave[waveIndex];
+
+            // ãƒãƒˆãƒ«å‡¦ç†é–‹å§‹
+            for (var i = 0; i < loopNum; i++)
+            {
+                PlayLoop();
+            }
+
+            // ãƒ­ã‚°ã‚’å‡ºåŠ›
+            return battleLogList;
+        }
+        catch (System.Exception e)
+        {
+            UnityEngine.Debug.LogError(Newtonsoft.Json.JsonConvert.SerializeObject(e, Newtonsoft.Json.Formatting.Indented));
+            return new List<BattleLogInfo>();
+        }
     }
 
     public BattleMonsterInfo TestGetBattleMonster(

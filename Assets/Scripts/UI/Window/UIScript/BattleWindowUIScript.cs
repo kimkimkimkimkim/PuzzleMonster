@@ -127,7 +127,7 @@ public class BattleWindowUIScript : DummyWindowBase
         SetTurnText(battleLog.turnCount);
 
         // Log
-        _logText.text = $"{battleLogIndex}/{battleLogList.Count}\n{battleLog.log}";
+        _logText.text = $"{battleLogIndex}/{battleLogList.Count - 1}\n{battleLog.type}\n{battleLog.log}";
 
         // PlayerMonster
         _playerMonsterBaseList.ForEach(monsterBase =>

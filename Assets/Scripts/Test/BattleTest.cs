@@ -104,9 +104,9 @@ public static class BattleTest
             };
             var battleConditionList = new List<BattleConditionInfo>()
             {
-                GetBattleConditionInfo(63,3,500),
-                GetBattleConditionInfo(63,5,500),
-                GetBattleConditionInfo(65,3,500),
+                GetBattleConditionInfo(63,3,500,1),
+                GetBattleConditionInfo(63,5,500,2),
+                GetBattleConditionInfo(65,3,500,3),
             };
             enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>() {
                 new List<BattleMonsterInfo>() {
@@ -116,9 +116,8 @@ public static class BattleTest
             };
             battleLogList = battleDataProcessor.TestStart(playerBattleMonsterList, enemyBattleMonsterListByWave, 1);
             var text = Newtonsoft.Json.JsonConvert.SerializeObject(battleLogList, Newtonsoft.Json.Formatting.Indented);
-            ErrorIf(monsterId, battleActionType, "状態異常が解除されたか", CheckBattleConditionRemove(battleLogList, enemyBattleMonsterListByWave[0][0].index, out logText), logText, battleLogList);
-            ErrorIf(monsterId, battleActionType, "状態異常が解除されたか", CheckBattleConditionRemove(battleLogList, enemyBattleMonsterListByWave[0][1].index, out logText), logText, battleLogList);
-            ErrorIf(monsterId, battleActionType, "すべての対象状態異常が解除されたか", battleLogList.Last().enemyBattleMonsterList.All(b => !b.battleConditionList.Any(c => c.battleConditionId == 63 || c.battleConditionId == 65)), GetBattleLogText(battleLogList.Last()), battleLogList);
+            ErrorIf(monsterId, battleActionType, "燃焼状態のみが解除されたか", CheckBattleConditionRemoveOnly(battleLogList, enemyBattleMonsterListByWave[0][0].index, 63, out logText), logText, battleLogList);
+            ErrorIf(monsterId, battleActionType, "出血状態のみが解除されたか", CheckBattleConditionRemoveOnly(battleLogList, enemyBattleMonsterListByWave[0][1].index, 65, out logText), logText, battleLogList);
             ErrorIf(monsterId, battleActionType, "状態異常解除時ダメージを与えているか", CheckTakeDamage(battleLogList, playerBattleMonsterList[0].index, enemyBattleMonsterListByWave[0][1].index, out logText, skillEffectIndex: 3), logText, battleLogList);
         }
         catch (Exception e)
@@ -128,12 +127,13 @@ public static class BattleTest
         }
     }
 
-    private static BattleConditionInfo GetBattleConditionInfo(long battleConditionId, int remainingTurnNum, int actionValue)
+    private static BattleConditionInfo GetBattleConditionInfo(long battleConditionId, int remainingTurnNum, int actionValue, int order)
     {
         var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(battleConditionId);
 
         return new BattleConditionInfo()
         {
+            guid = Guid.NewGuid().ToString(),
             battleConditionId = battleConditionId,
             remainingTurnNum = remainingTurnNum,
             actionValue = actionValue,
@@ -143,6 +143,7 @@ public static class BattleTest
                 battleConditionId = battleConditionId,
                 canRemove = true,
             },
+            order = order,
         };
     }
 
@@ -195,6 +196,10 @@ public static class BattleTest
             case BattleLogType.EndAction:
             // バトル結果アニメーション
             case BattleLogType.Result:
+            // スキル対象見る用
+            case BattleLogType.SetSkillTarget:
+            // index見る用
+            case BattleLogType.StartSkillEffect:
                 return true;
 
             default:
@@ -240,14 +245,33 @@ public static class BattleTest
     /// <summary>
     /// 状態異常が解除されているかどうかのチェック
     /// </summary>
-    private static bool CheckBattleConditionRemove(List<BattleLogInfo> battleLogList, BattleMonsterIndex beDoneMonsterIndex, out string logText)
+    private static bool CheckBattleConditionRemoveOnly(List<BattleLogInfo> battleLogList, BattleMonsterIndex beDoneMonsterIndex, long battleConditionId, out string logText)
     {
-        var battleLog = battleLogList
-            .Where(l => l.type == BattleLogType.TakeBattleConditionRemoveAfter)
-            .Where(l => l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex)))
-            .FirstOrDefault();
-        logText = GetBattleLogText(battleLog);
-        return battleLog != null;
+        var beforeBattleLog = battleLogList.FirstOrDefault(l => l.type == BattleLogType.TakeBattleConditionRemoveBefore && l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex)));
+        var afterBattleLog = battleLogList.FirstOrDefault(l => l.type == BattleLogType.TakeBattleConditionRemoveAfter && l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex)));
+        if (beforeBattleLog == null || afterBattleLog == null)
+        {
+            logText = "";
+            return false;
+        }
+
+        var beforeBeDoneMonterData = beforeBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex == beDoneMonsterIndex);
+        var afterBeDoneMonterData = afterBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex == beDoneMonsterIndex);
+        if (beforeBeDoneMonterData == null || afterBeDoneMonterData == null)
+        {
+            logText = "";
+            return false;
+        }
+
+        logText = GetBattleLogText(afterBattleLog);
+        var removedBattleConditionList = beforeBeDoneMonterData.battleConditionList
+            .Where(beforeC =>
+            {
+                // 解除後状態異常リストに存在しないものだけに絞り込む
+                return !afterBeDoneMonterData.battleConditionList.Any(afterC => afterC.guid == beforeC.guid);
+            })
+            .ToList();
+        return removedBattleConditionList.All(c => c.battleConditionId == battleConditionId);
     }
 
     /// <summary>

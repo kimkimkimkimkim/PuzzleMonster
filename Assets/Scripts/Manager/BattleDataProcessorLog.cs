@@ -207,6 +207,30 @@ public partial class BattleDataProcessor
     }
 
     /// <summary>
+    /// スキル対象決定ログの追加
+    /// スキルの成功可否によってはスキル効果が適用されないこともある
+    /// </summary>
+    private void AddSetSkillTargetLog(BattleMonsterIndex doMonsterIndex, string skillGuid, BattleActionType actionType, int skillEffectIndex, List<BattleMonsterIndex> beDoneMonsterIndexList, BattleConditionInfo battleCondition)
+    {
+        var battleMonster = GetBattleMonster(doMonsterIndex);
+        var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
+        var monster = monsterList.First(m => m.id == battleMonster.monsterId);
+        var skillName = GetSkillName(battleMonster, actionType, battleCondition);
+
+        var battleLog = GetDefaultLog();
+        battleLog.type = BattleLogType.SetSkillTarget;
+        battleLog.doBattleMonsterIndex = doMonsterIndex;
+        battleLog.skillGuid = skillGuid;
+        battleLog.skillEffectIndex = skillEffectIndex;
+        battleLog.actionType = actionType;
+        battleLog.beDoneBattleMonsterDataList = beDoneMonsterIndexList.Select(index => new BeDoneBattleMonsterData() { battleMonsterIndex = index }).ToList();
+        battleLog.battleCondition = battleCondition;
+        battleLog.log = $"{possess}{monster.name}[{doMonsterIndex.index}]が{skillName}のインデックス{skillEffectIndex}のスキル対象を決定";
+
+        battleLogList.Add(battleLog);
+    }
+
+    /// <summary>
     /// スキル効果開始ログの追加
     /// </summary>
     private void AddStartSkillEffectLog(BattleMonsterIndex doMonsterIndex, string skillGuid, BattleActionType actionType, int skillEffectIndex, List<BattleMonsterIndex> beDoneMonsterIndexList, BattleConditionInfo battleCondition)
@@ -220,6 +244,7 @@ public partial class BattleDataProcessor
         battleLog.type = BattleLogType.StartSkillEffect;
         battleLog.doBattleMonsterIndex = doMonsterIndex;
         battleLog.skillGuid = skillGuid;
+        battleLog.skillEffectIndex = skillEffectIndex;
         battleLog.actionType = actionType;
         battleLog.beDoneBattleMonsterDataList = beDoneMonsterIndexList.Select(index => new BeDoneBattleMonsterData() { battleMonsterIndex = index }).ToList();
         battleLog.battleCondition = battleCondition;
