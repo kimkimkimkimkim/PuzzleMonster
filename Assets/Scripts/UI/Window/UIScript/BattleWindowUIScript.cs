@@ -118,6 +118,30 @@ public class BattleWindowUIScript : DummyWindowBase
         RefreshUI(battleLogList[0]);
     }
 
+    private string GetSkillDescription(BattleLogInfo battleLog)
+    {
+        var playerBattleMonster = battleLog.playerBattleMonsterList.FirstOrDefault(b => battleLog.doBattleMonsterIndex != null && b.index.IsSame(battleLog.doBattleMonsterIndex));
+        var enemyBattleMonster = battleLog.enemyBattleMonsterList.FirstOrDefault(b => battleLog.doBattleMonsterIndex != null && b.index.IsSame(battleLog.doBattleMonsterIndex));
+        var targetBattleMonster = playerBattleMonster != null ? playerBattleMonster : enemyBattleMonster != null ? enemyBattleMonster : null;
+
+        if (targetBattleMonster == null) return "";
+
+        switch (battleLog.actionType)
+        {
+            case BattleActionType.NormalSkill:
+                return targetBattleMonster.normalSkill.description;
+
+            case BattleActionType.UltimateSkill:
+                return targetBattleMonster.ultimateSkill.description;
+
+            case BattleActionType.PassiveSkill:
+                return targetBattleMonster.passiveSkill.description;
+
+            default:
+                return "";
+        }
+    }
+
     public void RefreshUI(BattleLogInfo battleLog)
     {
         // Wave
@@ -126,8 +150,11 @@ public class BattleWindowUIScript : DummyWindowBase
         // Turn
         SetTurnText(battleLog.turnCount);
 
+        // Skill
+        var skillDescription = GetSkillDescription(battleLog);
+
         // Log
-        _logText.text = $"{battleLogIndex}/{battleLogList.Count - 1}\n{battleLog.type}\n{battleLog.log}";
+        _logText.text = $"{battleLogIndex}/{battleLogList.Count - 1}\n\n{battleLog.type}\n\n{battleLog.log}\n\n{skillDescription}";
 
         // PlayerMonster
         _playerMonsterBaseList.ForEach(monsterBase =>
@@ -173,6 +200,7 @@ public class BattleWindowUIScript : DummyWindowBase
                     item.shieldSlider.value = 0;
                     item.RefreshBattleCondition(new List<BattleConditionInfo>());
                     item.ShowGraveImage(true);
+                    item.ShowMonsterImage(false);
                 }
             }
         });
@@ -221,6 +249,7 @@ public class BattleWindowUIScript : DummyWindowBase
                     item.shieldSlider.value = 0;
                     item.RefreshBattleCondition(new List<BattleConditionInfo>());
                     item.ShowGraveImage(true);
+                    item.ShowMonsterImage(false);
                 }
             }
         });

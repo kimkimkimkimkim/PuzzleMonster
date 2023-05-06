@@ -310,7 +310,7 @@ public partial class BattleDataProcessor
 
     private float MonsterAttributeCompatibility(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster)
     {
-        const int MONSTER_ATTRIBUTE_COMPATIBILITY_RATE = 30;
+        const int MONSTER_ATTRIBUTE_COMPATIBILITY_RATE = 15;
         var doMonster = monsterList.First(m => m.id == doBattleMonster.monsterId);
         var beDoneMonster = monsterList.First(m => m.id == beDoneBattleMonster.monsterId);
 

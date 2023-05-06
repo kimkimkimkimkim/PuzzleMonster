@@ -34,17 +34,17 @@ public partial class BattleDataProcessor
         var targetBattleMonster = GetBattleMonster(battleMonsterIndex);
         var targetMonster = monsterList.First(m => m.id == targetBattleMonster.monsterId);
         var battleSkillEffectList = targetBattleMonster.passiveSkill.effectList
-            .Select(effect =>
+            .Select((effect, index) =>
             {
                 var isActive = false;
-                if (!IsValidActivateCondition(battleMonsterIndex, effect.activateConditionType, effect.activateConditionValue, 0))
+                if (!IsValidActivateCondition(targetBattleMonsterIndex, effect.activateConditionType, effect.activateConditionValue, 0))
                 {
                     // 実行者条件を満たしているか
                     isActive = false;
                 }
-                else if (targetBattleMonster.passiveSkill.limitExecuteNum > 0 && targetBattleMonster.passiveSkillExecuteCount >= targetBattleMonster.passiveSkill.limitExecuteNum)
+                else if (!IsValidLimitExecuteNum(targetBattleMonster, effect, index))
                 {
-                    // TODO: 発動回数条件を満たしているか
+                    // 発動回数条件を満たしているか
                     isActive = false;
                 }
                 else if (effect.triggerType != triggerType || effect.triggerTypeOptionValue != triggerTypeOptionValue)
@@ -75,7 +75,7 @@ public partial class BattleDataProcessor
             {
                 // 状態異常効果の発動条件はマスタのスキルエフェクトを参照する
                 if (c.battleConditionSkillEffect.triggerType != triggerType || c.battleConditionSkillEffect.triggerTypeOptionValue != triggerTypeOptionValue) return false;
-                if (!IsValidActivateCondition(battleMonsterIndex, c.battleConditionSkillEffect.activateConditionType, c.battleConditionSkillEffect.activateConditionValue, c.battleConditionId)) return false;
+                if (!IsValidActivateCondition(targetBattleMonsterIndex, c.battleConditionSkillEffect.activateConditionType, c.battleConditionSkillEffect.activateConditionValue, c.battleConditionId)) return false;
                 return true;
             })
             .ToList();
@@ -89,6 +89,49 @@ public partial class BattleDataProcessor
                 StartActionStream(battleMonsterIndex, BattleActionType.BattleCondition, battleCondition, battleSkillEffectList, triggerSkillGuid, triggerSkillEffectIndex);
             }
         });
+    }
+
+    private bool IsValidLimitExecuteNum(BattleMonsterInfo battleMonster, PassiveSkillEffectMI passiveSkillEffect, int skillEffectIndex)
+    {
+        if (passiveSkillEffect.limitExecuteNum <= 0) return true;
+
+        switch (passiveSkillEffect.executeNumLimitType)
+        {
+            case SkillExecuteNumLimitType.InBattle:
+                {
+                    var battleLogList = this.battleLogList
+                        .Where(l => l.type == BattleLogType.StartSkillEffect && l.actionType == BattleActionType.PassiveSkill && l.skillEffectIndex == skillEffectIndex)
+                        .ToList();
+                    return battleLogList.Count < passiveSkillEffect.limitExecuteNum;
+                }
+            case SkillExecuteNumLimitType.InWave:
+                {
+                    var battleLogList = this.battleLogList
+                        .Where(l => l.type == BattleLogType.StartSkillEffect && l.actionType == BattleActionType.PassiveSkill && l.skillEffectIndex == skillEffectIndex)
+                        .Where(l => l.waveCount == currentWaveCount)
+                        .ToList();
+                    return battleLogList.Count < passiveSkillEffect.limitExecuteNum;
+                }
+            case SkillExecuteNumLimitType.InTurn:
+                {
+                    var battleLogList = this.battleLogList
+                        .Where(l => l.type == BattleLogType.StartSkillEffect && l.actionType == BattleActionType.PassiveSkill && l.skillEffectIndex == skillEffectIndex)
+                        .Where(l => l.waveCount == currentWaveCount && l.turnCount == currentTurnCount)
+                        .ToList();
+                    return battleLogList.Count < passiveSkillEffect.limitExecuteNum;
+                }
+            case SkillExecuteNumLimitType.InStream:
+                {
+                    var battleLogList = this.battleLogList
+                        .Where(l => l.type == BattleLogType.StartSkillEffect && l.actionType == BattleActionType.PassiveSkill && l.skillEffectIndex == skillEffectIndex)
+                        .ToList();
+                    return battleLogList.Count < passiveSkillEffect.limitExecuteNum;
+                }
+            case SkillExecuteNumLimitType.InEffectOnOwnEffect:
+            case SkillExecuteNumLimitType.None:
+            default:
+                return false;
+        }
     }
 
     private bool IsValidChain(SkillTriggerType triggerType, BattleMonsterIndex battleMonsterIndex, int battleConditionCount, BattleMonsterIndex targetBattleMonsterIndex, BattleActionType targetBattleActionType, int targetBattleConditionCount)

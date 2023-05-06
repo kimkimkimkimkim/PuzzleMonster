@@ -232,6 +232,7 @@ public partial class BattleDataProcessor
 
     /// <summary>
     /// スキル効果開始ログの追加
+    /// スキル効果が発動したかどうかの判定にも使用する
     /// </summary>
     private void AddStartSkillEffectLog(BattleMonsterIndex doMonsterIndex, string skillGuid, BattleActionType actionType, int skillEffectIndex, List<BattleMonsterIndex> beDoneMonsterIndexList, BattleConditionInfo battleCondition)
     {

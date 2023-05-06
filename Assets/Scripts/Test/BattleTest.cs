@@ -115,10 +115,47 @@ public static class BattleTest
                 },
             };
             battleLogList = battleDataProcessor.TestStart(playerBattleMonsterList, enemyBattleMonsterListByWave, 1);
-            var text = Newtonsoft.Json.JsonConvert.SerializeObject(battleLogList, Newtonsoft.Json.Formatting.Indented);
             ErrorIf(monsterId, battleActionType, "燃焼状態のみが解除されたか", CheckBattleConditionRemoveOnly(battleLogList, enemyBattleMonsterListByWave[0][0].index, 63, out logText), logText, battleLogList);
             ErrorIf(monsterId, battleActionType, "出血状態のみが解除されたか", CheckBattleConditionRemoveOnly(battleLogList, enemyBattleMonsterListByWave[0][1].index, 65, out logText), logText, battleLogList);
             ErrorIf(monsterId, battleActionType, "状態異常解除時ダメージを与えているか", CheckTakeDamage(battleLogList, playerBattleMonsterList[0].index, enemyBattleMonsterListByWave[0][1].index, out logText, skillEffectIndex: 3), logText, battleLogList);
+
+            // id:65, ultimate
+            monsterId = 65;
+            battleActionType = BattleActionType.UltimateSkill;
+            // スキル効果チェック
+            battleDataProcessor = new BattleDataProcessor();
+            battleDataProcessor.TestInit();
+            playerBattleMonsterList = new List<BattleMonsterInfo>() {
+                battleDataProcessor.TestGetBattleMonster(monsterId, 100, true, 0,currentEnergy:ConstManager.Battle.MAX_ENERGY_VALUE),
+            };
+            battleConditionList = new List<BattleConditionInfo>()
+            {
+                GetBattleConditionInfo(19,3,50,1),
+            };
+            enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>() {
+                new List<BattleMonsterInfo>() {
+                    battleDataProcessor.TestGetBattleMonster(monsterId, 100, false, 2, 1,isActed:true),
+                    battleDataProcessor.TestGetBattleMonster(monsterId, 100, false, 3, 1,isActed:true, battleConditionList: battleConditionList),
+                },
+            };
+            battleLogList = battleDataProcessor.TestStart(playerBattleMonsterList, enemyBattleMonsterListByWave, 1);
+            // ErrorIf(monsterId, battleActionType, "スピードダウン状態のモンスターにのみ2つ流血状態を付与しているか", CheckBattleConditionRemoveOnly(battleLogList, enemyBattleMonsterListByWave[0][0].index, 63, out logText), logText, battleLogList);
+
+            // 一個ずつみていく
+            // id:1
+            //
+            monsterId = 1;
+            battleDataProcessor = new BattleDataProcessor();
+            battleDataProcessor.TestInit();
+            playerBattleMonsterList = new List<BattleMonsterInfo>() {
+                battleDataProcessor.TestGetBattleMonster(monsterId, 100, true, 0),
+            };
+            enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>() {
+                new List<BattleMonsterInfo>() {
+                    battleDataProcessor.TestGetBattleMonster(monsterId, 100, false, 0, 1, isActed: true),
+                },
+            };
+            battleLogList = battleDataProcessor.TestStart(playerBattleMonsterList, enemyBattleMonsterListByWave);
         }
         catch (Exception e)
         {

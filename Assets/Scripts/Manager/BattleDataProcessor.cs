@@ -335,7 +335,7 @@ public partial class BattleDataProcessor
         var skillGuid = Guid.NewGuid().ToString();
         battleSkillEffectList.ForEach((battleSkillEffect, index) =>
         {
-            if (battleSkillEffect.isActive)
+            if (battleSkillEffect.isActive && IsValidActivateCondition(actionMonsterIndex, battleSkillEffect.skillEffect.doMonsterActivateConditionType, battleSkillEffect.skillEffect.doMonsterActivateConditionValue, battleCondition.battleConditionId))
             {
                 var skillEffect = battleSkillEffect.skillEffect;
 
