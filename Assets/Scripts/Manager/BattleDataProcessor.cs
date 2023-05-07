@@ -900,6 +900,7 @@ public partial class BattleDataProcessor
                 // 実数値系のステータスは実数値を加算する
                 case BattleMonsterStatusType.Hp:
                     battleMonster.maxHp += (int)(value * battleMonster.maxHp / 100.0f);
+                    battleMonster.currentHp = battleMonster.maxHp;
                     break;
 
                 case BattleMonsterStatusType.Attack:
@@ -1575,7 +1576,7 @@ public partial class BattleDataProcessor
         switch (activateConditionType)
         {
             case ActivateConditionType.UnderPercentHP:
-                // HPが50%未満ならOK
+                // HPがn%未満ならOK
                 return !battleMonster.isDead && battleMonster.currentHp < battleMonster.maxHp * (activateConditionValue / 100.0f);
 
             case ActivateConditionType.Alive:
