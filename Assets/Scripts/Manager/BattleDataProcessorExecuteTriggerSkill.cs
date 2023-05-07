@@ -37,9 +37,9 @@ public partial class BattleDataProcessor
             .Select((effect, index) =>
             {
                 var isActive = false;
-                if (!IsValidActivateCondition(battleMonsterIndex, effect.doMonsterActivateConditionType, effect.doMonsterActivateConditionValue, 0))
+                if (effect.triggerType != triggerType || effect.triggerTypeOptionValue != triggerTypeOptionValue)
                 {
-                    // 実行者条件を満たしているか
+                    // トリガータイプがあっているか
                     isActive = false;
                 }
                 else if (!IsValidLimitExecuteNum(targetBattleMonster, effect, index))
@@ -47,9 +47,9 @@ public partial class BattleDataProcessor
                     // 発動回数条件を満たしているか
                     isActive = false;
                 }
-                else if (effect.triggerType != triggerType || effect.triggerTypeOptionValue != triggerTypeOptionValue)
+                else if (!IsValidActivateCondition(battleMonsterIndex, effect.doMonsterActivateConditionType, effect.doMonsterActivateConditionValue, 0))
                 {
-                    // トリガータイプがあっているか
+                    // 実行者条件を満たしているか
                     isActive = false;
                 }
                 else
@@ -101,6 +101,7 @@ public partial class BattleDataProcessor
                 {
                     var battleLogList = this.battleLogList
                         .Where(l => l.type == BattleLogType.StartSkillEffect && l.actionType == BattleActionType.PassiveSkill && l.skillEffectIndex == skillEffectIndex)
+                        .Where(l => l.doBattleMonsterIndex.IsSame(battleMonster.index))
                         .ToList();
                     return battleLogList.Count < passiveSkillEffect.limitExecuteNum;
                 }
@@ -108,6 +109,7 @@ public partial class BattleDataProcessor
                 {
                     var battleLogList = this.battleLogList
                         .Where(l => l.type == BattleLogType.StartSkillEffect && l.actionType == BattleActionType.PassiveSkill && l.skillEffectIndex == skillEffectIndex)
+                        .Where(l => l.doBattleMonsterIndex.IsSame(battleMonster.index))
                         .Where(l => l.waveCount == currentWaveCount)
                         .ToList();
                     return battleLogList.Count < passiveSkillEffect.limitExecuteNum;
@@ -116,6 +118,7 @@ public partial class BattleDataProcessor
                 {
                     var battleLogList = this.battleLogList
                         .Where(l => l.type == BattleLogType.StartSkillEffect && l.actionType == BattleActionType.PassiveSkill && l.skillEffectIndex == skillEffectIndex)
+                        .Where(l => l.doBattleMonsterIndex.IsSame(battleMonster.index))
                         .Where(l => l.waveCount == currentWaveCount && l.turnCount == currentTurnCount)
                         .ToList();
                     return battleLogList.Count < passiveSkillEffect.limitExecuteNum;
@@ -124,6 +127,7 @@ public partial class BattleDataProcessor
                 {
                     var battleLogList = this.battleLogList
                         .Where(l => l.type == BattleLogType.StartSkillEffect && l.actionType == BattleActionType.PassiveSkill && l.skillEffectIndex == skillEffectIndex)
+                        .Where(l => l.doBattleMonsterIndex.IsSame(battleMonster.index))
                         .ToList();
                     return battleLogList.Count < passiveSkillEffect.limitExecuteNum;
                 }
