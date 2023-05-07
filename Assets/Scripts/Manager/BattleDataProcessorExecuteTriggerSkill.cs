@@ -37,7 +37,7 @@ public partial class BattleDataProcessor
             .Select((effect, index) =>
             {
                 var isActive = false;
-                if (!IsValidActivateCondition(targetBattleMonsterIndex, effect.activateConditionType, effect.activateConditionValue, 0))
+                if (!IsValidActivateCondition(battleMonsterIndex, effect.activateConditionType, effect.activateConditionValue, 0))
                 {
                     // 実行者条件を満たしているか
                     isActive = false;
@@ -75,7 +75,7 @@ public partial class BattleDataProcessor
             {
                 // 状態異常効果の発動条件はマスタのスキルエフェクトを参照する
                 if (c.battleConditionSkillEffect.triggerType != triggerType || c.battleConditionSkillEffect.triggerTypeOptionValue != triggerTypeOptionValue) return false;
-                if (!IsValidActivateCondition(targetBattleMonsterIndex, c.battleConditionSkillEffect.activateConditionType, c.battleConditionSkillEffect.activateConditionValue, c.battleConditionId)) return false;
+                if (!IsValidActivateCondition(battleMonsterIndex, c.battleConditionSkillEffect.activateConditionType, c.battleConditionSkillEffect.activateConditionValue, c.battleConditionId)) return false;
                 return true;
             })
             .ToList();

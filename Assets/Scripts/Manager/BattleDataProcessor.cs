@@ -5,6 +5,7 @@ using System.Linq;
 using UniRx;
 using GameBase;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 public partial class BattleDataProcessor
 {
@@ -93,6 +94,7 @@ public partial class BattleDataProcessor
             });
 
             var pmApiException = new PMApiException() { message = e.ToString() };
+            UnityEngine.Debug.Log(JsonConvert.SerializeObject(e));
             throw pmApiException;
         }
 
@@ -332,10 +334,11 @@ public partial class BattleDataProcessor
         ConsoleStopwatch("StartAction", StartActionOneShot, StartActionTotal);
 
         // 各効果の実行
+        var battleConditionId = battleCondition != null ? battleCondition.battleConditionId : 0;
         var skillGuid = Guid.NewGuid().ToString();
         battleSkillEffectList.ForEach((battleSkillEffect, index) =>
         {
-            if (battleSkillEffect.isActive && IsValidActivateCondition(actionMonsterIndex, battleSkillEffect.skillEffect.doMonsterActivateConditionType, battleSkillEffect.skillEffect.doMonsterActivateConditionValue, battleCondition.battleConditionId))
+            if (battleSkillEffect.isActive && IsValidActivateCondition(actionMonsterIndex, battleSkillEffect.skillEffect.doMonsterActivateConditionType, battleSkillEffect.skillEffect.doMonsterActivateConditionValue, battleConditionId))
             {
                 var skillEffect = battleSkillEffect.skillEffect;
 
