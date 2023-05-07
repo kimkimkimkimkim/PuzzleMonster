@@ -2,6 +2,9 @@
 using System.IO;
 using NPOI.XSSF.UserModel;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using PM.Enum.Battle;
 
 /// <summary>
 /// 指定パスに存在するExcelファイルを参考にPlayFabData用のJsonを作成
@@ -15,7 +18,7 @@ public partial class PlayFabDataPublisher : EditorWindow
         var fs = new FileStream(excelFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         var book = new XSSFWorkbook(fs);
         var sheetNum = book.NumberOfSheets;
-        
+
         // 全シートを順番に見ていく
         var allJsonStr = "{";
         for (var i = 0; i < sheetNum; i++)
@@ -28,7 +31,7 @@ public partial class PlayFabDataPublisher : EditorWindow
 
             // 名前が"無視"だったら無視する
             if (name == "無視") continue;
-            
+
             // 縦方向の順次処理
             // 一番左のカラム（ID）が指定していなかったら終了
             var rowIndex = START_DATA_ROW_INDEX;
@@ -67,6 +70,44 @@ public partial class PlayFabDataPublisher : EditorWindow
             }
             jsonStr = jsonStr.Remove(jsonStr.Length - 1);
             jsonStr += "]";
+
+            // マスタ毎の個別制御
+            if (name == "NormalSkillMB")
+            {
+                // Deserializeできるように加工
+                jsonStr = jsonStr.Replace("\\", "");
+
+                var normalSkillList = JsonConvert.DeserializeObject<List<NormalSkillMB>>(jsonStr);
+                normalSkillList.ForEach(m => m.effectList = m.effectList.Where(e => e.type != SkillType.None).ToList());
+                jsonStr = JsonConvert.SerializeObject(normalSkillList);
+
+                // 元に戻す
+                jsonStr = jsonStr.Replace("\"", "\\\"");
+            }
+            else if (name == "UltimateSkillMB")
+            {
+                // Deserializeできるように加工
+                jsonStr = jsonStr.Replace("\\", "");
+
+                var ultimateSkillList = JsonConvert.DeserializeObject<List<UltimateSkillMB>>(jsonStr);
+                ultimateSkillList.ForEach(m => m.effectList = m.effectList.Where(e => e.type != SkillType.None).ToList());
+                jsonStr = JsonConvert.SerializeObject(ultimateSkillList);
+
+                // 元に戻す
+                jsonStr = jsonStr.Replace("\"", "\\\"");
+            }
+            else if (name == "PassiveSkillMB")
+            {
+                // Deserializeできるように加工
+                jsonStr = jsonStr.Replace("\\", "");
+
+                var passiveSkillList = JsonConvert.DeserializeObject<List<PassiveSkillMB>>(jsonStr);
+                passiveSkillList.ForEach(m => m.effectList = m.effectList.Where(e => e.type != SkillType.None).ToList());
+                jsonStr = JsonConvert.SerializeObject(passiveSkillList);
+
+                // 元に戻す
+                jsonStr = jsonStr.Replace("\"", "\\\"");
+            }
 
             allJsonStr += $"\"{name}\":\"{jsonStr}\",";
         }
