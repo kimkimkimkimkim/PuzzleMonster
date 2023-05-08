@@ -175,6 +175,14 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager> {
                                 }
                             });
 
+                    // ステータス変化
+                    case BattleLogType.TakeStatusChange: {
+                            var battleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
+                            battleWindow.UpdateBattleMonster(battleMonster);
+                            battleWindow.UpdateHpSlider(battleMonster);
+                            return Observable.ReturnUnit();
+                        }
+
                     // ターン進行アニメーション
                     case BattleLogType.MoveTurn:
                         return battleWindow.PlayTurnFxObservable(battleLog.turnCount);

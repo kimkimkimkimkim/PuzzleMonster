@@ -349,6 +349,16 @@ public class BattleWindowUIScript : DummyWindowBase {
         battleMonsterList.ForEach(battleMonster => UpdateBattleMonster(battleMonster));
     }
 
+    /// <summary>
+    /// ステータス変化後のHPスライダー更新処理
+    /// </summary>
+    public void UpdateHpSlider(BattleMonsterInfo battleMonster) {
+        var battleMonsterBase = GetBattleMonsterBase(battleMonster.index);
+        var battleMonsterItem = battleMonsterBase.battleMonsterItem;
+        battleMonsterItem.hpSlider.maxValue = battleMonster.maxHp;
+        battleMonsterItem.hpSlider.value = battleMonster.currentHp;
+    }
+
     public void SetBattleMonsterList(List<BattleMonsterInfo> battleMonsterList) {
         var isPlayer = battleMonsterList.First().index.isPlayer;
         if (isPlayer) {
