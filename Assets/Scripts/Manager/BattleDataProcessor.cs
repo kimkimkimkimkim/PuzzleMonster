@@ -200,7 +200,7 @@ public partial class BattleDataProcessor {
                 // アクション失敗
                 ActionFailedOneShot.Start();
                 ActionFailedTotal.Start();
-                ActionFailed(actionMonsterIndex);
+                ActionFailed(actionMonsterIndex, actionType);
                 ConsoleStopwatch("ActionFailed", ActionFailedOneShot, ActionFailedTotal);
             }
 
@@ -367,10 +367,12 @@ public partial class BattleDataProcessor {
         ConsoleStopwatch("EndAction", EndActionOneShot, EndActionTotal);
     }
 
-    private void ActionFailed(BattleMonsterIndex actionMonsterIndex) {
-        // 行動済みフラグは立てる
-        var battleMonster = GetBattleMonster(actionMonsterIndex);
-        battleMonster.isActed = true;
+    private void ActionFailed(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType) {
+        if (actionType == BattleActionType.NormalSkill || actionType == BattleActionType.UltimateSkill) {
+            // 通常攻撃あるいはウルトの時にのみ行動済みフラグを立てる
+            var battleMonster = GetBattleMonster(actionMonsterIndex);
+            battleMonster.isActed = true;
+        }
 
         // アクション失敗ログの差し込み
         AddActionFailedLog(actionMonsterIndex);
@@ -940,17 +942,16 @@ public partial class BattleDataProcessor {
     private void EndAction(BattleMonsterIndex doMonsterIndex, BattleActionType actionType) {
         var battleMonster = GetBattleMonster(doMonsterIndex);
 
-        // 行動済みフラグを立てる
-        battleMonster.isActed = true;
-
         // エネルギー計算処理を行う
         switch (actionType) {
             case BattleActionType.NormalSkill:
                 battleMonster.ChangeEnergy(ConstManager.Battle.ENERGY_RISE_VALUE_ON_ACT);
+                battleMonster.isActed = true;
                 break;
 
             case BattleActionType.UltimateSkill:
                 battleMonster.currentEnergy = 0;
+                battleMonster.isActed = true;
                 break;
 
             default:

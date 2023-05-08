@@ -2,19 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UniRx;
 using UnityEngine;
 
 /// <summary>
 /// バトル関係のテストを行うクラス
 /// </summary>
-public static class BattleTest
-{
+public static class BattleTest {
     private static string ELLIPSIS = "=== ";
 
-    public static void Start()
-    {
-        try
-        {
+    public static void Start() {
+        try {
             var monsterId = 0L;
             var battleActionType = BattleActionType.None;
             var battleDataProcessor = new BattleDataProcessor();
@@ -156,27 +154,22 @@ public static class BattleTest
                 },
             };
             battleLogList = battleDataProcessor.TestStart(playerBattleMonsterList, enemyBattleMonsterListByWave);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Debug.LogError($"{ELLIPSIS}バトルテストエラー");
             Debug.LogError($"{ELLIPSIS}{Newtonsoft.Json.JsonConvert.SerializeObject(e)}");
         }
     }
 
-    private static BattleConditionInfo GetBattleConditionInfo(long battleConditionId, int remainingTurnNum, int actionValue, int order)
-    {
+    private static BattleConditionInfo GetBattleConditionInfo(long battleConditionId, int remainingTurnNum, int actionValue, int order) {
         var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(battleConditionId);
 
-        return new BattleConditionInfo()
-        {
+        return new BattleConditionInfo() {
             guid = Guid.NewGuid().ToString(),
             battleConditionId = battleConditionId,
             remainingTurnNum = remainingTurnNum,
             actionValue = actionValue,
             battleConditionSkillEffect = battleCondition.skillEffect,
-            grantorSkillEffect = new SkillEffectMI()
-            {
+            grantorSkillEffect = new SkillEffectMI() {
                 battleConditionId = battleConditionId,
                 canRemove = true,
             },
@@ -184,25 +177,19 @@ public static class BattleTest
         };
     }
 
-    private static void ErrorIf(long monsterId, BattleActionType battleActionType, string testContent, bool condition, string logText, List<BattleLogInfo> battleLogList)
-    {
+    private static void ErrorIf(long monsterId, BattleActionType battleActionType, string testContent, bool condition, string logText, List<BattleLogInfo> battleLogList) {
         var commonText = $"id:{monsterId}, actionType:{battleActionType}, テスト内容:{testContent}\n{logText}";
-        if (condition)
-        {
+        if (condition) {
             Debug.Log($"{ELLIPSIS}【成功】 {commonText}");
-        }
-        else
-        {
+        } else {
             Debug.Log($"{ELLIPSIS}【失敗】 {commonText}");
-            BattleManager.Instance.StartBattleTest(battleLogList.Where(i => IsImportantLog(i)).ToList());
+            BattleManager.Instance.StartBattleTestObservable(battleLogList.Where(i => IsImportantLog(i)).ToList()).Subscribe();
             throw new System.Exception();
         }
     }
 
-    private static bool IsImportantLog(BattleLogInfo battleLog)
-    {
-        switch (battleLog.type)
-        {
+    private static bool IsImportantLog(BattleLogInfo battleLog) {
+        switch (battleLog.type) {
             // バトル開始
             case BattleLogType.StartBattle:
             // ウェーブ進行アニメーション
@@ -244,16 +231,14 @@ public static class BattleTest
         }
     }
 
-    private static string GetBattleLogText(BattleLogInfo battleLog)
-    {
+    private static string GetBattleLogText(BattleLogInfo battleLog) {
         return Newtonsoft.Json.JsonConvert.SerializeObject(battleLog, Newtonsoft.Json.Formatting.Indented);
     }
 
     /// <summary>
     /// ダメージ付与効果が発動しているかどうかのチェック
     /// </summary>
-    private static bool CheckTakeDamage(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText, int skillEffectIndex = 0, int maxDamage = -1)
-    {
+    private static bool CheckTakeDamage(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText, int skillEffectIndex = 0, int maxDamage = -1) {
         var battleLog = battleLogList
             .Where(l => l.type == BattleLogType.TakeDamage)
             .Where(l => l.doBattleMonsterIndex.IsSame(doMonsterIndex))
@@ -268,8 +253,7 @@ public static class BattleTest
     /// <summary>
     /// 状態異常付与のスキル効果が発動しているかどうかのチェック（成功、失敗は問わない）
     /// </summary>
-    private static bool CheckBattleConditionAdd(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText)
-    {
+    private static bool CheckBattleConditionAdd(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText) {
         var battleLog = battleLogList
             .Where(l => l.type == BattleLogType.TakeBattleConditionAdd)
             .Where(l => l.doBattleMonsterIndex.IsSame(doMonsterIndex))
@@ -282,26 +266,22 @@ public static class BattleTest
     /// <summary>
     /// 状態異常が解除されているかどうかのチェック
     /// </summary>
-    private static bool CheckBattleConditionRemoveOnly(List<BattleLogInfo> battleLogList, BattleMonsterIndex beDoneMonsterIndex, long battleConditionId, out string logText)
-    {
+    private static bool CheckBattleConditionRemoveOnly(List<BattleLogInfo> battleLogList, BattleMonsterIndex beDoneMonsterIndex, long battleConditionId, out string logText) {
         var beforeBattleLogList = battleLogList.Where(l => l.type == BattleLogType.TakeBattleConditionRemoveBefore && l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex))).ToList();
         var afterBattleLogList = battleLogList.Where(l => l.type == BattleLogType.TakeBattleConditionRemoveAfter && l.beDoneBattleMonsterDataList.Any(i => i.battleMonsterIndex.IsSame(beDoneMonsterIndex))).ToList();
 
-        var targetLog = beforeBattleLogList.Select((log, index) => (log, index)).Where(data =>
-        {
+        var targetLog = beforeBattleLogList.Select((log, index) => (log, index)).Where(data => {
             var beforeBattleLog = data.log;
             var afterBattleLog = afterBattleLogList[data.index];
 
             var beforeBeDoneMonterData = beforeBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex.IsSame(beDoneMonsterIndex));
             var afterBeDoneMonterData = afterBattleLog.beDoneBattleMonsterDataList.FirstOrDefault(d => d.battleMonsterIndex.IsSame(beDoneMonsterIndex));
-            if (beforeBeDoneMonterData == null || afterBeDoneMonterData == null)
-            {
+            if (beforeBeDoneMonterData == null || afterBeDoneMonterData == null) {
                 return false;
             }
 
             var removedBattleConditionList = beforeBeDoneMonterData.battleConditionList
-                .Where(beforeC =>
-                {
+                .Where(beforeC => {
                     // 解除後状態異常リストに存在しないものだけに絞り込む
                     return !afterBeDoneMonterData.battleConditionList.Any(afterC => afterC.guid == beforeC.guid);
                 })
@@ -316,8 +296,7 @@ public static class BattleTest
     /// <summary>
     /// 回復のスキル効果が発動しているかどうかのチェック
     /// </summary>
-    private static bool CheckHeal(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText)
-    {
+    private static bool CheckHeal(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText) {
         var battleLog = battleLogList
             .Where(l => l.type == BattleLogType.TakeHeal)
             .Where(l => l.doBattleMonsterIndex.IsSame(doMonsterIndex))
@@ -330,8 +309,7 @@ public static class BattleTest
     /// <summary>
     /// エネルギー減少効果が発動しているかどうかのチェック
     /// </summary>
-    private static bool CheckEnergyDown(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText)
-    {
+    private static bool CheckEnergyDown(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, BattleMonsterIndex beDoneMonsterIndex, out string logText) {
         var battleLog = battleLogList
             .Where(l => l.type == BattleLogType.EnergyDown)
             .Where(l => l.doBattleMonsterIndex.IsSame(doMonsterIndex))
@@ -344,8 +322,7 @@ public static class BattleTest
     /// <summary>
     /// 通常スキルが発動しているかどうかのチェック
     /// </summary>
-    private static bool CheckNormalSkill(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, out string logText)
-    {
+    private static bool CheckNormalSkill(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, out string logText) {
         var battleLog = battleLogList
             .Where(l => l.type == BattleLogType.StartAction)
             .Where(l => l.actionType == BattleActionType.NormalSkill)
@@ -358,8 +335,7 @@ public static class BattleTest
     /// <summary>
     /// アルティメットスキルが発動しているかどうかのチェック
     /// </summary>
-    private static bool CheckUltimateSkill(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, out string logText)
-    {
+    private static bool CheckUltimateSkill(List<BattleLogInfo> battleLogList, BattleMonsterIndex doMonsterIndex, out string logText) {
         var battleLog = battleLogList
             .Where(l => l.type == BattleLogType.StartAction)
             .Where(l => l.actionType == BattleActionType.UltimateSkill)
