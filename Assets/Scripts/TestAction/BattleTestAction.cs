@@ -342,7 +342,7 @@ public class BattleTestAction : ITestAction {
             title = "スキル効果一巡チェック",
             action = new Action(() => {
                 var monsterNum = MasterRecord.GetMasterOf<MonsterMB>().GetAll().Count();
-                var startMonsterId = 5;
+                var startMonsterId = 56;
                 var count = startMonsterId - 1;
                 Observable.ReturnUnit()
                     .SelectMany(_ => {
