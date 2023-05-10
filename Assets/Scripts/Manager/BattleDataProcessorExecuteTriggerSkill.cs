@@ -7,25 +7,25 @@ using System.Linq;
 /// </summary>
 public partial class BattleDataProcessor
 {
-    private void ExecuteTriggerSkillIfNeeded(SkillTriggerType triggerType, List<BattleMonsterIndex> battleMonsterIndexList, int triggerTypeOptionValue = 0, BattleMonsterIndex targetBattleMonsterIndex = null, BattleActionType targetBattleActionType = BattleActionType.None, int targetBattleConditionCount = 0, string triggerSkillGuid = "", int triggerSkillEffectIndex = -1)
+    private void ExecuteTriggerSkillIfNeeded(SkillTriggerType triggerType, List<BattleMonsterIndex> battleMonsterIndexList, int triggerTypeOptionValue = 0, BattleMonsterIndex targetBattleMonsterIndex = null, BattleActionType targetBattleActionType = BattleActionType.None, int targetBattleConditionCount = 0, string triggerSkillGuid = "", int triggerSkillEffectIndex = -1, string battleConditionGuid = "")
     {
         battleMonsterIndexList.ForEach(index =>
         {
-            ExecuteTriggerSkillIfNeeded(triggerType, index, triggerTypeOptionValue, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount, triggerSkillGuid, triggerSkillEffectIndex);
+            ExecuteTriggerSkillIfNeeded(triggerType, index, triggerTypeOptionValue, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount, triggerSkillGuid, triggerSkillEffectIndex, battleConditionGuid);
         });
     }
 
-    private void ExecuteTriggerSkillIfNeeded(SkillTriggerType triggerType, BattleMonsterIndex battleMonsterIndex, int triggerTypeOptionValue = 0, BattleMonsterIndex targetBattleMonsterIndex = null, BattleActionType targetBattleActionType = BattleActionType.None, int targetBattleConditionCount = 0, string triggerSkillGuid = "", int triggerSkillEffectIndex = -1)
+    private void ExecuteTriggerSkillIfNeeded(SkillTriggerType triggerType, BattleMonsterIndex battleMonsterIndex, int triggerTypeOptionValue = 0, BattleMonsterIndex targetBattleMonsterIndex = null, BattleActionType targetBattleActionType = BattleActionType.None, int targetBattleConditionCount = 0, string triggerSkillGuid = "", int triggerSkillEffectIndex = -1, string battleConditionGuid = "")
     {
         // パッシブスキルを発動
-        ExecutePassiveIfNeeded(triggerType, battleMonsterIndex, triggerTypeOptionValue, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount, triggerSkillGuid, triggerSkillEffectIndex);
+        ExecutePassiveIfNeeded(triggerType, battleMonsterIndex, triggerTypeOptionValue, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount, triggerSkillGuid, triggerSkillEffectIndex, battleConditionGuid);
 
         // 状態異常効果を発動
-        ExecuteBattleConditionIfNeeded(triggerType, battleMonsterIndex, triggerTypeOptionValue, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount, triggerSkillGuid, triggerSkillEffectIndex);
+        ExecuteBattleConditionIfNeeded(triggerType, battleMonsterIndex, triggerTypeOptionValue, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount, triggerSkillGuid, triggerSkillEffectIndex, battleConditionGuid);
     }
 
     // パッシブスキルを発動
-    private void ExecutePassiveIfNeeded(SkillTriggerType triggerType, BattleMonsterIndex battleMonsterIndex, int triggerTypeOptionValue, BattleMonsterIndex targetBattleMonsterIndex, BattleActionType targetBattleActionType, int targetBattleConditionCount, string triggerSkillGuid, int triggerSkillEffectIndex)
+    private void ExecutePassiveIfNeeded(SkillTriggerType triggerType, BattleMonsterIndex battleMonsterIndex, int triggerTypeOptionValue, BattleMonsterIndex targetBattleMonsterIndex, BattleActionType targetBattleActionType, int targetBattleConditionCount, string triggerSkillGuid, int triggerSkillEffectIndex, string battleConditionGuid)
     {
         // チェーンの状況を元に発動可能か判断
         if (!IsValidChain(triggerType, battleMonsterIndex, 0, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount)) return;
@@ -67,7 +67,7 @@ public partial class BattleDataProcessor
     }
 
     // 状態異常効果を発動
-    private void ExecuteBattleConditionIfNeeded(SkillTriggerType triggerType, BattleMonsterIndex battleMonsterIndex, int triggerTypeOptionValue, BattleMonsterIndex targetBattleMonsterIndex, BattleActionType targetBattleActionType, int targetBattleConditionCount, string triggerSkillGuid, int triggerSkillEffectIndex)
+    private void ExecuteBattleConditionIfNeeded(SkillTriggerType triggerType, BattleMonsterIndex battleMonsterIndex, int triggerTypeOptionValue, BattleMonsterIndex targetBattleMonsterIndex, BattleActionType targetBattleActionType, int targetBattleConditionCount, string triggerSkillGuid, int triggerSkillEffectIndex, string battleConditionGuid)
     {
         var targetBattleMonster = GetBattleMonster(battleMonsterIndex);
         var targetBattleConditionList = targetBattleMonster.battleConditionList
@@ -76,6 +76,7 @@ public partial class BattleDataProcessor
                 // 状態異常効果の発動条件はマスタのスキルエフェクトを参照する
                 if (c.battleConditionSkillEffect.triggerType != triggerType || c.battleConditionSkillEffect.triggerTypeOptionValue != triggerTypeOptionValue) return false;
                 if (!IsValidActivateCondition(battleMonsterIndex, c.battleConditionSkillEffect.doMonsterActivateConditionType, c.battleConditionSkillEffect.doMonsterActivateConditionValue, c.battleConditionId)) return false;
+                if (battleConditionGuid != "" && c.guid != battleConditionGuid) return false;
                 return true;
             })
             .ToList();

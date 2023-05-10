@@ -20,6 +20,7 @@ public partial class BattleDataProcessor
         {
             case SkillType.Attack:
             case SkillType.Damage:
+            case SkillType.WithoutFactorDamage:
                 // 与ダメージ
                 doBattleMonster.totalGiveDamage += effectValue;
 
