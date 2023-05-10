@@ -30,6 +30,7 @@ public partial class BattleDataProcessor
         {
             case SkillType.Attack:
             case SkillType.Damage:
+            case SkillType.WithoutFactorDamage:
                 switch (skillEffect.valueTargetType)
                 {
                     // HPを基準を参照する系は他の要素を含まないダメージで計算
@@ -44,6 +45,7 @@ public partial class BattleDataProcessor
                     case ValueTargetType.JustBeforeElementDamage:
                     case ValueTargetType.JustBeforeElementRemoveBattleConditionRemainDamage:
                     case ValueTargetType.AllBeforeElementRemoveBattleConditionRemainDamage:
+                    case ValueTargetType.JustBeforeTakeDamage:
                         data = new BattleActionValueData() { value = GetActionValueReferenceDamage(doBattleMonster, beDoneBattleMonster, skillEffect, actionType, skillGuid, skillEffectIndex) };
                         break;
                     // それ以外のダメージの場合は含めて計算
@@ -51,10 +53,6 @@ public partial class BattleDataProcessor
                         data = GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex);
                         break;
                 }
-                break;
-
-            case SkillType.WithoutFactorDamage:
-                data.value = GetActionValueWithoutFactor(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex);
                 break;
 
             case SkillType.Heal:
@@ -186,6 +184,22 @@ public partial class BattleDataProcessor
                     value = v;
                     break;
                 }
+            case ValueTargetType.JustBeforeTakeDamage:
+                {
+                    var battleLogIndex = battleLogList.FindLastIndex(log =>
+                    {
+                        if (log.type != BattleLogType.TakeDamage) return false;
+                        if (!log.beDoneBattleMonsterDataList.Any(d => d.battleMonsterIndex.IsSame(doBattleMonster.index))) return false;
+                        return true;
+                    });
+                    if (battleLogIndex > 0)
+                    {
+                        var battleLog = battleLogList[battleLogIndex];
+                        value = -battleLog.beDoneBattleMonsterDataList.First(d => d.battleMonsterIndex.IsSame(doBattleMonster.index)).hpChanges;
+                    }
+                }
+                break;
+
             default:
                 break;
         }

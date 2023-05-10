@@ -230,7 +230,7 @@ public class BattleTestAction : ITestAction
             action = new Action(() =>
             {
                 var monsterLevel = 100;
-                var playerMonsterIdList = new List<long>() { 60 };
+                var playerMonsterIdList = new List<long>() { 67 };
                 var playerUserMonsterList = playerMonsterIdList.Select(monsterId => new UserMonsterInfo()
                 {
                     id = "",
@@ -244,7 +244,7 @@ public class BattleTestAction : ITestAction
                         luck = 0,
                     },
                 }).ToList();
-                var enemyMonsterIdList = new List<long>() { 60 };
+                var enemyMonsterIdList = new List<long>() { 67 };
                 var questMonsterListByWave = new List<List<QuestMonsterMI>>()
                 {
                     enemyMonsterIdList.Select(monsterId => new QuestMonsterMI()

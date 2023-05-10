@@ -90,7 +90,7 @@ public partial class BattleDataProcessor
     /// <summary>
     /// 発動確率によるスキル効果未発動ログの追加
     /// </summary>
-    private void AddSkillEffectFailedOfProbabilityMissLog(BattleMonsterIndex doBattleMonsterIndex, BattleActionType actionType, int skillEffectIndex, BattleConditionInfo battleCondition)
+    private void AddSkillEffectFailedOfProbabilityMissLog(BattleMonsterIndex doBattleMonsterIndex, List<BeDoneBattleMonsterData> beDoneBattleMonsterDataList, BattleActionType actionType, int skillEffectIndex, BattleConditionInfo battleCondition)
     {
         var battleMonster = GetBattleMonster(doBattleMonsterIndex);
         var possess = doBattleMonsterIndex.isPlayer ? "味方の" : "敵の";
@@ -99,6 +99,7 @@ public partial class BattleDataProcessor
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.SkillEffectFailedOfProbabilityMiss;
         battleLog.doBattleMonsterIndex = doBattleMonsterIndex;
+        battleLog.beDoneBattleMonsterDataList = beDoneBattleMonsterDataList.Clone();
         battleLog.actionType = actionType;
         battleLog.skillEffectIndex = skillEffectIndex;
         battleLog.battleCondition = battleCondition;
@@ -250,6 +251,35 @@ public partial class BattleDataProcessor
         battleLog.beDoneBattleMonsterDataList = beDoneMonsterIndexList.Select(index => new BeDoneBattleMonsterData() { battleMonsterIndex = index }).ToList();
         battleLog.battleCondition = battleCondition;
         battleLog.log = $"{possess}{monster.name}[{doMonsterIndex.index}]が{skillName}のインデックス{skillEffectIndex}の効果を発動";
+
+        battleLogList.Add(battleLog);
+    }
+
+    /// <summary>
+    /// トリガースキルログの追加
+    /// トリガースキル発動時の対象スキル情報
+    /// </summary>
+    private void AddTriggerSkillLog(BattleMonsterIndex doMonsterIndex, string skillGuid, BattleActionType actionType, int skillEffectIndex, List<BattleMonsterIndex> beDoneMonsterIndexList, BattleConditionInfo battleCondition, TriggerSkillData triggerSkillData)
+    {
+        var battleMonster = GetBattleMonster(doMonsterIndex);
+        var possess = doMonsterIndex.isPlayer ? "味方の" : "敵の";
+        var monster = monsterList.First(m => m.id == battleMonster.monsterId);
+        var skillName = GetSkillName(battleMonster, actionType, battleCondition);
+        var targetBattleMonster = GetBattleMonster(triggerSkillData.battleMonsterIndex);
+        var targetPossess = triggerSkillData.battleMonsterIndex.isPlayer ? "味方の" : "敵の";
+        var targetMonster = monsterList.First(m => m.id == targetBattleMonster.monsterId);
+        var targetSkillName = GetSkillName(targetBattleMonster, triggerSkillData.battleActionType, new BattleConditionInfo() { battleConditionId = 1 });
+
+        var battleLog = GetDefaultLog();
+        battleLog.type = BattleLogType.TriggerSkill;
+        battleLog.doBattleMonsterIndex = doMonsterIndex;
+        battleLog.skillGuid = skillGuid;
+        battleLog.skillEffectIndex = skillEffectIndex;
+        battleLog.actionType = actionType;
+        battleLog.beDoneBattleMonsterDataList = beDoneMonsterIndexList.Select(index => new BeDoneBattleMonsterData() { battleMonsterIndex = index }).ToList();
+        battleLog.battleCondition = battleCondition;
+        battleLog.triggerSkillData = triggerSkillData;
+        battleLog.log = $"{possess}{monster.name}[{doMonsterIndex.index}]が{targetPossess}{targetMonster.name}[{triggerSkillData.battleMonsterIndex.index}]の{targetSkillName}のインデックス{triggerSkillData.skillEffectIndex}に対して{skillName}のインデックス{skillEffectIndex}の効果を発動";
 
         battleLogList.Add(battleLog);
     }
