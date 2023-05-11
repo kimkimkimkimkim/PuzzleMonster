@@ -50,7 +50,7 @@ public partial class BattleDataProcessor
                         break;
                     // それ以外のダメージの場合は含めて計算
                     default:
-                        data = GetActionValueWithFactor(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex);
+                        data = GetActionValue(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex);
                         break;
                 }
                 break;
@@ -87,9 +87,9 @@ public partial class BattleDataProcessor
     }
 
     /// <summary>
-    /// 様々な要因を加味したアクション値を取得する
+    /// アクション値を取得する
     /// </summary>
-    private BattleActionValueData GetActionValueWithFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
+    private BattleActionValueData GetActionValue(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
     {
         // Incoming Damage × (1 – Reduce Damage %) × [((1 – Armor Mitigation %) × (1 - Armor Break %))  + 70% × Holy Damage % + 30% × Luck Damage % ]
         const float HOLY_DAMAGE_MAGNIFICATION = 70.0f;
@@ -98,7 +98,8 @@ public partial class BattleDataProcessor
 
         var coefficient = GetValueCoefficient(skillEffect);
         var incomingDamage = IncomingDamage(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex);
-        var isBlocked = ExecuteProbability(beDoneBattleMonster.blockRate() - doBattleMonster.attackAccuracy());
+        var isWithoutFactor = skillEffect.type == SkillType.WithoutFactorDamage;
+        var isBlocked = !isWithoutFactor && ExecuteProbability(beDoneBattleMonster.blockRate() - doBattleMonster.attackAccuracy());
         var damage =
             (int)(
                 incomingDamage.damage                                                       // 基準ダメージ
@@ -127,15 +128,6 @@ public partial class BattleDataProcessor
     /// HPを参照するタイプのアクション値を取得する
     /// </summary>
     private int GetActionValueReferenceHp(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
-    {
-        var coefficient = GetValueCoefficient(skillEffect);
-        return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) * GetRate(skillEffect.value));
-    }
-
-    /// <summary>
-    /// 様々な要因を加味しないアクション値を取得する
-    /// </summary>
-    private int GetActionValueWithoutFactor(BattleMonsterInfo doBattleMonster, BattleMonsterInfo beDoneBattleMonster, SkillEffectMI skillEffect, string skillGuid, int skillEffectIndex)
     {
         var coefficient = GetValueCoefficient(skillEffect);
         return (int)(coefficient * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex) * GetRate(skillEffect.value));
@@ -268,15 +260,20 @@ public partial class BattleDataProcessor
         const float CRITICAL_DAMAGE_MAGNIFICATION = 1.5f;
         const float CRITICAL_DAMAGE_COEFFICIANT = 0.02f;
 
-        var isCritical = ExecuteProbability(doMonster.criticalRate());
+        var isWithoutFactor = skillEffect.type == SkillType.WithoutFactorDamage;
+        var isCritical = !isWithoutFactor && ExecuteProbability(doMonster.criticalRate());
         var damage =
             GetStatusValue(doMonster, beDoneMonster, skillEffect, skillGuid, skillEffectIndex)             // 対象のステータス値
             * GetRate(skillEffect.value, false)                                                            // ダメージ倍率
-            * BattleConditionKiller(doMonster, beDoneMonster)                                              // 状態異常特攻倍率
-            * BuffTypeNumKiller(doMonster, beDoneMonster)                                                  // 指定バフタイプの個数特攻倍率
-            * MonsterAttributeKiller(doMonster, beDoneMonster)                                             // 属性特攻倍率
-            * MonsterAttributeCompatibility(doMonster, beDoneMonster)                                      // 属性相性
-            * AttackAccuracyCompatibility(doMonster, beDoneMonster)                                        // 攻撃精度倍率
+            * (
+                isWithoutFactor ?                                                                          // ファクター無視か否か
+                1.0f :                                                                                     // 無視であれば1を返す
+                BattleConditionKiller(doMonster, beDoneMonster)                                            // 状態異常特攻倍率
+                * BuffTypeNumKiller(doMonster, beDoneMonster)                                              // 指定バフタイプの個数特攻倍率
+                * MonsterAttributeKiller(doMonster, beDoneMonster)                                         // 属性特攻倍率
+                * MonsterAttributeCompatibility(doMonster, beDoneMonster)                                  // 属性相性
+                * AttackAccuracyCompatibility(doMonster, beDoneMonster)                                    // 攻撃精度倍率
+            )
             * (
                 isCritical ?                                                                               // クリティカルかどうかを判定
                 (CRITICAL_DAMAGE_MAGNIFICATION + CRITICAL_DAMAGE_COEFFICIANT * doMonster.criticalDamage()) // クリティカルならクリティカルダメージ

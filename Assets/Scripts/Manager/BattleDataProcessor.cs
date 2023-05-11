@@ -996,6 +996,11 @@ public partial class BattleDataProcessor
                 case BattleMonsterStatusType.HealingRate:
                     battleMonster.baseHealingRate += value;
                     break;
+
+                default:
+                    var battleCondition = GetBattleCondition(doMonsterIndex, battleMonster.index, skillEffect, skillEffect.battleConditionId, 0, actionType, skillGuid, skillEffectIndex);
+                    battleMonster.baseBattleConditionList.Add(battleCondition);
+                    break;
             }
 
             return new BeDoneBattleMonsterData()
@@ -1585,7 +1590,7 @@ public partial class BattleDataProcessor
         if (skillEffect.type == SkillType.ConditionAdd)
         {
             var addedBattleCondition = battleConditionList.First(m => m.id == skillEffect.battleConditionId);
-            var battleConditionResist = beDoneBattleMonster.battleConditionList.Where(i =>
+            var battleConditionResist = beDoneBattleMonster.battleConditionList.Concat(beDoneBattleMonster.baseBattleConditionList).Where(i =>
             {
                 var possessedBattleCondition = battleConditionList.First(m => m.id == i.battleConditionId);
                 switch (possessedBattleCondition.battleConditionType)
