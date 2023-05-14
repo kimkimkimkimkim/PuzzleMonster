@@ -103,6 +103,7 @@ public class BattleTestAction : ITestAction
                     var allMonsterNum = 10;
                     var repeatNum = (int)Math.Ceiling(monsterList.Count / (float)allMonsterNum);
                     var monsterLevelList = new List<int>() { 50, 60, 70, 80, 90, 100 };
+                    var totalSeconds = 0d;
 
                     Observable.Interval(TimeSpan.FromSeconds(1.0f))
                         .Do(count =>
@@ -196,6 +197,7 @@ public class BattleTestAction : ITestAction
                             Debug.Log($"{count + 1}試合目");
                             Debug.Log($"勝敗: {(targetLog.winOrLose == PM.Enum.Battle.WinOrLose.Win ? "勝利" : "敗北")}");
                             var timeText = $"処理時間: {ts.Hours}時間 {ts.Minutes}分 {ts.Seconds}秒 {ts.Milliseconds}ミリ秒";
+                            totalSeconds += ts.TotalSeconds;
                             if (ts.TotalSeconds >= 5)
                             {
                                 Debug.LogError(timeText);
@@ -208,13 +210,17 @@ public class BattleTestAction : ITestAction
                             Debug.Log($"　【敵】{string.Join(",", targetEnemyMonsterHpLogList)}");
                             Debug.Log("===================================================");
                         })
-                        .Take(repeatNum * monsterLevelList.Count)
                         .Catch((PMApiException e) =>
                         {
                             return Observable.ReturnUnit().Do(_ => Debug.Log($"ERROR?: {e.message}")).Select(_ => 0L);
                         })
-                        // .Buffer(repeatNum * monsterLevelList.Count)
-                        // .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest() { title = "通知", content = "完了しました", commonDialogType = CommonDialogType.YesOnly }))
+                        .Buffer(repeatNum * monsterLevelList.Count)
+                        .Take(1)
+                        .Do(_ =>
+                        {
+                            Debug.Log($"合計時間: {totalSeconds}秒, 平均時間: {(float)totalSeconds / (repeatNum * monsterLevelList.Count)}秒");
+                            Debug.Log($"合計時間: {totalSeconds / 60}分{totalSeconds % 60}秒, 平均時間: {(int)((float)totalSeconds / (repeatNum * monsterLevelList.Count)) / 60}分{((float)totalSeconds / (repeatNum * monsterLevelList.Count)) % 60}秒");
+                        })
                         .Subscribe();
                 }
                 catch (PMApiException e)
@@ -267,9 +273,19 @@ public class BattleTestAction : ITestAction
                     limitTurnNum = 99,
                     isLastWaveBoss = true,
                 };
+
+                // 計測開始
+                var sw = new System.Diagnostics.Stopwatch();
+                sw.Start();
+
                 var battleDataProcessor = new BattleDataProcessor();
                 var battleLogList = battleDataProcessor.GetBattleLogList(playerUserMonsterList, quest);
                 BattleManager.Instance.StartBattleTestObservable(battleLogList).Subscribe();
+
+                // 計測停止
+                sw.Stop();
+                var ts = sw.Elapsed;
+                Debug.Log($"処理時間: {ts.Hours}時間 {ts.Minutes}分 {ts.Seconds}秒 {ts.Milliseconds}ミリ秒");
             }),
         });
 

@@ -12,6 +12,7 @@ public class BattleConditionListDialogUIScript : DialogBase
     [SerializeField] protected Button _closeButton;
     [SerializeField] protected Text _monsterNameText;
     [SerializeField] protected InfiniteScroll _infiniteScroll;
+    [SerializeField] protected Text _text;
 
     private List<BattleConditionInfo> targetBattleConditionList;
 
@@ -23,7 +24,8 @@ public class BattleConditionListDialogUIScript : DialogBase
 
         _closeButton.OnClickIntentAsObservable()
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
-            .Do(_ => {
+            .Do(_ =>
+            {
                 if (onClickClose != null)
                 {
                     onClickClose();
@@ -31,6 +33,14 @@ public class BattleConditionListDialogUIScript : DialogBase
                 }
             })
             .Subscribe();
+
+        _text.text = $"" +
+            $"最大HP: {battleMonster.maxHp}\n" +
+            $"現在HP: {battleMonster.currentHp}\n" +
+            $"現在攻撃力: {battleMonster.currentAttack()}\n" +
+            $"現在防御力: {battleMonster.currentDefense()}\n" +
+            $"現在スピード: {battleMonster.currentSpeed()}\n" +
+            $"現在シールド: {battleMonster.shield()}";
 
         SetMonsterNameText(battleMonster);
         RefreshScroll();
@@ -63,9 +73,11 @@ public class BattleConditionListDialogUIScript : DialogBase
     public override void Back(DialogInfo info)
     {
     }
+
     public override void Close(DialogInfo info)
     {
     }
+
     public override void Open(DialogInfo info)
     {
     }

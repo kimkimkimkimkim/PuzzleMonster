@@ -437,10 +437,17 @@ public partial class BattleDataProcessor
         AddTakeBattleConditionRemoveBeforeLog(beDoneBattleMonsterDataList.Clone(), "", BattleActionType.ProgressBattleConditionTurn, 0);
 
         // ターンが切れている状態異常を削除する
-        while (battleMonster.battleConditionList.Any(battleCondition => battleCondition.remainingTurnNum == 0))
+        var i = 0;
+        while (battleMonster.battleConditionList.Any(battleCondition => battleCondition.remainingTurnNum == 0) && i < 100)
         {
+            i++;
             var guid = battleMonster.battleConditionList.First(battleCondition => battleCondition.remainingTurnNum == 0).guid;
             RemoveBattleCondition(battleMonster.index, guid);
+        }
+
+        if (i == 100)
+        {
+            UnityEngine.Debug.LogError("ProgressBattleConditionTurnIfNeeded Error");
         }
 
         battleMonster = GetBattleMonster(battleMonsterIndex);
@@ -815,13 +822,18 @@ public partial class BattleDataProcessor
                 var battleConditionInfo = battleMonster.battleConditionList.OrderBy(c => c.order).FirstOrDefault(c => c.grantorSkillEffect.battleConditionId == skillEffect.battleConditionId && c.grantorSkillEffect.canRemove);
                 var isAll = skillEffect.removeBattleConsitionNum == 0;
                 var count = 0;
-                while (((isAll && battleConditionInfo != null) || (battleConditionInfo != null && count < skillEffect.removeBattleConsitionNum)) && count <= 20)
+                while (((isAll && battleConditionInfo != null) || (battleConditionInfo != null && count < skillEffect.removeBattleConsitionNum)) && count < 100)
                 {
                     RemoveBattleCondition(battleMonster.index, battleConditionInfo.guid);
 
                     isRemoved = true;
                     count++;
                     battleConditionInfo = GetBattleMonster(battleMonster.index).battleConditionList.OrderBy(c => c.order).FirstOrDefault(c => c.grantorSkillEffect.battleConditionId == skillEffect.battleConditionId && c.grantorSkillEffect.canRemove);
+                }
+
+                if (count == 100)
+                {
+                    UnityEngine.Debug.LogError("ExecuteBattleConditionRemove Error");
                 }
 
                 return isRemoved;

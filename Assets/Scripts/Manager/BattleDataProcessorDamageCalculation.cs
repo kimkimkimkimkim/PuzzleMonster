@@ -375,10 +375,10 @@ public partial class BattleDataProcessor
     private float ArmorMitigation(BattleMonsterInfo beDoneMonster)
     {
         // 防御/(180+22×Level)
-        const float DEFENSE_RESISTIVITY = 300.0f;
-        const float LEVEL_MAGNIFICATION = 260.0f;
+        const float DEFENSE_RESISTIVITY = 180.0f;
+        const float LEVEL_MAGNIFICATION = 22.0f;
 
-        var armorMitigation = (float)beDoneMonster.currentDefense() / (DEFENSE_RESISTIVITY + LEVEL_MAGNIFICATION * beDoneMonster.level);
+        var armorMitigation = (float)beDoneMonster.currentDefense() / 10.0f / (DEFENSE_RESISTIVITY + LEVEL_MAGNIFICATION * beDoneMonster.level);
 
         var monster = monsterList.First(m => m.id == beDoneMonster.monsterId);
         // Debug.Log($"{monster.rarity} Lv.{beDoneMonster.level} {monster.name}, cd:{beDoneMonster.currentDefense()}, am:{armorMitigation}");
