@@ -725,7 +725,7 @@ public partial class BattleDataProcessor {
             var battleMonsterIndex = battleMonsterData.battleMonsterIndex;
             battleMonsterData.battleConditionList.ForEach(battleConditionInfo => {
                 // 自身が付与された時
-                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAddedBattleCondition, battleMonsterIndex, 0, doMonsterIndex, actionType, 0, triggerSkillData, battleConditionInfo.guid);
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAddedBattleCondition, battleMonsterIndex, (int)battleConditionInfo.battleConditionId, doMonsterIndex, actionType, 0, triggerSkillData);
                 ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTargetBattleConditionAddedAndMeTurnActionEnd, battleMonsterIndex, 0, doMonsterIndex, actionType, 0, triggerSkillData, battleConditionInfo.guid);
 
                 // 味方が付与された時
@@ -1526,7 +1526,7 @@ public partial class BattleDataProcessor {
 
             case ActivateConditionType.HaveMyselfBattleConditionNum:
                 // 当該状態異常が特定個数付与されていればOK(アクション状態異常用)
-                return battleMonster.battleConditionList.Where(c => c.battleConditionId == battleConditionId).Count() == activateConditionValue;
+                return battleMonster.battleConditionList.Where(c => c.battleConditionId == battleConditionId).Count() >= activateConditionValue;
 
             case ActivateConditionType.None:
             default:
