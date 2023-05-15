@@ -41,8 +41,11 @@ public partial class BattleDataProcessor {
         SetPlayerBattleMonsterList(userMonsterList);
     }
 
+    private Stopwatch GetBattleLogListStopwatch = new Stopwatch();
+    private string GetBatleLogListStopwatchErrorMessage = "elapsed over 10 minetes.";
     public List<BattleLogInfo> GetBattleLogList(List<UserMonsterInfo> userMonsterList, QuestMB quest) {
         try {
+            GetBattleLogListStopwatch.Start();
             Init(userMonsterList, quest);
 
             // バトル処理を開始する
@@ -83,7 +86,7 @@ public partial class BattleDataProcessor {
 
             var pmApiException = new PMApiException() { message = e.ToString() };
             UnityEngine.Debug.Log(JsonConvert.SerializeObject(e));
-            throw pmApiException;
+            if (e.Message != GetBatleLogListStopwatchErrorMessage) throw pmApiException;
         }
 
         return battleLogList;
@@ -302,6 +305,11 @@ public partial class BattleDataProcessor {
 
     // アクション実行者とアクション内容を受け取りアクションを実行する
     private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, BattleConditionInfo battleCondition, List<BattleSkillEffectMI> battleSkillEffectList, TriggerSkillData triggerSkillData) {
+        // 10分以上たっていたらエラー発生
+        if (GetBattleLogListStopwatch.Elapsed.Minutes >= 10) {
+            throw new Exception(GetBatleLogListStopwatchErrorMessage);
+        }
+
         // アクションを開始する
         StartActionOneShot.Start();
         StartActionTotal.Start();
