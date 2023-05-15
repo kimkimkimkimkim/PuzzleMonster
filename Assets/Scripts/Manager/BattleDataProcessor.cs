@@ -725,16 +725,17 @@ public partial class BattleDataProcessor {
             var battleMonsterIndex = battleMonsterData.battleMonsterIndex;
             battleMonsterData.battleConditionList.ForEach(battleConditionInfo => {
                 // 自身が付与された時
-                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeBeAddedBattleCondition, battleMonsterIndex, (int)battleConditionInfo.battleConditionId, doMonsterIndex, actionType, 0, triggerSkillData);
+                var count = battleMonsterData.battleConditionList.Count(i => i.battleConditionId == battleConditionInfo.battleConditionId);
+                ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTargetNumMyselfBattleConditionAdded, battleMonsterIndex, count, doMonsterIndex, actionType, 0, triggerSkillData, targetBattleConditionId: battleConditionInfo.battleConditionId);
                 ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTargetBattleConditionAddedAndMeTurnActionEnd, battleMonsterIndex, 0, doMonsterIndex, actionType, 0, triggerSkillData, battleConditionInfo.guid);
 
                 // 味方が付与された時
-                if (battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, playerBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0, triggerSkillData, battleConditionInfo.guid);
-                if (!battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, enemyBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0, triggerSkillData, battleConditionInfo.guid);
+                if (battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, playerBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0, triggerSkillData);
+                if (!battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnAllyBeAddedBattleCondition, enemyBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0, triggerSkillData);
 
                 // 敵が付与された時
-                if (battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBeAddedBattleCondition, enemyBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0, triggerSkillData, battleConditionInfo.guid);
-                if (!battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBeAddedBattleCondition, playerBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0, triggerSkillData, battleConditionInfo.guid);
+                if (battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBeAddedBattleCondition, enemyBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0, triggerSkillData);
+                if (!battleMonsterIndex.isPlayer) ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnEnemyBeAddedBattleCondition, playerBattleMonsterIndexList, 0, doMonsterIndex, actionType, 0, triggerSkillData);
             });
         });
     }
@@ -1122,7 +1123,6 @@ public partial class BattleDataProcessor {
 
     /// <summary>
     /// 状態異常を解除する
-    /// guidでは特定できないからorderで
     /// </summary>
     private void RemoveBattleCondition(BattleMonsterIndex battleMonsterIndex, string guid) {
         var battleMonster = GetBattleMonster(battleMonsterIndex);
