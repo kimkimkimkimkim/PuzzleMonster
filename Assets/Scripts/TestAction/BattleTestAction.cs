@@ -232,11 +232,130 @@ public class BattleTestAction : ITestAction
 
         testActionDataList.Add(new TestActionData()
         {
+            title = "ランダムバトルテスト",
+            action = new Action(() =>
+            {
+                try
+                {
+                    var monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().Where(m => 41 <= m.id && m.id <= 65).ToList();
+                    var repeatNum = 50;
+                    var monsterLevel = 100;
+                    var totalSeconds = 0d;
+                    var maxSeconds = 0d;
+
+                    Observable.Interval(TimeSpan.FromSeconds(1.0f))
+                        .Do(count =>
+                        {
+                            // 計測開始
+                            var sw = new System.Diagnostics.Stopwatch();
+                            sw.Start();
+
+                            var allyMonsterList = monsterList.Shuffle().Take(5).ToList();
+                            var enemyMonsterList = monsterList.Shuffle().Take(5).ToList();
+
+                            var allyUserMonsterList = allyMonsterList.Select(m => new UserMonsterInfo()
+                            {
+                                id = "",
+                                monsterId = m.id,
+                                num = 1,
+                                customData = new UserMonsterCustomData()
+                                {
+                                    level = monsterLevel,
+                                    exp = 0,
+                                    grade = 0,
+                                    luck = 0,
+                                },
+                            }).ToList();
+                            var enemyQuestMonsterList = enemyMonsterList.Select(m => new QuestMonsterMI()
+                            {
+                                monsterId = m.id,
+                                level = monsterLevel,
+                            }).ToList();
+                            var quest = new QuestMB()
+                            {
+                                id = 0,
+                                name = "バトルテスト",
+                                questCategoryId = 0,
+                                firstRewardItemList = new List<ItemMI>(),
+                                dropItemList = new List<ProbabilityItemMI>(),
+                                questMonsterListByWave = new List<List<QuestMonsterMI>>() { enemyQuestMonsterList },
+                                displayConditionList = new List<ConditionMI>(),
+                                canExecuteConditionList = new List<ConditionMI>(),
+                                consumeStamina = 0,
+                                limitTurnNum = 99,
+                                isLastWaveBoss = true,
+                            };
+                            var battleDataProcessor = new BattleDataProcessor();
+                            var battleLogList = battleDataProcessor.GetBattleLogList(allyUserMonsterList, quest);
+
+                            // 計測停止
+                            sw.Stop();
+                            var ts = sw.Elapsed;
+                            if (maxSeconds < ts.TotalSeconds) maxSeconds = ts.TotalSeconds;
+
+                            // ログ出力
+                            var targetLog = battleLogList.First(log => log.winOrLose != PM.Enum.Battle.WinOrLose.Continue);
+                            var targetPlayerMonsterHpLogList = targetLog.playerBattleMonsterList.Select(m =>
+                            {
+                                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                                return $"{monster.name}: {m.currentHp}";
+                            });
+                            var targetEnemyMonsterHpLogList = targetLog.enemyBattleMonsterList.Select(m =>
+                            {
+                                var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
+                                return $"{monster.name}: {m.currentHp}";
+                            });
+                            Debug.Log("===================================================");
+                            Debug.Log($"{count + 1}試合目");
+                            Debug.Log($"勝敗: {(targetLog.winOrLose == PM.Enum.Battle.WinOrLose.Win ? "勝利" : "敗北")}");
+                            var timeText = $"処理時間: {ts.Hours}時間 {ts.Minutes}分 {ts.Seconds}秒 {ts.Milliseconds}ミリ秒";
+                            totalSeconds += ts.TotalSeconds;
+                            if (ts.TotalSeconds >= 5)
+                            {
+                                Debug.LogError(timeText);
+                            }
+                            else
+                            {
+                                Debug.Log(timeText);
+                            }
+                            Debug.Log($"ターン数: {targetLog.turnCount}, listCount: {battleLogList.Count}");
+                            Debug.Log($"【味方】{string.Join(",", targetPlayerMonsterHpLogList)}");
+                            Debug.Log($"　【敵】{string.Join(",", targetEnemyMonsterHpLogList)}");
+                            Debug.Log("===================================================");
+                        })
+                        .Catch((PMApiException e) =>
+                        {
+                            return Observable.ReturnUnit().Do(_ => Debug.Log($"ERROR?: {e.message}")).Select(_ => 0L);
+                        })
+                        .Buffer(repeatNum)
+                        .Take(1)
+                        .Do(_ =>
+                        {
+                            Debug.Log($"合計時間: {totalSeconds}秒, 平均時間: {(float)totalSeconds / (repeatNum)}秒");
+                            Debug.Log($"合計時間: {totalSeconds / 60}分{totalSeconds % 60}秒, 平均時間: {(int)((float)totalSeconds / (repeatNum)) / 60}分{((float)totalSeconds / (repeatNum)) % 60}秒, 最大時間: {maxSeconds / 60}分{maxSeconds % 60}秒");
+                        })
+                        .SelectMany(_ => CommonDialogFactory.Create(new CommonDialogRequest()
+                        {
+                            commonDialogType = CommonDialogType.YesOnly,
+                            title = "通知",
+                            content = "終了しました",
+                        }))
+                        .Subscribe();
+                }
+                catch (PMApiException e)
+                {
+                    Debug.Log($"ERROR!: {e.message}");
+                }
+            }),
+        });
+
+        testActionDataList.Add(new TestActionData()
+        {
             title = "ピンポイントバトルテスト",
             action = new Action(() =>
             {
                 var monsterLevel = 100;
-                var playerMonsterIdList = new List<long>() { 61, 62, 63, 64, 65 };
+                var playerMonsterIdList = new List<long>() { 61 };
                 var playerUserMonsterList = playerMonsterIdList.Select(monsterId => new UserMonsterInfo()
                 {
                     id = "",
@@ -250,7 +369,7 @@ public class BattleTestAction : ITestAction
                         luck = 0,
                     },
                 }).ToList();
-                var enemyMonsterIdList = new List<long>() { 66, 67, 68, 69, 70 };
+                var enemyMonsterIdList = new List<long>() { 61 };
                 var questMonsterListByWave = new List<List<QuestMonsterMI>>()
                 {
                     enemyMonsterIdList.Select(monsterId => new QuestMonsterMI()
