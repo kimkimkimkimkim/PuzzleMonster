@@ -218,7 +218,7 @@ public partial class BattleDataProcessor
                 return !afterBeDoneMonterData.battleConditionList.Any(afterC => afterC.guid == beforeC.guid);
             })
             .ToList();
-        return removedBattleConditionList.Sum(c => c.remainingTurnNum * c.actionValue);
+        return -removedBattleConditionList.Sum(c => c.remainingTurnNum * c.actionValue);
     }
 
     /// <summary>
