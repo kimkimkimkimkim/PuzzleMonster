@@ -26,7 +26,9 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
     private List<UserMonsterInfo> userMonsterListForBattle;
     private List<string> partyUserMonsterIdList = new List<string>();
     private List<List<QuestMonsterMI>> questMonsterListByWave = new List<List<QuestMonsterMI>>();
-    private QuestMB quest = new QuestMB() {
+
+    private QuestMB quest = new QuestMB()
+    {
         id = 0,
         name = "バトルシミュレーション",
         questCategoryId = 0,
@@ -53,7 +55,8 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
             .Subscribe();
 
         _startBattleButton.OnClickIntentAsObservable()
-            .SelectMany(_ => {
+            .SelectMany(_ =>
+            {
                 quest.questMonsterListByWave = questMonsterListByWave;
                 return BattleManager.Instance.StartBattleSimulationObservable(userMonsterListForBattle, quest);
             })
@@ -62,22 +65,29 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
         ResetUI();
     }
 
-    private void RefreshPartyUI() {
-        _partyMonsterIconList.ForEach((monsterIcon, index) => {
+    private void RefreshPartyUI()
+    {
+        _partyMonsterIconList.ForEach((monsterIcon, index) =>
+        {
             var isOutOfIndex = index >= partyUserMonsterIdList.Count;
             var userMonsterId = isOutOfIndex ? null : partyUserMonsterIdList[index];
             var userMonster = userMonsterListForScroll.FirstOrDefault(u => u?.id == userMonsterId);
 
-            if (userMonster == null) {
+            if (userMonster == null)
+            {
                 monsterIcon.ShowIconItem(false);
-            } else {
+            }
+            else
+            {
                 var itemMI = ItemUtil.GetItemMI(userMonster);
                 monsterIcon.ShowIconItem(true);
-                monsterIcon.iconItem.SetIcon(itemMI);
+                monsterIcon.SetIcon(itemMI);
             }
 
-            monsterIcon.SetOnClickAction(() => {
-                if (selectedPartyMonsterIndex != -1 && selectedPartyMonsterIndex != index && (selectedUserMonsterId != null || userMonsterId != null)) {
+            monsterIcon.SetOnClickAction(() =>
+            {
+                if (selectedPartyMonsterIndex != -1 && selectedPartyMonsterIndex != index && (selectedUserMonsterId != null || userMonsterId != null))
+                {
                     // 選択中のモンスターがパーティ編成されている自分以外のモンスターの場合
                     partyUserMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
                     partyUserMonsterIdList[index] = selectedUserMonsterId;
@@ -88,7 +98,9 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
                     RefreshPartyUI();
                     ReloadScroll();
                     RefreshGrayoutPanel();
-                } else if (selectedUserMonsterId != null) {
+                }
+                else if (selectedUserMonsterId != null)
+                {
                     // 選択中のモンスターがパーティに編成されていない場合
                     partyUserMonsterIdList[index] = selectedUserMonsterId;
 
@@ -98,13 +110,18 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
                     RefreshPartyUI();
                     ReloadScroll();
                     RefreshGrayoutPanel();
-                } else {
+                }
+                else
+                {
                     // 選択中のモンスターが存在しないあるいは自分の場合
                     monsterIcon.toggle.isOn = !monsterIcon.toggle.isOn;
-                    if (monsterIcon.toggle.isOn) {
+                    if (monsterIcon.toggle.isOn)
+                    {
                         selectedPartyMonsterIndex = index;
                         selectedUserMonsterId = userMonsterId;
-                    } else {
+                    }
+                    else
+                    {
                         // 非選択にする場合は選択中ユーザーモンスターIDをnullに、Indexを-1に
                         selectedPartyMonsterIndex = -1;
                         selectedUserMonsterId = null;
@@ -117,15 +134,18 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
     /// <summary>
     /// 初期化（スクロールアイテムの削除・生成）を行う
     /// </summary>
-    private void RefreshScroll() {
+    private void RefreshScroll()
+    {
         _infiniteScroll.Clear();
 
         userMonsterListForScroll = MasterRecord.GetMasterOf<MonsterMB>().GetAll()
-            .Select(m => new UserMonsterInfo() {
+            .Select(m => new UserMonsterInfo()
+            {
                 id = m.id.ToString(),
                 monsterId = m.id,
                 num = 1,
-                customData = new UserMonsterCustomData() {
+                customData = new UserMonsterCustomData()
+                {
                     level = 60,
                     exp = 0,
                     grade = 3,
@@ -143,23 +163,28 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
     /// <summary>
     /// 初期化せず表示のみ変更する
     /// </summary>
-    private void ReloadScroll() {
+    private void ReloadScroll()
+    {
         _infiniteScroll.ChangeMaxDataCount(userMonsterListForScroll.Count);
         _infiniteScroll.UpdateCurrentDisplayItems();
     }
 
-    private void OnUpdateItem(int index, GameObject item) {
+    private void OnUpdateItem(int index, GameObject item)
+    {
         if ((userMonsterListForScroll.Count <= index) || (index < 0)) return;
 
         var scrollItem = item.GetComponent<IconItem>();
         var userMonster = userMonsterListForScroll[index];
         var userMonsterId = userMonster?.id;
 
-        if (userMonster == null) {
+        if (userMonster == null)
+        {
             // はずすアイコン
             scrollItem.ShowIcon(false);
             scrollItem.ShowText(true, "はずす");
-        } else {
+        }
+        else
+        {
             // モンスターアイコン
             var itemMI = ItemUtil.GetItemMI(userMonster);
             var isIncludedParty = partyUserMonsterIdList.Contains(userMonster.id);
@@ -171,8 +196,10 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
         }
 
         scrollItem.SetToggleGroup(_toggleGroup);
-        scrollItem.SetOnClickAction(() => {
-            if (selectedPartyMonsterIndex != -1) {
+        scrollItem.SetOnClickAction(() =>
+        {
+            if (selectedPartyMonsterIndex != -1)
+            {
                 // 編成中のモンスターを選択中
                 partyUserMonsterIdList[selectedPartyMonsterIndex] = userMonsterId;
 
@@ -182,13 +209,18 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
                 RefreshPartyUI();
                 ReloadScroll();
                 RefreshGrayoutPanel();
-            } else {
+            }
+            else
+            {
                 // 通常通り選択
                 scrollItem.toggle.isOn = !scrollItem.toggle.isOn;
-                if (scrollItem.toggle.isOn) {
+                if (scrollItem.toggle.isOn)
+                {
                     selectedPartyMonsterIndex = -1;
                     selectedUserMonsterId = userMonsterId;
-                } else {
+                }
+                else
+                {
                     // 非選択にする場合は選択中ユーザーモンスターIDをnullに、Indexを-1に
                     selectedPartyMonsterIndex = -1;
                     selectedUserMonsterId = null;
@@ -197,24 +229,31 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
         });
     }
 
-    private void OnClickPrevButtonAction() {
+    private void OnClickPrevButtonAction()
+    {
         var index = phaseNumber - 1;
         var count = questMonsterListByWave.Count - index;
-        if(count > 0) questMonsterListByWave.RemoveRange(index, count);
+        if (count > 0) questMonsterListByWave.RemoveRange(index, count);
 
         phaseNumber--;
         ResetUI();
     }
 
-    private void OnClickNextButtonAction() {
-        if(phaseNumber == 0) {
+    private void OnClickNextButtonAction()
+    {
+        if (phaseNumber == 0)
+        {
             userMonsterListForBattle = partyUserMonsterIdList.Select(userMonsterId => userMonsterListForScroll.FirstOrDefault(u => u?.id == userMonsterId)).ToList();
-        } else {
+        }
+        else
+        {
             var index = phaseNumber - 1;
             var questMonsterList = partyUserMonsterIdList
-                .Select(userMonsterId => {
+                .Select(userMonsterId =>
+                {
                     var userMonster = userMonsterListForScroll.FirstOrDefault(u => u?.id == userMonsterId);
-                    return new QuestMonsterMI() {
+                    return new QuestMonsterMI()
+                    {
                         monsterId = userMonster?.monsterId ?? 0,
                         level = userMonster?.customData?.level ?? 0,
                     };
@@ -227,7 +266,8 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
         ResetUI();
     }
 
-    private void ResetUI() {
+    private void ResetUI()
+    {
         selectedPartyMonsterIndex = -1;
         selectedUserMonsterId = null;
         partyUserMonsterIdList = Enumerable.Repeat<string>(null, ConstManager.Battle.MAX_PARTY_MEMBER_NUM).ToList();
@@ -237,15 +277,20 @@ public class DevelopInputBattleSimulationInfoWindowUIScript : WindowBase
         RefreshGrayoutPanel();
     }
 
-    private void RefreshTitle() {
-        if(phaseNumber == 0) {
+    private void RefreshTitle()
+    {
+        if (phaseNumber == 0)
+        {
             _titleText.text = "自分のパーティモンスターを選択してください";
-        } else {
+        }
+        else
+        {
             _titleText.text = $"ウェーブ{phaseNumber}の相手のパーティモンスターを選択してください";
         }
     }
 
-    private void RefreshGrayoutPanel() {
+    private void RefreshGrayoutPanel()
+    {
         var notSelectedPartyUserMonster = !partyUserMonsterIdList.Any() || partyUserMonsterIdList.All(userMonsterId => userMonsterId == null);
         _prevButtonGrayoutPanel.SetActive(phaseNumber == 0);
         _nextButtonGrayoutPanel.SetActive(notSelectedPartyUserMonster);

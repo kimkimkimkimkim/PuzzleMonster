@@ -1,4 +1,7 @@
 using GameBase;
+using System;
+using System.Linq;
+using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,20 +11,39 @@ public class PartyMonsterIconItem : IconItem
     [SerializeField] protected Text _titleText;
     [SerializeField] protected IconItem _iconItem;
 
-    public IconItem iconItem { get { return _iconItem; } private set { _iconItem = value; } }
+    private UserMonsterInfo userMonster;
 
-    public void SetTitleText(string text)
+    public new void SetIcon(ItemMI item, bool showNumTextAtOne = false, bool isMaxStatus = false)
     {
-        _titleText.text = text;
+        var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(item.itemId);
+        userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.monsterId == item.itemId);
+        _iconItem.SetIcon(item, showNumTextAtOne, isMaxStatus);
     }
 
-    public void ShowTitleText(bool isShow)
+    public new void ShowRarityImage(bool isShow)
     {
-        _titleText.gameObject.SetActive(isShow);
+        _iconItem.ShowRarityImage(isShow);
+    }
+
+    public new void ShowLevelText(bool isShow)
+    {
+        _iconItem.ShowLevelText(isShow);
     }
 
     public void ShowIconItem(bool isShow)
     {
         _iconItem.gameObject.SetActive(isShow);
+    }
+
+    public new void SetShowMonsterDetailDialogAction(bool isSet)
+    {
+        if (userMonster == null)
+        {
+            SetLongClickAction(false);
+            return;
+        }
+
+        var action = new Action(() => { MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest() { userMonster = userMonster, canStrength = false }).Subscribe(); });
+        SetLongClickAction(isSet, action);
     }
 }
