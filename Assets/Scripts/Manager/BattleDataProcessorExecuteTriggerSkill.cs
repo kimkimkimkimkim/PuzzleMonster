@@ -106,8 +106,7 @@ public partial class BattleDataProcessor
                 StartActionStream(battleMonsterIndex, BattleActionType.BattleCondition, battleCondition, battleSkillEffectList, triggerSkillData);
 
                 // 発動後解除するタイプであれば解除
-                var battleConditionMB = battleConditionList.First(m => m.id == battleCondition.battleConditionId);
-                if (battleConditionMB.isRemovedWhenTriggered) RemoveBattleCondition(battleMonsterIndex, battleCondition.guid);
+                if (battleCondition.isRemovedWhenTriggered) RemoveBattleCondition(battleMonsterIndex, battleCondition.guid);
             }
         });
     }

@@ -1226,6 +1226,7 @@ public partial class BattleDataProcessor
             actionValue = calculatedValue,
             shieldValue = shieldValue,
             order = order,
+            isRemovedWhenTriggered = battleConditionMB.isRemovedWhenTriggered,
         };
         return battleCondition.Clone();
     }
@@ -1672,7 +1673,7 @@ public partial class BattleDataProcessor
 
             case ActivateConditionType.Healable:
                 // 回復可能ならOK
-                return !battleMonster.isDead && battleMonster.currentHp < battleMonster.maxHp;
+                return !battleMonster.isDead && battleMonster.currentHp > 0 && battleMonster.currentHp < battleMonster.maxHp;
 
             case ActivateConditionType.HaveBattleCondition:
                 // 特定状態異常が付与されていればOK
