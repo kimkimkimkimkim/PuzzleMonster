@@ -1124,7 +1124,7 @@ public partial class BattleDataProcessor
         AddEndWaveLog();
 
         // Wave毎の敵情報リストの更新
-        enemyBattleMonsterListByWave.Add(enemyBattleMonsterList);
+        enemyBattleMonsterListByWave.Add(enemyBattleMonsterList.Clone());
     }
 
     private void EndBattleIfNeeded(bool isTurnEnd)
@@ -1148,7 +1148,7 @@ public partial class BattleDataProcessor
 
         // Wave毎の敵情報リストの更新
         // 敵が全滅していない場合はそのWaveの敵情報リストは未更新なのでここで更新する
-        if (existsEnemy) enemyBattleMonsterListByWave.Add(enemyBattleMonsterList);
+        if (existsEnemy) enemyBattleMonsterListByWave.Add(enemyBattleMonsterList.Clone());
 
         // バトル終了ログの差し込み
         AddEndBattleLog();
