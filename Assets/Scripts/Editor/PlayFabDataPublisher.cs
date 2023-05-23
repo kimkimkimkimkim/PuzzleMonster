@@ -21,11 +21,13 @@ public partial class PlayFabDataPublisher : EditorWindow
 
     private DateTime date;
     private string excelFilePath = $"Assets/PlayFabData/Excel/Data.xlsm";
+
     private string outputDirectoryPath(DateTime date) => $"Assets/PlayFabData/Json";
+
     private string storeDataFileName = "storeData.json";
 
     [MenuItem("Tools/PlayFabDataPublisher")]
-    static void Init()
+    private static void Init()
     {
         var window = GetWindow<PlayFabDataPublisher>(typeof(PlayFabDataPublisher));
         window.Show();
@@ -70,10 +72,13 @@ public partial class PlayFabDataPublisher : EditorWindow
         {
             case CellType.Numeric:
                 return cell.NumericCellValue.ToString();
+
             case CellType.Boolean:
                 return cell.BooleanCellValue.ToString().ToLower();
+
             case CellType.String:
                 return cell.StringCellValue;
+
             default:
                 return "";
         }
@@ -111,18 +116,21 @@ public partial class PlayFabDataPublisher : EditorWindow
                 case "int":
                 case "float":
                     return cell.NumericCellValue.ToString();
+
                 case "boolean":
                     return cell.BooleanCellValue.ToString().ToLower();
+
                 case "string":
                     return $"\\\"{cell.StringCellValue}\\\"";
+
                 default:
                     return cell.StringCellValue;
             }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             // 数値が入力されているセルを文字列で受け取ろうとした際のエラーは適切に回収する
-            if(e.Message == "Cannot get a text value from a numeric cell") return $"\\\"{cell.NumericCellValue.ToString()}\\\"";
+            if (e.Message == "Cannot get a text value from a numeric cell") return $"\\\"{cell.NumericCellValue.ToString()}\\\"";
 
             // それ以外は空文字を返す
             return "";
@@ -151,8 +159,10 @@ public partial class PlayFabDataPublisher : EditorWindow
         {
             case CellType.String:
                 return $"\\\"{cell.StringCellValue}\\\"";
+
             case CellType.Numeric:
                 return $"\\\"{cell.NumericCellValue.ToString()}\\\"";
+
             case CellType.Blank:
             default:
                 return "";
@@ -168,7 +178,7 @@ public partial class PlayFabDataPublisher : EditorWindow
         // 指定したセルの階層1の行に値が無い場合は空文字を返す
         var key1 = GetHierarchyStr(sheet, HIERARCHY_1_ROW_INDEX, columnIndex);
         if (key1 == "") return "";
-        
+
         // 階層2の値をチェック
         var key2 = GetHierarchyStr(sheet, HIERARCHY_2_ROW_INDEX, columnIndex);
         var cell2 = GetCell(sheet, HIERARCHY_2_ROW_INDEX, columnIndex);
@@ -177,19 +187,22 @@ public partial class PlayFabDataPublisher : EditorWindow
             case CellType.Blank:
                 // 空ならそのままKeyValue文字列を作成
                 var value = GetValueStr(sheet, rowIndex, columnIndex);
-                
+
                 // もし"null"文字列ならnullにする
-                if(value == "\\\"null\\\"") value = "null";
-                
+                if (value == "\\\"null\\\"") value = "null";
+
                 return value != "" ? $"{key1}:{value}" : "";
+
             case CellType.Numeric:
                 // 数値ならリストとして処理
                 var listValue = GetListValueStr(sheet, HIERARCHY_2_ROW_INDEX, rowIndex, columnIndex);
                 return listValue != "" ? $"{key1}:{listValue}" : "";
+
             case CellType.String:
                 // 文字列ならオブジェクトとして処理
                 var objectValue = GetObjectValueStr(sheet, rowIndex, columnIndex);
                 return objectValue != "" ? $"{key1}:{objectValue}" : "";
+
             default:
                 return "";
         }
@@ -218,10 +231,10 @@ public partial class PlayFabDataPublisher : EditorWindow
         {
             var key = GetHierarchyStr(sheet, hierarchyRowIndex, columnIndex);
             var value = GetValueStr(sheet, rowIndex, columnIndex);
-            
+
             // もし"null"文字列ならnullにする
-            if(value == "\\\"null\\\"") value = "null";
-                
+            if (value == "\\\"null\\\"") value = "null";
+
             if (value != "")
             {
                 jsonStr += $"{key}:{value},";
@@ -244,7 +257,7 @@ public partial class PlayFabDataPublisher : EditorWindow
     {
         // 階層2の値が数値でなければ空文字を返す
         if (GetCell(sheet, HIERARCHY_2_ROW_INDEX, columnIndex).CellType != CellType.Numeric) return "";
-        
+
         // 階層2のリストの中身が何かを取得
         var isNotObject = GetHierarchyStr(sheet, HIERARCHY_3_ROW_INDEX, columnIndex) == "";
         var isList = GetCell(sheet, HIERARCHY_3_ROW_INDEX, columnIndex).CellType == CellType.Numeric;
@@ -260,7 +273,7 @@ public partial class PlayFabDataPublisher : EditorWindow
                 var value = GetValueStr(sheet, rowIndex, columnIndex);
 
                 // もし"null"文字列ならnullにする
-                if(value == "\\\"null\\\"") value = "null";
+                if (value == "\\\"null\\\"") value = "null";
 
                 if (key == "")
                 {
@@ -298,20 +311,21 @@ public partial class PlayFabDataPublisher : EditorWindow
 
         return jsonStr != "]" ? jsonStr : "[]";
     }
-    
+
     /// <summary>
     /// 値の中のリストをValue文字列として返します
     /// どの階層のリストかを指定
     /// リストの最初の要素のセルインデックスを指定する
     /// </summary>
-    private string GetListValueStr(ISheet sheet, int hierarchyIndex, int rowIndex, int columnIndex) {
+    private string GetListValueStr(ISheet sheet, int hierarchyIndex, int rowIndex, int columnIndex)
+    {
         // 指定した階層の値が数値でなければ空文字を返す
         if (GetCell(sheet, hierarchyIndex, columnIndex).CellType != CellType.Numeric) return "";
 
         // もし指定した階層が一番下の階層だったらリストは格納できないので空文字を返す
         var underHierarchyIndex = hierarchyIndex + 1;
-        if(underHierarchyIndex > HIERARCHY_4_ROW_INDEX) return "";
-        
+        if (underHierarchyIndex > HIERARCHY_4_ROW_INDEX) return "";
+
         // 指定した階層のリストの中身が何かを取得
         var listContentType =
             GetHierarchyStr(sheet, underHierarchyIndex, columnIndex) == "" ? ListContentType.Plain :
@@ -321,27 +335,50 @@ public partial class PlayFabDataPublisher : EditorWindow
         var jsonStr = "[";
         var lastColumnIndex = sheet.GetRow(TYPE_ROW_INDEX).LastCellNum - 1;
 
-        if (listContentType == ListContentType.List) {
-            jsonStr += GetListValueStr(sheet, underHierarchyIndex, rowIndex, columnIndex);
-        } else if (listContentType == ListContentType.Object || listContentType == ListContentType.Plain) {
+        if (listContentType == ListContentType.List)
+        {
+            var overHierarchyIndex = hierarchyIndex - 1;
 
-            do {
+            // 入れ子のリストだった場合外側のリストのカラムをインクリメントしながら一つ一つ見ていく
+            do
+            {
+                // 外側のリストのヒエラルキーが設定されていた場合その要素の子リストを追加する
+                var cellType = GetCell(sheet, hierarchyIndex, columnIndex).CellType;
+                if (GetCell(sheet, hierarchyIndex, columnIndex).CellType == CellType.Numeric)
+                {
+                    var valueStr = GetListValueStr(sheet, underHierarchyIndex, rowIndex, columnIndex);
+                    jsonStr += $"{GetListValueStr(sheet, underHierarchyIndex, rowIndex, columnIndex)},";
+                }
+                columnIndex++;
+            } while (GetHierarchyStr(sheet, overHierarchyIndex, columnIndex) == "" && columnIndex <= lastColumnIndex);
+            jsonStr = jsonStr.Remove(jsonStr.Length - 1);
+        }
+        else if (listContentType == ListContentType.Object || listContentType == ListContentType.Plain)
+        {
+            do
+            {
                 var elementJsonStr = "";
-                do {
+                do
+                {
                     var key = GetHierarchyStr(sheet, underHierarchyIndex, columnIndex);
                     var value = GetValueStr(sheet, rowIndex, columnIndex);
 
                     // もし"null"文字列ならnullにする
                     if (value == "\\\"null\\\"") value = "null";
 
-                    if (key == "") {
+                    if (key == "")
+                    {
                         // キーが空文字ならオブジェクトじゃない普通の値
-                        if (value != "") {
+                        if (value != "")
+                        {
                             elementJsonStr += $"{value},";
                         }
-                    } else {
+                    }
+                    else
+                    {
                         // キーが空文字じゃないならオブジェクト
-                        if (value != "") {
+                        if (value != "")
+                        {
                             elementJsonStr += $"{key}:{value},";
                         }
                     }
@@ -349,9 +386,11 @@ public partial class PlayFabDataPublisher : EditorWindow
                     columnIndex++;
                 } while (IsAllBlankBetweenHierarchy1(sheet, columnIndex, hierarchyIndex) && columnIndex <= lastColumnIndex);
 
-                if (elementJsonStr != "") {
+                if (elementJsonStr != "")
+                {
                     elementJsonStr = elementJsonStr.Remove(elementJsonStr.Length - 1);
-                    if (listContentType == ListContentType.Object) {
+                    if (listContentType == ListContentType.Object)
+                    {
                         elementJsonStr = elementJsonStr.Insert(0, "{");
                         elementJsonStr += "}";
                     }
@@ -369,20 +408,23 @@ public partial class PlayFabDataPublisher : EditorWindow
     /// <summary>
     /// 指定した階層から階層1まで全部空か否かを返します
     /// </summary>
-    private bool IsAllBlankBetweenHierarchy1(ISheet sheet, int columnIndex, int targetHierarchyRowIndex) {
+    private bool IsAllBlankBetweenHierarchy1(ISheet sheet, int columnIndex, int targetHierarchyRowIndex)
+    {
         if (targetHierarchyRowIndex < HIERARCHY_1_ROW_INDEX) return false;
 
-        for (var i = HIERARCHY_1_ROW_INDEX; i <= targetHierarchyRowIndex; i++) {
+        for (var i = HIERARCHY_1_ROW_INDEX; i <= targetHierarchyRowIndex; i++)
+        {
             if (GetCell(sheet, i, columnIndex)?.CellType != CellType.Blank) return false;
         }
 
         return true;
     }
-    
+
     /// <summary>
     /// リストの中身タイプ
     /// </summary>
-    private enum ListContentType {
+    private enum ListContentType
+    {
         /// <summary>
         /// オブジェクトではないただの値
         /// </summary>

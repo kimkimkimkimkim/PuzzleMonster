@@ -108,6 +108,18 @@ public partial class PlayFabDataPublisher : EditorWindow
                 // 元に戻す
                 jsonStr = jsonStr.Replace("\"", "\\\"");
             }
+            else if (name == "QuestMB")
+            {
+                // Deserializeできるように加工
+                jsonStr = jsonStr.Replace("\\", "");
+
+                var list = JsonConvert.DeserializeObject<List<QuestMB>>(jsonStr);
+                list.ForEach(m => m.questMonsterListByWave = m.questMonsterListByWave.Where(l => l.Any()).ToList());
+                jsonStr = JsonConvert.SerializeObject(list);
+
+                // 元に戻す
+                jsonStr = jsonStr.Replace("\"", "\\\"");
+            }
 
             allJsonStr += $"\"{name}\":\"{jsonStr}\",";
         }
