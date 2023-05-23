@@ -17,12 +17,12 @@ public partial class BattleDataProcessor
     private List<NormalSkillMB> normalSkillList;
     private List<UltimateSkillMB> ultimateSkillList;
     private List<PassiveSkillMB> passiveSkillList;
-    private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
     private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
     private List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>();
     private WinOrLose currentWinOrLose;
 
+    public List<BattleLogInfo> battleLogList { get; private set; } = new List<BattleLogInfo>();
     public string testLog { get; private set; } = "";
 
     private void Init(List<UserMonsterInfo> userMonsterList, QuestMB quest)
@@ -45,6 +45,27 @@ public partial class BattleDataProcessor
 
     private Stopwatch GetBattleLogListStopwatch = new Stopwatch();
     private string GetBatleLogListStopwatchErrorMessage = "elapsed over 10 minetes.";
+
+    public IObservable<List<BattleLogInfo>> GetBattleLogListObservable(List<UserMonsterInfo> userMonsterList, QuestMB quest)
+    {
+        GetBattleLogListStopwatch.Start();
+        Init(userMonsterList, quest);
+
+        return Observable.Create<List<BattleLogInfo>>(observer =>
+        {
+            Observable.EveryUpdate()
+                .Do(_ => PlayLoop())
+                .TakeWhile(_ => currentWinOrLose == WinOrLose.Continue)
+                .IgnoreElements()
+                .Subscribe(_ => { }, () =>
+                {
+                    observer.OnNext(battleLogList);
+                    observer.OnCompleted();
+                });
+
+            return Disposable.Empty;
+        });
+    }
 
     public List<BattleLogInfo> GetBattleLogList(List<UserMonsterInfo> userMonsterList, QuestMB quest)
     {
