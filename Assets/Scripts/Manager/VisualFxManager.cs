@@ -277,8 +277,18 @@ public class VisualFxManager : SingletonMonoBehaviour<VisualFxManager>
         DamageFx damageFX = null;
 
         return PMAddressableAssetUtil.InstantiateVisualFxItemObservable<DamageFx>(battleMonsterItem.effectBase).Do(fx => damageFX = fx).AsUnitObservable()
-            .SelectMany(_ => PlaySkillFxObservable(skillFx, fxParent, fxBackgroundImage))
-            .SelectMany(res =>
+            .SelectMany(_ =>
+            {
+                if (skillFx != null)
+                {
+                    return PlaySkillFxObservable(skillFx, fxParent, fxBackgroundImage);
+                }
+                else
+                {
+                    return Observable.ReturnUnit();
+                }
+            })
+            .SelectMany(_ =>
             {
                 var damageAnimationObservable = Observable.ReturnUnit()
                     .SelectMany(_ =>
