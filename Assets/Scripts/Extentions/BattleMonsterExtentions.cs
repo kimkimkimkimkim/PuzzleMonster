@@ -126,6 +126,7 @@ public static class BattleMonsterInfoExtentions
     public static float currentAttack(this BattleMonsterInfo monster)
     {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.Attack);
+        value = Math.Clamp(value, ConstManager.Battle.MAX_ATTACK_DEBUFF_VALUE, ConstManager.Battle.MAX_ATTACK_BUFF_VALUE);
         return BattleUtil.GetRatedValue(monster.baseAttack, value);
     }
 
@@ -135,6 +136,7 @@ public static class BattleMonsterInfoExtentions
     public static float currentDefense(this BattleMonsterInfo monster)
     {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.Defense);
+        value = Math.Clamp(value, ConstManager.Battle.MAX_DEFENSE_DEBUFF_VALUE, ConstManager.Battle.MAX_DEFENSE_BUFF_VALUE);
         return BattleUtil.GetRatedValue(monster.baseDefense, value);
     }
 
