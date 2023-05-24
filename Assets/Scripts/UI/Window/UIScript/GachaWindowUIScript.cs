@@ -3,22 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using GameBase;
 using PM.Enum.Gacha;
-using PM.Enum.Item;
-using PM.Enum.Monster;
 using PM.Enum.UI;
 using UniRx;
 using UnityEngine;
+using UnityEngine.UI;
 
 [ResourcePath("UI/Window/Window-Gacha")]
 public class GachaWindowUIScript : WindowBase
 {
     [SerializeField] protected InfiniteScroll _infiniteScroll;
+    [SerializeField] protected Toggle _isNotPlayGachaAnimationToggle;
 
+    private bool isPlayGachaAnimation;
     private List<GachaBoxMB> gachaBoxList;
 
     public override void Init(WindowInfo info)
     {
         base.Init(info);
+
+        isPlayGachaAnimation = SaveDataUtil.Setting.GetIsPlayGachaAnimation();
+        _isNotPlayGachaAnimationToggle.isOn = !isPlayGachaAnimation;
+        _isNotPlayGachaAnimationToggle.OnValueChangedIntentAsObservable()
+            .Do(isNotPlayGachaAnimation =>
+            {
+                SaveDataUtil.Setting.SetIsPlayGachaAnimation(!isNotPlayGachaAnimation);
+                isPlayGachaAnimation = !isNotPlayGachaAnimation;
+            })
+            .Subscribe();
 
         RefreshScroll();
     }
@@ -144,18 +155,26 @@ public class GachaWindowUIScript : WindowBase
             .SelectMany(_ => ApiConnection.ExecuteGacha(gachaBox.id, gachaBoxDetail.id))
             .SelectMany(res =>
             {
-                return FadeManager.Instance.PlayFadeAnimationObservable(1.0f, FADE_ANIMATION_TIME)
-                    .SelectMany(_ =>
-                    {
-                        var gachaAnimation = UIManager.Instance.CreateContent<GachaAnimation>(UIManager.Instance.gachaAnimationParent);
-                        return gachaAnimation.PlayGachaAnimationObservable();
-                    })
-                    .Do(_ => RefreshScroll())
-                    .Select(_ => res);
+                if (isPlayGachaAnimation)
+                {
+                    return FadeManager.Instance.PlayFadeAnimationObservable(1.0f, FADE_ANIMATION_TIME)
+                        .SelectMany(_ =>
+                        {
+                            var gachaAnimation = UIManager.Instance.CreateContent<GachaAnimation>(UIManager.Instance.gachaAnimationParent);
+                            return gachaAnimation.PlayGachaAnimationObservable();
+                        })
+                        .Do(_ => RefreshScroll())
+                        .Do(_ => FadeManager.Instance.PlayFadeAnimationObservable(0.0f, FADE_ANIMATION_TIME).Subscribe())
+                        .Select(_ => res);
+                }
+                else
+                {
+                    RefreshScroll();
+                    return Observable.Return(res);
+                }
             })
             .SelectMany(res =>
             {
-                FadeManager.Instance.PlayFadeAnimationObservable(0.0f, FADE_ANIMATION_TIME).Subscribe();
                 return GachaResultWindowFactory.Create(new GachaResultWindowRequest() { itemList = res.rewardItemList });
             })
             .Subscribe();

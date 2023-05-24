@@ -10,7 +10,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [ResourcePath("UI/Window/Window-Battle")]
-public class BattleWindowUIScript : DummyWindowBase {
+public class BattleWindowUIScript : DummyWindowBase
+{
     [SerializeField] protected Text _turnText;
     [SerializeField] protected Text _waveText;
     [SerializeField] protected Text _skillNameText;
@@ -37,8 +38,10 @@ public class BattleWindowUIScript : DummyWindowBase {
     [SerializeField] protected Sprite _playerSkillCutInSprite;
     [SerializeField] protected Sprite _enemySkillCutInSprite;
     [SerializeField] protected Button _pauseButton;
+    [SerializeField] protected Button _speedButton;
     [SerializeField] protected GameObject _testUIBase;
     [SerializeField] protected Text _logText;
+    [SerializeField] protected Text _speedButtonText;
     [SerializeField] protected Button _nextButton;
     [SerializeField] protected Button _backButton;
     [SerializeField] protected Button _selectIndexButton;
@@ -48,18 +51,22 @@ public class BattleWindowUIScript : DummyWindowBase {
     private List<BattleMonsterInfo> enemyBattleMonsterList;
     private List<UserMonsterInfo> playerUserMonsterList;
     private QuestMB quest;
+    private BattleSpeed battleSpeed;
     private IDisposable skillNameObservable;
     private IDisposable actionDescriptionObservable;
 
-    public void Init(List<UserMonsterInfo> playerUserMonsterList, QuestMB quest, string userBattleId) {
+    public void Init(List<UserMonsterInfo> playerUserMonsterList, QuestMB quest, string userBattleId)
+    {
         this.playerUserMonsterList = playerUserMonsterList;
         this.quest = quest;
 
         _pauseButton.OnClickIntentAsObservable()
             .Do(_ => TimeManager.Instance.Pause())
             .SelectMany(_ => BattlePauseDialogFactory.Create(new BattlePauseDialogRequest()))
-            .SelectMany(res => {
-                switch (res.responseType) {
+            .SelectMany(res =>
+            {
+                switch (res.responseType)
+                {
                     case BattlePauseDialogResponseType.Close:
                         return Observable.ReturnUnit();
 
@@ -76,23 +83,81 @@ public class BattleWindowUIScript : DummyWindowBase {
             .Do(_ => TimeManager.Instance.SpeedBy1())
             .Subscribe();
 
+        battleSpeed = SaveDataUtil.Battle.GetBattleSpeed();
+        TimeManager.Instance.SetSpeed(battleSpeed);
+        RefreshBattleSpeedText();
+        _speedButton.OnClickIntentAsObservable()
+            .Do(_ =>
+            {
+                switch (battleSpeed)
+                {
+                    case BattleSpeed.One:
+                        battleSpeed = BattleSpeed.TwoTimes;
+                        break;
+
+                    case BattleSpeed.TwoTimes:
+                        battleSpeed = BattleSpeed.FourTimes;
+                        break;
+
+                    case BattleSpeed.FourTimes:
+                        battleSpeed = BattleSpeed.One;
+                        break;
+
+                    case BattleSpeed.None:
+                    default:
+                        battleSpeed = BattleSpeed.One;
+                        break;
+                }
+
+                SaveDataUtil.Battle.SetBattleSpeed(battleSpeed);
+                RefreshBattleSpeedText();
+                TimeManager.Instance.SetSpeed(battleSpeed);
+            })
+            .Subscribe();
+
         SetPlayerMonsterImage();
         SetTurnText(1);
         SetWaveText(1, quest.questMonsterListByWave.Count);
         SetBattleMonsterInfoItem(playerUserMonsterList);
     }
 
+    private void RefreshBattleSpeedText()
+    {
+        switch (battleSpeed)
+        {
+            case BattleSpeed.One:
+                _speedButtonText.text = "×1";
+                break;
+
+            case BattleSpeed.TwoTimes:
+                _speedButtonText.text = "×2";
+                break;
+
+            case BattleSpeed.FourTimes:
+                _speedButtonText.text = "×4";
+                break;
+
+            case BattleSpeed.None:
+            default:
+                _speedButtonText.text = "×1";
+                break;
+        }
+    }
+
     private int battleLogIndex = 0;
     private List<BattleLogInfo> battleLogList;
 
-    public IObservable<Unit> StartTestObservable(List<BattleLogInfo> battleLogList) {
+    public IObservable<Unit> StartTestObservable(List<BattleLogInfo> battleLogList)
+    {
         this.battleLogList = battleLogList;
 
         _testUIBase.SetActive(true);
 
         _nextButton.OnClickIntentAsObservable()
-            .Do(_ => {
-                if (battleLogIndex + 1 < battleLogList.Count) {
+            .Do(_ =>
+            {
+                if (battleLogIndex + 1 < battleLogList.Count)
+                {
                     battleLogIndex++;
                     RefreshUI(battleLogList[battleLogIndex]);
                 }
@@ -100,8 +165,10 @@ public class BattleWindowUIScript : DummyWindowBase {
             .Subscribe();
 
         _backButton.OnClickIntentAsObservable()
-            .Do(_ => {
-                if (battleLogIndex > 0) {
+            .Do(_ =>
+            {
+                if (battleLogIndex > 0)
+                {
                     battleLogIndex--;
                     RefreshUI(battleLogList[battleLogIndex]);
                 }
@@ -111,9 +178,12 @@ public class BattleWindowUIScript : DummyWindowBase {
         _selectIndexButton.OnClickIntentAsObservable()
             .SelectMany(_ => CommonInputDialogFactory.Create(new CommonInputDialogRequest() { contentText = "表示するインデックスを指定してください" }))
             .Where(res => res.dialogResponseType == DialogResponseType.Yes)
-            .Do(res => {
-                if (int.TryParse(res.inputText, out var index)) {
-                    if (0 <= index && index < battleLogList.Count) {
+            .Do(res =>
+            {
+                if (int.TryParse(res.inputText, out var index))
+                {
+                    if (0 <= index && index < battleLogList.Count)
+                    {
                         battleLogIndex = index;
                         RefreshUI(battleLogList[battleLogIndex]);
                     }
@@ -123,9 +193,11 @@ public class BattleWindowUIScript : DummyWindowBase {
 
         RefreshUI(battleLogList[0]);
 
-        return Observable.Create<Unit>(observer => {
+        return Observable.Create<Unit>(observer =>
+        {
             _closeButton.OnClickIntentAsObservable()
-                .Do(_ => {
+                .Do(_ =>
+                {
                     observer.OnNext(Unit.Default);
                     observer.OnCompleted();
 
@@ -136,14 +208,16 @@ public class BattleWindowUIScript : DummyWindowBase {
         });
     }
 
-    private string GetSkillDescription(BattleLogInfo battleLog) {
+    private string GetSkillDescription(BattleLogInfo battleLog)
+    {
         var playerBattleMonster = battleLog.playerBattleMonsterList.FirstOrDefault(b => battleLog.doBattleMonsterIndex != null && b.index.IsSame(battleLog.doBattleMonsterIndex));
         var enemyBattleMonster = battleLog.enemyBattleMonsterList.FirstOrDefault(b => battleLog.doBattleMonsterIndex != null && b.index.IsSame(battleLog.doBattleMonsterIndex));
         var targetBattleMonster = playerBattleMonster != null ? playerBattleMonster : enemyBattleMonster != null ? enemyBattleMonster : null;
 
         if (targetBattleMonster == null) return "";
 
-        switch (battleLog.actionType) {
+        switch (battleLog.actionType)
+        {
             case BattleActionType.NormalSkill:
                 return targetBattleMonster.normalSkill.description;
 
@@ -158,7 +232,8 @@ public class BattleWindowUIScript : DummyWindowBase {
         }
     }
 
-    public void RefreshUI(BattleLogInfo battleLog) {
+    public void RefreshUI(BattleLogInfo battleLog)
+    {
         // Wave
         SetWaveText(battleLog.waveCount, battleLog.enemyBattleMonsterListByWave.Count);
 
@@ -172,20 +247,25 @@ public class BattleWindowUIScript : DummyWindowBase {
         _logText.text = $"{battleLogIndex}/{battleLogList.Count - 1}\n\n{battleLog.type}\n\n{battleLog.log}\n\n{skillDescription}";
 
         // PlayerMonster
-        _playerMonsterBaseList.ForEach(monsterBase => {
-            foreach (Transform child in monsterBase.transform) {
+        _playerMonsterBaseList.ForEach(monsterBase =>
+        {
+            foreach (Transform child in monsterBase.transform)
+            {
                 Destroy(child.gameObject);
             }
         });
 
-        battleLog.playerBattleMonsterList.ForEach(battleMonster => {
-            if (battleMonster.monsterId > 0) {
+        battleLog.playerBattleMonsterList.ForEach(battleMonster =>
+        {
+            if (battleMonster.monsterId > 0)
+            {
                 var parent = _playerMonsterBaseList[battleMonster.index.index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
 
                 parent.SetBattleMonsterItem(item);
                 item.Init(battleMonster.monsterId, battleMonster.level, false);
-                item.SetOnClickAction(() => {
+                item.SetOnClickAction(() =>
+                {
                     Observable.ReturnUnit()
                         .Do(_ => TimeManager.Instance.Pause())
                         .SelectMany(_ => BattleConditionListDialogFactory.Create(new BattleConditionListDialogRequest() { battleMonster = battleMonster }))
@@ -193,7 +273,8 @@ public class BattleWindowUIScript : DummyWindowBase {
                         .Subscribe();
                 });
 
-                if (!battleMonster.isDead) {
+                if (!battleMonster.isDead)
+                {
                     // hp
                     item.hpSlider.maxValue = battleMonster.maxHp;
                     item.hpSlider.value = battleMonster.currentHp;
@@ -201,7 +282,9 @@ public class BattleWindowUIScript : DummyWindowBase {
                     item.energySlider.value = battleMonster.currentEnergy;
                     // battleCondition
                     RefreshBattleCondition(battleMonster);
-                } else {
+                }
+                else
+                {
                     // die
                     item.hpSlider.value = 0;
                     item.energySlider.value = 0;
@@ -214,20 +297,25 @@ public class BattleWindowUIScript : DummyWindowBase {
         });
 
         // EnemyMonster
-        _enemyMonsterBaseList.ForEach(monsterBase => {
-            foreach (Transform child in monsterBase.transform) {
+        _enemyMonsterBaseList.ForEach(monsterBase =>
+        {
+            foreach (Transform child in monsterBase.transform)
+            {
                 Destroy(child.gameObject);
             }
         });
 
-        battleLog.enemyBattleMonsterList.ForEach(battleMonster => {
-            if (battleMonster.monsterId > 0) {
+        battleLog.enemyBattleMonsterList.ForEach(battleMonster =>
+        {
+            if (battleMonster.monsterId > 0)
+            {
                 var parent = _enemyMonsterBaseList[battleMonster.index.index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
 
                 parent.SetBattleMonsterItem(item);
                 item.Init(battleMonster.monsterId, battleMonster.level, false);
-                item.SetOnClickAction(() => {
+                item.SetOnClickAction(() =>
+                {
                     Observable.ReturnUnit()
                         .Do(_ => TimeManager.Instance.Pause())
                         .SelectMany(_ => BattleConditionListDialogFactory.Create(new BattleConditionListDialogRequest() { battleMonster = battleMonster }))
@@ -235,7 +323,8 @@ public class BattleWindowUIScript : DummyWindowBase {
                         .Subscribe();
                 });
 
-                if (!battleMonster.isDead) {
+                if (!battleMonster.isDead)
+                {
                     // hp
                     item.hpSlider.maxValue = battleMonster.maxHp;
                     item.hpSlider.value = battleMonster.currentHp;
@@ -243,7 +332,9 @@ public class BattleWindowUIScript : DummyWindowBase {
                     item.energySlider.value = battleMonster.currentEnergy;
                     // battleCondition
                     RefreshBattleCondition(battleMonster);
-                } else {
+                }
+                else
+                {
                     // die
                     item.hpSlider.value = 0;
                     item.energySlider.value = 0;
@@ -256,27 +347,32 @@ public class BattleWindowUIScript : DummyWindowBase {
         });
     }
 
-    public void StartSkillTest() {
+    public void StartSkillTest()
+    {
         quest = MasterRecord.GetMasterOf<QuestMB>().GetAll().First();
         SetEnemyMonsterImage(1);
 
         var targetMonsterBase = _enemyMonsterBaseList[1];
-        var skillFxList = Enumerable.Range(1, 234).Select(id => new SkillFxMB() {
+        var skillFxList = Enumerable.Range(1, 234).Select(id => new SkillFxMB()
+        {
             id = id,
         }).ToList();
         skillFxList = MasterRecord.GetMasterOf<SkillFxMB>().GetAll().Where(m => m.id >= 1 && m.id <= 10).ToList();
-        var animationObservableList = skillFxList.Shuffle().Select(skillEffect => {
+        var animationObservableList = skillFxList.Shuffle().Select(skillEffect =>
+        {
             const float SHOW_TIME = 2.0f;
 
             var skillNameObservable = Observable.ReturnUnit()
-                .Do(_ => {
+                .Do(_ =>
+                {
                     _skillNameText.text = $"スキル演出ID{skillEffect.id}の演出";
                     _skillNameBase.SetActive(true);
                 })
                 .Delay(TimeSpan.FromSeconds(SHOW_TIME / 1.5f))
                 .DoOnCompleted(() => _skillNameBase.SetActive(false));
             var actionDescriptionObservable = Observable.ReturnUnit()
-                .Do(_ => {
+                .Do(_ =>
+                {
                     _actionDescriptionTitleText.text = $"スキル演出ID{skillEffect.id}";
                     _actionDescriptionContentText.text = skillEffect.description;
                     _actionDescriptionBase.SetActive(true);
@@ -295,16 +391,20 @@ public class BattleWindowUIScript : DummyWindowBase {
         Observable.ReturnUnit().Connect(animationObservableList).Subscribe();
     }
 
-    private void SetPlayerMonsterImage() {
-        playerUserMonsterList.ForEach((userMonster, index) => {
-            if (userMonster != null) {
+    private void SetPlayerMonsterImage()
+    {
+        playerUserMonsterList.ForEach((userMonster, index) =>
+        {
+            if (userMonster != null)
+            {
                 var parent = _playerMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
                 var battleMonsterIndex = new BattleMonsterIndex() { index = index, isPlayer = true };
 
                 parent.SetBattleMonsterItem(item);
                 item.Init(userMonster.monsterId, userMonster.customData.level, true);
-                item.SetOnClickAction(() => {
+                item.SetOnClickAction(() =>
+                {
                     var battleMonster = GetBattleMonster(battleMonsterIndex);
                     if (battleMonster == null) return;
 
@@ -318,9 +418,12 @@ public class BattleWindowUIScript : DummyWindowBase {
         });
     }
 
-    public void SetEnemyMonsterImage(int waveCount) {
-        _enemyMonsterBaseList.ForEach(monsterBase => {
-            foreach (Transform child in monsterBase.transform) {
+    public void SetEnemyMonsterImage(int waveCount)
+    {
+        _enemyMonsterBaseList.ForEach(monsterBase =>
+        {
+            foreach (Transform child in monsterBase.transform)
+            {
                 Destroy(child.gameObject);
             }
         });
@@ -328,15 +431,18 @@ public class BattleWindowUIScript : DummyWindowBase {
         var waveIndex = waveCount - 1;
         var questMonsterList = quest.questMonsterListByWave[waveIndex];
 
-        questMonsterList.ForEach((questMonster, index) => {
-            if (questMonster.monsterId > 0) {
+        questMonsterList.ForEach((questMonster, index) =>
+        {
+            if (questMonster.monsterId > 0)
+            {
                 var parent = _enemyMonsterBaseList[index];
                 var item = UIManager.Instance.CreateContent<BattleMonsterItem>(parent.transform);
                 var battleMonsterIndex = new BattleMonsterIndex() { index = index, isPlayer = false, waveCount = waveCount };
 
                 parent.SetBattleMonsterItem(item);
                 item.Init(questMonster.monsterId, questMonster.level, false);
-                item.SetOnClickAction(() => {
+                item.SetOnClickAction(() =>
+                {
                     var battleMonster = GetBattleMonster(battleMonsterIndex);
                     if (battleMonster == null) return;
 
@@ -350,48 +456,60 @@ public class BattleWindowUIScript : DummyWindowBase {
         });
     }
 
-    private BattleMonsterInfo GetBattleMonster(BattleMonsterIndex battleMonsterIndex) {
+    private BattleMonsterInfo GetBattleMonster(BattleMonsterIndex battleMonsterIndex)
+    {
         var targetBattleMonsterList = battleMonsterIndex.isPlayer ? playerBattleMonsterList : enemyBattleMonsterList;
         return targetBattleMonsterList.FirstOrDefault(b => b.index.IsSame(battleMonsterIndex));
     }
 
-    public void UpdateBattleMonster(BattleMonsterInfo battleMonster) {
+    public void UpdateBattleMonster(BattleMonsterInfo battleMonster)
+    {
         var targetBattleMonsterList = battleMonster.index.isPlayer ? playerBattleMonsterList : enemyBattleMonsterList;
         var index = targetBattleMonsterList.FindIndex(b => b.index.IsSame(battleMonster.index));
         targetBattleMonsterList[index] = battleMonster;
     }
 
-    public void UpdateBattleMonster(List<BattleMonsterInfo> battleMonsterList) {
+    public void UpdateBattleMonster(List<BattleMonsterInfo> battleMonsterList)
+    {
         battleMonsterList.ForEach(battleMonster => UpdateBattleMonster(battleMonster));
     }
 
     /// <summary>
     /// ステータス変化後のHPスライダー更新処理
     /// </summary>
-    public void UpdateHpSlider(BattleMonsterInfo battleMonster) {
+    public void UpdateHpSlider(BattleMonsterInfo battleMonster)
+    {
         var battleMonsterBase = GetBattleMonsterBase(battleMonster.index);
         var battleMonsterItem = battleMonsterBase.battleMonsterItem;
         battleMonsterItem.hpSlider.maxValue = battleMonster.maxHp;
         battleMonsterItem.hpSlider.value = battleMonster.currentHp;
     }
 
-    public void SetBattleMonsterList(List<BattleMonsterInfo> battleMonsterList) {
+    public void SetBattleMonsterList(List<BattleMonsterInfo> battleMonsterList)
+    {
         var isPlayer = battleMonsterList.First().index.isPlayer;
-        if (isPlayer) {
+        if (isPlayer)
+        {
             playerBattleMonsterList = battleMonsterList;
-        } else {
+        }
+        else
+        {
             enemyBattleMonsterList = battleMonsterList;
         }
     }
 
-    private void SetBattleMonsterInfoItem(List<UserMonsterInfo> playerUserMonsterList) {
-        playerUserMonsterList.ForEach(userMonster => {
+    private void SetBattleMonsterInfoItem(List<UserMonsterInfo> playerUserMonsterList)
+    {
+        playerUserMonsterList.ForEach(userMonster =>
+        {
             var battleMonsterInfoItem = UIManager.Instance.CreateContent<BattleMonsterInfoItem>(_battleMonsterInfoItemBase);
             battleMonsterInfoItem.Set(userMonster);
-            battleMonsterInfoItem.SetOnClickAction(() => {
+            battleMonsterInfoItem.SetOnClickAction(() =>
+            {
                 Observable.ReturnUnit()
                     .Do(_ => TimeManager.Instance.Pause())
-                    .SelectMany(_ => MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest() {
+                    .SelectMany(_ => MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest()
+                    {
                         userMonster = userMonster,
                         canStrength = false,
                     }))
@@ -401,30 +519,36 @@ public class BattleWindowUIScript : DummyWindowBase {
         });
     }
 
-    public void SetTurnText(int turnCount) {
+    public void SetTurnText(int turnCount)
+    {
         _turnText.text = $"Turn {turnCount}";
     }
 
-    public void SetWaveText(int waveCount, int maxWaveCount) {
+    public void SetWaveText(int waveCount, int maxWaveCount)
+    {
         _waveText.text = $"Wave {waveCount}/{maxWaveCount}";
     }
 
-    public IObservable<Unit> ShowSkillInfoObservable(BattleMonsterInfo doBattleMonster, BattleActionType actionType) {
+    public IObservable<Unit> ShowSkillInfoObservable(BattleMonsterInfo doBattleMonster, BattleActionType actionType)
+    {
         const float SHOW_TIME = 2.0f;
 
         var skillNameAndDescription = GetSkillNameAndDescription(doBattleMonster, actionType);
 
-        if (skillNameObservable != null) {
+        if (skillNameObservable != null)
+        {
             skillNameObservable.Dispose();
             skillNameObservable = null;
         }
-        if (actionDescriptionObservable != null) {
+        if (actionDescriptionObservable != null)
+        {
             actionDescriptionObservable.Dispose();
             actionDescriptionObservable = null;
         }
 
         skillNameObservable = Observable.ReturnUnit()
-            .Do(_ => {
+            .Do(_ =>
+            {
                 _skillNameText.text = skillNameAndDescription.skillName;
                 _skillNameBase.SetActive(true);
             })
@@ -433,7 +557,8 @@ public class BattleWindowUIScript : DummyWindowBase {
             .Subscribe();
 
         actionDescriptionObservable = Observable.ReturnUnit()
-            .Do(_ => {
+            .Do(_ =>
+            {
                 var actionName = GetActionName(actionType);
                 _actionDescriptionTitleText.text = $"{actionName}の効果";
                 _actionDescriptionContentText.text = $"{skillNameAndDescription.skillName}が発動！\n<color=\"yellow\">{skillNameAndDescription.skillDescription}</color>";
@@ -447,12 +572,14 @@ public class BattleWindowUIScript : DummyWindowBase {
         return Observable.ReturnUnit();
     }
 
-    public IObservable<Unit> PlaySkillCutInAnimationObservable(long monsterId, bool isPlayer) {
+    public IObservable<Unit> PlaySkillCutInAnimationObservable(long monsterId, bool isPlayer)
+    {
         const float CUT_IN_ANIMATION_TIME = 2.0f;
         const float MONSTER_ICON_OFFSET_X = 50.0f;
 
         return PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, monsterId)
-            .SelectMany(sprite => {
+            .SelectMany(sprite =>
+            {
                 var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(monsterId);
                 var ultimateSkill = MasterRecord.GetMasterOf<UltimateSkillMB>().Get(monster.level1UltimateSkillId);
                 var monsterIconDefaultPosition = _skillCutInMonsterIconImage.transform.localPosition;
@@ -473,71 +600,86 @@ public class BattleWindowUIScript : DummyWindowBase {
                     .Append(_skillCutInMonsterIconImage.transform.DOLocalMoveX(monsterIconDefaultPosition.x + MONSTER_ICON_OFFSET_X / 2, CUT_IN_ANIMATION_TIME));
                 return monsterIconSequence.OnCompleteAsObservable()
                     .AsUnitObservable()
-                    .Do(_ => {
+                    .Do(_ =>
+                    {
                         _skillCutInBase.SetActive(false);
                         _skillCutInMonsterIconImage.transform.localPosition = monsterIconDefaultPosition;
                     });
             });
     }
 
-    public IObservable<Unit> PlayAttackAnimationObservable(BattleMonsterInfo doBattleMonster, BattleActionType actionType) {
+    public IObservable<Unit> PlayAttackAnimationObservable(BattleMonsterInfo doBattleMonster, BattleActionType actionType)
+    {
         var isPlayer = doBattleMonster.index.isPlayer;
         var doMonsterBase = GetBattleMonsterBase(doBattleMonster.index);
         var doMonsterRT = doMonsterBase.battleMonsterItem.GetComponent<RectTransform>();
         return Observable.ReturnUnit()
-            .SelectMany(_ => {
-                if (actionType == BattleActionType.UltimateSkill) {
+            .SelectMany(_ =>
+            {
+                if (actionType == BattleActionType.UltimateSkill)
+                {
                     // スキルカットイン
                     return PlaySkillCutInAnimationObservable(doBattleMonster.monsterId, doBattleMonster.index.isPlayer);
-                } else {
+                }
+                else
+                {
                     return Observable.ReturnUnit();
                 }
             })
             .SelectMany(_ => VisualFxManager.Instance.PlayStartAttackFxObservable(doMonsterRT, isPlayer));
     }
 
-    public IObservable<Unit> PlayActionFailedAnimationObservable(BattleMonsterIndex doBattleMonsterIndex) {
+    public IObservable<Unit> PlayActionFailedAnimationObservable(BattleMonsterIndex doBattleMonsterIndex)
+    {
         var monsterBase = GetBattleMonsterBase(doBattleMonsterIndex);
         return VisualFxManager.Instance.PlayActionFailedAnimationObservable(monsterBase.battleMonsterItem);
     }
 
-    public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleActionType battleActionType, BeDoneBattleMonsterData targetBeDoneBattleMonsterData, long skillFxId, int currentHp, int currentEnergy, int currentShield) {
+    public IObservable<Unit> PlayTakeDamageAnimationObservable(BattleActionType battleActionType, BeDoneBattleMonsterData targetBeDoneBattleMonsterData, long skillFxId, int currentHp, int currentEnergy, int currentShield)
+    {
         var monsterBase = GetBattleMonsterBase(targetBeDoneBattleMonsterData.battleMonsterIndex);
         var wholeSkillEffectBase = targetBeDoneBattleMonsterData.battleMonsterIndex.isPlayer ? _playerWholeSkillEffectBase : _enemyWholeSkillEffectBase;
         return VisualFxManager.Instance.PlayTakeDamageFxObservable(battleActionType, targetBeDoneBattleMonsterData, monsterBase.battleMonsterItem, skillFxId, Math.Max(0, currentHp), currentEnergy, currentShield, monsterBase.battleMonsterItem.effectBase, _fxParentImage);
     }
 
-    public IObservable<Unit> PlayEnergySliderAnimationObservable(BattleMonsterIndex monsterIndex, int currentEnergy) {
+    public IObservable<Unit> PlayEnergySliderAnimationObservable(BattleMonsterIndex monsterIndex, int currentEnergy)
+    {
         var monsterBase = GetBattleMonsterBase(monsterIndex);
         var energySlider = monsterBase.battleMonsterItem.energySlider;
         return VisualFxManager.Instance.PlayEnergySliderAnimationObservable(energySlider, currentEnergy);
     }
 
-    public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterIndex battleMonsterIndex) {
+    public IObservable<Unit> PlayDieAnimationObservable(BattleMonsterIndex battleMonsterIndex)
+    {
         var monsterBase = GetBattleMonsterBase(battleMonsterIndex);
         return VisualFxManager.Instance.PlayDieAnimationObservable(monsterBase.battleMonsterItem);
     }
 
-    public IObservable<Unit> PlayWaveTitleFxObservable(int currentWaveCount, int maxWaveCount) {
+    public IObservable<Unit> PlayWaveTitleFxObservable(int currentWaveCount, int maxWaveCount)
+    {
         SetEnemyMonsterImage(currentWaveCount);
         SetWaveText(currentWaveCount, maxWaveCount);
         return VisualFxManager.Instance.PlayWaveTitleFxObservable(_fxParent, currentWaveCount, maxWaveCount);
     }
 
-    public IObservable<Unit> PlayTurnFxObservable(int currentTurn) {
+    public IObservable<Unit> PlayTurnFxObservable(int currentTurn)
+    {
         SetTurnText(currentTurn);
         return Observable.ReturnUnit();
     }
 
-    public IObservable<Unit> PlayWinAnimationObservable() {
+    public IObservable<Unit> PlayWinAnimationObservable()
+    {
         return VisualFxManager.Instance.PlayWinBattleFxObservable(_fxParent).Delay(TimeSpan.FromSeconds(1));
     }
 
-    public IObservable<Unit> PlayLoseAnimationObservable() {
+    public IObservable<Unit> PlayLoseAnimationObservable()
+    {
         return VisualFxManager.Instance.PlayLoseBattleFxObservable(_fxParent).Delay(TimeSpan.FromSeconds(1));
     }
 
-    public IObservable<Unit> PlayBossWaveAnimationObservable() {
+    public IObservable<Unit> PlayBossWaveAnimationObservable()
+    {
         const float BOSS_WAVE_BASE_ANIMATION_TIME = 4.0f;
         const float BOSS_WAVE_BASE_FADE_ANIMATION_TIME = 0.15f;
         const float BOSS_WAVE_BASE_FADE_OUT_DELAY_TIME = BOSS_WAVE_BASE_ANIMATION_TIME - (BOSS_WAVE_BASE_FADE_ANIMATION_TIME * 2);
@@ -551,7 +693,8 @@ public class BattleWindowUIScript : DummyWindowBase {
         Debug.Log($"delay:{TITLE_TEXT_ANIMATION_DELAY_TIME}, fade:{TITLE_TEXT_FADE_ANIMATION_TIME}");
 
         return Observable.ReturnUnit()
-            .Do(_ => {
+            .Do(_ =>
+            {
                 // 準備
                 _bossWaveEffectBase.SetActive(true);
                 _headerBase.SetActive(false);
@@ -560,7 +703,8 @@ public class BattleWindowUIScript : DummyWindowBase {
                 _bossWaveTitleCanvasGroup.DOFade(0.0f, 0.0f);
                 _bossWaveBaseCanvasGroup.DOFade(0.0f, 0.0f);
             })
-            .SelectMany(_ => {
+            .SelectMany(_ =>
+            {
                 var bossWaveBaseAnimationSequence = DOTween.Sequence()
                     .Append(_bossWaveBaseCanvasGroup.DOFade(1.0f, BOSS_WAVE_BASE_FADE_ANIMATION_TIME))
                     .AppendInterval(BOSS_WAVE_BASE_FADE_OUT_DELAY_TIME)
@@ -588,20 +732,24 @@ public class BattleWindowUIScript : DummyWindowBase {
                     titleTextAnimationSequence.PlayAsObservable().AsUnitObservable()
                 );
             })
-            .Do(_ => {
+            .Do(_ =>
+            {
                 // 片付け
                 _bossWaveEffectBase.SetActive(false);
                 _headerBase.SetActive(true);
             });
     }
 
-    public void RefreshBattleCondition(BattleMonsterInfo battleMonster) {
+    public void RefreshBattleCondition(BattleMonsterInfo battleMonster)
+    {
         var monsterBase = GetBattleMonsterBase(battleMonster.index);
         monsterBase.battleMonsterItem.RefreshBattleCondition(battleMonster.battleConditionList);
     }
 
-    private string GetActionName(BattleActionType actionType) {
-        switch (actionType) {
+    private string GetActionName(BattleActionType actionType)
+    {
+        switch (actionType)
+        {
             case BattleActionType.PassiveSkill:
                 return "パッシブスキル";
 
@@ -617,8 +765,10 @@ public class BattleWindowUIScript : DummyWindowBase {
         }
     }
 
-    private (string skillName, string skillDescription) GetSkillNameAndDescription(BattleMonsterInfo battleMonster, BattleActionType actionType) {
-        switch (actionType) {
+    private (string skillName, string skillDescription) GetSkillNameAndDescription(BattleMonsterInfo battleMonster, BattleActionType actionType)
+    {
+        switch (actionType)
+        {
             case BattleActionType.PassiveSkill:
                 var passiveSkillId = ClientMonsterUtil.GetPassiveSkillId(battleMonster.monsterId, battleMonster.level);
                 var passiveSkill = MasterRecord.GetMasterOf<PassiveSkillMB>().Get(passiveSkillId);
@@ -639,10 +789,17 @@ public class BattleWindowUIScript : DummyWindowBase {
         }
     }
 
-    private BattleMonsterBase GetBattleMonsterBase(BattleMonsterIndex battleMonsterIndex) {
+    private BattleMonsterBase GetBattleMonsterBase(BattleMonsterIndex battleMonsterIndex)
+    {
         var isPlayer = battleMonsterIndex.isPlayer;
         var monsterBaseList = isPlayer ? _playerMonsterBaseList : _enemyMonsterBaseList;
         var monsterBase = monsterBaseList[battleMonsterIndex.index];
         return monsterBase;
+    }
+
+    private void OnDestroy()
+    {
+        // 破棄されるタイミングで元のスピードに戻す
+        TimeManager.Instance.SpeedBy1();
     }
 }
