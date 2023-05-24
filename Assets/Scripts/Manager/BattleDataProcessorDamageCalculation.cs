@@ -70,13 +70,6 @@ public partial class BattleDataProcessor {
                 break;
         }
 
-        var doMonsterSide = doMonsterIndex.isPlayer ? "味" : "敵";
-        var beDoneMonsterSide = beDoneMonsterIndex.isPlayer ? "味" : "敵";
-        var arrow =
-            doMonsterIndex.isPlayer && !beDoneMonsterIndex.isPlayer ? ">>>>>>>>>>"
-            : !doMonsterIndex.isPlayer && beDoneMonsterIndex.isPlayer ? "<<<<<<<<<<"
-            : "----------";
-        testLog += $"\n{actionType.ToString()[0]}: {doMonsterSide}({doBattleMonster.maxHp}) {arrow} {beDoneMonsterSide}({beDoneBattleMonster.maxHp}) へ {data.value}";
         return data;
     }
 

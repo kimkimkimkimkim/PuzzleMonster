@@ -22,8 +22,6 @@ public partial class BattleDataProcessor {
     private List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>();
     private WinOrLose currentWinOrLose;
 
-    public string testLog { get; private set; } = "";
-
     private void Init(List<UserMonsterInfo> userMonsterList, QuestMB quest) {
         this.quest = quest;
         this.quest.limitTurnNum = 25;
@@ -41,12 +39,8 @@ public partial class BattleDataProcessor {
         SetPlayerBattleMonsterList(userMonsterList);
     }
 
-    private Stopwatch GetBattleLogListStopwatch = new Stopwatch();
-    private string GetBatleLogListStopwatchErrorMessage = "elapsed over 10 minetes.";
-
     public List<BattleLogInfo> GetBattleLogList(List<UserMonsterInfo> userMonsterList, QuestMB quest) {
         try {
-            GetBattleLogListStopwatch.Start();
             Init(userMonsterList, quest);
 
             // バトル処理を開始する
@@ -87,168 +81,65 @@ public partial class BattleDataProcessor {
 
             var pmApiException = new PMApiException() { message = e.ToString() };
             UnityEngine.Debug.Log(JsonConvert.SerializeObject(e));
-            if (e.Message != GetBatleLogListStopwatchErrorMessage) throw pmApiException;
+            throw pmApiException;
         }
 
         return battleLogList;
     }
 
-    private Stopwatch StartBattleIfNeededOneShot = new Stopwatch();
-    private Stopwatch StartBattleIfNeededTotal = new Stopwatch();
-    private Stopwatch MoveWaveIfNeededOneShot = new Stopwatch();
-    private Stopwatch MoveWaveIfNeededTotal = new Stopwatch();
-    private Stopwatch MoveTurnIfNeededOneShot = new Stopwatch();
-    private Stopwatch MoveTurnIfNeededTotal = new Stopwatch();
-    private Stopwatch GetNormalActionerOneShot = new Stopwatch();
-    private Stopwatch GetNormalActionerTotal = new Stopwatch();
-    private Stopwatch GetNormalActionerActionTypeOneShot = new Stopwatch();
-    private Stopwatch GetNormalActionerActionTypeTotal = new Stopwatch();
-    private Stopwatch AddStartTurnActionLogOneShot = new Stopwatch();
-    private Stopwatch AddStartTurnActionLogTotal = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeTurnActionStartOneShot = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeTurnActionStartTotal = new Stopwatch();
-    private Stopwatch CanActionOneShot = new Stopwatch();
-    private Stopwatch CanActionTotal = new Stopwatch();
-    private Stopwatch GetSkillEffectListOneShot = new Stopwatch();
-    private Stopwatch GetSkillEffectListTotal = new Stopwatch();
-    private Stopwatch StartActionStreamOneShot = new Stopwatch();
-    private Stopwatch StartActionStreamTotal = new Stopwatch();
-    private Stopwatch ActionFailedOneShot = new Stopwatch();
-    private Stopwatch ActionFailedTotal = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeActionEndOneShot = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeActionEndTotal = new Stopwatch();
-    private Stopwatch AddEndTurnActionLogOneShot = new Stopwatch();
-    private Stopwatch AddEndTurnActionLogTotal = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeTurnActionEndOneShot = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeTurnActionEndTotal = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnTargetBattleConditionAddedAndMeTurnActionEndOneShot = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnTargetBattleConditionAddedAndMeTurnActionEndTotal = new Stopwatch();
-    private Stopwatch ProgressBattleConditionTurnIfNeededOneShot = new Stopwatch();
-    private Stopwatch ProgressBattleConditionTurnIfNeededTotal = new Stopwatch();
-    private Stopwatch EndTurnIfNeededOneShot = new Stopwatch();
-    private Stopwatch EndTurnIfNeededTotal = new Stopwatch();
-    private Stopwatch EndWaveIfNeededOneShot = new Stopwatch();
-    private Stopwatch EndWaveIfNeededTotal = new Stopwatch();
-    private Stopwatch EndBattleIfNeededOneShot = new Stopwatch();
-    private Stopwatch EndBattleIfNeededTotal = new Stopwatch();
-
-    private void ConsoleStopwatch(string name, Stopwatch oneshot, Stopwatch total) {
-        var oneshotBorderMilliSeconds = 50;
-        var totalBorderMilliSeconds = 1000;
-        var logText = $"{name} oneshot:{oneshot.Elapsed.Hours}:{oneshot.Elapsed.Minutes}:{oneshot.Elapsed.Seconds}:{oneshot.Elapsed.Milliseconds}, total:{total.Elapsed.Hours}:{total.Elapsed.Minutes}:{total.Elapsed.Seconds}:{total.Elapsed.Milliseconds}";
-        if (oneshot.ElapsedMilliseconds >= oneshotBorderMilliSeconds || total.ElapsedMilliseconds >= totalBorderMilliSeconds) {
-            UnityEngine.Debug.LogError(logText);
-        } else {
-            UnityEngine.Debug.Log(logText);
-        }
-        oneshot.Reset();
-        total.Stop();
-    }
-
     private void PlayLoop() {
-        StartBattleIfNeededOneShot.Start();
-        StartBattleIfNeededTotal.Start();
         // バトルを開始する
         StartBattleIfNeeded();
-        ConsoleStopwatch("StartBattleIfNeeded", StartBattleIfNeededOneShot, StartBattleIfNeededTotal);
 
         // ウェーブを進行する
-        MoveWaveIfNeededOneShot.Start();
-        MoveWaveIfNeededTotal.Start();
         var isWaveMove = MoveWaveIfNeeded();
-        ConsoleStopwatch("MoveWaveIfNeeded", MoveWaveIfNeededOneShot, MoveWaveIfNeededTotal);
 
         // ターンを進行する
-        MoveTurnIfNeededOneShot.Start();
-        MoveTurnIfNeededTotal.Start();
         MoveTurnIfNeeded(isWaveMove);
-        ConsoleStopwatch("MoveTurnIfNeeded", MoveTurnIfNeededOneShot, MoveTurnIfNeededTotal);
 
         // アクション実行者を取得する
-        GetNormalActionerOneShot.Start();
-        GetNormalActionerTotal.Start();
         var actionMonsterIndex = GetNormalActioner();
-        ConsoleStopwatch("GetNormalActioner", GetNormalActionerOneShot, GetNormalActionerTotal);
 
         // アクションストリームを開始する
         if (actionMonsterIndex != null) {
-            GetNormalActionerActionTypeOneShot.Start();
-            GetNormalActionerActionTypeTotal.Start();
             var actionType = GetNormalActionerActionType(actionMonsterIndex);
-            ConsoleStopwatch("GetNormalActionerActionType", GetNormalActionerActionTypeOneShot, GetNormalActionerActionTypeTotal);
 
             // ターンアクション開始ログの追加
-            AddStartTurnActionLogOneShot.Start();
-            AddStartTurnActionLogTotal.Start();
             AddStartTurnActionLog(actionMonsterIndex);
-            ConsoleStopwatch("AddStartTurnActionLog", AddStartTurnActionLogOneShot, AddStartTurnActionLogTotal);
 
             // 状態異常を確認して行動できるかチェック
-            CanActionOneShot.Start();
-            CanActionTotal.Start();
             var canAction = CanAction(actionMonsterIndex, actionType);
-            ConsoleStopwatch("CanAction", CanActionOneShot, CanActionTotal);
 
             if (canAction) {
                 // アクション開始
-                GetSkillEffectListOneShot.Start();
-                GetSkillEffectListTotal.Start();
                 var battleSkillEffectList = GetSkillEffectList(actionMonsterIndex, actionType).Select(m => new BattleSkillEffectMI() { isActive = true, skillEffect = m }).ToList();
-                ConsoleStopwatch("GetSkillEffectList", GetSkillEffectListOneShot, GetSkillEffectListTotal);
 
-                StartActionStreamOneShot.Start();
-                StartActionStreamTotal.Start();
                 StartActionStream(actionMonsterIndex, actionType, null, battleSkillEffectList, null);
-                ConsoleStopwatch("StartActionStream", StartActionStreamOneShot, StartActionStreamTotal);
             } else {
                 // アクション失敗
-                ActionFailedOneShot.Start();
-                ActionFailedTotal.Start();
                 ActionFailed(actionMonsterIndex, actionType);
-                ConsoleStopwatch("ActionFailed", ActionFailedOneShot, ActionFailedTotal);
             }
 
             // ターンアクション終了ログの追加
-            AddEndTurnActionLogOneShot.Start();
-            AddEndTurnActionLogTotal.Start();
             AddEndTurnActionLog(actionMonsterIndex);
-            ConsoleStopwatch("AddEndTurnActionLog", AddEndTurnActionLogOneShot, AddEndTurnActionLogTotal);
 
             // ターンアクション終了時トリガースキルの発動
-            ExecuteTriggerSkillIfNeededOnMeTurnActionEndOneShot.Start();
-            ExecuteTriggerSkillIfNeededOnMeTurnActionEndTotal.Start();
             ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnMeTurnActionEnd, actionMonsterIndex);
-            ConsoleStopwatch("ExecuteTriggerSkillIfNeededOnMeTurnActionEnd", ExecuteTriggerSkillIfNeededOnMeTurnActionEndOneShot, ExecuteTriggerSkillIfNeededOnMeTurnActionEndTotal);
 
-            ExecuteTriggerSkillIfNeededOnTargetBattleConditionAddedAndMeTurnActionEndOneShot.Start();
-            ExecuteTriggerSkillIfNeededOnTargetBattleConditionAddedAndMeTurnActionEndTotal.Start();
             ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTargetBattleConditionAddedAndMeTurnActionEnd, actionMonsterIndex);
-            ConsoleStopwatch("ExecuteTriggerSkillIfNeededOnTargetBattleConditionAddedAndMeTurnActionEnd", ExecuteTriggerSkillIfNeededOnTargetBattleConditionAddedAndMeTurnActionEndOneShot, ExecuteTriggerSkillIfNeededOnTargetBattleConditionAddedAndMeTurnActionEndTotal);
 
             // 状態異常のターンを経過させる
-            ProgressBattleConditionTurnIfNeededOneShot.Start();
-            ProgressBattleConditionTurnIfNeededTotal.Start();
             ProgressBattleConditionTurnIfNeeded(actionMonsterIndex);
-            ConsoleStopwatch("ProgressBattleConditionTurnIfNeeded", ProgressBattleConditionTurnIfNeededOneShot, ProgressBattleConditionTurnIfNeededTotal);
         }
 
         // ターンを終了する
-        EndTurnIfNeededOneShot.Start();
-        EndTurnIfNeededTotal.Start();
         var isTurnEnd = EndTurnIfNeeded();
-        ConsoleStopwatch("EndTurnIfNeeded", EndTurnIfNeededOneShot, EndTurnIfNeededTotal);
 
         // ウェーブを終了する
-        EndWaveIfNeededOneShot.Start();
-        EndWaveIfNeededTotal.Start();
         EndWaveIfNeeded();
-        ConsoleStopwatch("EndWaveIfNeeded", EndWaveIfNeededOneShot, EndWaveIfNeededTotal);
 
         // バトルを終了する
-        EndBattleIfNeededOneShot.Start();
-        EndBattleIfNeededTotal.Start();
         EndBattleIfNeeded(isTurnEnd);
-        ConsoleStopwatch("EndBattleIfNeeded", EndBattleIfNeededOneShot, EndBattleIfNeededTotal);
     }
 
     private void StartBattleIfNeeded() {
@@ -281,41 +172,10 @@ public partial class BattleDataProcessor {
         return battleMonster.currentEnergy >= ConstManager.Battle.MAX_ENERGY_VALUE ? BattleActionType.UltimateSkill : BattleActionType.NormalSkill;
     }
 
-    private Stopwatch StartActionOneShot = new Stopwatch();
-    private Stopwatch StartActionTotal = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeActionStartOneShot = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeActionStartTotal = new Stopwatch();
-    private Stopwatch GetBeDoneMonsterIndexListOneShot = new Stopwatch();
-    private Stopwatch GetBeDoneMonsterIndexListTotal = new Stopwatch();
-    private Stopwatch ExecuteActionOneShot = new Stopwatch();
-    private Stopwatch ExecuteActionTotal = new Stopwatch();
-    private Stopwatch AddSkillEffectFailedOfProbabilityMissLogOneShot = new Stopwatch();
-    private Stopwatch AddSkillEffectFailedOfProbabilityMissLogTotal = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeNormalSkillEndOneShot = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeNormalSkillEndTotal = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeUltimateSkillEndOneShot = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeUltimateSkillEndTotal = new Stopwatch();
-    private Stopwatch ExecuteDieIfNeededOneShot = new Stopwatch();
-    private Stopwatch ExecuteDieIfNeededTotal = new Stopwatch();
-    private Stopwatch EndActionOneShot = new Stopwatch();
-    private Stopwatch EndActionTotal = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeActionEndSuccessOneShot = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededOnMeActionEndSuccessTotal = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededEveryTimeEndOneShot = new Stopwatch();
-    private Stopwatch ExecuteTriggerSkillIfNeededEveryTimeEndTotal = new Stopwatch();
-
     // アクション実行者とアクション内容を受け取りアクションを実行する
     private void StartActionStream(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType, BattleConditionInfo battleCondition, List<BattleSkillEffectMI> battleSkillEffectList, TriggerSkillData triggerSkillData) {
-        // 10分以上たっていたらエラー発生
-        if (GetBattleLogListStopwatch.Elapsed.Minutes >= 10) {
-            throw new Exception(GetBatleLogListStopwatchErrorMessage);
-        }
-
         // アクションを開始する
-        StartActionOneShot.Start();
-        StartActionTotal.Start();
         StartAction(actionMonsterIndex, actionType, battleCondition);
-        ConsoleStopwatch("StartAction", StartActionOneShot, StartActionTotal);
 
         // 各効果の実行
         var battleConditionId = battleCondition != null ? battleCondition.battleConditionId : 0;
@@ -325,16 +185,10 @@ public partial class BattleDataProcessor {
                 var skillEffect = battleSkillEffect.skillEffect;
 
                 // アクションの対象を選択する
-                GetBeDoneMonsterIndexListOneShot.Start();
-                GetBeDoneMonsterIndexListTotal.Start();
                 var beDoneMonsterIndexList = GetBeDoneMonsterIndexList(actionMonsterIndex, skillEffect, skillGuid, index, actionType, battleCondition, triggerSkillData);
-                ConsoleStopwatch("GetBeDoneMonsterIndexList", GetBeDoneMonsterIndexListOneShot, GetBeDoneMonsterIndexListTotal);
 
                 // アクション処理を実行する
-                ExecuteActionOneShot.Start();
-                ExecuteActionTotal.Start();
                 ExecuteAction(actionMonsterIndex, actionType, beDoneMonsterIndexList, skillGuid, skillEffect, index, battleCondition, triggerSkillData);
-                ConsoleStopwatch("ExecuteAction", ExecuteActionOneShot, ExecuteActionTotal);
             }
         });
 
@@ -352,16 +206,10 @@ public partial class BattleDataProcessor {
         }
 
         // 死亡処理を実行
-        ExecuteDieIfNeededOneShot.Start();
-        ExecuteDieIfNeededTotal.Start();
         ExecuteDieIfNeeded();
-        ConsoleStopwatch("ExecuteDieIfNeeded", ExecuteDieIfNeededOneShot, ExecuteDieIfNeededTotal);
 
         // アクションを終了する
-        EndActionOneShot.Start();
-        EndActionTotal.Start();
         EndAction(actionMonsterIndex, actionType);
-        ConsoleStopwatch("EndAction", EndActionOneShot, EndActionTotal);
     }
 
     private void ActionFailed(BattleMonsterIndex actionMonsterIndex, BattleActionType actionType) {
@@ -409,15 +257,9 @@ public partial class BattleDataProcessor {
         AddTakeBattleConditionRemoveBeforeLog(beDoneBattleMonsterDataList.Clone(), "", BattleActionType.ProgressBattleConditionTurn, 0);
 
         // ターンが切れている状態異常を削除する
-        var i = 0;
-        while (battleMonster.battleConditionList.Any(battleCondition => battleCondition.remainingTurnNum == 0) && i < 100) {
-            i++;
+        while (battleMonster.battleConditionList.Any(battleCondition => battleCondition.remainingTurnNum == 0)) {
             var guid = battleMonster.battleConditionList.First(battleCondition => battleCondition.remainingTurnNum == 0).guid;
             RemoveBattleCondition(battleMonster.index, guid);
-        }
-
-        if (i == 100) {
-            UnityEngine.Debug.LogError("ProgressBattleConditionTurnIfNeeded Error");
         }
 
         battleMonster = GetBattleMonster(battleMonsterIndex);
@@ -497,10 +339,7 @@ public partial class BattleDataProcessor {
         }).ToList();
         if (missedBeDoneMonsterDataList.Any()) {
             // 確率による失敗ログの追加
-            AddSkillEffectFailedOfProbabilityMissLogOneShot.Start();
-            AddSkillEffectFailedOfProbabilityMissLogTotal.Start();
             AddSkillEffectFailedOfProbabilityMissLog(doMonsterIndex, missedBeDoneMonsterDataList, actionType, skillEffectIndex, null);
-            ConsoleStopwatch("AddSkillEffectFailedOfProbabilityMissLog", AddSkillEffectFailedOfProbabilityMissLogOneShot, AddSkillEffectFailedOfProbabilityMissLogTotal);
         }
 
         // 対象モンスターが存在しない場合はなにもしない
@@ -757,16 +596,12 @@ public partial class BattleDataProcessor {
                 var battleConditionInfo = battleMonster.battleConditionList.OrderBy(c => c.order).FirstOrDefault(c => c.grantorSkillEffect.battleConditionId == skillEffect.battleConditionId && c.grantorSkillEffect.canRemove);
                 var isAll = skillEffect.removeBattleConsitionNum == 0;
                 var count = 0;
-                while (((isAll && battleConditionInfo != null) || (battleConditionInfo != null && count < skillEffect.removeBattleConsitionNum)) && count < 100) {
+                while (((isAll && battleConditionInfo != null) || (battleConditionInfo != null && count < skillEffect.removeBattleConsitionNum))) {
                     RemoveBattleCondition(battleMonster.index, battleConditionInfo.guid);
 
                     isRemoved = true;
                     count++;
                     battleConditionInfo = GetBattleMonster(battleMonster.index).battleConditionList.OrderBy(c => c.order).FirstOrDefault(c => c.grantorSkillEffect.battleConditionId == skillEffect.battleConditionId && c.grantorSkillEffect.canRemove);
-                }
-
-                if (count == 100) {
-                    UnityEngine.Debug.LogError("ExecuteBattleConditionRemove Error");
                 }
 
                 return isRemoved;
