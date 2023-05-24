@@ -8,8 +8,7 @@ using UnityEngine;
 using PM.Enum.UI;
 using PM.Enum.Monster;
 
-public class BattleManager : SingletonMonoBehaviour<BattleManager>
-{
+public class BattleManager : SingletonMonoBehaviour<BattleManager> {
     private BattleWindowUIScript battleWindow;
     private QuestMB quest;
     private int maxWaveCount;
@@ -25,16 +24,49 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 初期化処理
     /// </summary>
-    private void Init(long questId, string userMonsterPartyId)
-    {
+    private void Init(long questId, string userMonsterPartyId) {
         battleWindow = null;
         quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
+
+        var monsterLevel = 90;
+        var enemyMonsterIdList = new List<long>() { 61, 62, 63, 68, 69 };
+        var questMonsterListByWave = new List<List<QuestMonsterMI>>()
+        {
+                enemyMonsterIdList.Select(monsterId => new QuestMonsterMI()
+                {
+                    monsterId = monsterId,
+                    level = monsterLevel,
+                }).ToList(),
+                enemyMonsterIdList.Select(monsterId => new QuestMonsterMI()
+                {
+                    monsterId = monsterId,
+                    level = monsterLevel,
+                }).ToList(),
+                enemyMonsterIdList.Select(monsterId => new QuestMonsterMI()
+                {
+                    monsterId = monsterId,
+                    level = monsterLevel,
+                }).ToList(),
+            };
+        quest = new QuestMB() {
+            id = 0,
+            name = "バトルテスト",
+            questCategoryId = 0,
+            firstRewardItemList = new List<ItemMI>(),
+            dropItemList = new List<ProbabilityItemMI>(),
+            questMonsterListByWave = questMonsterListByWave,
+            displayConditionList = new List<ConditionMI>(),
+            canExecuteConditionList = new List<ConditionMI>(),
+            consumeStamina = 0,
+            limitTurnNum = 99,
+            isLastWaveBoss = true,
+        };
+
         maxWaveCount = quest.questMonsterListByWave.Count;
         userBattleId = "";
         isEndBattleDataProcessor = false;
         var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
-        partyUserMonsterList = userMonsterParty.userMonsterIdList.Select(userMonsterId =>
-        {
+        partyUserMonsterList = userMonsterParty.userMonsterIdList.Select(userMonsterId => {
             return ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
         }).ToList();
         battleLogList = new List<BattleLogInfo>();
@@ -46,18 +78,50 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// バトルを開始する
     /// フェードインまではする
     /// </summary>
-    public IObservable<Unit> StartBattleObservable(long questId, string userMonsterPartyId)
-    {
+    public IObservable<Unit> StartBattleObservable(long questId, string userMonsterPartyId) {
         // 初期化
         Init(questId, userMonsterPartyId);
 
         // 暗転中にバトルログの取得とバトル実行APIを呼んでおく
-        var callbackObservable = new Func<IObservable<Unit>>(() =>
-        {
+        var callbackObservable = new Func<IObservable<Unit>>(() => {
             var quest = MasterRecord.GetMasterOf<QuestMB>().Get(questId);
-            var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
-            var userMonsterList = userMonsterParty.userMonsterIdList.Select(userMonsterId =>
+
+            var monsterLevel = 90;
+            var enemyMonsterIdList = new List<long>() { 61, 62, 63, 68, 69 };
+            var questMonsterListByWave = new List<List<QuestMonsterMI>>()
             {
+                enemyMonsterIdList.Select(monsterId => new QuestMonsterMI()
+                {
+                    monsterId = monsterId,
+                    level = monsterLevel,
+                }).ToList(),
+                enemyMonsterIdList.Select(monsterId => new QuestMonsterMI()
+                {
+                    monsterId = monsterId,
+                    level = monsterLevel,
+                }).ToList(),
+                enemyMonsterIdList.Select(monsterId => new QuestMonsterMI()
+                {
+                    monsterId = monsterId,
+                    level = monsterLevel,
+                }).ToList(),
+            };
+            quest = new QuestMB() {
+                id = 0,
+                name = "バトルテスト",
+                questCategoryId = 0,
+                firstRewardItemList = new List<ItemMI>(),
+                dropItemList = new List<ProbabilityItemMI>(),
+                questMonsterListByWave = questMonsterListByWave,
+                displayConditionList = new List<ConditionMI>(),
+                canExecuteConditionList = new List<ConditionMI>(),
+                consumeStamina = 0,
+                limitTurnNum = 99,
+                isLastWaveBoss = true,
+            };
+
+            var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.First(u => u.id == userMonsterPartyId);
+            var userMonsterList = userMonsterParty.userMonsterIdList.Select(userMonsterId => {
                 return ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
             }).ToList();
 
@@ -87,8 +151,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
 
             // ログ取得処理開始
             Observable.IntervalFrame(GET_BATTLE_LOG_INTERVAL_FRAME)
-                .Do(_ =>
-                {
+                .Do(_ => {
                     battleLogList = battleDataProcessor.battleLogList;
                 })
                 .TakeWhile(_ => !isEndBattleDataProcessor)
@@ -104,8 +167,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 正常に終了しなかったバトルを再開する
     /// </summary>
-    public IObservable<Unit> ResumeBattleObservable(long questId, string userMonsterPartyId, string userBattleId, List<BattleLogInfo> battleLogList)
-    {
+    public IObservable<Unit> ResumeBattleObservable(long questId, string userMonsterPartyId, string userBattleId, List<BattleLogInfo> battleLogList) {
         // 初期化
         Init(questId, userMonsterPartyId);
         this.userBattleId = userBattleId;
@@ -115,12 +177,10 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
         return PlayBattleObservable();
     }
 
-    private IObservable<Unit> PlayBattleObservable(Func<IObservable<Unit>> callbackObservable = null)
-    {
+    private IObservable<Unit> PlayBattleObservable(Func<IObservable<Unit>> callbackObservable = null) {
         var beforeRank = ApplicationContext.userData.rank;
         return FadeInObservable(callbackObservable)
-            .SelectMany(_ =>
-            {
+            .SelectMany(_ => {
                 // バトルアニメーションを再生
                 return PlayWholeAnimationObservable();
             })
@@ -191,29 +251,23 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 適宜バトルログリストを更新しながらバトルアニメーション全体を再生する
     /// </summary>
-    private IObservable<Unit> PlayWholeAnimationObservable()
-    {
-        return Observable.Create<Unit>(observer =>
-        {
+    private IObservable<Unit> PlayWholeAnimationObservable() {
+        return Observable.Create<Unit>(observer => {
             WaitBattleLogListIfNeededObservable()
-                .SelectMany(_ =>
-                {
+                .SelectMany(_ => {
                     // バトルアニメーションを再生
                     var battleLog = battleLogList[currentBattleLogListIndex];
                     return PlayAnimationObservable(battleLog);
                 })
-                .TakeWhile(_ =>
-                {
+                .TakeWhile(_ => {
                     // 今が最後のログだったらアニメーション終了
                     return battleLogList[currentBattleLogListIndex].type != BattleLogType.Result;
                 })
-                .Do(_ =>
-                {
+                .Do(_ => {
                     currentBattleLogListIndex++;
                 })
                 .RepeatSafe()
-                .Subscribe(_ => { }, () =>
-                {
+                .Subscribe(_ => { }, () => {
                     observer.OnNext(Unit.Default);
                     observer.OnCompleted();
                 });
@@ -225,8 +279,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 次に再生するログがない場合はログが取得できるまで待つ
     /// </summary>
-    private IObservable<Unit> WaitBattleLogListIfNeededObservable()
-    {
+    private IObservable<Unit> WaitBattleLogListIfNeededObservable() {
         // 次に再生するログが存在していれば何もしない
         if (battleLogList.Count - 1 >= currentBattleLogListIndex) return Observable.ReturnUnit();
 
@@ -240,23 +293,18 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// バトルログ情報に応じたアニメーションを再生する
     /// </summary>
-    private IObservable<Unit> PlayAnimationObservable(BattleLogInfo battleLog)
-    {
+    private IObservable<Unit> PlayAnimationObservable(BattleLogInfo battleLog) {
         return Observable.ReturnUnit()
-            .Do(_ =>
-            {
+            .Do(_ => {
                 Debug.Log($"--------- {battleLog.type} ---------");
                 Debug.Log(battleLog.log);
 
-                if (battleLog.playerBattleMonsterList != null && battleLog.enemyBattleMonsterList != null)
-                {
-                    var playerMonsterHpLogList = battleLog.playerBattleMonsterList.Select(m =>
-                    {
+                if (battleLog.playerBattleMonsterList != null && battleLog.enemyBattleMonsterList != null) {
+                    var playerMonsterHpLogList = battleLog.playerBattleMonsterList.Select(m => {
                         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
                         return $"{monster.name}: {m.currentHp}";
                     });
-                    var enemyMonsterHpLogList = battleLog.enemyBattleMonsterList.Select(m =>
-                    {
+                    var enemyMonsterHpLogList = battleLog.enemyBattleMonsterList.Select(m => {
                         var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
                         return $"{monster.name}: {m.currentHp}";
                     });
@@ -266,10 +314,8 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     Debug.Log("===================================================");
                 }
             })
-            .SelectMany(_ =>
-            {
-                switch (battleLog.type)
-                {
+            .SelectMany(_ => {
+                switch (battleLog.type) {
                     // バトル開始
                     case BattleLogType.StartBattle:
                         battleWindow.SetBattleMonsterList(battleLog.playerBattleMonsterList);
@@ -279,22 +325,17 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     case BattleLogType.MoveWave:
                         battleWindow.SetBattleMonsterList(battleLog.enemyBattleMonsterList);
                         return battleWindow.PlayWaveTitleFxObservable(battleLog.waveCount, maxWaveCount)
-                            .SelectMany(res =>
-                            {
+                            .SelectMany(res => {
                                 var isPlayBossWaveEffect = battleLog.waveCount == maxWaveCount;
-                                if (isPlayBossWaveEffect && quest.isLastWaveBoss)
-                                {
+                                if (isPlayBossWaveEffect && quest.isLastWaveBoss) {
                                     return battleWindow.PlayBossWaveAnimationObservable();
-                                }
-                                else
-                                {
+                                } else {
                                     return Observable.ReturnUnit();
                                 }
                             });
 
                     // ステータス変化
-                    case BattleLogType.TakeStatusChange:
-                        {
+                    case BattleLogType.TakeStatusChange: {
                             var battleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
                             battleWindow.UpdateBattleMonster(battleMonster);
                             battleWindow.UpdateHpSlider(battleMonster);
@@ -311,8 +352,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                         return Observable.ReturnUnit();
 
                     // アクションスタートアニメーション
-                    case BattleLogType.StartActionAnimation:
-                        {
+                    case BattleLogType.StartActionAnimation: {
                             var battleMonster = GetBattleMonster(battleLog.doBattleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
                             battleWindow.UpdateBattleMonster(battleMonster);
                             return Observable.WhenAll(
@@ -328,8 +368,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     // スキルエフェクト
                     case BattleLogType.TakeDamage:
                     case BattleLogType.TakeHeal:
-                        var takeDamageObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
-                        {
+                        var takeDamageObservableList = battleLog.beDoneBattleMonsterDataList.Select(d => {
                             var beDoneMonster = GetBattleMonster(d.battleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
                             battleWindow.UpdateBattleMonster(beDoneMonster);
                             return battleWindow.PlayTakeDamageAnimationObservable(d, battleLog.skillFxId, beDoneMonster.currentHp, beDoneMonster.currentEnergy, beDoneMonster.shield());
@@ -344,8 +383,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
                     case BattleLogType.TakeBattleConditionRemoveAfter:
                     // 状態異常ターン進行
                     case BattleLogType.ProgressBattleConditionTurn:
-                        battleLog.beDoneBattleMonsterDataList.ForEach(d =>
-                        {
+                        battleLog.beDoneBattleMonsterDataList.ForEach(d => {
                             var battleMonster = GetBattleMonster(d.battleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
                             battleWindow.UpdateBattleMonster(battleMonster);
                             battleWindow.RefreshBattleCondition(battleMonster);
@@ -358,8 +396,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
 
                     // モンスター戦闘不能アニメーション
                     case BattleLogType.Die:
-                        var dieObservableList = battleLog.beDoneBattleMonsterDataList.Select(d =>
-                        {
+                        var dieObservableList = battleLog.beDoneBattleMonsterDataList.Select(d => {
                             var battleMonster = GetBattleMonster(d.battleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
                             battleWindow.UpdateBattleMonster(battleMonster);
                             return battleWindow.PlayDieAnimationObservable(d.battleMonsterIndex);
@@ -385,29 +422,22 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 画面遷移（フェードイン）時処理を実行
     /// </summary>
-    private IObservable<Unit> FadeInObservable(Func<IObservable<Unit>> callbackObservable)
-    {
+    private IObservable<Unit> FadeInObservable(Func<IObservable<Unit>> callbackObservable) {
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
-            .Do(res =>
-            {
+            .Do(res => {
                 HeaderFooterManager.Instance.Show(false);
             })
             .SelectMany(_ => Observable.WhenAll(
                 VisualFxManager.Instance.PlayQuestTitleFxObservable(quest.name),
-                Observable.ReturnUnit().SelectMany(res =>
-                {
-                    if (callbackObservable != null)
-                    {
+                Observable.ReturnUnit().SelectMany(res => {
+                    if (callbackObservable != null) {
                         return callbackObservable();
-                    }
-                    else
-                    {
+                    } else {
                         return Observable.ReturnUnit();
                     }
                 })
             ))
-            .Do(_ =>
-            {
+            .Do(_ => {
                 battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
                 battleWindow.Init(partyUserMonsterList, quest, userBattleId);
             })
@@ -417,56 +447,45 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
     /// <summary>
     /// 画面遷移（フェードアウト）時処理を実行
     /// </summary>
-    public IObservable<Unit> FadeOutObservable()
-    {
+    public IObservable<Unit> FadeOutObservable() {
         return FadeManager.Instance.PlayFadeAnimationObservable(1)
-            .Do(_ =>
-            {
+            .Do(_ => {
                 // クエストリスト画面が表示されるまで現在の画面を閉じる
                 var currentWindowInfo = UIManager.Instance.currentWindowInfo;
                 var windowNameList = new List<string>();
-                while (currentWindowInfo != null)
-                {
+                while (currentWindowInfo != null) {
                     windowNameList.Add(currentWindowInfo.component.name);
                     currentWindowInfo = currentWindowInfo.parent;
                 }
                 var questListWindowName = UIManager.Instance.GetUIName<QuestListWindowUIScript>();
                 var existsQuestListWindow = windowNameList.Any(name => name == questListWindowName);
 
-                if (existsQuestListWindow)
-                {
+                if (existsQuestListWindow) {
                     currentWindowInfo = UIManager.Instance.currentWindowInfo;
-                    while (currentWindowInfo.component.name != questListWindowName)
-                    {
+                    while (currentWindowInfo.component.name != questListWindowName) {
                         UIManager.Instance.CloseWindow();
                         currentWindowInfo = UIManager.Instance.currentWindowInfo;
                     }
                 }
             })
-            .Do(_ =>
-            {
+            .Do(_ => {
                 Destroy(battleWindow.gameObject);
                 HeaderFooterManager.Instance.Show(true);
             })
             .SelectMany(_ => FadeManager.Instance.PlayFadeAnimationObservable(0));
     }
 
-    private BattleMonsterInfo GetBattleMonster(BattleMonsterIndex monsterIndex, List<BattleMonsterInfo> playerBattleMonsterList, List<BattleMonsterInfo> enemyBattleMonsterList)
-    {
-        if (monsterIndex.isPlayer)
-        {
+    private BattleMonsterInfo GetBattleMonster(BattleMonsterIndex monsterIndex, List<BattleMonsterInfo> playerBattleMonsterList, List<BattleMonsterInfo> enemyBattleMonsterList) {
+        if (monsterIndex.isPlayer) {
             return playerBattleMonsterList.First(battleMonster => battleMonster.index.IsSame(monsterIndex));
-        }
-        else
-        {
+        } else {
             return enemyBattleMonsterList.First(battleMonster => battleMonster.index.IsSame(monsterIndex));
         }
     }
 
     #region SIMULATION
 
-    public IObservable<Unit> StartBattleSimulationObservable(List<UserMonsterInfo> userMonsterList, QuestMB quest)
-    {
+    public IObservable<Unit> StartBattleSimulationObservable(List<UserMonsterInfo> userMonsterList, QuestMB quest) {
         // 初期化
         this.quest = quest;
         maxWaveCount = quest.questMonsterListByWave.Count;
@@ -478,16 +497,13 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
 
         // バトルを実行
         return FadeInObservable(null)
-            .SelectMany(_ =>
-            {
+            .SelectMany(_ => {
                 var observableList = battleLogList.Select(battleLog => PlayAnimationObservable(battleLog)).ToList();
                 return Observable.ReturnUnit().Connect(observableList.ToArray());
             })
-            .SelectMany(res =>
-            {
+            .SelectMany(res => {
                 var resultLog = battleLogList.First(l => l.type == BattleLogType.Result);
-                return BattleResultDialogFactory.Create(new BattleResultDialogRequest()
-                {
+                return BattleResultDialogFactory.Create(new BattleResultDialogRequest() {
                     winOrLose = resultLog.winOrLose,
                     playerBattleMonsterList = resultLog.playerBattleMonsterList,
                     enemyBattleMonsterListByWave = resultLog.enemyBattleMonsterListByWave,
@@ -497,8 +513,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager>
             .AsUnitObservable();
     }
 
-    public IObservable<Unit> StartBattleTestObservable(List<BattleLogInfo> battleLogList)
-    {
+    public IObservable<Unit> StartBattleTestObservable(List<BattleLogInfo> battleLogList) {
         battleWindow = UIManager.Instance.CreateDummyWindow<BattleWindowUIScript>();
         Debug.Log("===========");
         return battleWindow.StartTestObservable(battleLogList);
