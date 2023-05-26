@@ -10,8 +10,7 @@ using PM.Enum.Item;
 using PM.Enum.Date;
 
 [ResourcePath("UI/Window/Window-Home")]
-public class HomeWindowUIScript : WindowBase
-{
+public class HomeWindowUIScript : WindowBase {
     [SerializeField] protected Button _questButton;
     [SerializeField] protected Button _missionButton;
     [SerializeField] protected Button _presentButton;
@@ -19,11 +18,11 @@ public class HomeWindowUIScript : WindowBase
     [SerializeField] protected Transform _monsterAreaParentBase;
     [SerializeField] protected GameObject _missionIconBadge;
     [SerializeField] protected GameObject _presentIconBadge;
-    
+    [SerializeField] protected RectTransform _backgroundRT;
+
     private List<Transform> monsterAreaParentList = new List<Transform>();
 
-    public override void Init(WindowInfo info)
-    {
+    public override void Init(WindowInfo info) {
         base.Init(info);
 
         _questButton.OnClickIntentAsObservable()
@@ -39,20 +38,17 @@ public class HomeWindowUIScript : WindowBase
             .Subscribe();
 
         _rewardAdButton.OnClickIntentAsObservable()
-            .SelectMany(_ =>
-            {
+            .SelectMany(_ => {
                 var title = "確認";
                 var content = $"広告を視聴することで限定アイテムを獲得します\n{GetRewardAdRemainNumText(_rewardAdButton.rewardAdId)}";
                 return CommonDialogFactory.Create(new CommonDialogRequest() { commonDialogType = CommonDialogType.NoAndYes, title = title, content = content });
             })
             .Where(res => res.dialogResponseType == DialogResponseType.Yes)
             .SelectMany(_ => MobileAdsManager.Instance.ShowRewardObservable())
-            .SelectMany(_=> ApiConnection.RewardAdGrantReward(_rewardAdButton.rewardAdId))
-            .SelectMany(res =>
-            {
+            .SelectMany(_ => ApiConnection.RewardAdGrantReward(_rewardAdButton.rewardAdId))
+            .SelectMany(res => {
                 var itemList = MasterRecord.GetMasterOf<RewardAdMB>().Get(_rewardAdButton.rewardAdId).itemList.Select(i => (ItemMI)i).ToList();
-                return RouletteDialogFactory.Create(new RouletteDialogRequest()
-                {
+                return RouletteDialogFactory.Create(new RouletteDialogRequest() {
                     itemList = itemList,
                     electedIndex = res.electedIndex,
                 });
@@ -63,6 +59,7 @@ public class HomeWindowUIScript : WindowBase
         RefreshRewardAdButton();
         ActivateBadge();
         SetMonsterImage();
+        SetBackgroundSize();
 
         // 実行中のバトルがあればそちらを再開
         var resumeQuestId = SaveDataUtil.Battle.GetResumeQuestId();
@@ -90,24 +87,25 @@ public class HomeWindowUIScript : WindowBase
         }
     }
 
-    private void SetMonsterImage()
-    {
+    private void SetBackgroundSize() {
+        var scale = Screen.height / _backgroundRT.sizeDelta.y;
+        Debug.Log($"screenHeight:{Screen.height}, bacgroundHeight:{_backgroundRT.sizeDelta.y}, scale:{scale}");
+        _backgroundRT.localScale = new Vector3(scale, scale);
+    }
+
+    private void SetMonsterImage() {
         var userMonsterParty = ApplicationContext.userData.userMonsterPartyList?.FirstOrDefault();
-        if(userMonsterParty != null)
-        {
+        if (userMonsterParty != null) {
             monsterAreaParentList.Clear();
-            foreach(Transform child in _monsterAreaParentBase)
-            {
+            foreach (Transform child in _monsterAreaParentBase) {
                 monsterAreaParentList.Add(child);
             }
             monsterAreaParentList = monsterAreaParentList.Shuffle().ToList();
 
-            userMonsterParty.userMonsterIdList.ForEach((userMonsterId, index) =>
-            {
+            userMonsterParty.userMonsterIdList.ForEach((userMonsterId, index) => {
                 var parent = monsterAreaParentList[index];
                 var userMonster = ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == userMonsterId);
-                if (userMonster != null)
-                {
+                if (userMonster != null) {
                     var homeMonsterItem = UIManager.Instance.CreateContent<HomeMonsterItem>(parent);
                     var rectTransform = homeMonsterItem.GetComponent<RectTransform>();
                     homeMonsterItem.SetMonsterImage(userMonster.monsterId);
@@ -116,13 +114,11 @@ public class HomeWindowUIScript : WindowBase
         }
     }
 
-    private string GetRewardAdRemainNumText(long rewardAdId)
-    {
+    private string GetRewardAdRemainNumText(long rewardAdId) {
         var rewardAd = MasterRecord.GetMasterOf<RewardAdMB>().Get(rewardAdId);
         var grantedNum = DateTimeUtil.GetTermValidUserRewardAdList(rewardAd.termType, ApplicationContext.userData.userRewardAdList).Count;
         var termText = "";
-        switch (rewardAd.termType) 
-        {
+        switch (rewardAd.termType) {
             case TermType.Day:
                 termText = "本日の残り回数";
                 break;
@@ -132,24 +128,20 @@ public class HomeWindowUIScript : WindowBase
         return $"{termText}:{rewardAd.limitNum - grantedNum}/{rewardAd.limitNum}";
     }
 
-    private void RefreshRewardAdButton()
-    {
+    private void RefreshRewardAdButton() {
         var rewardAd = MasterRecord.GetMasterOf<RewardAdMB>().Get(_rewardAdButton.rewardAdId);
         var isShowRewardAdButton = DateTimeUtil.GetTermValidUserRewardAdList(rewardAd.termType, ApplicationContext.userData.userRewardAdList).Where(u => u.rewardAdId == rewardAd.id).Count() < rewardAd.limitNum;
         _rewardAdButton.gameObject.SetActive(isShowRewardAdButton);
     }
 
-    private void ActivateBadge()
-    {
+    private void ActivateBadge() {
         var isShowPresentIconBadge = ApplicationContext.userData.userPresentList.Any(u => u.IsValid());
         var isShowMissionIconBadge = MasterRecord.GetMasterOf<MissionMB>().GetAll()
-            .Where(m =>
-            {
+            .Where(m => {
                 // 表示条件を満たしているミッションに絞る
                 return ConditionUtil.IsValid(ApplicationContext.userData, m.displayConditionList);
             })
-            .Where(m =>
-            {
+            .Where(m => {
                 // クリア条件を満たしているか否か
                 var canClear = ConditionUtil.IsValid(ApplicationContext.userData, m.canClearConditionList);
                 // すでにクリアしているか否か
@@ -168,19 +160,16 @@ public class HomeWindowUIScript : WindowBase
         _missionIconBadge.SetActive(isShowMissionIconBadge);
     }
 
-    public override void Open(WindowInfo info)
-    {
+    public override void Open(WindowInfo info) {
         RefreshRewardAdButton();
         ActivateBadge();
         HeaderFooterManager.Instance.ActivateBadge();
     }
 
-    public override void Back(WindowInfo info)
-    {
+    public override void Back(WindowInfo info) {
     }
 
-    public override void Close(WindowInfo info)
-    {
+    public override void Close(WindowInfo info) {
         base.Close(info);
     }
 }
