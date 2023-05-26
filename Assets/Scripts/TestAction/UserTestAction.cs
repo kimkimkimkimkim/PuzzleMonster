@@ -168,6 +168,32 @@ public class UserTestAction : ITestAction {
         });
 
         testActionDataList.Add(new TestActionData() {
+            title = "ログインボーナスダイアログ表示(7日間)",
+            action = new Action(() => {
+                var loginBonusId = MasterRecord.GetMasterOf<LoginBonusMB>().GetAll().FirstOrDefault(m => m.rewardItemList.Count <= 7).id;
+                LoginBonusDialogFactory.Create(new LoginBonusDialogRequest() {
+                    userLoginBonus = new UserLoginBonusInfo() {
+                        loginBonusId = loginBonusId,
+                        loginDateList = new List<DateTime>() { DateTimeUtil.Now },
+                    },
+                }).Subscribe();
+            })
+        });
+
+        testActionDataList.Add(new TestActionData() {
+            title = "ログインボーナスダイアログ表示(30日間)",
+            action = new Action(() => {
+                var loginBonusId = MasterRecord.GetMasterOf<LoginBonusMB>().GetAll().FirstOrDefault(m => m.rewardItemList.Count > 7).id;
+                LoginBonusDialogFactory.Create(new LoginBonusDialogRequest() {
+                    userLoginBonus = new UserLoginBonusInfo() {
+                        loginBonusId = loginBonusId,
+                        loginDateList = new List<DateTime>() { DateTimeUtil.Now },
+                    },
+                }).Subscribe();
+            })
+        });
+
+        testActionDataList.Add(new TestActionData() {
             title = "作業用",
             action = new Action(() => {
             }),
