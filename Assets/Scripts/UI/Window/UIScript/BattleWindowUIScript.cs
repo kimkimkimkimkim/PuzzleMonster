@@ -506,6 +506,8 @@ public class BattleWindowUIScript : DummyWindowBase
             battleMonsterInfoItem.Set(userMonster);
             battleMonsterInfoItem.SetOnClickAction(() =>
             {
+                if (userMonster == null) return;
+
                 Observable.ReturnUnit()
                     .Do(_ => TimeManager.Instance.Pause())
                     .SelectMany(_ => MonsterDetailDialogFactory.Create(new MonsterDetailDialogRequest()
