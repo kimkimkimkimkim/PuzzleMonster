@@ -11,7 +11,7 @@ public class PMStackableDialogManager : SingletonMonoBehaviour<PMStackableDialog
     /// <summary>
     /// 未処理の通知ダイアログをスタック
     /// </summary>
-    public void Restack() {
+    public void Restack(bool isLoginTiming = false) {
         // ログインボーナス
         var userLoginBonusIdList = SaveDataUtil.StackableDialog.GetUserLoginBonusIdList();
         userLoginBonusIdList.ForEach(id => {
@@ -44,12 +44,7 @@ public class PMStackableDialogManager : SingletonMonoBehaviour<PMStackableDialog
 
             // 表示条件を満たしていなければ削除
             var news = MasterRecord.GetMasterOf<NewsMB>().Get(userNews.newsId);
-            if (!ConditionUtil.IsValid(ApplicationContext.userData, news.conditionList)) {
-                SaveDataUtil.StackableDialog.RemoveUserNewsId(id);
-                return;
-            }
-
-            if (!IsShowDialog(userNews)) {
+            if (!ConditionUtil.IsValid(ApplicationContext.userData, news.conditionList) || !IsShowDialog(userNews, isLoginTiming)) {
                 SaveDataUtil.StackableDialog.RemoveUserNewsId(id);
                 return;
             }
@@ -89,19 +84,19 @@ public class PMStackableDialogManager : SingletonMonoBehaviour<PMStackableDialog
     /// <summary>
     /// 表示履歴からこのダイアログを表示するか否かを返す
     /// </summary>
-    private bool IsShowDialog(UserNewsInfo userNews) {
+    private bool IsShowDialog(UserNewsInfo userNews, bool isLoginTiming) {
         var news = MasterRecord.GetMasterOf<NewsMB>().Get(userNews.newsId);
         var newsOpenDateList = SaveDataUtil.StackableDialog.GetNewsOpenDateList(userNews.id);
         switch (news.repeatType) {
             case RepeatType.EveryLogIn:
                 // これがログイン時のものであれば表示
-                return true;
+                return isLoginTiming;
             case RepeatType.OnceADay:
                 // 今日が初めてなら表示
-                return true;
+                return !newsOpenDateList.Any(d => DateTimeUtil.IsSameGameDate(d, DateTimeUtil.Now));
             case RepeatType.None:
-                //
-                return true;
+                // すでに表示していたら表示しない
+                return !newsOpenDateList.Any();
             default:
                 return true;
         }

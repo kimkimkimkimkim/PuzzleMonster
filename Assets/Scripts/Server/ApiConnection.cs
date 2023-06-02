@@ -9,22 +9,17 @@ using UnityEngine;
 using PlayFab.CloudScriptModels;
 using System.Linq;
 
-public partial class ApiConnection
-{
+public partial class ApiConnection {
     #region ClientApi
 
-    private static IObservable<TResp> SendRequest<TReq, TResp>(ApiType apiType, TReq request) where TReq : PlayFabRequestCommon where TResp : PlayFabResultCommon
-    {
-        return Observable.Create<TResp>(o =>
-        {
-            var callback = new Action<TResp>(res =>
-            {
+    private static IObservable<TResp> SendRequest<TReq, TResp>(ApiType apiType, TReq request) where TReq : PlayFabRequestCommon where TResp : PlayFabResultCommon {
+        return Observable.Create<TResp>(o => {
+            var callback = new Action<TResp>(res => {
                 UIManager.Instance.TryHideLoadingView();
                 o.OnNext(res);
                 o.OnCompleted();
             });
-            var onErrorAction = new Action<PlayFabError>(error =>
-            {
+            var onErrorAction = new Action<PlayFabError>(error => {
                 UIManager.Instance.TryHideLoadingView();
                 OnErrorAction(error);
                 o.OnCompleted();
@@ -36,10 +31,8 @@ public partial class ApiConnection
         });
     }
 
-    private static void ExecuteApi<TReq, TResp>(ApiType apiType, TReq request, Action<TResp> callback, Action<PlayFabError> onErrorAction) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon
-    {
-        switch (apiType)
-        {
+    private static void ExecuteApi<TReq, TResp>(ApiType apiType, TReq request, Action<TResp> callback, Action<PlayFabError> onErrorAction) where TResp : PlayFabResultCommon where TReq : PlayFabRequestCommon {
+        switch (apiType) {
             case ApiType.LoginWithCustomID:
                 PlayFabClientAPI.LoginWithCustomID(request as LoginWithCustomIDRequest, res => callback(res as TResp), error => onErrorAction(error));
                 break;
@@ -81,8 +74,7 @@ public partial class ApiConnection
         }
     }
 
-    private enum ApiType
-    {
+    private enum ApiType {
         LoginWithCustomID,
         GetPlayerProfile,
         UpdateUserTitleDisplayName,
@@ -98,22 +90,17 @@ public partial class ApiConnection
 
     #region CloudFunction
 
-    private static IObservable<TResp> SendRequest<TReq, TResp>(string functionName, TReq request) where TResp : PMApiResponseBase
-    {
-        return Observable.Create<TResp>(o =>
-        {
-            var callback = new Action<ExecuteFunctionResult>((ExecuteFunctionResult result) =>
-            {
+    private static IObservable<TResp> SendRequest<TReq, TResp>(string functionName, TReq request) where TResp : PMApiResponseBase {
+        return Observable.Create<TResp>(o => {
+            var callback = new Action<ExecuteFunctionResult>((ExecuteFunctionResult result) => {
                 var response = DataProcessUtil.GetResponse<TResp>(result.FunctionResult.ToString());
 
-                switch (response.status)
-                {
+                switch (response.status) {
                     case PMApiStatus.OK:
                         // サーバーAPIを実行したら確定でユーザーデータを更新している
                         // TODO : いずれは適切に差分更新とかするべきかも
                         ApplicationContext.UpdateUserDataObservable()
-                            .Do(_ =>
-                            {
+                            .Do(_ => {
                                 // UIの更新
                                 HeaderFooterManager.Instance.UpdatePropertyPanelText();
                                 HeaderFooterManager.Instance.UpdateUserDataUI();
@@ -121,10 +108,14 @@ public partial class ApiConnection
                                 HeaderFooterManager.Instance.ActivateBadge();
 
                                 // 通知の制御
-                                response.userNotificationList.ForEach(userNotification =>
-                                {
-                                    NotificationManager.Instance.ExecuteNotification(userNotification);
-                                });
+                                if (response.userNotificationList.Any()) {
+                                    response.userNotificationList.ForEach(userNotification => {
+                                        NotificationManager.Instance.ExecuteNotification(userNotification);
+                                    });
+
+                                    // スタッカブルダイアログの積みなおし
+                                    PMStackableDialogManager.Instance.Restack();
+                                }
 
                                 // ロッカブルの更新
                                 UIManager.Instance.RefreshLockableUI();
@@ -140,26 +131,20 @@ public partial class ApiConnection
 
                     case PMApiStatus.Maintenance:
                         var maintenanceCachedRecords = MasterRecord.GetMasterOf<MaintenanceMB>();
-                        if (maintenanceCachedRecords != null)
-                        {
+                        if (maintenanceCachedRecords != null) {
                             var maintenance = MasterRecord.GetMasterOf<MaintenanceMB>().GetAll().FirstOrDefault(m => DateTimeUtil.GetDateFromMasterString(m.startDate) <= DateTimeUtil.Now && DateTimeUtil.Now < DateTimeUtil.GetDateFromMasterString(m.endDate));
-                            if (maintenance != null)
-                            {
+                            if (maintenance != null) {
                                 // 対象のメンテナンスがある場合
                                 UIManager.Instance.TryHideLoadingView();
                                 OpenMaintenanceDialog(maintenance);
                                 o.OnCompleted();
-                            }
-                            else
-                            {
+                            } else {
                                 // 対象のメンテナンスが無い場合
                                 UIManager.Instance.TryHideLoadingView();
                                 OnErrorAction(response.exception);
                                 o.OnCompleted();
                             }
-                        }
-                        else
-                        {
+                        } else {
                             // マスタ取得前の場合は一旦通す
                             UIManager.Instance.TryHideLoadingView();
                             o.OnNext(response);
@@ -176,8 +161,7 @@ public partial class ApiConnection
                 }
             });
 
-            var onErrorAction = new Action<PlayFabError>(error =>
-            {
+            var onErrorAction = new Action<PlayFabError>(error => {
                 UIManager.Instance.TryHideLoadingView();
                 OnErrorAction(error);
                 o.OnCompleted();
@@ -189,12 +173,9 @@ public partial class ApiConnection
         });
     }
 
-    private static void ExecuteCloudFunction<TReq>(string functionName, TReq request, Action<ExecuteFunctionResult> callback, Action<PlayFabError> onErrorAction)
-    {
-        PlayFabCloudScriptAPI.ExecuteFunction(new ExecuteFunctionRequest()
-        {
-            Entity = new PlayFab.CloudScriptModels.EntityKey()
-            {
+    private static void ExecuteCloudFunction<TReq>(string functionName, TReq request, Action<ExecuteFunctionResult> callback, Action<PlayFabError> onErrorAction) {
+        PlayFabCloudScriptAPI.ExecuteFunction(new ExecuteFunctionRequest() {
+            Entity = new PlayFab.CloudScriptModels.EntityKey() {
                 Id = PlayFabSettings.staticPlayer.EntityId,
                 Type = PlayFabSettings.staticPlayer.EntityType
             },
@@ -209,13 +190,11 @@ public partial class ApiConnection
     /// <summary>
     /// メンテナンスダイアログを表示する
     /// </summary>
-    private static void OpenMaintenanceDialog(MaintenanceMB maintenance)
-    {
+    private static void OpenMaintenanceDialog(MaintenanceMB maintenance) {
         var content = SceneLoadManager.activateSceneType == SceneType.Title ?
                     $"ただいまメンテナンス中です\nご迷惑をおかけしてしまい申し訳ございません\nメンテナンス終了予定時間: {DateTimeUtil.GetDateFromMasterString(maintenance.endDate).ToString("yyyy/MM/dd hh:mm:ss")}" :
                     "ただいまメンテナンス中のため\nタイトルに戻ります";
-        CommonDialogFactory.Create(new CommonDialogRequest()
-        {
+        CommonDialogFactory.Create(new CommonDialogRequest() {
             commonDialogType = CommonDialogType.YesOnly,
             title = "お知らせ",
             content = content,
@@ -227,11 +206,9 @@ public partial class ApiConnection
     /// <summary>
     /// 共通エラーアクション
     /// </summary>
-    private static void OnErrorAction(PlayFabError error)
-    {
+    private static void OnErrorAction(PlayFabError error) {
         Debug.LogError(error.ToString());
-        CommonDialogFactory.Create(new CommonDialogRequest()
-        {
+        CommonDialogFactory.Create(new CommonDialogRequest() {
             commonDialogType = CommonDialogType.YesOnly,
             title = "お知らせ",
             content = "エラーが発生しました"
@@ -241,12 +218,10 @@ public partial class ApiConnection
     /// <summary>
     /// CloudScriptでのエラーアクション
     /// </summary>
-    private static void OnErrorAction(PMApiException exception)
-    {
+    private static void OnErrorAction(PMApiException exception) {
         Debug.LogError(exception.message);
         Debug.LogError(exception.StackTrace);
-        CommonDialogFactory.Create(new CommonDialogRequest()
-        {
+        CommonDialogFactory.Create(new CommonDialogRequest() {
             commonDialogType = CommonDialogType.YesOnly,
             title = "お知らせ",
             content = "エラーが発生しました\nタイトルに戻ります"
