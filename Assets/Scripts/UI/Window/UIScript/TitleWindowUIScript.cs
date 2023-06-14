@@ -38,17 +38,7 @@ public class TitleWindowUIScript : WindowBase {
             .SelectMany(_ => {
                 if (string.IsNullOrWhiteSpace(ApplicationContext.playerProfile.DisplayName)) {
                     // 名前が未設定なので名前登録ダイアログを開く
-                    return UserNameRegistrationDialogFactory.Create(new UserNameRegistrationDialogRequest())
-                        .SelectMany(resp => {
-                            switch (resp.dialogResponseType) {
-                                case DialogResponseType.Yes:
-                                    return ApiConnection.UpdateUserTitleDisplayName(resp.userName).Select(res => true);
-
-                                case DialogResponseType.No:
-                                default:
-                                    return Observable.Return<bool>(false);
-                            }
-                        });
+                    return UserNameRegistrationDialogFactory.Create(new UserNameRegistrationDialogRequest()).Select(res => res.dialogResponseType == DialogResponseType.Yes);
                 } else {
                     // 通常ログイン
                     return Observable.Return<bool>(true);

@@ -4,23 +4,19 @@ using System;
 using System.Collections.Generic;
 using PM.Enum.UI;
 
-public class UserNameRegistrationDialogFactory
-{
-    public static IObservable<UserNameRegistrationDialogResponse> Create(UserNameRegistrationDialogRequest request)
-    {
+public class UserNameRegistrationDialogFactory {
+    public static IObservable<UserNameRegistrationDialogResponse> Create(UserNameRegistrationDialogRequest request) {
         return Observable.Create<UserNameRegistrationDialogResponse>(observer => {
             var param = new Dictionary<string, object>();
             param.Add("onClickClose", new Action(() => {
-                observer.OnNext(new UserNameRegistrationDialogResponse()
-                {
+                observer.OnNext(new UserNameRegistrationDialogResponse() {
                     dialogResponseType = DialogResponseType.No,
                 });
                 observer.OnCompleted();
             }));
-            param.Add("onClickOk", new Action<string>(userName => {
-                observer.OnNext(new UserNameRegistrationDialogResponse() { 
+            param.Add("onClickOk", new Action(() => {
+                observer.OnNext(new UserNameRegistrationDialogResponse() {
                     dialogResponseType = DialogResponseType.Yes,
-                    userName = userName,
                 });
                 observer.OnCompleted();
             }));

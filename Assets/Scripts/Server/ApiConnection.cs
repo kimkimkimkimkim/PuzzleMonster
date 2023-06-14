@@ -12,16 +12,20 @@ using System.Linq;
 public partial class ApiConnection {
     #region ClientApi
 
-    private static IObservable<TResp> SendRequest<TReq, TResp>(ApiType apiType, TReq request) where TReq : PlayFabRequestCommon where TResp : PlayFabResultCommon {
+    private static IObservable<TResp> SendRequest<TReq, TResp>(ApiType apiType, TReq request, Func<PlayFabError, bool> onErrorHandler = null) where TReq : PlayFabRequestCommon where TResp : PlayFabResultCommon {
         return Observable.Create<TResp>(o => {
             var callback = new Action<TResp>(res => {
                 UIManager.Instance.TryHideLoadingView();
                 o.OnNext(res);
                 o.OnCompleted();
             });
+
             var onErrorAction = new Action<PlayFabError>(error => {
                 UIManager.Instance.TryHideLoadingView();
-                OnErrorAction(error);
+
+                // エラーハンドリングを独自で行っていない場合は共通エラー時処理を実行
+                if (onErrorHandler == null || !onErrorHandler(error)) OnErrorAction(error);
+
                 o.OnCompleted();
             });
 
