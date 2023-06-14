@@ -1,55 +1,33 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using GameBase;
-using PM.Enum.UI;
-using UniRx;
+using PM.Enum.Item;
 using UnityEngine;
-using UnityEngine.UI;
 
 [ResourcePath("UI/Parts/Parts-MonsterPartyListScrollItem")]
-public class MonsterPartyListScrollItem : ScrollItem
-{
-    [SerializeField] protected Sprite _emptySprite;
-    [SerializeField] protected List<Image> _monsterImageList;
+public class MonsterPartyListScrollItem : ScrollItem {
+    [SerializeField] protected List<PartyMonsterIconItem> _partyMonsterIconItemList;
 
     private int partyId;
 
-    public void SetMonsterImage(int partyId, List<long> monsterIdList) {
-        this.partyId = partyId;
-        _monsterImageList.ForEach(image => image.sprite = _emptySprite);
-
-        var observableList = monsterIdList.Select((id, index) =>
-            {
-                if (0 <= index && index < _monsterImageList.Count)
-                {
-                    return GetMonsterSpriteObservable(id)
-                        .Where(res => res != null)
-                        .Do(res =>
-                        {
-                            // 正しいスクロールアイテムの画像を変更するようにpartyIdで判定
-                            if(this.partyId == partyId) _monsterImageList[index].sprite = res;
-                        })
-                        .AsUnitObservable();
-                }
-                else
-                {
-                    return Observable.ReturnUnit();
-                }
-            });
-
-        Observable.WhenAll(observableList).Subscribe();
+    public void SetTitle(string title) {
+        _text.text = title;
     }
 
-    private IObservable<Sprite> GetMonsterSpriteObservable(long id)
-    {
-        if(id <= 0)
-        {
-            return Observable.Return(_emptySprite);
-        }
-        else
-        {
-            return PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.Monster, id);
-        }
+    public void SetMonsterImage(int partyId, List<long> monsterIdList) {
+        _partyMonsterIconItemList.ForEach((icon, index) => {
+            var monsterId = monsterIdList[index];
+
+            if (monsterId <= 0) {
+                icon.ShowIconItem(false);
+                icon.ShowRarityImage(false);
+                icon.ShowLevelText(false);
+            } else {
+                var itemMI = new ItemMI() { itemType = ItemType.Monster, itemId = monsterId };
+                icon.ShowIconItem(true);
+                icon.ShowRarityImage(true);
+                icon.ShowLevelText(true);
+                icon.SetIcon(itemMI);
+            }
+        });
     }
 }

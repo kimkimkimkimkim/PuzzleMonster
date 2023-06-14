@@ -5,37 +5,29 @@ using UniRx;
 using UnityEngine;
 
 [ResourcePath("UI/Window/Window-MonsterPartyList")]
-public class MonsterPartyListWindowUIScript : WindowBase
-{
+public class MonsterPartyListWindowUIScript : WindowBase {
     [SerializeField] protected InfiniteScroll _infiniteScroll;
 
-    private bool isFirstTimeOpen = true; 
+    private bool isFirstTimeOpen = true;
     private List<UserMonsterPartyInfo> userMonsterPartyList;
 
-    public override void Init(WindowInfo info)
-    {
+    public override void Init(WindowInfo info) {
         base.Init(info);
 
         RefreshScroll();
     }
 
-    private void RefreshScroll(bool enableAnimation = true)
-    {
+    private void RefreshScroll(bool enableAnimation = true) {
         _infiniteScroll.Clear();
         _infiniteScroll.enableAnimation = enableAnimation;
 
         userMonsterPartyList = Enumerable.Repeat<UserMonsterPartyInfo>(null, ConstManager.Battle.MAX_PARTY_NUM)
-            .Select((_, index) =>
-            {
+            .Select((_, index) => {
                 var userMonsterParty = ApplicationContext.userData.userMonsterPartyList.FirstOrDefault(u => u.partyIndex == index);
-                if (userMonsterParty != null)
-                {
+                if (userMonsterParty != null) {
                     return userMonsterParty;
-                }
-                else
-                {
-                    return new UserMonsterPartyInfo()
-                    {
+                } else {
+                    return new UserMonsterPartyInfo() {
                         id = "",
                         partyIndex = index,
                         userMonsterIdList = Enumerable.Repeat<string>("", ConstManager.Battle.MAX_PARTY_MEMBER_NUM).ToList(),
@@ -47,56 +39,44 @@ public class MonsterPartyListWindowUIScript : WindowBase
         _infiniteScroll.Init(userMonsterPartyList.Count, OnUpdateItem);
     }
 
-    private void OnUpdateItem(int index, GameObject item)
-    {
+    private void OnUpdateItem(int index, GameObject item) {
         if ((userMonsterPartyList.Count <= index) || (index < 0)) return;
 
         var scrollItem = item.GetComponent<MonsterPartyListScrollItem>();
         var userMonsterParty = userMonsterPartyList[index];
-        var initialUserMonsterList = userMonsterParty.userMonsterIdList.Select(id => ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == id)).ToList();
-        var monsterIdList = initialUserMonsterList
-            .Select(u =>
-            {
-                if (u == null)
-                {
+        var userMonsterList = userMonsterParty.userMonsterIdList.Select(id => ApplicationContext.userData.userMonsterList.FirstOrDefault(u => u.id == id)).ToList();
+        var monsterIdList = userMonsterList
+            .Select(u => {
+                if (u == null) {
                     return 0;
-                }
-                else
-                {
+                } else {
                     return MasterRecord.GetMasterOf<MonsterMB>().Get(u.monsterId).id;
                 }
             })
             .ToList();
 
+        scrollItem.SetTitle($"Party {index + 1}");
         scrollItem.SetMonsterImage(userMonsterParty.partyIndex, monsterIdList);
-        scrollItem.SetOnClickAction(() =>
-        {
-            MonsterFormationWindowFactory.Create(new MonsterFormationWindowRequest()
-            {
+        scrollItem.SetOnClickAction(() => {
+            MonsterFormationWindowFactory.Create(new MonsterFormationWindowRequest() {
                 partyId = userMonsterParty.partyIndex,
-                initialUserMonsterList = initialUserMonsterList,
+                initialUserMonsterList = userMonsterList,
             }).Subscribe();
         });
     }
 
-    public override void Open(WindowInfo info)
-    {
-        if (isFirstTimeOpen)
-        {
+    public override void Open(WindowInfo info) {
+        if (isFirstTimeOpen) {
             isFirstTimeOpen = false;
-        }
-        else
-        {
+        } else {
             RefreshScroll(false);
         }
     }
 
-    public override void Back(WindowInfo info)
-    {
+    public override void Back(WindowInfo info) {
     }
 
-    public override void Close(WindowInfo info)
-    {
+    public override void Close(WindowInfo info) {
         base.Close(info);
     }
 }

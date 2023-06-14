@@ -10,8 +10,7 @@ using System.Linq;
 using PM.Enum.Monster;
 
 [ResourcePath("UI/Parts/Parts-IconItem")]
-public class IconItem : MonoBehaviour
-{
+public class IconItem : MonoBehaviour {
     [SerializeField] protected Image _backgroundImage;
     [SerializeField] protected Image _frameImage;
     [SerializeField] protected Image _iconImage;
@@ -36,8 +35,7 @@ public class IconItem : MonoBehaviour
     [SerializeField] protected CanvasGroup _canvasGroup;
     [SerializeField] protected MonsterGradeParts _monsterGradeParts;
 
-    public Toggle toggle
-    { get { return _toggle; } private set { _toggle = value; } }
+    public Toggle toggle { get { return _toggle; } private set { _toggle = value; } }
 
     private ItemType itemType;
     private long itemId;
@@ -45,13 +43,11 @@ public class IconItem : MonoBehaviour
     private IDisposable onClickButtonObservable;
     private IDisposable onLongClickButtonObservable;
 
-    public void ShowIcon(bool isShow)
-    {
+    public void ShowIcon(bool isShow) {
         _iconImage.gameObject.SetActive(isShow);
     }
 
-    public void SetIcon(ItemMI item, bool showNumTextAtOne = false, bool isMaxStatus = false)
-    {
+    public IObservable<Unit> SetIconObservable(ItemMI item, bool showNumTextAtOne = false, bool isMaxStatus = false) {
         itemType = item.itemType;
         itemId = item.itemId;
 
@@ -60,11 +56,10 @@ public class IconItem : MonoBehaviour
         var numText = item.num <= 1 && !showNumTextAtOne ? "" : item.num.ToString();
 
         SetFrameImage(iconColorType);
-        SetIconImage(iconImageType, item.itemId);
         SetNumText(numText);
 
-        if (itemType == ItemType.Monster)
-        {
+        var setMonsterRarityImageObservable = Observable.ReturnUnit();
+        if (itemType == ItemType.Monster) {
             var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(itemId);
             var maxGrade = MasterRecord.GetMasterOf<GradeUpTableMB>().GetAll().Max(m => m.targetGrade);
             var maxLevel = MasterRecord.GetMasterOf<MaxMonsterLevelMB>().GetAll().First(m => m.monsterRarity == monster.rarity && m.monsterGrade == maxGrade).maxMonsterLevel;
@@ -73,67 +68,67 @@ public class IconItem : MonoBehaviour
             if (isMaxStatus || userMonster == null) userMonster = new UserMonsterInfo() { monsterId = itemId, customData = userMonsterCustomData };
             this.userMonster = userMonster;
             SetMonsterIconInfo(userMonster);
-            SetMonsterRarityImage(monster.rarity);
+            setMonsterRarityImageObservable = setMonsterRarityImageObservable.SelectMany(_ => SetMonsterRarityImageObservable(monster.rarity));
         }
+
+        return Observable.WhenAll(
+            SetIconImageObservable(iconImageType, item.itemId),
+            setMonsterRarityImageObservable
+        );
     }
 
-    public void SetIcon(ItemType itemType, long itemId)
-    {
+    public IObservable<Unit> SetIconObservable(ItemType itemType, long itemId) {
         var item = new ItemMI() { itemType = itemType, itemId = itemId };
-        SetIcon(item);
+        return SetIconObservable(item);
     }
 
-    private void SetMonsterIconInfo(UserMonsterInfo userMonster)
-    {
+    public void SetIcon(ItemMI item, bool showNumTextAtOne = false, bool isMaxStatus = false) {
+        SetIconObservable(item, showNumTextAtOne, isMaxStatus).Subscribe();
+    }
+
+    public void SetIcon(ItemType itemType, long itemId) {
+        SetIconObservable(itemType, itemId).Subscribe();
+    }
+
+    private void SetMonsterIconInfo(UserMonsterInfo userMonster) {
         SetLevelText(userMonster.customData.level);
         SetGrade(userMonster.customData.grade);
     }
 
-    private void SetFrameImage(IconColorType iconColor)
-    {
+    private void SetFrameImage(IconColorType iconColor) {
         var index = (int)iconColor;
         _frameImage.sprite = _frameSpriteList[index];
         _backgroundImage.color = _backgroundColorList[index];
     }
 
-    private void SetIconImage(IconImageType iconImageType, long itemId)
-    {
-        PMAddressableAssetUtil.GetIconImageSpriteObservable(iconImageType, itemId)
-            .Do(sprite =>
-            {
+    private IObservable<Unit> SetIconImageObservable(IconImageType iconImageType, long itemId) {
+        return PMAddressableAssetUtil.GetIconImageSpriteObservable(iconImageType, itemId)
+            .Do(sprite => {
                 if (sprite != null) _iconImage.sprite = sprite;
             })
-            .Subscribe()
-            .AddTo(this);
+            .AsUnitObservable();
     }
 
-    private void SetMonsterRarityImage(MonsterRarity monsterRarity)
-    {
-        PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterRarity, (int)monsterRarity)
-            .Do(sprite =>
-            {
+    private IObservable<Unit> SetMonsterRarityImageObservable(MonsterRarity monsterRarity) {
+        return PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterRarity, (int)monsterRarity)
+            .Do(sprite => {
                 if (sprite != null) _rarityImage.sprite = sprite;
             })
-            .Subscribe()
-            .AddTo(this);
+            .AsUnitObservable();
     }
 
-    public void SetNumText(string text)
-    {
+    public void SetNumText(string text) {
         _numText.text = text;
     }
 
-    public void SetToggleGroup(ToggleGroup toggleGroup)
-    {
+    public void SetToggleGroup(ToggleGroup toggleGroup) {
         _toggle.group = toggleGroup;
     }
 
-    public void SetOnClickAction(Action action)
-    {
+    public void SetOnClickAction(Action action) {
         if (action == null) return;
 
-        if (onClickButtonObservable != null)
-        {
+        if (onClickButtonObservable != null) {
             onClickButtonObservable.Dispose();
             onClickButtonObservable = null;
         }
@@ -143,98 +138,80 @@ public class IconItem : MonoBehaviour
             .Subscribe();
     }
 
-    public void SetRaycastTarget(bool isOn)
-    {
+    public void SetRaycastTarget(bool isOn) {
         _canvasGroup.blocksRaycasts = isOn;
     }
 
-    public void ShowGrayoutPanel(bool isShow, string text = "")
-    {
+    public void ShowGrayoutPanel(bool isShow, string text = "") {
         _grayoutPanel.SetActive(isShow);
         _grayoutText.gameObject.SetActive(!string.IsNullOrWhiteSpace(text));
         _grayoutText.text = text;
     }
 
-    public void ShowLabel(bool isShow, string text = "")
-    {
+    public void ShowLabel(bool isShow, string text = "") {
         _labelPanel.SetActive(isShow);
         _labelText.gameObject.SetActive(!string.IsNullOrWhiteSpace(text));
         _labelText.text = text;
     }
 
-    public void ShowText(bool isShow, string text = "")
-    {
+    public void ShowText(bool isShow, string text = "") {
         _text.gameObject.SetActive(isShow);
         _text.text = text;
     }
 
-    public void ShowCheckImage(bool isShow)
-    {
+    public void ShowCheckImage(bool isShow) {
         _checkImage.gameObject.SetActive(isShow);
     }
 
-    public void SetStack(int stackNum)
-    {
+    public void SetStack(int stackNum) {
         _stackNumText.text = stackNum.ToString();
     }
 
-    public void ShowStack(bool isShow)
-    {
+    public void ShowStack(bool isShow) {
         _stackIconPanel.SetActive(isShow);
     }
 
-    public void SetLevelText(int level)
-    {
+    public void SetLevelText(int level) {
         _levelText.text = $"Lv.{level}";
     }
 
-    public void ShowLevelText(bool isShow)
-    {
+    public void ShowLevelText(bool isShow) {
         _levelText.gameObject.SetActive(isShow);
     }
 
-    public void SetGrade(int grade)
-    {
+    public void SetGrade(int grade) {
         _monsterGradeParts.SetGradeImage(grade);
     }
 
-    public void ShowGrade(bool isShow)
-    {
+    public void ShowGrade(bool isShow) {
         _monsterGradeParts.gameObject.SetActive(isShow);
     }
 
-    public void SetUnderText(string text)
-    {
+    public void SetUnderText(string text) {
         _underText.text = text;
     }
 
-    public void ShowUnderText(bool isShow)
-    {
+    public void ShowUnderText(bool isShow) {
         _underText.gameObject.SetActive(isShow);
     }
 
-    public void ShowRarityImage(bool isShow)
-    {
+    public void ShowRarityImage(bool isShow) {
         _rarityImage.gameObject.SetActive(isShow);
     }
 
     /// <summary>
     /// 長押し時にアイテム詳細ダイアログを表示するようにする
     /// </summary>
-    public void SetShowItemDetailDialogAction(bool isSet)
-    {
-        var action = new Action(() =>
-        {
+    public void SetShowItemDetailDialogAction(bool isSet) {
+        var action = new Action(() => {
             var itemDescription = MasterRecord.GetMasterOf<ItemDescriptionMB>().GetAll().FirstOrDefault(m => m.itemType == itemType && m.itemId == itemId);
             if (itemDescription != null) ItemDetailDialogFactory.Create(new ItemDetailDialogRequest() { itemDescription = itemDescription }).Subscribe();
         });
         SetLongClickAction(isSet, action);
     }
 
-    public void SetShowMonsterDetailDialogAction(bool isSet)
-    {
-        if (userMonster == null)
-        {
+    public void SetShowMonsterDetailDialogAction(bool isSet) {
+        if (userMonster == null) {
             SetLongClickAction(false);
             return;
         }
@@ -243,16 +220,13 @@ public class IconItem : MonoBehaviour
         SetLongClickAction(isSet, action);
     }
 
-    public void SetLongClickAction(bool isSet, Action action = null)
-    {
-        if (onLongClickButtonObservable != null)
-        {
+    public void SetLongClickAction(bool isSet, Action action = null) {
+        if (onLongClickButtonObservable != null) {
             onLongClickButtonObservable.Dispose();
             onLongClickButtonObservable = null;
         }
 
-        if (isSet)
-        {
+        if (isSet) {
             onLongClickButtonObservable = _button.OnLongClickIntentAsObservable()
                 .Do(_ => action?.Invoke())
                 .Subscribe();
