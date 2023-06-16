@@ -1277,7 +1277,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 930401853a41b4e6e9bcde0c0cf7e740, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _isTestAdUnitId: 1
+  BOTTOM_BANNER_AD_UNIT_ID_IOS: 
+  BOTTOM_BANNER_AD_UNIT_ID_ANDROID: 
+  CENTER_BANNER_AD_UNIT_ID_IOS: 
+  CENTER_BANNER_AD_UNIT_ID_ANDROID: 
+  INTERSTITIAL_AD_UNIT_ID_IOS: 
+  INTERSTITIAL_AD_UNIT_ID_ANDROID: 
   REWARD_AD_UNIT_ID_IOS: 
   REWARD_AD_UNIT_ID_ANDROID: ' ca-app-pub-7228877379141040/9587979396'
 --- !u!114 &1369748497
@@ -1305,6 +1310,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isDebugMode: 0
+  isTestAdMode: 0
   isDebugBattleLogMode: 0
 --- !u!1 &1425679240
 GameObject:
