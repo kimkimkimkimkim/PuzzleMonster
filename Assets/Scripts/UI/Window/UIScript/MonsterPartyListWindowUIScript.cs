@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GameBase;
+using PM.Enum.UI;
 using UniRx;
 using UnityEngine;
 
@@ -59,9 +60,10 @@ public class MonsterPartyListWindowUIScript : WindowBase {
         scrollItem.SetMonsterImage(userMonsterParty.partyIndex, monsterIdList);
         scrollItem.SetOnClickAction(() => {
             MonsterFormationWindowFactory.Create(new MonsterFormationWindowRequest() {
-                partyId = userMonsterParty.partyIndex,
-                initialUserMonsterList = userMonsterList,
-            }).Subscribe();
+                partyIndex = userMonsterParty.partyIndex,
+            })
+                .Do(_ => RefreshScroll())
+                .Subscribe();
         });
     }
 

@@ -104,7 +104,7 @@ public class IconItem : MonoBehaviour {
     private IObservable<Unit> SetIconImageObservable(IconImageType iconImageType, long itemId) {
         return PMAddressableAssetUtil.GetIconImageSpriteObservable(iconImageType, itemId)
             .Do(sprite => {
-                if (sprite != null) _iconImage.sprite = sprite;
+                if (sprite != null && _iconImage != null) _iconImage.sprite = sprite;
             })
             .AsUnitObservable();
     }
@@ -112,7 +112,7 @@ public class IconItem : MonoBehaviour {
     private IObservable<Unit> SetMonsterRarityImageObservable(MonsterRarity monsterRarity) {
         return PMAddressableAssetUtil.GetIconImageSpriteObservable(IconImageType.MonsterRarity, (int)monsterRarity)
             .Do(sprite => {
-                if (sprite != null) _rarityImage.sprite = sprite;
+                if (sprite != null && _rarityImage != null) _rarityImage.sprite = sprite;
             })
             .AsUnitObservable();
     }
