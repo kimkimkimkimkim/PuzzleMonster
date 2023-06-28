@@ -28,6 +28,7 @@ public class UserNameRegistrationDialogUIScript : DialogBase {
 
         _registerButton.OnClickIntentAsObservable()
             .SelectMany(_ => ApiConnection.UpdateUserTitleDisplayName(_userNameInputField.text))
+            .SelectMany(_ => ApplicationContext.UpdatePlayerProfileObservable())
             .SelectMany(_ => UIManager.Instance.CloseDialogObservable())
             .Do(_ => {
                 if (onClickOk != null) {

@@ -32,12 +32,7 @@ public static class ApplicationContext {
                 }
             })
             .SelectMany(_ => ApiConnection.Login().Do(res => setLoadingBarValue(TitleLoadingPhase.PMLogin)))
-            .SelectMany(_ => ApiConnection.GetPlayerProfile().Do(res => {
-                setLoadingBarValue(TitleLoadingPhase.GetPlayerProfile);
-
-                // ユーザープロフィールの同期
-                playerProfile = res.PlayerProfile;
-            }))
+            .SelectMany(_ => UpdatePlayerProfileObservable())
             .SelectMany(_ => UpdateUserDataObservable()) // ユーザーデータの更新
             .AsUnitObservable();
     }
@@ -73,6 +68,19 @@ public static class ApplicationContext {
                 // インベントリ情報の更新
                 UpdateUserInventory(res);
             }))
+            .AsUnitObservable();
+    }
+
+    /// <summary>
+    /// プレイヤープロフィールの更新
+    /// </summary>
+    /// <returns></returns>
+    public static IObservable<Unit> UpdatePlayerProfileObservable() {
+        return ApiConnection.GetPlayerProfile()
+            .Do(res => {
+                // プレイヤープロフィールの同期
+                playerProfile = res.PlayerProfile;
+            })
             .AsUnitObservable();
     }
 
