@@ -158,7 +158,7 @@ public class MonsterFormationBaseWindowUIScript : WindowBase {
             scrollItem.ShowText(true, "はずす");
             scrollItem.SetShowMonsterDetailDialogAction(false);
             scrollItem.SetOnClickAction(() => {
-                if (selectedPartyMonsterIndex > 0) {
+                if (selectedPartyMonsterIndex >= 0) {
                     // パーティモンスター選択中なら外す
                     currentUserMonsterParty.userMonsterIdList[selectedPartyMonsterIndex] = null;
                     _toggleGroup.SetAllTogglesOff();
