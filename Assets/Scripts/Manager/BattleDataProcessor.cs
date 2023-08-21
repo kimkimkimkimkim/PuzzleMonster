@@ -939,6 +939,12 @@ public partial class BattleDataProcessor {
         beDoneBattleMonster.battleConditionList.Add(battleCondition.Clone());
         beDoneBattleMonster.battleConditionCount++;
 
+        // ステータスが変動する場合は更新する
+        var battleConditionMB = battleConditionList.First(m => m.id == battleCondition.battleConditionId);
+        if (battleConditionMB.battleConditionType == BattleConditionType.StatusUp || battleConditionMB.battleConditionType == BattleConditionType.StatusDown) {
+            beDoneBattleMonster.UpdateCurrentStatus(battleConditionMB.targetBattleMonsterStatusType);
+        }
+
         return battleCondition.Clone();
     }
 
