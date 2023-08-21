@@ -19,6 +19,7 @@ public partial class BattleDataProcessor {
     private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
     private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
+    private List<BattleMonsterInfo> allBattleMonsterOrderBySpeedList = new List<BattleMonsterInfo>(); // 現在バトル中のモンスターをスピード順に並べたリスト
     private List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>();
     private WinOrLose currentWinOrLose;
 
@@ -93,7 +94,7 @@ public partial class BattleDataProcessor {
         AddStartBattleLog();
 
         // バトル開始時トリガースキルを発動する
-        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed).Select(m => m.index).ToList());
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, allBattleMonsterOrderBySpeedList.Select(m => m.index).ToList());
 
         // 勝敗が決まるまでバトルを続ける
         while (currentWinOrLose == WinOrLose.Continue) {
@@ -164,17 +165,14 @@ public partial class BattleDataProcessor {
         AddStartBattleLog();
 
         // バトル開始時トリガースキルを発動する
-        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed).Select(m => m.index).ToList());
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, allBattleMonsterOrderBySpeedList.Select(m => m.index).ToList());
     }
 
     // 通常アクション実行者を取得
     // いなければnullを返す
     private BattleMonsterIndex GetNormalActioner() {
-        // プレイヤーと敵のモンスターを合成したリストを取得
-        var allMonsterList = GetAllMonsterList();
-
         // 次のアクション実行者を取得
-        var actioner = allMonsterList.Where(b => !b.isActed && !b.isDead).OrderByDescending(b => b.currentSpeed).ThenBy(_ => Guid.NewGuid()).FirstOrDefault();
+        var actioner = allBattleMonsterOrderBySpeedList.Where(b => !b.isActed && !b.isDead).FirstOrDefault();
 
         // アクション実行者を設定
         return actioner?.index;
@@ -1426,8 +1424,28 @@ public partial class BattleDataProcessor {
             }
         });
 
+        // 敵モンスターを更新したタイミングでスピード順リストを作成する
+        CreateAllBattleMonsterOrderBySpeedList();
+
         // TODO: テスト用
         if (isTest) TestSetEnemyBattleMonsterList(waveCount);
+    }
+
+    /// <summary>
+    /// スピード順リストを作成する
+    /// </summary>
+    private void CreateAllBattleMonsterOrderBySpeedList() {
+        var allMonsterList = new List<BattleMonsterInfo>();
+        allMonsterList.AddRange(playerBattleMonsterList);
+        allMonsterList.AddRange(enemyBattleMonsterList);
+        allBattleMonsterOrderBySpeedList = allMonsterList.OrderByDescending(m => m.currentSpeed).ThenBy(_ => Guid.NewGuid()).ToList();
+    }
+
+    /// <summary>
+    /// 現在のスピード順で更新しなおす
+    /// </summary>
+    private void UpdateAllBattleMonsterOrderBySpeedList() {
+        allBattleMonsterOrderBySpeedList = allBattleMonsterOrderBySpeedList.OrderByDescending(m => m.currentSpeed).ThenBy(_ => Guid.NewGuid()).ToList();
     }
 
     private NormalSkillMB GetBattleMonsterNormalSkill(long monsterId, int monsterLevel) {
