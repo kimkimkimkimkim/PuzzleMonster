@@ -44,9 +44,7 @@ public partial class BattleDataProcessor {
             Init(userMonsterList, quest);
 
             // バトル処理を開始する
-            while (currentWinOrLose == WinOrLose.Continue) {
-                PlayLoop();
-            }
+            PlayBattle();
         } catch (Exception e) {
             // バトル処理中にエラーが発生したらそこまでのログを出力する
             battleLogList.ForEach(battleLog => {
@@ -87,10 +85,26 @@ public partial class BattleDataProcessor {
         return battleLogList;
     }
 
-    private void PlayLoop() {
-        // バトルを開始する
-        StartBattleIfNeeded();
+    /// <summary>
+    /// バトル処理を開始する
+    /// </summary>
+    private void PlayBattle() {
+        // バトル開始ログの差し込み
+        AddStartBattleLog();
 
+        // バトル開始時トリガースキルを発動する
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed).Select(m => m.index).ToList());
+
+        // 勝敗が決まるまでバトルを続ける
+        while (currentWinOrLose == WinOrLose.Continue) {
+            PlayLoop();
+        }
+
+        // バトル終了ログの差し込み
+        AddEndBattleLog();
+    }
+
+    private void PlayLoop() {
         // ウェーブを進行する
         var isWaveMove = MoveWaveIfNeeded();
 
@@ -150,7 +164,7 @@ public partial class BattleDataProcessor {
         AddStartBattleLog();
 
         // バトル開始時トリガースキルを発動する
-        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed()).Select(m => m.index).ToList());
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnBattleStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed).Select(m => m.index).ToList());
     }
 
     // 通常アクション実行者を取得
@@ -160,7 +174,7 @@ public partial class BattleDataProcessor {
         var allMonsterList = GetAllMonsterList();
 
         // 次のアクション実行者を取得
-        var actioner = allMonsterList.Where(b => !b.isActed && !b.isDead).OrderByDescending(b => b.currentSpeed()).ThenBy(_ => Guid.NewGuid()).FirstOrDefault();
+        var actioner = allMonsterList.Where(b => !b.isActed && !b.isDead).OrderByDescending(b => b.currentSpeed).ThenBy(_ => Guid.NewGuid()).FirstOrDefault();
 
         // アクション実行者を設定
         return actioner?.index;
@@ -290,7 +304,7 @@ public partial class BattleDataProcessor {
         AddMoveWaveLog();
 
         // ウェーブ開始時トリガースキルを発動する
-        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed()).Select(m => m.index).ToList());
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed).Select(m => m.index).ToList());
 
         return true;
     }
@@ -705,7 +719,7 @@ public partial class BattleDataProcessor {
                     break;
                 // パーセント系のステータスはそのまま加算する
                 case BattleMonsterStatusType.Sheild:
-                    battleMonster.baseSheild += value;
+                    battleMonster.baseShield += value;
                     break;
 
                 case BattleMonsterStatusType.UltimateSkillDamageRate:
@@ -885,9 +899,6 @@ public partial class BattleDataProcessor {
         // Wave毎の敵情報リストの更新
         // 敵が全滅していない場合はそのWaveの敵情報リストは未更新なのでここで更新する
         if (existsEnemy) enemyBattleMonsterListByWave.Add(enemyBattleMonsterList.Clone());
-
-        // バトル終了ログの差し込み
-        AddEndBattleLog();
     }
 
     /// <summary>
@@ -1309,7 +1320,7 @@ public partial class BattleDataProcessor {
                         return false;
                 }
             }).Sum(i => i.grantorSkillEffect.value);
-            var statusResist = addedBattleCondition.buffType == BuffType.Buff ? beDoneBattleMonster.buffResistRate() : beDoneBattleMonster.debuffResistRate();
+            var statusResist = addedBattleCondition.buffType == BuffType.Buff ? beDoneBattleMonster.currentBuffResistRate : beDoneBattleMonster.currentDebuffResistRate;
             var random = UnityEngine.Random.Range(1, 101);
             return random <= skillEffect.activateProbability - battleConditionResist - statusResist;
         } else {

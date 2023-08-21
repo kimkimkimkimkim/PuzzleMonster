@@ -2,19 +2,16 @@
 using System;
 using System.Linq;
 
-public static class BattleMonsterInfoExtentions
-{
+public static class BattleMonsterInfoExtentions {
     /// <summary>
     /// HP値変更は毎回ここを通す
     /// 実際に影響を与えた値を返す
     /// </summary>
-    public static int ChangeHp(this BattleMonsterInfo monster, int value)
-    {
+    public static int ChangeHp(this BattleMonsterInfo monster, int value) {
         var defaultHp = monster.currentHp;
-        var existsShield = monster.shield() > 0;
+        var existsShield = monster.currentShield > 0;
 
-        if (existsShield && value < 0)
-        {
+        if (existsShield && value < 0) {
             // 計算しやすいように効果量の絶対値に直す
             value = Math.Abs(value);
 
@@ -26,42 +23,30 @@ public static class BattleMonsterInfoExtentions
                 .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId).battleConditionType == BattleConditionType.Shield)
                 .OrderBy(c => c.order)
                 .ToList()
-                .ForEach(c =>
-                {
-                    if (c.shieldValue <= value)
-                    {
+                .ForEach(c => {
+                    if (c.shieldValue <= value) {
                         value -= c.shieldValue;
                         c.shieldValue = 0;
-                    }
-                    else
-                    {
+                    } else {
                         c.shieldValue -= value;
                         value = 0;
                     }
                 });
 
             // 耐久値が0になったシールドを解除する
-            monster.battleConditionList = monster.battleConditionList.Where(c =>
-            {
+            monster.battleConditionList = monster.battleConditionList.Where(c => {
                 var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId);
                 var isNotShield = battleCondition.battleConditionType != BattleConditionType.Shield;
                 var isValidShield = battleCondition.battleConditionType == BattleConditionType.Shield && c.shieldValue > 0;
                 return isNotShield || isValidShield;
             }).ToList();
-        }
-        else
-        {
+        } else {
             var tempHp = monster.currentHp + value;
-            if (tempHp > monster.maxHp)
-            {
+            if (tempHp > monster.maxHp) {
                 monster.currentHp = monster.maxHp;
-            }
-            else if (tempHp < 0)
-            {
+            } else if (tempHp < 0) {
                 monster.currentHp = 0;
-            }
-            else
-            {
+            } else {
                 monster.currentHp = tempHp;
             }
         }
@@ -73,20 +58,14 @@ public static class BattleMonsterInfoExtentions
     /// エネルギー値変更は毎回ここを通す
     /// 実際に影響を与えた値を返す
     /// </summary>
-    public static int ChangeEnergy(this BattleMonsterInfo monster, int value)
-    {
+    public static int ChangeEnergy(this BattleMonsterInfo monster, int value) {
         var defaultEnergy = monster.currentEnergy;
         var tempEnergy = monster.currentEnergy + value;
-        if (tempEnergy > ConstManager.Battle.MAX_ENERGY_VALUE)
-        {
+        if (tempEnergy > ConstManager.Battle.MAX_ENERGY_VALUE) {
             monster.currentEnergy = ConstManager.Battle.MAX_ENERGY_VALUE;
-        }
-        else if (tempEnergy < 0)
-        {
+        } else if (tempEnergy < 0) {
             monster.currentEnergy = 0;
-        }
-        else
-        {
+        } else {
             monster.currentEnergy = tempEnergy;
         }
 
@@ -96,24 +75,17 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// 指定したステータスに応じた状態異常によるステータス値を取得します
     /// </summary>
-    private static int GetBattleConditionMonsterStatusValue(BattleMonsterInfo monster, BattleMonsterStatusType statusType)
-    {
+    private static int GetBattleConditionMonsterStatusValue(BattleMonsterInfo monster, BattleMonsterStatusType statusType) {
         return monster.battleConditionList.Concat(monster.baseBattleConditionList)
-            .Select(c =>
-            {
+            .Select(c => {
                 var battleCondition = MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId);
                 if (battleCondition.targetBattleMonsterStatusType != statusType) return 0;
 
-                if (battleCondition.battleConditionType == BattleConditionType.StatusUp)
-                {
+                if (battleCondition.battleConditionType == BattleConditionType.StatusUp) {
                     return c.grantorSkillEffect.value;
-                }
-                else if (battleCondition.battleConditionType == BattleConditionType.StatusDown)
-                {
+                } else if (battleCondition.battleConditionType == BattleConditionType.StatusDown) {
                     return -c.grantorSkillEffect.value;
-                }
-                else
-                {
+                } else {
                     return 0;
                 }
             })
@@ -123,46 +95,41 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// 状態異常などを加味した攻撃力
     /// </summary>
-    public static float currentAttack(this BattleMonsterInfo monster)
-    {
+    public static int currentAttack(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.Attack);
         value = Math.Clamp(value, ConstManager.Battle.MAX_ATTACK_DEBUFF_VALUE, ConstManager.Battle.MAX_ATTACK_BUFF_VALUE);
-        return BattleUtil.GetRatedValue(monster.baseAttack, value);
+        return (int)BattleUtil.GetRatedValue(monster.baseAttack, value);
     }
 
     /// <summary>
     /// 状態異常などを加味した防御力
     /// </summary>
-    public static float currentDefense(this BattleMonsterInfo monster)
-    {
+    public static int currentDefense(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.Defense);
         value = Math.Clamp(value, ConstManager.Battle.MAX_DEFENSE_DEBUFF_VALUE, ConstManager.Battle.MAX_DEFENSE_BUFF_VALUE);
-        return BattleUtil.GetRatedValue(monster.baseDefense, value);
+        return (int)BattleUtil.GetRatedValue(monster.baseDefense, value);
     }
 
     /// <summary>
     /// 状態異常などを加味したスピード
     /// </summary>
-    public static float currentSpeed(this BattleMonsterInfo monster)
-    {
+    public static int currentSpeed(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.Speed);
-        return BattleUtil.GetRatedValue(monster.baseSpeed, value);
+        return (int)BattleUtil.GetRatedValue(monster.baseSpeed, value);
     }
 
     /// <summary>
     /// 状態異常などを加味した回復力
     /// </summary>
-    public static float currentHeal(this BattleMonsterInfo monster)
-    {
+    public static int currentHeal(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.Heal);
-        return BattleUtil.GetRatedValue(monster.baseHeal, value);
+        return (int)BattleUtil.GetRatedValue(monster.baseHeal, value);
     }
 
     /// <summary>
     /// シールド耐久値
     /// </summary>
-    public static int shield(this BattleMonsterInfo monster)
-    {
+    public static int shield(this BattleMonsterInfo monster) {
         return monster.battleConditionList
             .Where(c => MasterRecord.GetMasterOf<BattleConditionMB>().Get(c.battleConditionId).battleConditionType == BattleConditionType.Shield)
             .Sum(c => c.shieldValue);
@@ -171,8 +138,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// スキルダメージ率
     /// </summary>
-    public static int ultimateSkillDamageRate(this BattleMonsterInfo monster)
-    {
+    public static int ultimateSkillDamageRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.UltimateSkillDamageRate);
         return monster.baseUltimateSkillDamageRate + value;
     }
@@ -180,8 +146,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// ブロック率
     /// </summary>
-    public static int blockRate(this BattleMonsterInfo monster)
-    {
+    public static int blockRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.BlockRate);
         return monster.baseBlockRate + value;
     }
@@ -189,8 +154,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// クリティカル率
     /// </summary>
-    public static int criticalRate(this BattleMonsterInfo monster)
-    {
+    public static int criticalRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.CriticalRate);
         return monster.baseCriticalRate + value;
     }
@@ -198,8 +162,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// クリティカルダメージ
     /// </summary>
-    public static int criticalDamage(this BattleMonsterInfo monster)
-    {
+    public static int criticalDamage(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.CriticalDamageRate);
         return monster.baseCriticalDamage + value;
     }
@@ -207,8 +170,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// 強化効果免疫率
     /// </summary>
-    public static int buffResistRate(this BattleMonsterInfo monster)
-    {
+    public static int buffResistRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.BuffResistRate);
         return value;
     }
@@ -216,8 +178,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// 弱体効果免疫率
     /// </summary>
-    public static int debuffResistRate(this BattleMonsterInfo monster)
-    {
+    public static int debuffResistRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.DebuffResistRate);
         return monster.baseDebuffResistRate + value;
     }
@@ -225,8 +186,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// ダメージ軽減率
     /// </summary>
-    public static int damageResistRate(this BattleMonsterInfo monster)
-    {
+    public static int damageResistRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.DamageResistRate);
         return monster.baseDamageResistRate + value;
     }
@@ -234,8 +194,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// ラックダメージ率
     /// </summary>
-    public static int luckDamageRate(this BattleMonsterInfo monster)
-    {
+    public static int luckDamageRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.LuckDamageRate);
         return monster.baseLuckDamageRate + value;
     }
@@ -243,8 +202,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// 神聖ダメージ率
     /// </summary>
-    public static int holyDamageRate(this BattleMonsterInfo monster)
-    {
+    public static int holyDamageRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.HolyDamageRate);
         return monster.baseHolyDamageRate + value;
     }
@@ -252,8 +210,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// エネルギー上昇率
     /// </summary>
-    public static int energyUpRate(this BattleMonsterInfo monster)
-    {
+    public static int energyUpRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.EnergyUpRate);
         return monster.baseEnergyUpRate + value;
     }
@@ -261,8 +218,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// 被回復率（回復を受ける際の回復量上昇率）
     /// </summary>
-    public static int healedRate(this BattleMonsterInfo monster)
-    {
+    public static int healedRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.HealedRate);
         return monster.baseHealedRate + value;
     }
@@ -270,8 +226,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// 攻撃精度
     /// </summary>
-    public static int attackAccuracy(this BattleMonsterInfo monster)
-    {
+    public static int attackAccuracy(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.AttackAccuracyRate);
         return monster.baseAttackAccuracy + value;
     }
@@ -279,8 +234,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// アーマー
     /// </summary>
-    public static int armor(this BattleMonsterInfo monster)
-    {
+    public static int armor(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.Armor);
         return monster.baseArmor + value;
     }
@@ -288,8 +242,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// アーマーブレイク率
     /// </summary>
-    public static int armorBreakRate(this BattleMonsterInfo monster)
-    {
+    public static int armorBreakRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.ArmorBreakRate);
         return monster.baseArmorBreakRate + value;
     }
@@ -297,8 +250,7 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// 与回復率（回復をする際の回復量上昇率）
     /// </summary>
-    public static int healingRate(this BattleMonsterInfo monster)
-    {
+    public static int healingRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.HealingRate);
         return monster.baseHealingRate + value;
     }
@@ -306,81 +258,78 @@ public static class BattleMonsterInfoExtentions
     /// <summary>
     /// 防御貫通率
     /// </summary>
-    public static int defensePenetratingRate(this BattleMonsterInfo monster)
-    {
+    public static int defensePenetratingRate(this BattleMonsterInfo monster) {
         var value = GetBattleConditionMonsterStatusValue(monster, BattleMonsterStatusType.DefensePenetratingRate);
         return monster.baseDefensePenetratingRate + value;
     }
 
-    public static float GetStatus(this BattleMonsterInfo monster, BattleMonsterStatusType type)
-    {
-        switch (type)
-        {
+    public static float GetStatus(this BattleMonsterInfo monster, BattleMonsterStatusType type) {
+        switch (type) {
             case BattleMonsterStatusType.Hp:
                 return monster.maxHp;
 
             case BattleMonsterStatusType.Attack:
-                return monster.currentAttack();
+                return monster.currentAttack;
 
             case BattleMonsterStatusType.Defense:
-                return monster.currentDefense();
+                return monster.currentDefense;
 
             case BattleMonsterStatusType.Heal:
-                return monster.currentHeal();
+                return monster.currentHeal;
 
             case BattleMonsterStatusType.Speed:
-                return monster.currentSpeed();
+                return monster.currentSpeed;
 
             case BattleMonsterStatusType.Sheild:
-                return monster.shield();
+                return monster.currentShield;
 
             case BattleMonsterStatusType.UltimateSkillDamageRate:
-                return monster.ultimateSkillDamageRate();
+                return monster.currentUltimateSkillDamageRate;
 
             case BattleMonsterStatusType.BlockRate:
-                return monster.blockRate();
+                return monster.currentBlockRate;
 
             case BattleMonsterStatusType.CriticalRate:
-                return monster.criticalRate();
+                return monster.currentCriticalRate;
 
             case BattleMonsterStatusType.CriticalDamageRate:
-                return monster.criticalDamage();
+                return monster.currentCriticalDamage;
 
             case BattleMonsterStatusType.BuffResistRate:
-                return monster.buffResistRate();
+                return monster.currentBuffResistRate;
 
             case BattleMonsterStatusType.DebuffResistRate:
-                return monster.debuffResistRate();
+                return monster.currentDebuffResistRate;
 
             case BattleMonsterStatusType.DamageResistRate:
-                return monster.damageResistRate();
+                return monster.currentDamageResistRate;
 
             case BattleMonsterStatusType.LuckDamageRate:
-                return monster.luckDamageRate();
+                return monster.currentLuckDamageRate;
 
             case BattleMonsterStatusType.HolyDamageRate:
-                return monster.holyDamageRate();
+                return monster.currentHolyDamageRate;
 
             case BattleMonsterStatusType.EnergyUpRate:
-                return monster.energyUpRate();
+                return monster.currentEnergyUpRate;
 
             case BattleMonsterStatusType.HealedRate:
-                return monster.healedRate();
+                return monster.currentHealedRate;
 
             case BattleMonsterStatusType.AttackAccuracyRate:
-                return monster.attackAccuracy();
+                return monster.currentAttackAccuracy;
 
             case BattleMonsterStatusType.Armor:
-                return monster.armor();
+                return monster.currentArmor;
 
             case BattleMonsterStatusType.ArmorBreakRate:
-                return monster.armorBreakRate();
+                return monster.currentArmorBreakRate;
 
             case BattleMonsterStatusType.HealingRate:
-                return monster.healingRate();
+                return monster.currentHealingRate;
 
             case BattleMonsterStatusType.DefensePenetratingRate:
-                return monster.defensePenetratingRate();
+                return monster.currentDefensePenetratingRate;
 
             case BattleMonsterStatusType.CurrentHp:
                 return monster.currentHp;
@@ -389,4 +338,114 @@ public static class BattleMonsterInfoExtentions
                 return 0;
         }
     }
+
+    public static void UpdateCurrentStatus(this BattleMonsterInfo monster, BattleMonsterStatusType type) {
+        switch (type) {
+            // 最大HPは何もしない
+            case BattleMonsterStatusType.Hp:
+                break;
+
+            case BattleMonsterStatusType.Attack:
+                monster.currentAttack = monster.currentAttack();
+                break;
+
+            case BattleMonsterStatusType.Defense:
+                monster.currentDefense = monster.currentDefense();
+                break;
+
+            case BattleMonsterStatusType.Heal:
+                monster.currentHeal = monster.currentHeal();
+                break;
+
+            case BattleMonsterStatusType.Speed:
+                monster.currentSpeed = monster.currentSpeed();
+                break;
+
+            case BattleMonsterStatusType.Sheild:
+                monster.currentShield = monster.shield();
+                break;
+
+            case BattleMonsterStatusType.UltimateSkillDamageRate:
+                monster.currentUltimateSkillDamageRate = monster.ultimateSkillDamageRate();
+                break;
+
+            case BattleMonsterStatusType.BlockRate:
+                monster.currentBlockRate = monster.blockRate();
+                break;
+
+            case BattleMonsterStatusType.CriticalRate:
+                monster.currentCriticalRate = monster.criticalRate();
+                break;
+
+            case BattleMonsterStatusType.CriticalDamageRate:
+                monster.currentCriticalDamage = monster.criticalDamage();
+                break;
+
+            case BattleMonsterStatusType.BuffResistRate:
+                monster.currentBuffResistRate = monster.buffResistRate();
+                break;
+
+            case BattleMonsterStatusType.DebuffResistRate:
+                monster.currentDebuffResistRate = monster.debuffResistRate();
+                break;
+
+            case BattleMonsterStatusType.DamageResistRate:
+                monster.currentDamageResistRate = monster.damageResistRate();
+                break;
+
+            case BattleMonsterStatusType.LuckDamageRate:
+                monster.currentLuckDamageRate = monster.luckDamageRate();
+                break;
+
+            case BattleMonsterStatusType.HolyDamageRate:
+                monster.currentHolyDamageRate = monster.holyDamageRate();
+                break;
+
+            case BattleMonsterStatusType.EnergyUpRate:
+                monster.currentEnergyUpRate = monster.energyUpRate();
+                break;
+
+            case BattleMonsterStatusType.HealedRate:
+                monster.currentHealedRate = monster.healedRate();
+                break;
+
+            case BattleMonsterStatusType.AttackAccuracyRate:
+                monster.currentAttackAccuracy = monster.attackAccuracy();
+                break;
+
+            case BattleMonsterStatusType.Armor:
+                monster.currentArmor = monster.armor();
+                break;
+
+            case BattleMonsterStatusType.ArmorBreakRate:
+                monster.currentArmorBreakRate = monster.armorBreakRate();
+                break;
+
+            case BattleMonsterStatusType.HealingRate:
+                monster.currentHealingRate = monster.healingRate();
+                break;
+
+            case BattleMonsterStatusType.DefensePenetratingRate:
+                monster.currentDefensePenetratingRate = monster.defensePenetratingRate();
+                break;
+
+            // 現在HPの場合も何もしない
+            case BattleMonsterStatusType.CurrentHp:
+                monster.currentHp = monster.currentHp;
+                break;
+
+            // Noneの場合はすべてのステータスを更新する
+            case BattleMonsterStatusType.None:
+                foreach (var statusType in Enum.GetValues(typeof(BattleMonsterStatusType)).Cast<BattleMonsterStatusType>()) {
+                    if (statusType != BattleMonsterStatusType.None) {
+                        monster.UpdateCurrentStatus(statusType);
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
 }

@@ -33,10 +33,10 @@ public class BattleConditionListDialogUIScript : DialogBase {
         _text.text = $"" +
             $"最大HP: {(int)battleMonster.maxHp}\n" +
             $"現在HP: {(int)battleMonster.currentHp}\n" +
-            $"現在攻撃力: {(int)battleMonster.currentAttack()}\n" +
-            $"現在防御力: {(int)battleMonster.currentDefense()}\n" +
-            $"現在スピード: {(int)battleMonster.currentSpeed()}\n" +
-            $"現在シールド: {(int)battleMonster.shield()}";
+            $"現在攻撃力: {(int)battleMonster.currentAttack}\n" +
+            $"現在防御力: {(int)battleMonster.currentDefense}\n" +
+            $"現在スピード: {(int)battleMonster.currentSpeed}\n" +
+            $"現在シールド: {(int)battleMonster.currentShield}";
 
         SetMonsterNameText(battleMonster);
         RefreshScroll();

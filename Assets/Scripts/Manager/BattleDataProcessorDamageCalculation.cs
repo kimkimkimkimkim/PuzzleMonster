@@ -85,16 +85,16 @@ public partial class BattleDataProcessor {
         var coefficient = GetValueCoefficient(skillEffect);
         var incomingDamage = IncomingDamage(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex);
         var isWithoutFactor = skillEffect.type == SkillType.WithoutFactorDamage;
-        var isBlocked = !isWithoutFactor && ExecuteProbability(beDoneBattleMonster.blockRate() - doBattleMonster.attackAccuracy());
+        var isBlocked = !isWithoutFactor && ExecuteProbability(beDoneBattleMonster.currentBlockRate - doBattleMonster.currentAttackAccuracy);
         var damage =
             (int)(
                 incomingDamage.damage                                                       // 基準ダメージ
-                * (1 - GetRate(beDoneBattleMonster.damageResistRate()))                     // ダメージ軽減分ダメージを軽減
+                * (1 - GetRate(beDoneBattleMonster.currentDamageResistRate))                     // ダメージ軽減分ダメージを軽減
                 * (
                     (1 - ArmorMitigation(beDoneBattleMonster))                              // 防御力分ダメージを軽減
-                    * (1 - GetRate(doBattleMonster.defensePenetratingRate()))               // 防御貫通率分防御力を無視
-                    + HOLY_DAMAGE_MAGNIFICATION * GetRate(doBattleMonster.holyDamageRate()) // 神聖ダメージを加算
-                    + LUCK_DAMAGE_MAGNIFICATION * GetRate(doBattleMonster.luckDamageRate()) // ラックダメージを加算
+                    * (1 - GetRate(doBattleMonster.currentDefensePenetratingRate))               // 防御貫通率分防御力を無視
+                    + HOLY_DAMAGE_MAGNIFICATION * GetRate(doBattleMonster.currentHolyDamageRate) // 神聖ダメージを加算
+                    + LUCK_DAMAGE_MAGNIFICATION * GetRate(doBattleMonster.currentLuckDamageRate) // ラックダメージを加算
                 )
                 * (
                     isBlocked ?                                                             // ブロックしたかを判定
@@ -204,8 +204,8 @@ public partial class BattleDataProcessor {
             coefficient
             * GetStatusValue(doBattleMonster, beDoneBattleMonster, skillEffect, skillGuid, skillEffectIndex)                              // 対象のステータス値
             * GetRate(skillEffect.value)                                                                  // ダメージ倍率
-            * (1 + GetRate(doBattleMonster.healingRate()))                                                // 与回復率分回復量を上昇
-            * (1 + GetRate(beDoneBattleMonster.healedRate()))                                             // 被回復率分回復量を上昇
+            * (1 + GetRate(doBattleMonster.currentHealingRate))                                                // 与回復率分回復量を上昇
+            * (1 + GetRate(beDoneBattleMonster.currentHealedRate))                                             // 被回復率分回復量を上昇
         );
     }
 
@@ -231,7 +231,7 @@ public partial class BattleDataProcessor {
         const float CRITICAL_DAMAGE_COEFFICIANT = 0.02f;
 
         var isWithoutFactor = skillEffect.type == SkillType.WithoutFactorDamage;
-        var isCritical = !isWithoutFactor && ExecuteProbability(doMonster.criticalRate());
+        var isCritical = !isWithoutFactor && ExecuteProbability(doMonster.currentCriticalRate);
         var monsterAttributeCompatibility = MonsterAttributeCompatibility(doMonster, beDoneMonster);
         var monsterAttributeCompatibilityValue = monsterAttributeCompatibility.value;
         var monsterAttributeCompatibilityType = monsterAttributeCompatibility.monsterAttributeCompatibilityType;
@@ -249,7 +249,7 @@ public partial class BattleDataProcessor {
             )
             * (
                 isCritical ?                                                                               // クリティカルかどうかを判定
-                (CRITICAL_DAMAGE_MAGNIFICATION + CRITICAL_DAMAGE_COEFFICIANT * doMonster.criticalDamage()) // クリティカルならクリティカルダメージ
+                (CRITICAL_DAMAGE_MAGNIFICATION + CRITICAL_DAMAGE_COEFFICIANT * doMonster.currentCriticalDamage) // クリティカルならクリティカルダメージ
                 : 1.0f                                                                                     // クリティカルでなければそのまま
             );
         return (damage, isCritical, monsterAttributeCompatibilityType);
@@ -331,7 +331,7 @@ public partial class BattleDataProcessor {
         var doMonster = monsterList.First(m => m.id == doBattleMonster.monsterId);
         var beDoneMonster = monsterList.First(m => m.id == beDoneBattleMonster.monsterId);
 
-        var rate = (float)doBattleMonster.attackAccuracy();
+        var rate = (float)doBattleMonster.currentAttackAccuracy;
         if (doMonster.attribute.IsAdvantageous(beDoneMonster.attribute)) rate += ADVANTAGE_PLUS_VALUE;
         rate *= MONSTER_ATTRIBUTE_COMPATIBILITY_RATE;
 
@@ -343,10 +343,10 @@ public partial class BattleDataProcessor {
         const float DEFENSE_RESISTIVITY = 180.0f;
         const float LEVEL_MAGNIFICATION = 22.0f;
 
-        var armorMitigation = (float)beDoneMonster.currentDefense() / 10.0f / (DEFENSE_RESISTIVITY + LEVEL_MAGNIFICATION * beDoneMonster.level);
+        var armorMitigation = (float)beDoneMonster.currentDefense / 10.0f / (DEFENSE_RESISTIVITY + LEVEL_MAGNIFICATION * beDoneMonster.level);
 
         var monster = monsterList.First(m => m.id == beDoneMonster.monsterId);
-        // Debug.Log($"{monster.rarity} Lv.{beDoneMonster.level} {monster.name}, cd:{beDoneMonster.currentDefense()}, am:{armorMitigation}");
+        // Debug.Log($"{monster.rarity} Lv.{beDoneMonster.level} {monster.name}, cd:{beDoneMonster.currentDefense}, am:{armorMitigation}");
 
         return Mathf.Clamp(armorMitigation, 0.0f, 1.0f);
     }
@@ -367,16 +367,16 @@ public partial class BattleDataProcessor {
                 return doMonster.currentHp;
 
             case ValueTargetType.MyCurrentAttack:
-                return doMonster.currentAttack();
+                return doMonster.currentAttack;
 
             case ValueTargetType.MyCurrentDefense:
-                return doMonster.currentDefense();
+                return doMonster.currentDefense;
 
             case ValueTargetType.MyCurrentHeal:
-                return doMonster.currentHeal();
+                return doMonster.currentHeal;
 
             case ValueTargetType.MyCurrentSpeed:
-                return doMonster.currentSpeed();
+                return doMonster.currentSpeed;
 
             case ValueTargetType.MyMaxHp:
                 return doMonster.maxHp;
@@ -385,16 +385,16 @@ public partial class BattleDataProcessor {
                 return beDoneMonster.currentHp;
 
             case ValueTargetType.TargetCurrentAttack:
-                return beDoneMonster.currentAttack();
+                return beDoneMonster.currentAttack;
 
             case ValueTargetType.TargetCurrentDefense:
-                return beDoneMonster.currentDefense();
+                return beDoneMonster.currentDefense;
 
             case ValueTargetType.TargetCurrentHeal:
-                return beDoneMonster.currentHeal();
+                return beDoneMonster.currentHeal;
 
             case ValueTargetType.TargetCurrentSpeed:
-                return beDoneMonster.currentSpeed();
+                return beDoneMonster.currentSpeed;
 
             case ValueTargetType.TargetMaxHp:
                 return beDoneMonster.maxHp;

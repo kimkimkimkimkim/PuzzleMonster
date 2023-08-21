@@ -212,7 +212,7 @@ public class BattleManager : SingletonMonoBehaviour<BattleManager> {
                         var takeDamageObservableList = battleLog.beDoneBattleMonsterDataList.Select(d => {
                             var beDoneMonster = GetBattleMonster(d.battleMonsterIndex, battleLog.playerBattleMonsterList, battleLog.enemyBattleMonsterList);
                             battleWindow.UpdateBattleMonster(beDoneMonster);
-                            return battleWindow.PlayTakeDamageAnimationObservable(battleLog.actionType, d, battleLog.skillFxId, beDoneMonster.currentHp, beDoneMonster.currentEnergy, beDoneMonster.shield());
+                            return battleWindow.PlayTakeDamageAnimationObservable(battleLog.actionType, d, battleLog.skillFxId, beDoneMonster.currentHp, beDoneMonster.currentEnergy, beDoneMonster.currentShield);
                         }).ToList();
                         return Observable.WhenAll(takeDamageObservableList);
 
