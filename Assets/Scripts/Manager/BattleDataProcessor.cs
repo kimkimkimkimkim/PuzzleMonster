@@ -19,6 +19,7 @@ public partial class BattleDataProcessor {
     private List<BattleLogInfo> battleLogList = new List<BattleLogInfo>();
     private List<BattleMonsterInfo> playerBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
     private List<BattleMonsterInfo> enemyBattleMonsterList = new List<BattleMonsterInfo>(); // nullは許容しない（もともと表示されないモンスター用のデータは排除されている）
+    private List<BattleMonsterInfo> allBattleMonsterList = new List<BattleMonsterInfo>(); // 現在バトル中のモンスターを全てまとめたリスト
     private List<BattleMonsterInfo> allBattleMonsterOrderBySpeedList = new List<BattleMonsterInfo>(); // 現在バトル中のモンスターをスピード順に並べたリスト
     private List<List<BattleMonsterInfo>> enemyBattleMonsterListByWave = new List<List<BattleMonsterInfo>>();
     private WinOrLose currentWinOrLose;
@@ -209,10 +210,10 @@ public partial class BattleDataProcessor {
             var targetTriggerSkillData = new TriggerSkillData() { battleMonsterIndex = actionMonsterIndex, battleActionType = actionType, skillGuid = skillGuid, skillEffectIndex = 0 };
             // 味方
             if (actionMonsterIndex.isPlayer) {
-                var playerBattleMonsterIndexList = GetAllMonsterList().Where(m => m.index.isPlayer).Select(m => m.index).ToList();
+                var playerBattleMonsterIndexList = playerBattleMonsterList.Select(m => m.index).ToList();
                 ExecuteTriggerSkillIfNeeded(SkillTriggerType.AfterAllyUltimateSkill, playerBattleMonsterIndexList, 0, actionMonsterIndex, actionType, 0, targetTriggerSkillData);
             } else {
-                var enemyBattleMonsterIndexList = GetAllMonsterList().Where(m => !m.index.isPlayer).Select(m => m.index).ToList();
+                var enemyBattleMonsterIndexList = enemyBattleMonsterList.Select(m => m.index).ToList();
                 ExecuteTriggerSkillIfNeeded(SkillTriggerType.AfterAllyUltimateSkill, enemyBattleMonsterIndexList, 0, actionMonsterIndex, actionType, 0, targetTriggerSkillData);
             }
         }
@@ -302,7 +303,7 @@ public partial class BattleDataProcessor {
         AddMoveWaveLog();
 
         // ウェーブ開始時トリガースキルを発動する
-        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveStart, GetAllMonsterList().OrderByDescending(m => m.currentSpeed).Select(m => m.index).ToList());
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnWaveStart, allBattleMonsterOrderBySpeedList.Select(m => m.index).ToList());
 
         return true;
     }
@@ -315,8 +316,7 @@ public partial class BattleDataProcessor {
         currentTurnCount++;
 
         // すべてのモンスターの行動済みフラグをもどす
-        var allMonsterList = GetAllMonsterList();
-        allMonsterList.ForEach(m => m.isActed = false);
+        allBattleMonsterList.ForEach(m => m.isActed = false);
 
         // ターン進行ログの差し込み
         AddMoveTurnLog();
@@ -358,8 +358,7 @@ public partial class BattleDataProcessor {
         var beDoneMonsterIndexList = beDoneMonsterIndexDataSetList.Where(d => d.isSkillTarget && !d.isMissed).Select(d => d.battleMonsterIndex).ToList();
         if (!beDoneMonsterIndexList.Any()) return;
 
-        var allMonsterList = GetAllMonsterList();
-        var beDoneMonsterList = allMonsterList.Where(m => beDoneMonsterIndexList.Any(index => index.IsSame(m.index))).ToList();
+        var beDoneMonsterList = allBattleMonsterList.Where(m => beDoneMonsterIndexList.Any(index => index.IsSame(m.index))).ToList();
 
         // スキル効果ログの差し込み
         AddStartSkillEffectLog(doMonsterIndex, skillGuid, actionType, skillEffectIndex, beDoneMonsterIndexList, battleCondition);
@@ -459,7 +458,6 @@ public partial class BattleDataProcessor {
         var beDoneBattleMonsterIndexList = beDoneMonsterDataList.Select(d => d.battleMonsterIndex).ToList();
         var beDoneBattleMonsterDataWithoutDoMonsterList = beDoneMonsterDataList.Where(d => !d.battleMonsterIndex.IsSame(doMonsterIndex)).ToList();
         var beDoneBattleMonsterIndexWithoutDoMonsterList = beDoneBattleMonsterDataWithoutDoMonsterList.Select(d => d.battleMonsterIndex).ToList();
-        var allBattleMonsterList = GetAllMonsterList();
         var playerBattleMonsterIndexList = allBattleMonsterList.Where(m => m.index.isPlayer).Select(m => m.index).ToList();
         var enemyBattleMonsterIndexList = allBattleMonsterList.Where(m => !m.index.isPlayer).Select(m => m.index).ToList();
         var existsPlayer = beDoneBattleMonsterIndexList.Any(i => i.isPlayer);
@@ -569,7 +567,6 @@ public partial class BattleDataProcessor {
 
         // 状態異常付与時トリガースキルを発動する
         var beAddedBattleMonsterDataList = beDoneMonsterDataList.Where(d => !d.isMissed).ToList();
-        var allBattleMonsterList = GetAllMonsterList();
         var playerBattleMonsterIndexList = allBattleMonsterList.Where(m => m.index.isPlayer).Select(m => m.index).ToList();
         var enemyBattleMonsterIndexList = allBattleMonsterList.Where(m => !m.index.isPlayer).Select(m => m.index).ToList();
         var triggerSkillData = new TriggerSkillData() { battleMonsterIndex = doMonsterIndex, battleActionType = actionType, skillGuid = skillGuid, skillEffectIndex = skillEffectIndex };
@@ -792,7 +789,6 @@ public partial class BattleDataProcessor {
     }
 
     private void ExecuteDieIfNeeded() {
-        var allBattleMonsterList = GetAllMonsterList();
         var dieBattleMonsterList = allBattleMonsterList.Where(m => !m.isDead && m.currentHp <= 0).ToList();
 
         // 倒れたモンスターがいなければ何もしない
@@ -852,14 +848,14 @@ public partial class BattleDataProcessor {
     /// </summary>
     private bool EndTurnIfNeeded() {
         // 一体でも未行動のモンスターが存在すれば実行しない
-        var isNotEnd = GetAllMonsterList().Any(m => !m.isActed && !m.isDead);
+        var isNotEnd = allBattleMonsterList.Any(m => !m.isActed && !m.isDead);
         if (isNotEnd) return false; ;
 
         // ターン終了ログを差し込む
         AddEndTurnLog();
 
         // ターン終了時トリガースキルを発動する
-        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTurnEnd, GetAllMonsterList().Select(m => m.index).ToList());
+        ExecuteTriggerSkillIfNeeded(SkillTriggerType.OnTurnEnd, allBattleMonsterList.Select(m => m.index).ToList());
 
         return true;
     }
@@ -937,10 +933,15 @@ public partial class BattleDataProcessor {
         beDoneBattleMonster.battleConditionList.Add(battleCondition.Clone());
         beDoneBattleMonster.battleConditionCount++;
 
-        // ステータスが変動する場合は更新する
+        // ステータスが変動する場合はステータスを更新する
         var battleConditionMB = battleConditionList.First(m => m.id == battleCondition.battleConditionId);
         if (battleConditionMB.battleConditionType == BattleConditionType.StatusUp || battleConditionMB.battleConditionType == BattleConditionType.StatusDown) {
             beDoneBattleMonster.UpdateCurrentStatus(battleConditionMB.targetBattleMonsterStatusType);
+
+            // スピードが変化する場合はスピード順リストも更新する
+            if(battleConditionMB.targetBattleMonsterStatusType == BattleMonsterStatusType.Speed) {
+                UpdateAllBattleMonsterOrderBySpeedList();
+            }
         }
 
         return battleCondition.Clone();
@@ -985,13 +986,6 @@ public partial class BattleDataProcessor {
 
         // 順序情報を更新する
         battleMonster.battleConditionList.OrderBy(c => c.order).ForEach((c, index) => c.order = index + 1);
-    }
-
-    private List<BattleMonsterInfo> GetAllMonsterList() {
-        var allMonsterList = new List<BattleMonsterInfo>();
-        allMonsterList.AddRange(playerBattleMonsterList);
-        allMonsterList.AddRange(enemyBattleMonsterList);
-        return allMonsterList;
     }
 
     private string GetSkillName(BattleMonsterInfo battleMonster, BattleActionType actionType, BattleConditionInfo battleCondition) {
@@ -1425,7 +1419,8 @@ public partial class BattleDataProcessor {
         });
 
         // 敵モンスターを更新したタイミングでスピード順リストを作成する
-        CreateAllBattleMonsterOrderBySpeedList();
+        CreateAllBattleMonsterList();
+        UpdateAllBattleMonsterOrderBySpeedList();
 
         // TODO: テスト用
         if (isTest) TestSetEnemyBattleMonsterList(waveCount);
@@ -1434,18 +1429,17 @@ public partial class BattleDataProcessor {
     /// <summary>
     /// スピード順リストを作成する
     /// </summary>
-    private void CreateAllBattleMonsterOrderBySpeedList() {
-        var allMonsterList = new List<BattleMonsterInfo>();
-        allMonsterList.AddRange(playerBattleMonsterList);
-        allMonsterList.AddRange(enemyBattleMonsterList);
-        allBattleMonsterOrderBySpeedList = allMonsterList.OrderByDescending(m => m.currentSpeed).ThenBy(_ => Guid.NewGuid()).ToList();
+    private void CreateAllBattleMonsterList() {
+        allBattleMonsterList.Clear();
+        allBattleMonsterList.AddRange(playerBattleMonsterList);
+        allBattleMonsterList.AddRange(enemyBattleMonsterList);
     }
 
     /// <summary>
     /// 現在のスピード順で更新しなおす
     /// </summary>
     private void UpdateAllBattleMonsterOrderBySpeedList() {
-        allBattleMonsterOrderBySpeedList = allBattleMonsterOrderBySpeedList.OrderByDescending(m => m.currentSpeed).ThenBy(_ => Guid.NewGuid()).ToList();
+        allBattleMonsterOrderBySpeedList = allBattleMonsterList.OrderByDescending(m => m.currentSpeed).ThenBy(_ => Guid.NewGuid()).ToList();
     }
 
     private NormalSkillMB GetBattleMonsterNormalSkill(long monsterId, int monsterLevel) {
