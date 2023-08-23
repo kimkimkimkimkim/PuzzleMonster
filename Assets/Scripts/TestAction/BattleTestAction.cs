@@ -5,6 +5,10 @@ using GameBase;
 using UniRx;
 using UnityEngine;
 using System.Linq;
+using System.IO;
+using Newtonsoft.Json;
+using NPOI.HPSF;
+using System.Text;
 
 public class BattleTestAction : ITestAction {
     public List<TestActionData> GetTestActionDataList() {
@@ -196,13 +200,13 @@ public class BattleTestAction : ITestAction {
             action = new Action(() => {
                 try {
                     var monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().Where(m => 41 <= m.id && m.id <= 65).ToList();
-                    var repeatNum = 50;
+                    var repeatNum = 10;
                     var monsterLevel = 100;
                     var totalSeconds = 0d;
                     var maxSeconds = 0d;
 
                     Observable.Interval(TimeSpan.FromSeconds(1.0f))
-                        .Do(count => {
+                        .Do(async count => {
                             // 計測開始
                             var sw = new System.Diagnostics.Stopwatch();
                             sw.Start();
@@ -270,6 +274,24 @@ public class BattleTestAction : ITestAction {
                             Debug.Log($"【味方】{string.Join(",", targetPlayerMonsterHpLogList)}");
                             Debug.Log($"　【敵】{string.Join(",", targetEnemyMonsterHpLogList)}");
                             Debug.Log("===================================================");
+
+                            // テキスト出力
+                            var isOk = ts.TotalSeconds < 1;
+                            var path = $"{System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)}/{(isOk ? "ok_log_text.txt" : "ng_log_text.txt")}";
+                            var txt = "===================================================\n"
+                                + $"{count + 1}試合目\n"
+                                + $"勝敗: {(targetLog.winOrLose == PM.Enum.Battle.WinOrLose.Win ? "勝利" : "敗北")}\n"
+                                + $"処理時間: {ts.Hours}時間 {ts.Minutes}分 {ts.Seconds}秒 {ts.Milliseconds}ミリ秒\n"
+                                + $"ターン数: {targetLog.turnCount}, listCount: {battleLogList.Count}\n"
+                                + $"【味方】{string.Join(",", targetPlayerMonsterHpLogList)}\n"
+                                + $"　【敵】{string.Join(",", targetEnemyMonsterHpLogList)}\n"
+                                + "===================================================\n"
+                                + $"{JsonConvert.SerializeObject(battleLogList, Formatting.Indented)}";
+
+                            //ファイルに書き込む
+                            using (var streamWriter = new StreamWriter(path, true)) {
+                                await streamWriter.WriteAsync(txt);
+                            }
                         })
                         .Catch((PMApiException e) => {
                             return Observable.ReturnUnit().Do(_ => Debug.Log($"ERROR?: {e.message}")).Select(_ => 0L);

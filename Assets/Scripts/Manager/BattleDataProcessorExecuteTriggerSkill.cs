@@ -9,6 +9,8 @@ public partial class BattleDataProcessor
 {
     private void ExecuteTriggerSkillIfNeeded(SkillTriggerType triggerType, List<BattleMonsterIndex> battleMonsterIndexList, int triggerTypeOptionValue = 0, BattleMonsterIndex targetBattleMonsterIndex = null, BattleActionType targetBattleActionType = BattleActionType.None, int targetBattleConditionCount = 0, TriggerSkillData triggerSkillData = null, string battleConditionGuid = "", long targetBattleConditionId = 0)
     {
+        return;
+
         battleMonsterIndexList.ForEach(index =>
         {
             ExecuteTriggerSkillIfNeeded(triggerType, index, triggerTypeOptionValue, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount, triggerSkillData, battleConditionGuid, targetBattleConditionId);
@@ -17,6 +19,8 @@ public partial class BattleDataProcessor
 
     private void ExecuteTriggerSkillIfNeeded(SkillTriggerType triggerType, BattleMonsterIndex battleMonsterIndex, int triggerTypeOptionValue = 0, BattleMonsterIndex targetBattleMonsterIndex = null, BattleActionType targetBattleActionType = BattleActionType.None, int targetBattleConditionCount = 0, TriggerSkillData triggerSkillData = null, string battleConditionGuid = "", long targetBattleConditionId = 0)
     {
+        return;
+
         // パッシブスキルを発動
         ExecutePassiveIfNeeded(triggerType, battleMonsterIndex, triggerTypeOptionValue, targetBattleMonsterIndex, targetBattleActionType, targetBattleConditionCount, triggerSkillData, battleConditionGuid);
 
