@@ -9,6 +9,7 @@ using System.IO;
 using Newtonsoft.Json;
 using NPOI.HPSF;
 using System.Text;
+using PM.Enum.Battle;
 
 public class BattleTestAction : ITestAction {
     public List<TestActionData> GetTestActionDataList() {
@@ -200,7 +201,7 @@ public class BattleTestAction : ITestAction {
             action = new Action(() => {
                 try {
                     var monsterList = MasterRecord.GetMasterOf<MonsterMB>().GetAll().Where(m => 41 <= m.id && m.id <= 65).ToList();
-                    var repeatNum = 10;
+                    var repeatNum = 1;
                     var monsterLevel = 100;
                     var totalSeconds = 0d;
                     var maxSeconds = 0d;
@@ -243,7 +244,7 @@ public class BattleTestAction : ITestAction {
                                 isLastWaveBoss = true,
                             };
                             var battleDataProcessor = new BattleDataProcessor();
-                            var battleLogList = battleDataProcessor.GetBattleLogList(allyUserMonsterList, quest);
+                            var battleLogList = await battleDataProcessor.GetBattleLogListTimeMeasurementObservable(allyUserMonsterList, quest);
 
                             // 計測停止
                             sw.Stop();
@@ -260,6 +261,12 @@ public class BattleTestAction : ITestAction {
                                 var monster = MasterRecord.GetMasterOf<MonsterMB>().Get(m.monsterId);
                                 return $"{monster.name}: {m.currentHp}";
                             });
+                            var logTypeAndNumList = new List<(BattleLogType logType, int num)>();
+                            foreach(BattleLogType type in Enum.GetValues(typeof(BattleLogType))) {
+                                var num = battleLogList.Count(log => log.type == type);
+                                logTypeAndNumList.Add((type, num));
+                            }
+                            logTypeAndNumList = logTypeAndNumList.OrderByDescending(t => t.num).ToList();
                             Debug.Log("===================================================");
                             Debug.Log($"{count + 1}試合目");
                             Debug.Log($"勝敗: {(targetLog.winOrLose == PM.Enum.Battle.WinOrLose.Win ? "勝利" : "敗北")}");
@@ -273,6 +280,7 @@ public class BattleTestAction : ITestAction {
                             Debug.Log($"ターン数: {targetLog.turnCount}, listCount: {battleLogList.Count}");
                             Debug.Log($"【味方】{string.Join(",", targetPlayerMonsterHpLogList)}");
                             Debug.Log($"　【敵】{string.Join(",", targetEnemyMonsterHpLogList)}");
+                            Debug.Log($"【ログ】{string.Join(",", logTypeAndNumList.Select(t => $"{t.logType}: {t.num}"))}");
                             Debug.Log("===================================================");
 
                             // テキスト出力
@@ -289,6 +297,7 @@ public class BattleTestAction : ITestAction {
                                 + $"{JsonConvert.SerializeObject(battleLogList, Formatting.Indented)}";
 
                             //ファイルに書き込む
+                            var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                             using (var streamWriter = new StreamWriter(path, true)) {
                                 await streamWriter.WriteAsync(txt);
                             }
