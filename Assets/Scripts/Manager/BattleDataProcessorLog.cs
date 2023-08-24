@@ -10,6 +10,33 @@ using System.Linq;
 public partial class BattleDataProcessor
 {
     /// <summary>
+    /// バトル演出処理などで使用しているログタイプリスト
+    /// </summary>
+    private List<BattleLogType> usedBattleLogTypeList = new List<BattleLogType>() { 
+        BattleLogType.Result,
+        BattleLogType.StartBattle,
+        BattleLogType.MoveWave,
+        BattleLogType.TakeStatusChange,
+        BattleLogType.MoveTurn,
+        BattleLogType.StartAction,
+        BattleLogType.StartActionAnimation,
+        BattleLogType.ActionFailed,
+        BattleLogType.TakeDamage,
+        BattleLogType.TakeHeal,
+        BattleLogType.TakeBattleConditionAdd,
+        BattleLogType.TakeBattleConditionRemoveBefore,
+        BattleLogType.TakeBattleConditionRemoveAfter,
+        BattleLogType.ProgressBattleConditionTurn,
+        BattleLogType.TakeRevive,
+        BattleLogType.Die,
+        BattleLogType.EndAction,
+        BattleLogType.StartSkillEffect,
+        BattleLogType.SetSkillTarget,
+        BattleLogType.TriggerSkill,
+        BattleLogType.StartTurnAction,
+    };
+
+    /// <summary>
     /// デフォルトログ情報を取得します
     /// </summary>
     /// <returns></returns>
@@ -103,6 +130,8 @@ public partial class BattleDataProcessor
     /// </summary>
     private void AddSkillEffectFailedOfProbabilityMissLog(BattleMonsterIndex doBattleMonsterIndex, List<BeDoneBattleMonsterData> beDoneBattleMonsterDataList, BattleActionType actionType, int skillEffectIndex, BattleConditionInfo battleCondition)
     {
+        return;
+
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.SkillEffectFailedOfProbabilityMiss;
         battleLog.doBattleMonsterIndex = doBattleMonsterIndex;
@@ -204,6 +233,8 @@ public partial class BattleDataProcessor
     /// </summary>
     private void AddEndTurnActionLog(BattleMonsterIndex doMonsterIndex)
     {
+        return;
+
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.EndTurnAction;
         battleLog.doBattleMonsterIndex = doMonsterIndex;
@@ -420,6 +451,8 @@ public partial class BattleDataProcessor
     /// </summary>
     private void AddEnergyUpLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, long skillFxId, string skillGuid, BattleActionType actionType, int skillEffectIndex, BattleConditionInfo battleCondition)
     {
+        return;
+
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.EnergyUp;
         battleLog.doBattleMonsterIndex = doMonsterIndex;
@@ -452,6 +485,8 @@ public partial class BattleDataProcessor
     /// </summary>
     private void AddEnergyDownLog(BattleMonsterIndex doMonsterIndex, List<BeDoneBattleMonsterData> beDoneMonsterDataList, long skillFxId, string skillGuid, BattleActionType actionType, int skillEffectIndex, BattleConditionInfo battleCondition)
     {
+        return;
+
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.EnergyDown;
         battleLog.doBattleMonsterIndex = doMonsterIndex;
@@ -628,6 +663,8 @@ public partial class BattleDataProcessor
     /// </summary>
     private void AddEndTurnLog()
     {
+        return;
+
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.EndTurn;
 
@@ -644,6 +681,8 @@ public partial class BattleDataProcessor
     /// </summary>
     private void AddEndWaveLog()
     {
+        return;
+
         var battleLog = GetDefaultLog();
         battleLog.type = BattleLogType.EndWave;
 
